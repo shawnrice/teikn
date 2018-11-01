@@ -1,0 +1,14 @@
+{
+  "name": "design-token-tool",
+  "version": "1.0.0",
+  "main": "index.js",
+  "module": "src/main.js",
+  "author": "Shawn Patrick Rice",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "esm": "^3.0.84",
+    "lodash": "^4.17.11",
+    "mkdirp": "^0.5.1"
+  }
+}
