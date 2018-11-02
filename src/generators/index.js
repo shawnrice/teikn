@@ -1,5 +1,11 @@
-import { generator as json } from './generator-json';
-import { generator as scss } from './generator-scss';
+const jsonGenerator = require('./generator-json');
+const scssGenerator = require('./generator-scss');
 
-export const generators = { json, scss };
-export default generators;
+const scss = scssGenerator.generator;
+const json = jsonGenerator.generator;
+
+module.exports = {
+  scss,
+  json,
+  default: { scss, json },
+};

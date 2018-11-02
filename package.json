@@ -1,14 +1,43 @@
 {
   "name": "design-token-tool",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "main": "index.js",
   "module": "src/main.js",
   "author": "Shawn Patrick Rice",
   "license": "MIT",
   "private": true,
+  "scripts": {
+    "test": "jest"
+  },
   "dependencies": {
+    "color": "^3.1.0",
     "esm": "^3.0.84",
     "lodash": "^4.17.11",
     "mkdirp": "^0.5.1"
+  },
+  "devDependencies": {
+    "jest": "^23.6.0"
+  },
+  "jest": {
+    "cacheDirectory": "<rootDir>/.jest-cache",
+    "collectCoverage": true,
+    "collectCoverageFrom": [
+      "**/*.js",
+      "!**/node_modules/**"
+    ],
+    "coverageDirectory": ".coverage",
+    "coveragePathIgnorePatterns": [
+      "/node_modules/",
+      "<rootDir>/out/"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 50,
+        "functions": 50,
+        "lines": 50,
+        "statements": 50
+      }
+    },
+    "verbose": true
   }
 }

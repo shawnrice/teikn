@@ -1,12 +1,24 @@
-import fs from 'fs';
-import path from 'path';
-import ensureDirectory from './ensure-directory';
-import possibleGenerators from './generators';
+const fs = require('fs');
+const path = require('path');
+const { isPlainObject, isFunction } = require('lodash');
+const { ensureDirectory } = require('./ensure-directory');
+const possibleGenerators = require('./generators');
 
-export class TokenWriter {
-  constructor(outDir, generators) {
+class TokenWriter {
+  constructor(options = {}) {
+    const { outDir, generators, ...rest } = options;
+    if (!outDir) {
+      throw new Error(`An outDir must be provided to the initialization object.`);
+    }
+
+    if (!generators) {
+      throw new Error(`No generators were provided to the initialization object.`);
+    }
     this.outDir = outDir;
+
     this.generators = new Map();
+
+    this.options = rest;
 
     if (typeof generators === 'string') {
       this.enqueueByString(generators);
@@ -14,10 +26,16 @@ export class TokenWriter {
       for (let gen of generators) {
         if (typeof gen === 'string') {
           this.enqueueByString(gen);
+        } else if (isPlainObject(gen)) {
+          this.enqueueByObject(gen);
         } else {
-          console.warn(`Generators must be enqueue by string. Received ${JSON.stringify(gen)}`);
+          console.warn(
+            `Generators must be enqueue by string or object. Received ${JSON.stringify(gen)}`,
+          );
         }
       }
+    } else if (isPlainObject(generators)) {
+      this.enqueueByObject(generators);
     } else {
       console.warn(`Generators must be enqueue by string. Received ${JSON.stringify(generators)}`);
     }
@@ -31,8 +49,32 @@ export class TokenWriter {
     }
   }
 
-  enqueue({ name, extension, generator }) {
-    this.generators.set(name, { extension, generator });
+  enqueueByObject(gen) {
+    const { name, generator, extension, options } = gen;
+    if (typeof extension !== 'string') {
+      throw new Error(`Warning: supplied generator "${name}" needs to have a string extension.`);
+    }
+
+    if (typeof name !== 'string') {
+      throw new Error(`Warning: supplied generator without a string name.`);
+    }
+
+    if (typeof generator !== 'undefined' && isFunction(generator)) {
+      this.enqueue({ name, extension, generator, options });
+    } else if (name in possibleGenerators) {
+      this.enqueue({ name, extension, generator: possibleGenerators[generator], options });
+    } else {
+      throw new Error(
+        `Warning: a supplied generator needs to be either a function or one of ${Object.keys(
+          possibleGenerators,
+        )}`,
+      );
+    }
+  }
+
+  enqueue({ name, extension, generator, options = {} }) {
+    const opts = Object.assign({}, this.options, options);
+    this.generators.set(name, { extension, generator, options: opts });
   }
 
   async run(tokens) {
@@ -43,9 +85,9 @@ export class TokenWriter {
     const tasks = [];
     let result = iterator.next();
     while (!result.done) {
-      const [name, { extension, generator }] = result.value;
+      const [name, { extension, generator, options }] = result.value;
       console.log(`Working on ${name}.`);
-      tasks.push(this.write(extension, generator(tokens)));
+      tasks.push(this.write(extension, generator(tokens, options)));
       result = iterator.next();
     }
     await Promise.all(tasks);
@@ -56,10 +98,13 @@ export class TokenWriter {
       fs.writeFile(
         path.resolve(this.outDir, `tokens.${extension}`),
         data,
-        err => (err ? rej(err) : res())
+        err => (err ? rej(err) : res()),
       );
     });
   }
 }
 
-export default TokenWriter;
+module.exports = {
+  default: TokenWriter,
+  TokenWriter,
+};
