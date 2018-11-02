@@ -11,7 +11,9 @@ interface token {
    */
   name: string;
   /**
+   * General type information
    *
+   * @todo expand these
    */
   type: 'color' | 'size';
   /**
@@ -25,7 +27,25 @@ interface token {
 }
 ```
 
-## Supported Formats
+## Supported Target Formats
 
 - scss
 - json
+
+# Use as a library
+
+@todo update when published somewhere
+
+```javascript
+const { resolve } = require('path');
+const { TokenWriter } = require('<dir>/src/token-writer');
+
+const tokens = [{...}, {...}]; // import these from somewhere
+// Configure the writer
+const writer = new TokenWriter({
+  outDir: resolve(__dirname, 'out'),
+  generators: ['json', 'scss'],
+});
+// Run the writer with the tokens
+writer.run(tokens);
+```
