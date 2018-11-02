@@ -1,6 +1,5 @@
-import path from 'path';
-import { TokenWriter } from './token-writer';
-import { startCase } from 'lodash';
+const path = require('path');
+const { TokenWriter } = require('./token-writer');
 
 const testTokens = [
   { name: 'firstThingIsHere', type: 'size', value: '12px', usage: 'This is just a test' },

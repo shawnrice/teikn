@@ -30,7 +30,7 @@ class TokenWriter {
           this.enqueueByObject(gen);
         } else {
           console.warn(
-            `Generators must be enqueue by string or object. Received ${JSON.stringify(gen)}`,
+            `Generators must be enqueue by string or object. Received ${JSON.stringify(gen)}`
           );
         }
       }
@@ -45,7 +45,7 @@ class TokenWriter {
     if (gen in possibleGenerators) {
       this.enqueue({ name: gen, extension: gen, generator: possibleGenerators[gen] });
     } else {
-      console.warn(`Warning: "${gen}" is not a known generator. Skipping.`);
+      throw new Error(`Warning: "${gen}" is not a known generator. Skipping.`);
     }
   }
 
@@ -66,8 +66,8 @@ class TokenWriter {
     } else {
       throw new Error(
         `Warning: a supplied generator needs to be either a function or one of ${Object.keys(
-          possibleGenerators,
-        )}`,
+          possibleGenerators
+        )}`
       );
     }
   }
@@ -86,7 +86,9 @@ class TokenWriter {
     let result = iterator.next();
     while (!result.done) {
       const [name, { extension, generator, options }] = result.value;
+
       console.log(`Working on ${name}.`);
+
       tasks.push(this.write(extension, generator(tokens, options)));
       result = iterator.next();
     }
@@ -98,7 +100,7 @@ class TokenWriter {
       fs.writeFile(
         path.resolve(this.outDir, `tokens.${extension}`),
         data,
-        err => (err ? rej(err) : res()),
+        err => (err ? rej(err) : res())
       );
     });
   }
