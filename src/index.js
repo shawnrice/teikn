@@ -7,7 +7,7 @@ const testTokens = [
   {
     name: 'thisIsAColorName',
     type: 'color',
-    value: '#efefef',
+    value: 'transparent',
     usage: 'Some color to be used places',
   },
 ];
@@ -22,8 +22,8 @@ const main = async () => {
         extension: 'scss',
         generator: 'scss',
         options: {
-          preferHsl: true,
-          preferRgb: false,
+          preferHsl: false,
+          preferRgb: true,
           preferHex: false,
         },
       },

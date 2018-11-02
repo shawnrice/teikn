@@ -11,10 +11,12 @@ const transformValue = (value, type, options) => {
 
 const transformColorValue = (value, options) => {
   const { preferHsl, preferRgb, preferHex } = options;
+
   const color = Color(value);
 
   if (preferHex) {
-    return color.hex().toLowerCase();
+    // hex encodes this as black, so just leave it be
+    return value.toLowerCase() === 'transparent' ? value.toLowerCase() : color.hex().toLowerCase();
   }
 
   if (preferRgb) {
@@ -23,6 +25,10 @@ const transformColorValue = (value, options) => {
 
   if (preferHsl) {
     return color.hsl().string(3);
+  }
+
+  if (value.toLowerCase() === 'transparent') {
+    return value.toLowerCase();
   }
 
   return color.hex().toLowerCase();
