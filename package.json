@@ -4,7 +4,6 @@
   "main": "index.js",
   "author": "Shawn Patrick Rice",
   "license": "MIT",
-  "private": true,
   "scripts": {
     "test": "jest"
   },
