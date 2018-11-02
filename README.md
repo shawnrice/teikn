@@ -1,4 +1,4 @@
-# Design Token Tool
+# Teikn
 
 WIP
 
@@ -15,7 +15,7 @@ interface token {
    *
    * @todo expand these
    */
-  type: 'color' | 'size';
+  type: 'color' | 'cubic-bezier' | 'size';
   /**
    * The value of the token
    */

@@ -1,5 +1,5 @@
 {
-  "name": "design-token-tool",
+  "name": "teikn",
   "version": "0.1.0",
   "main": "index.js",
   "module": "src/main.js",
