@@ -15,8 +15,11 @@ const generator = (tokens, options = {}) => {
   return combinator(tokens.map(token => generateToken(token, nameTransformer)));
 };
 
+const extension = 'json';
+
 module.exports = {
   generateToken,
   combinator,
   generator,
+  extension,
 };

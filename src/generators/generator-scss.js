@@ -53,9 +53,11 @@ const combinator = tokens => tokens.join(`${EOL}${EOL}`);
 const generator = (tokens, options = {}) => {
   const { dateFn = getDate, ...opts } = options;
   return [generateHeader(dateFn), combinator(tokens.map(token => generateToken(token, opts)))].join(
-    EOL,
+    EOL
   );
 };
+
+const extension = 'scss';
 
 module.exports = {
   generator,
@@ -63,4 +65,5 @@ module.exports = {
   generateToken,
   generateHeader,
   getDate,
+  extension,
 };

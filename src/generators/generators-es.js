@@ -22,7 +22,7 @@ const maybeQuote = val => {
 const combinator = tokens => {
   const combined = tokens.join(EOL);
 
-  return `module.exports = { ${combined} }`;
+  return [`export const tokens = {`, combined, `};`, ``, `export default tokens;`].join(EOL);
 };
 
 const generator = (tokens, options = {}) => {

@@ -43,7 +43,11 @@ class TokenWriter {
 
   enqueueByString(gen) {
     if (gen in possibleGenerators) {
-      this.enqueue({ name: gen, extension: gen, generator: possibleGenerators[gen] });
+      this.enqueue({
+        name: gen,
+        extension: possibleGenerators[gen].extension,
+        generator: possibleGenerators[gen].generator,
+      });
     } else {
       throw new Error(`Warning: "${gen}" is not a known generator. Skipping.`);
     }
