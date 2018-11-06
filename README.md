@@ -31,6 +31,8 @@ interface token {
 
 - scss
 - json
+- js (commonjs)
+- es (es6 module)
 
 # Use as a library
 
