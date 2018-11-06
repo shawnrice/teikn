@@ -6,13 +6,20 @@ const generateToken = (token, nameTransformer) => {
   return { [nameTransformer(name)]: values };
 };
 
+const maybeQuote = val => {
+  if (typeof val === 'string') {
+    return `'${val}'`;
+  }
+  return val;
+};
+
 const combinator = tokens => {
   const combined = tokens
     .map(token =>
       // prettier-ignore
       [
         token.usage && `/** ${token.usage} */`, 
-        `${camelCase(token.name)}: ${token.value},`
+        `${camelCase(token.name)}: ${maybeQuote(token.value)},`
       ].join(EOL)
     )
     .join(EOL);
