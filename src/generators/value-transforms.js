@@ -25,13 +25,17 @@ const transformTimeValue = (value, options) => {
 };
 
 const transformColorValue = (value, options) => {
-  const { preferHsl, preferRgb, preferHex } = options;
+  const { preferHsl, preferRgb, preferRgba, preferHex } = options;
 
   const color = Color(value);
 
   if (preferHex) {
     // hex encodes this as black, so just leave it be
     return value.toLowerCase() === 'transparent' ? value.toLowerCase() : color.hex().toLowerCase();
+  }
+
+  if (preferRgba) {
+    color.rgba().string(3);
   }
 
   if (preferRgb) {
