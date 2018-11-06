@@ -1,13 +1,27 @@
 const { camelCase } = require('lodash');
+const { EOL } = require('os');
 
-const generateToken = (token, nameTransformer = camelCase) => {
+const generateToken = (token, nameTransformer) => {
   const { name, ...values } = token;
   return { [nameTransformer(name)]: values };
 };
 
 const combinator = tokens => {
-  const combined = tokens.reduce((acc, token) => Object.assign(acc, token), {});
-  return JSON.stringify(combined, null, 2);
+  const combined = tokens
+    .map(token =>
+      // prettier-ignore
+      [
+        token.usage && `/** ${token.usage} */`, 
+        `${camelCase(token.name)}: ${token.value},`
+      ].join(EOL)
+    )
+    .join(EOL);
+
+  return `
+    module.exports = {
+      ${combined}
+    }
+  `;
 };
 
 const generator = (tokens, options = {}) => {
