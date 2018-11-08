@@ -35,7 +35,10 @@ const transformColorValue = (value, options) => {
   }
 
   if (preferRgba) {
-    color.rgba().string(3);
+    if (color.alpha() === 1) {
+      return color.rgb().string();
+    }
+    return `rgba(${color.red()}, ${color.green()}, ${color.blue()}, ${color.alpha()})`;
   }
 
   if (preferRgb) {
