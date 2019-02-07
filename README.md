@@ -34,7 +34,7 @@ interface token {
 - js (commonjs)
 - es (es6 module)
 
-# Use as a library
+## Use as a library
 
 @todo update when published somewhere
 
