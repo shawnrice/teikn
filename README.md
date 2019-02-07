@@ -1,6 +1,6 @@
 # Teikn
 
-WIP
+Generates design tokens
 
 ## Tokens
 

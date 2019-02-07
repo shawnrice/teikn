@@ -7,6 +7,7 @@ const possibleGenerators = require('./generators');
 class TokenWriter {
   constructor(options = {}) {
     const { outDir, generators, ...rest } = options;
+
     if (!outDir) {
       throw new Error(`An outDir must be provided to the initialization object.`);
     }
@@ -14,10 +15,9 @@ class TokenWriter {
     if (!generators) {
       throw new Error(`No generators were provided to the initialization object.`);
     }
+
     this.outDir = outDir;
-
     this.generators = new Map();
-
     this.options = rest;
 
     if (typeof generators === 'string') {
@@ -30,7 +30,7 @@ class TokenWriter {
           this.enqueueByObject(gen);
         } else {
           console.warn(
-            `Generators must be enqueue by string or object. Received ${JSON.stringify(gen)}`
+            `Generators must be enqueue by string or object. Received ${JSON.stringify(gen)}`,
           );
         }
       }
@@ -49,12 +49,12 @@ class TokenWriter {
         generator: possibleGenerators[gen].generator,
       });
     } else {
-      throw new Error(`Warning: "${gen}" is not a known generator. Skipping.`);
+      throw new Error(`Warning: "${gen}" is not a known generator.`);
     }
   }
 
   enqueueByObject(gen) {
-    const { name, generator, extension, options } = gen;
+    const { name, generator, filename = 'tokens', extension, options } = gen;
     if (typeof extension !== 'string') {
       throw new Error(`Warning: supplied generator "${name}" needs to have a string extension.`);
     }
@@ -64,21 +64,21 @@ class TokenWriter {
     }
 
     if (typeof generator !== 'undefined' && isFunction(generator)) {
-      this.enqueue({ name, extension, generator, options });
+      this.enqueue({ name, extension, filename, generator, options });
     } else if (name in possibleGenerators) {
       this.enqueue({ name, extension, generator: possibleGenerators[generator], options });
     } else {
       throw new Error(
         `Warning: a supplied generator needs to be either a function or one of ${Object.keys(
-          possibleGenerators
-        )}`
+          possibleGenerators,
+        )}`,
       );
     }
   }
 
-  enqueue({ name, extension, generator, options = {} }) {
+  enqueue({ name, filename = 'tokens', extension, generator, options = {} }) {
     const opts = Object.assign({}, this.options, options);
-    this.generators.set(name, { extension, generator, options: opts });
+    this.generators.set(name, { extension, filename, generator, options: opts });
   }
 
   async run(tokens) {
@@ -89,22 +89,23 @@ class TokenWriter {
     const tasks = [];
     let result = iterator.next();
     while (!result.done) {
-      const [name, { extension, generator, options }] = result.value;
+      const [name, { extension, generator, options, filename = 'tokens' }] = result.value;
 
       console.log(`Working on ${name}.`);
 
-      tasks.push(this.write(extension, generator(tokens, options)));
+      tasks.push(this.write({ extension, filename, data: generator(tokens, options) }));
+
+      console.log(`Wrote: ${path.resolve(this.outDir, [filename, extension].join('.'))}`);
+
       result = iterator.next();
     }
     await Promise.all(tasks);
   }
 
-  async write(extension, data) {
+  async write({ extension, filename, data }) {
     return new Promise((res, rej) => {
-      fs.writeFile(
-        path.resolve(this.outDir, `tokens.${extension}`),
-        data,
-        err => (err ? rej(err) : res())
+      fs.writeFile(path.resolve(this.outDir, [filename, extension].join('.')), data, err =>
+        err ? rej(err) : res(),
       );
     });
   }
