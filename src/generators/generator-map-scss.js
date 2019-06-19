@@ -1,5 +1,6 @@
-const { kebabCase, startCase } = require('lodash');
 const { EOL } = require('os');
+const kebabCase = require('lodash/kebabCase');
+const startCase = require('lodash/startCase');
 const { transformValue } = require('./value-transforms');
 const pkg = require('../../package.json');
 
@@ -77,7 +78,9 @@ const generator = (tokens, options = {}) => {
     generateHeader(dateFn),
     combinator(tokens.map(token => generateToken(token, opts))),
     getter(),
-  ].join(EOL);
+  ]
+    .join(EOL)
+    .trim();
 };
 
 const extension = 'scss';

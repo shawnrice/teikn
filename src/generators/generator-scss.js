@@ -7,10 +7,12 @@ const pkg = require('../../package.json');
  * Generate Header
  */
 const generateHeader = dateFn => {
+  const now = dateFn();
+
   return [
     `///`,
     `/// ${startCase(pkg.name)} v${pkg.version}`,
-    `/// Generated ${dateFn()}`,
+    `/// Generated ${now}`,
     `///`,
     `/// This file is generated and should be commited to source control`,
     `///`,
@@ -52,8 +54,9 @@ const combinator = tokens => tokens.join(`${EOL}${EOL}`);
  */
 const generator = (tokens, options = {}) => {
   const { dateFn = getDate, ...opts } = options;
+
   return [generateHeader(dateFn), combinator(tokens.map(token => generateToken(token, opts)))].join(
-    EOL
+    EOL,
   );
 };
 

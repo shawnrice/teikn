@@ -13,10 +13,7 @@ const separateValueAndUnit = value => {
   const num = parseFloat(value.trim());
   const units = value.trim().replace(`${num}`, '');
 
-  return {
-    num,
-    units,
-  };
+  return { num, units };
 };
 
 const transformTimeValue = (value, options) => {
@@ -35,9 +32,6 @@ const transformColorValue = (value, options) => {
   }
 
   if (preferRgba) {
-    if (color.alpha() === 1) {
-      return color.rgb().string();
-    }
     return `rgba(${color.red()}, ${color.green()}, ${color.blue()}, ${color.alpha()})`;
   }
 

@@ -4,11 +4,9 @@ const js = require('./generator-js');
 const es = require('./generators-es');
 const mapScss = require('./generator-map-scss');
 
+const generators = { scss, json, js, es, mapScss };
+
 module.exports = {
-  scss,
-  json,
-  js,
-  es,
-  mapScss,
-  default: { scss, json, js, es, mapScss },
+  ...generators,
+  default: generators,
 };

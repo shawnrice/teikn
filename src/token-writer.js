@@ -1,8 +1,11 @@
 const fs = require('fs');
 const path = require('path');
-const { isPlainObject, isFunction } = require('lodash');
+const isFunction = require('lodash/isFunction');
+const isPlainObject = require('lodash/isPlainObject');
 const { ensureDirectory } = require('./ensure-directory');
 const possibleGenerators = require('./generators');
+
+const generatorNames = Object.keys(generatorNames);
 
 class TokenWriter {
   constructor(options = {}) {
@@ -41,16 +44,14 @@ class TokenWriter {
     }
   }
 
-  enqueueByString(gen) {
-    if (gen in possibleGenerators) {
-      this.enqueue({
-        name: gen,
-        extension: possibleGenerators[gen].extension,
-        generator: possibleGenerators[gen].generator,
-      });
-    } else {
-      throw new Error(`Warning: "${gen}" is not a known generator.`);
+  enqueueByString(name) {
+    if (name in possibleGenerators) {
+      const { extension, generator } = possibleGenerators[name];
+
+      return this.enqueue({ name, extension, generator });
     }
+
+    throw new Error(`Warning: "${gen}" is not a known generator.`);
   }
 
   enqueueByObject(gen) {
@@ -63,15 +64,13 @@ class TokenWriter {
       throw new Error(`Warning: supplied generator without a string name.`);
     }
 
-    if (typeof generator !== 'undefined' && isFunction(generator)) {
+    if (isFunction(generator)) {
       this.enqueue({ name, extension, filename, generator, options });
     } else if (name in possibleGenerators) {
       this.enqueue({ name, extension, generator: possibleGenerators[generator], options });
     } else {
       throw new Error(
-        `Warning: a supplied generator needs to be either a function or one of ${Object.keys(
-          possibleGenerators,
-        )}`,
+        `Warning: a supplied generator needs to be either a function or one of ${generatorNames}`,
       );
     }
   }
@@ -90,23 +89,22 @@ class TokenWriter {
     let result = iterator.next();
     while (!result.done) {
       const [name, { extension, generator, options, filename = 'tokens' }] = result.value;
+      const file = path.resolve(this.outDir, [filename, extension].join('.'));
 
       console.log(`Working on ${name}.`);
 
-      tasks.push(this.write({ extension, filename, data: generator(tokens, options) }));
+      tasks.push(this.write({ file, data: generator(tokens, options) }));
 
-      console.log(`Wrote: ${path.resolve(this.outDir, [filename, extension].join('.'))}`);
+      console.log(`Wrote: ${file}`);
 
       result = iterator.next();
     }
     await Promise.all(tasks);
   }
 
-  async write({ extension, filename, data }) {
+  async write({ file, data }) {
     return new Promise((res, rej) => {
-      fs.writeFile(path.resolve(this.outDir, [filename, extension].join('.')), data, err =>
-        err ? rej(err) : res(),
-      );
+      fs.writeFile(file, (data, err) => (err ? rej(err) : res()));
     });
   }
 }

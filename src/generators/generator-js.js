@@ -1,4 +1,4 @@
-const { camelCase } = require('lodash');
+const camelCase = require('lodash/camelCase');
 const { EOL } = require('os');
 
 const generateToken = (token, nameTransformer = camelCase) =>
@@ -10,20 +10,12 @@ const generateToken = (token, nameTransformer = camelCase) =>
     `  ${nameTransformer(token.name)}: ${maybeQuote(token.value)},`,
   ]
     .filter(Boolean)
+    .map((token, index, arr) => (index === arr.length - 1 ? token.slice(0, -1) : token))
     .join(EOL);
 
-const maybeQuote = val => {
-  if (typeof val === 'string') {
-    return `'${val}'`;
-  }
-  return val;
-};
+const maybeQuote = val => (typeof val === 'string' ? `'${val}'` : val);
 
-const combinator = tokens => {
-  const combined = tokens.join(EOL);
-
-  return `module.exports = { ${combined} }`;
-};
+const combinator = tokens => ['module.exports = {', tokens.join(EOL), '}'].join(EOL);
 
 const generator = (tokens, options = {}) => {
   const { nameTransformer = camelCase } = options;

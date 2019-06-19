@@ -1,8 +1,9 @@
-const { camelCase } = require('lodash');
+const camelCase = require('lodash/camelCase');
 
 const generateToken = (token, nameTransformer = camelCase) => {
   const { name, ...values } = token;
-  return { [nameTransformer(name)]: values };
+  const key = nameTransformer(name);
+  return { [key]: values };
 };
 
 const combinator = tokens => {
