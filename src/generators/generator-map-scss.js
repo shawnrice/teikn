@@ -2,6 +2,7 @@ const { EOL } = require('os');
 const kebabCase = require('lodash/kebabCase');
 const startCase = require('lodash/startCase');
 const { transformValue } = require('./value-transforms');
+const { getDate } = require('../utils');
 const pkg = require('../../package.json');
 
 /**
@@ -17,16 +18,6 @@ const generateHeader = dateFn => {
     `///`,
     EOL,
   ].join(EOL);
-};
-
-/**
- * Default date function that is used if another one is not passed
- */
-const getDate = () => {
-  const now = new Date();
-  const date = now.toDateString();
-  const time = [now.getHours(), now.getMinutes(), now.getSeconds()].join(':');
-  return `${date} ${time}`;
 };
 
 const maybeWrap = (val, type) => {

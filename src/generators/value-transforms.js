@@ -9,17 +9,17 @@ const transformValue = (value, type, options) => {
   }
 };
 
-const separateValueAndUnit = value => {
-  const num = parseFloat(value.trim());
-  const units = value.trim().replace(`${num}`, '');
+// const separateValueAndUnit = value => {
+//   const num = parseFloat(value.trim());
+//   const units = value.trim().replace(`${num}`, '');
 
-  return { num, units };
-};
+//   return { num, units };
+// };
 
-const transformTimeValue = (value, options) => {
-  const { preferMilliseconds, preferSecond } = options;
-  const { num, units } = separateValueAndUnit(value);
-};
+// const transformTimeValue = (value, options) => {
+//   const { preferMilliseconds, preferSecond } = options;
+//   const { num, units } = separateValueAndUnit(value);
+// };
 
 const transformColorValue = (value, options) => {
   const { preferHsl, preferRgb, preferRgba, preferHex } = options;
