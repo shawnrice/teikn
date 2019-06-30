@@ -1,8 +1,8 @@
 /**
  * Default date function that is used if another one is not passed
  */
-const getDate = () => {
-  const pad0 = num => (num < 10 ? `0${num}` : num);
+export const getDate = () => {
+  const pad0 = (num: number) => (num < 10 ? `0${num}` : num);
 
   const now = new Date();
   const date = now.toDateString();
@@ -10,4 +10,4 @@ const getDate = () => {
   return `${date} ${time}`;
 };
 
-module.exports = { getDate };
+export default getDate;

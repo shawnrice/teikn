@@ -1,9 +1,9 @@
-const { EOL } = require('os');
-const SCSSGenerator = require('./SCSS');
-const pkg = require('../../package.json');
+import { EOL } from 'os';
+import SCSSGenerator from './SCSS';
+import { Token } from './Generator';
 
 class SCSSVarsGenerator extends SCSSGenerator {
-  assembleToken({ usage, key, val }) {
+  assembleToken({ usage, key, val }: { usage?: string; key: string; val: any }) {
     // prettier-ignore
     return [
       usage && `/// ${usage}`,
@@ -11,7 +11,7 @@ class SCSSVarsGenerator extends SCSSGenerator {
     ]
   }
 
-  generateToken(token) {
+  generateToken(token: Token) {
     const { usage, key, val } = this.prepareToken(token);
 
     return this.assembleToken({ usage, key, val })
@@ -19,7 +19,7 @@ class SCSSVarsGenerator extends SCSSGenerator {
       .join(EOL);
   }
 
-  combinator(tokens) {
+  combinator(tokens: Token[]) {
     const values = tokens.map(t => this.generateToken(t));
 
     return values.join(EOL);

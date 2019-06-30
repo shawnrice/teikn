@@ -1,26 +1,30 @@
-const camelCase = require('lodash/camelCase');
-const Generator = require('./Generator');
+import camelCase from 'lodash/camelCase';
+import Generator, { GeneratorOptions, Token } from './Generator';
 
 const defaultOptions = {
   ext: 'json',
   nameTransformer: camelCase,
 };
 
-class JSONGenerator extends Generator {
+export interface Opts extends GeneratorOptions {
+  nameTransformer?: (name: string) => string;
+}
+
+class JSONGenerator extends Generator<Opts> {
   constructor(options = {}) {
     const opts = Object.assign({}, defaultOptions, options);
     super(opts);
   }
 
-  generateToken(token) {
+  generateToken(token: Token) {
     const { nameTransformer } = this.options;
     const { name, ...values } = token;
-    const key = nameTransformer(name);
+    const key = nameTransformer!(name);
 
     return { [key]: values };
   }
 
-  combinator(tokens) {
+  combinator(tokens: Token[]) {
     const combined = tokens.reduce(
       (acc, token) => Object.assign(acc, this.generateToken(token)),
       {},
@@ -30,4 +34,4 @@ class JSONGenerator extends Generator {
   }
 }
 
-module.exports = JSONGenerator;
+export default JSONGenerator;

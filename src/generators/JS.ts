@@ -1,9 +1,8 @@
-const { EOL } = require('os');
-const camelCase = require('lodash/camelCase');
-const startCase = require('lodash/startCase');
-const Generator = require('./Generator');
-const { getDate } = require('../utils');
-const pkg = require('../../package.json');
+import { EOL } from 'os';
+import camelCase from 'lodash/camelCase';
+
+import Generator, { GeneratorOptions, Token } from './Generator';
+import { getDate } from '../utils';
 
 const defaultOptions = {
   ext: 'js',
@@ -11,9 +10,14 @@ const defaultOptions = {
   dateFn: getDate,
 };
 
-const maybeQuote = val => (typeof val === 'string' ? `'${val}'` : val);
+const maybeQuote = (val: any) => (typeof val === 'string' ? `'${val}'` : val);
 
-class JS extends Generator {
+export interface Opts extends GeneratorOptions {
+  dateFn?: () => string | null;
+  nameTransformer?: (name: string) => string;
+}
+
+class JS extends Generator<Opts> {
   constructor(options = {}) {
     const opts = Object.assign({}, defaultOptions, options);
     super(opts);
@@ -21,10 +25,11 @@ class JS extends Generator {
 
   header() {
     const { dateFn } = this.options;
+
     return [
       `/**`,
-      ` * ${startCase(pkg.name)} v${pkg.version}`,
-      ` * Generated ${dateFn()}`,
+      ` * ${this.signature()}`,
+      ` * Generated ${dateFn!()}`,
       ` *`,
       ` * This file is generated and should be commited to source control`,
       ` *`,
@@ -32,7 +37,7 @@ class JS extends Generator {
     ].join(EOL);
   }
 
-  generateToken(token) {
+  generateToken(token: Token) {
     const { nameTransformer } = this.options;
 
     return [
@@ -40,14 +45,14 @@ class JS extends Generator {
       token.usage && `   *  ${token.usage}`,
       `   *  Type: ${token.type}`,
       `   */`,
-      `  ${nameTransformer(token.name)}: ${maybeQuote(token.value)},`,
+      `  ${nameTransformer!(token.name)}: ${maybeQuote(token.value)},`,
     ]
       .filter(Boolean)
-      .map((token, index, arr) => (index === arr.length - 1 ? token.slice(0, -1) : token))
+      .map((token, index, arr) => (index === arr.length - 1 ? token!.slice(0, -1) : token))
       .join(EOL);
   }
 
-  combinator(tokens) {
+  combinator(tokens: Token[]) {
     const values = tokens.map(t => this.generateToken(t));
     return ['module.exports = {', values.join(EOL), '}'].join(EOL);
   }

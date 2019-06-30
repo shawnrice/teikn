@@ -1,6 +1,15 @@
-const Color = require('color');
+import Color from 'color';
+import { Token } from './Generator';
 
-const transformValue = (value, type, options) => {
+export interface TokenTransformOptions {
+  preferHsl?: boolean;
+  preferRgb?: boolean;
+  preferRgba?: boolean;
+  preferHex?: boolean;
+}
+
+export const transformValue = (token: Token, options: TokenTransformOptions) => {
+  const { type, value } = token;
   switch (type) {
     case 'color':
       return transformColorValue(value, options);
@@ -21,7 +30,7 @@ const transformValue = (value, type, options) => {
 //   const { num, units } = separateValueAndUnit(value);
 // };
 
-const transformColorValue = (value, options) => {
+const transformColorValue = (value: string, options: TokenTransformOptions) => {
   const { preferHsl, preferRgb, preferRgba, preferHex } = options;
 
   const color = Color(value);
@@ -50,7 +59,4 @@ const transformColorValue = (value, options) => {
   return color.hex().toLowerCase();
 };
 
-module.exports = {
-  transformValue,
-  transformColorValue,
-};
+export default transformValue;
