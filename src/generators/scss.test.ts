@@ -1,4 +1,5 @@
-const Generator = require('./SCSS');
+import Generator from './SCSS';
+import { Token } from './Token';
 const startCase = require('lodash/startCase');
 const pkg = require('../../package.json');
 
@@ -8,7 +9,7 @@ describe('SCSSGenerator tests', () => {
   });
 
   test('It generates the token set', () => {
-    const tokens = [
+    const tokens: Token[] = [
       { name: 'test', type: 'font-family', usage: 'standard font', value: 'Helvetica' },
       { name: 'test2', type: 'color', value: '#CCC' },
     ];
@@ -35,8 +36,8 @@ $token-values: (
   }
   @return map-get($token-values, $name);
 }`;
-    const generator = new Generator({ dateFn: () => 'null', preferRgba: true });
+    const generator = new Generator({ dateFn: () => 'null', color: 'RGBA' });
     const input = generator.generate(tokens);
-    expect(generator.generate(tokens)).toBe(value);
+    expect(input).toBe(value);
   });
 });

@@ -1,4 +1,5 @@
-const Generator = require('./SCSS-vars');
+import Generator from './SCSS-vars';
+import { Token } from './Token';
 const startCase = require('lodash/startCase');
 const pkg = require('../../package.json');
 
@@ -8,7 +9,7 @@ describe('SCSS Vars Generator tests', () => {
   });
 
   test('It generates the token set', () => {
-    const tokens = [
+    const tokens: Token[] = [
       { name: 'test', type: 'font-family', usage: 'standard font', value: 'Helvetica' },
       { name: 'test2', type: 'color', value: '#CCC' },
     ];
@@ -23,8 +24,8 @@ describe('SCSS Vars Generator tests', () => {
 /// standard font
 $test: unquote('#{Helvetica}');
 $test-2: rgba(204, 204, 204, 1);`;
-    const generator = new Generator({ dateFn: () => 'null', preferRgba: true });
+    const generator = new Generator({ dateFn: () => 'null', color: 'RGBA' });
     const input = generator.generate(tokens);
-    expect(generator.generate(tokens)).toBe(value);
+    expect(input).toBe(value);
   });
 });

@@ -2,7 +2,7 @@ import { EOL } from 'os';
 import SCSSGenerator from './SCSS';
 import { Token } from './Generator';
 
-class SCSSVarsGenerator extends SCSSGenerator {
+export class SCSSVarsGenerator extends SCSSGenerator {
   assembleToken({ usage, key, val }: { usage?: string; key: string; val: any }) {
     // prettier-ignore
     return [
@@ -30,4 +30,4 @@ class SCSSVarsGenerator extends SCSSGenerator {
   }
 }
 
-module.exports = SCSSVarsGenerator;
+export default SCSSVarsGenerator;

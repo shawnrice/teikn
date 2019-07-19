@@ -1,15 +1,11 @@
 import Color from 'color';
-import { Token } from './Generator';
+import { Token, TokenTransformOptions, ColorTransformPreference } from './Token';
 
-export interface TokenTransformOptions {
-  preferHsl?: boolean;
-  preferRgb?: boolean;
-  preferRgba?: boolean;
-  preferHex?: boolean;
-}
+
 
 export const transformValue = (token: Token, options: TokenTransformOptions) => {
   const { type, value } = token;
+
   switch (type) {
     case 'color':
       return transformColorValue(value, options);
@@ -30,33 +26,30 @@ export const transformValue = (token: Token, options: TokenTransformOptions) => 
 //   const { num, units } = separateValueAndUnit(value);
 // };
 
-const transformColorValue = (value: string, options: TokenTransformOptions) => {
-  const { preferHsl, preferRgb, preferRgba, preferHex } = options;
+export const transformColorValue = (value: string, options: TokenTransformOptions) => {
+  const { color: colorPreference } = options;
 
   const color = Color(value);
-
-  if (preferHex) {
-    // hex encodes this as black, so just leave it be
-    return value.toLowerCase() === 'transparent' ? value.toLowerCase() : color.hex().toLowerCase();
-  }
-
-  if (preferRgba) {
-    return `rgba(${color.red()}, ${color.green()}, ${color.blue()}, ${color.alpha()})`;
-  }
-
-  if (preferRgb) {
-    return color.rgb().string(3);
-  }
-
-  if (preferHsl) {
-    return color.hsl().string(3);
-  }
 
   if (value.toLowerCase() === 'transparent') {
     return value.toLowerCase();
   }
 
-  return color.hex().toLowerCase();
+  switch (colorPreference) {
+    case ColorTransformPreference.HSL:
+      return color.hsl().string(3);
+    case ColorTransformPreference.RGBA:
+      return `rgba(${color.red()}, ${color.green()}, ${color.blue()}, ${color.alpha()})`;
+    case ColorTransformPreference.RGB:
+      return color.rgb().string(3);
+    case ColorTransformPreference.HEX6:
+    // TODO figure out the color function to abbreviate the hex
+    case ColorTransformPreference.HEX:
+    // FALLTHROUGH
+    default:
+      return color.hex().toLowerCase();
+  }
+
 };
 
 export default transformValue;

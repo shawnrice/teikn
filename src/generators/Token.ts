@@ -7,4 +7,16 @@ export interface Token<Types extends TokenTypes = TokenTypes> {
   type: Types;
 }
 
-export interface ColorToken extends Token<'color'> {}
+export interface ColorToken extends Token<'color'> { }
+
+export enum ColorTransformPreference {
+  HSL = 'HSL',
+  RGB = 'RGB',
+  RGBA = 'RGBA',
+  HEX = 'HEX',
+  HEX6 = 'HEX6',
+}
+
+export interface TokenTransformOptions {
+  color?: ColorTransformPreference;
+}

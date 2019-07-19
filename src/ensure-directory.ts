@@ -1,8 +1,8 @@
-const mkdirp = require('mkdirp');
-const fs = require('fs');
-const path = require('path');
+import mkdirp from 'mkdirp';
+import path from 'path';
+import fs from 'fs';
 
-const ensureDirectory = dirPath =>
+export const ensureDirectory = (dirPath: string) =>
   new Promise((res, rej) => {
     const dir = path.resolve(dirPath);
     try {
@@ -16,6 +16,7 @@ const ensureDirectory = dirPath =>
           if (err) {
             return rej(err);
           }
+
           console.log(`Created ${dir}.`);
           return res(true);
         });
@@ -25,7 +26,5 @@ const ensureDirectory = dirPath =>
     }
   });
 
-module.exports = {
-  default: ensureDirectory,
-  ensureDirectory,
-};
+export default ensureDirectory;
+

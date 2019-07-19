@@ -1,16 +1,16 @@
 import { EOL } from 'os';
 import { version } from '../../package.json';
-import { Token, TokenTypes } from './Token';
+import { Token, TokenTypes, TokenTransformOptions } from './Token';
 
-export { Token, TokenTypes };
+export { Token, TokenTypes, TokenTransformOptions };
 
-export interface GeneratorOptions {
+export interface GeneratorOptions extends TokenTransformOptions {
   ext: string;
   filename?: string;
 }
 
 export interface RequiredGeneratorOptions {
-  ext: 'string';
+  ext: string;
 }
 
 export type RequiredGeneratorOptionNames = keyof RequiredGeneratorOptions;
@@ -35,8 +35,8 @@ export class Generator<Opts extends GeneratorOptions = GeneratorOptions> {
     const errors: string[] = [];
 
     for (const key in required) {
-      const type = typeof this.options[key];
-      const expected = required[name];
+      const type = typeof this.options[key as RequiredGeneratorOptionNames];
+      const expected = required[key as RequiredGeneratorOptionNames];
 
       if (type !== expected) {
         errors.push(`Error: received option ${key} of type ${type}; expected ${expected}.`);
@@ -62,11 +62,11 @@ export class Generator<Opts extends GeneratorOptions = GeneratorOptions> {
     return null;
   }
 
-  generateToken(token: Token) {
+  generateToken(_: Token) {
     throw new Error('You need to extend the Generator class');
   }
 
-  combinator(tokens: Token[]) {
+  combinator(_: Token[]) {
     throw new Error('You need to extend the Generator class');
   }
 

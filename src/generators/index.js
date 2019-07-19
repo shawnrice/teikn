@@ -1,23 +1,9 @@
-const json = require('./generator-json');
-const scss = require('./generator-scss');
-const js = require('./generator-js');
-const es = require('./generator-es');
-const mapScss = require('./generator-map-scss');
+import Generator from './Generator';
+import JavaScript from './JS';
+import SCSS from './SCSS';
+import SCSSVars from './SCSS-vars';
+import Json from './JSON';
 
-const Generator = require('./Generator');
-const JavaScript = require('./JS');
-const SCSS = require('./SCSS');
-const SCSSVars = require('./SCSS-vars');
-const Json = rquire('./JSON');
-
-const generators = { Generator, JavaScript, SCSS, SCSSVars, Json };
-
-module.exports = {
-  Generator,
-  JavaScript,
-  SCSS,
-  SCSSVars,
-  Json,
-  ...generators,
-  default: generators,
-};
+export const generators = { Generator, JavaScript, SCSS, SCSSVars, Json };
+export { Generator, JavaScript, SCSS, SCSSVars, Json };
+export default generators;

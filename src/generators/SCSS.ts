@@ -31,7 +31,7 @@ class SCSSGenerator extends Generator<Opts> {
 
   prepareToken(token: Token) {
     const { nameTransformer } = this.options;
-    const { name, type, value, usage } = token;
+    const { name, type, usage } = token;
     const key = nameTransformer!(name);
     const val = maybeWrap(transformValue(token, this.options), type);
 

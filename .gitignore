@@ -2,3 +2,4 @@ node_modules
 out
 .jest-cache
 .coverage
+.vscode

@@ -1,14 +1,16 @@
-const Generator = require('./Generator');
+import Generator from './Generator';
 
 describe('Generator base class tests', () => {
-  test('It throws when the extension is set in options', () => {
+  test('It throws when the extension is not set in options', () => {
     expect(() => {
+      // @ts-ignore: this is an error test
       new Generator();
     }).toThrow();
   });
 
   test('It throws when the extension is the wrong type in options', () => {
     expect(() => {
+      // @ts-ignore: this is an error test
       new Generator({ ext: true });
     }).toThrow();
   });
