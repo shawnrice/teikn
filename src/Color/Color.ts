@@ -115,8 +115,8 @@ export class Color {
   }
 
   rotateHue(degrees: number) {
-    const [hue, s, l] = this.asHSL();
-    return this.setRGBA(...HSLToRGB((hue + degrees) % 360, s, l));
+    this.hue = (this.hue + degrees) % 360;
+    return this;
   }
 
   complement() {
@@ -140,11 +140,21 @@ export class Color {
     return saturation;
   }
 
+  setHue(hue: number) {
+    this.hue = hue;
+    return this;
+  }
+
   set saturation(val: number) {
     const [h, , l] = this.asHSL();
     const saturation = clamp(0, 1, val);
     const [r, g, b] = HSLToRGB(h, saturation, l);
     this.setRGBA(r, g, b);
+  }
+
+  setSaturation(saturation: number) {
+    this.saturation = saturation;
+    return this;
   }
 
   get lightness() {
@@ -159,9 +169,17 @@ export class Color {
   }
 
   /**
+   * Sets the lightness of the color (as in HSL), lightness: `∈[0, 1]`
+   */
+  setLightness(lightness: number) {
+    this.lightness = lightness;
+    return this;
+  }
+
+  /**
    * Adds one color to another by averaging their [`r`, `g`, `b`, `a`] components
    */
-  add(color: Color | string) {
+  mix(color: Color | string) {
     const c = color instanceof Color ? color : new Color(color);
     const otherRGBA = c.asRGBA();
     const [r, g, b, a] = [...this.asRGBA()].reduce(
@@ -170,6 +188,102 @@ export class Color {
     );
 
     return this.setRGBA(r, g, b, a);
+  }
+
+  /**
+   * Lightens a color by a percetage, amount: `∈[0, 1]`
+   *
+   * Works like scaling a color's lightness in SCSS
+   */
+  lighten(amount: number) {
+    const lightness = this.lightness;
+
+    return this.setLightness(lightness + amount * lightness);
+  }
+
+  /**
+   * Darkens a color by a percentage, amount: `∈[0, 1]`
+   */
+  darken(amount: number) {
+    return this.lighten(amount * -1);
+  }
+
+  /**
+   * Mixes a color with `amount% white`
+   */
+  tint(amount: number) {
+    const [r, g, b] = this.asRGB().map(c =>
+      clamp(0, 255, Math.round(c + 255 * amount)),
+    );
+    return this.setRGBA(r, g, b);
+  }
+
+  /**
+   * Mixes a color with `amount% black`
+   */
+  shade(amount: number) {
+    const [r, g, b] = this.asRGB().map(c =>
+      clamp(0, 255, Math.round(c * (1 - amount))),
+    );
+    return this.setRGBA(r, g, b);
+  }
+
+  /**
+   * Gets the perceptual luminance of a color
+   *
+   * Note: `Color.luminance()` does not take into account alpha
+   *
+   * @see https://www.w3.org/TR/WCAG20-TECHS/G17.html#G17-testsq
+   */
+  luminance() {
+    const [red, green, blue] = this.asRGB().map(x => x / 255);
+    const val = (x: number) =>
+      x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4;
+    return (
+      0.2126 * val(red) + 0.7152 * val(green) + 0.0722 * val(blue)
+      // Math.sqrt(0.299 * red ** 2 + 0.587 * green ** 2 + 0.114 * blue ** 2) / 255
+    );
+  }
+
+  /**
+   *
+   * @see https://www.w3.org/TR/WCAG21/#dfn-contrast-ratio
+   */
+  contrastRatio(color: Color) {
+    const colors = [this.luminance(), color.luminance()].map(x => x + 0.05);
+
+    return Math.max(...colors) / Math.min(...colors);
+  }
+
+  /**
+   * Checks if a text contrast is sufficient for WCAG2
+   *
+   * (Large text means `14pt + bold` or `18pt regular`)
+   *
+   * @see https://www.w3.org/TR/WCAG21/#contrast-minimum
+   */
+  isTextWCAG2CompliantWith(color: Color, largeText: boolean = false) {
+    return this.contrastRatio(color) >= (largeText ? 3 : 4.5);
+  }
+
+  /**
+   * Checks if a text contrast is sufficient for WCAG3
+   *
+   * (Large text means `14pt + bold` or `18pt regular`)
+   *
+   * @see https://www.w3.org/TR/WCAG21/#contrast-enhanced
+   */
+  isTextWCAG3CompliantWith(color: Color, largeText: boolean = false) {
+    return this.contrastRatio(color) >= (largeText ? 4.5 : 7);
+  }
+
+  /**
+   * Checks if a non-text UI color contrast is sufficient
+   *
+   * @see https://www.w3.org/TR/WCAG21/#non-text-contrast
+   */
+  isUIWCAGCompliantWith(color: Color) {
+    return this.contrastRatio(color) >= 3;
   }
 
   /**
@@ -194,55 +308,6 @@ export class Color {
   asRGBA() {
     const { red, green, blue, alpha } = this;
     return [red, green, blue, alpha] as const;
-  }
-
-  /**
-   * Sets the lightness of the color (as in HSL), lightness: `∈[0, 1]`
-   */
-  setLightness(lightness: number) {
-    const [h, s] = this.asHSL();
-    const [red, green, blue] = HSLToRGB(h, s, clamp(0, 1, lightness));
-
-    return this.setRGBA(red, green, blue);
-  }
-
-  /**
-   * Lightens a color by a percetage, amount: `∈[0, 1]`
-   *
-   * Works like scaling a color's lightness in SCSS
-   */
-  lighten(amount: number) {
-    const lightness = this.lightness;
-
-    return this.setLightness(lightness + amount * lightness);
-  }
-
-  /**
-   * Darkens a color by a percentage, amount: `∈[0, 1]`
-   */
-  darken(amount: number) {
-    return this.lighten(amount * -1);
-  }
-
-  // tint(amount: number) {
-  //   this.add(Array.from({ length: 3}).map(() => 255 * amount)
-  // }
-
-  /**
-   * Gets the perceptual luminance of a color
-   *
-   * Note: `Color.luminance()` does not take into account alpha
-   *
-   * @see https://www.w3.org/TR/WCAG20-TECHS/G17.html#G17-tests
-   */
-  luminance() {
-    const [red, green, blue] = this.asRGB().map(x => x / 255);
-    const val = (x: number) =>
-      x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4;
-    return (
-      0.2126 * val(red) + 0.7152 * val(green) + 0.0722 * val(blue)
-      // Math.sqrt(0.299 * red ** 2 + 0.587 * green ** 2 + 0.114 * blue ** 2) / 255
-    );
   }
 
   /**

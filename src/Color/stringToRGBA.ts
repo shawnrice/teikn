@@ -42,6 +42,7 @@ const isRGBAColor = (c: string) => {
 
   const matches = c.trim().match(RGBARegex);
 
+  /* istanbul ignore next */
   if (!matches) {
     return false;
   }
