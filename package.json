@@ -1,14 +1,14 @@
 {
   "name": "teikn",
   "version": "0.1.5",
-  "main": "index.js",
+  "main": "lib/index.js",
   "author": "Shawn Patrick Rice",
   "license": "MIT",
   "scripts": {
+    "build": "tsc",
     "test": "jest"
   },
   "dependencies": {
-    "color": "^3.1.2",
     "lodash": "^4.17.15",
     "mkdirp": "^0.5.1"
   },
@@ -18,7 +18,6 @@
     "@babel/plugin-transform-modules-commonjs": "^7.7.0",
     "@babel/preset-env": "^7.7.1",
     "@babel/preset-typescript": "^7.7.2",
-    "@types/color": "^3.0.0",
     "@types/jest": "^24.0.23",
     "@types/lodash": "^4.14.149",
     "@types/mkdirp": "^0.5.2",
