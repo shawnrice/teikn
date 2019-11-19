@@ -1,4 +1,4 @@
-import { Token } from '../Generators/Token';
+import { Token } from '../Token';
 import { Plugin } from './Plugin';
 
 /**

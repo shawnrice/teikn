@@ -1,10 +1,4 @@
-import { Token } from '../Generators/Token';
-
-// export type HasTokenType = { tokenType: string | RegExp };
-
-// export type HasOutputType = { outputType: string | RegExp };
-
-// export type TransformFunction = (token: Token) => Token;
+import { Token } from '../Token';
 
 export abstract class Plugin {
   abstract tokenType: string | RegExp;
