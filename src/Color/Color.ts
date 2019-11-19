@@ -17,7 +17,7 @@ const checkNumberInRange = (
     throw new TypeError(`Must be a number`);
   }
 
-  if (n < lower || n < upper) {
+  if (n < lower || upper < n) {
     throw new TypeError(`Must be between ${lower} and ${upper}`);
   }
 };

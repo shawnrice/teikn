@@ -1,5 +1,6 @@
 import { Color, round, roundHSL } from './Color';
 import { hexToRGB } from './hexToRGB';
+import { HSLToHex } from './HSLToHex';
 import { HSLToRGB } from './HSLToRGB';
 import { RGBToHex } from './RGBToHex';
 import { RGBToHSL } from './RGBToHSL';
@@ -48,8 +49,42 @@ describe('Color tests', () => {
     expect(HSLToRGB(...RGBToHSL(33, 55, 99))).toEqual([33, 55, 99]);
   });
 
+  test('Can set red channel', () => {
+    expect(new Color(0, 0, 0, 1).setRed(255).toString('named')).toBe('red');
+  });
+
+  test('Can set blue channel', () => {
+    expect(new Color(0, 0, 0, 1).setBlue(255).toString('named')).toBe('blue');
+  });
+
+  test('Can set green channel', () => {
+    expect(new Color(0, 0, 0, 1).setGreen(128).toString('named')).toBe('green');
+  });
+
+  test('Can set alpha channel', () => {
+    expect(new Color(0, 0, 0, 0).setAlpha(0.5).toString()).toBe(
+      'rgba(0, 0, 0, 0.5)',
+    );
+  });
+
+  test('HSLToHex works', () => {
+    expect(HSLToHex(0, 0, 0)).toBe('000000');
+  });
+
   test('rgb(black) conversion works', () => {
     expect(new Color('black').toString('hex3')).toEqual('#000');
+  });
+
+  test('Setting Hue works', () => {
+    expect(new Color('green').setHue(200).toString()).toEqual(
+      'rgb(0, 85, 128)',
+    );
+  });
+
+  test('Setting Saturation works', () => {
+    expect(new Color('green').setSaturation(0.5).toString()).toEqual(
+      'rgb(32, 96, 32)',
+    );
   });
 
   test('Setting lightness works', () => {
