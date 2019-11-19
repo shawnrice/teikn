@@ -6,22 +6,19 @@ import { getDate } from '../utils';
 import Generator, { GeneratorOptions } from './Generator';
 
 const defaultOptions = {
-  ext: 'js',
+  ext: 'd.ts',
   nameTransformer: camelCase,
   dateFn: getDate,
 };
-
-const maybeQuote = (val: any) => (typeof val === 'string' ? `'${val}'` : val);
 
 export interface Opts extends GeneratorOptions {
   dateFn?: () => string | null;
   nameTransformer?: (name: string) => string;
 }
 
-export class JS extends Generator<Opts> {
+class TypeScript extends Generator<Opts> {
   constructor(options = {}) {
-    const opts = Object.assign({}, defaultOptions, options);
-    super(opts);
+    super(Object.assign({}, defaultOptions, options));
   }
 
   header() {
@@ -35,6 +32,10 @@ export class JS extends Generator<Opts> {
       ` * This file is generated and should be commited to source control`,
       ` *`,
       ` */`,
+      EOL,
+      `/**`,
+      ` * Design tokens`,
+      ` */`,
     ].join(EOL);
   }
 
@@ -46,7 +47,7 @@ export class JS extends Generator<Opts> {
       token.usage && `   *  ${token.usage}`,
       `   *  Type: ${token.type}`,
       `   */`,
-      `  ${nameTransformer!(token.name)}: ${maybeQuote(token.value)},`,
+      `  ${nameTransformer!(token.name)}: ${typeof token.value},`,
     ]
       .filter(Boolean)
       .join(EOL);
@@ -55,7 +56,7 @@ export class JS extends Generator<Opts> {
   combinator(tokens: Token[]) {
     const values = tokens.map(t => this.generateToken(t));
     return [
-      'module.exports = {',
+      'export const tokens: {',
       values
         .map((token, index, arr) =>
           index === arr.length - 1 ? token.slice(0, -1) : token,
@@ -64,6 +65,10 @@ export class JS extends Generator<Opts> {
       '}',
     ].join(EOL);
   }
+
+  footer() {
+    return `export default tokens;`;
+  }
 }
 
-export default JS;
+export default TypeScript;

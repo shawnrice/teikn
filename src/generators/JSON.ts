@@ -1,5 +1,7 @@
 import camelCase from 'lodash/camelCase';
-import Generator, { GeneratorOptions, Token } from './Generator';
+
+import { Token } from '../Token';
+import Generator, { GeneratorOptions } from './Generator';
 
 const defaultOptions = {
   ext: 'json',
