@@ -24,3 +24,5 @@ export class Teikn {
     console.log(map);
   }
 }
+
+export default Teikn;
