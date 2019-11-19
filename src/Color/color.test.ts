@@ -115,7 +115,7 @@ describe('Color tests', () => {
   });
 
   test('Adding colors works', () => {
-    expect(new Color('white').add('black').toString('hex')).toEqual('#808080');
+    expect(new Color('white').mix('black').toString('hex')).toEqual('#808080');
   });
 
   test('complementing a color works', () => {
@@ -176,5 +176,64 @@ describe('Color tests', () => {
 
   test('calling it with not a color throws', () => {
     expect(() => new Color('i am not a color')).toThrow();
+  });
+
+  test('calling it with a bad rgb value throws', () => {
+    expect(() => new Color('rgb(256, 268, 399)')).toThrow();
+  });
+
+  test('tinting black with white 1 produces white', () => {
+    expect(new Color('black').tint(1).toString('hex')).toBe('#ffffff');
+  });
+
+  test('tinting black with white .5 produces gray', () => {
+    expect(new Color('black').tint(0.5).toString('hex')).toBe('#808080');
+  });
+
+  test('shading a color works', () => {
+    expect(new Color('white').shade(0.5).toString('hex')).toBe('#808080');
+  });
+
+  test('contrast ratio works', () => {
+    expect(new Color('white').contrastRatio(new Color('black'))).toBe(21);
+  });
+
+  test('contrast ratio works 2', () => {
+    expect(
+      round(2, new Color('aliceblue').contrastRatio(new Color('steelblue'))),
+    ).toBe(3.83);
+  });
+
+  test('checks for wcag2 compliance failure', () => {
+    expect(
+      new Color('aliceblue').isTextWCAG2CompliantWith(
+        new Color('steelblue'),
+        false,
+      ),
+    ).toBe(false);
+  });
+
+  test('checks for wcag2 compliance pass', () => {
+    expect(
+      new Color('aliceblue').isTextWCAG2CompliantWith(
+        new Color('steelblue'),
+        true,
+      ),
+    ).toBe(true);
+  });
+
+  test('checks for wgac3 compliance failure', () => {
+    expect(
+      new Color('aliceblue').isTextWCAG3CompliantWith(
+        new Color('steelblue'),
+        true,
+      ),
+    ).toBe(false);
+  });
+
+  test('checks for wcagUI compliance pass', () => {
+    expect(
+      new Color('aliceblue').isUIWCAGCompliantWith(new Color('steelblue')),
+    ).toBe(true);
   });
 });
