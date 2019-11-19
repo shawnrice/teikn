@@ -54,7 +54,7 @@ const isRGBAColor = (c: string) => {
   );
 };
 
-type RGBATuple = [number, number, number, number];
+export type RGBATuple = [number, number, number, number];
 
 export const stringToRGBA = (c: string): RGBATuple => {
   if (Object.keys(namedColors).includes(c.toLowerCase())) {

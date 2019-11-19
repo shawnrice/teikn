@@ -1,10 +1,11 @@
 import { EOL } from 'os';
+
 import { version } from '../../package.json';
-import { Token, TokenTypes, TokenTransformOptions } from './Token';
+import { Plugin } from '../Plugins';
+import { Token } from '../Token';
+import { matches } from '../utils';
 
-export { Token, TokenTypes, TokenTransformOptions };
-
-export interface GeneratorOptions extends TokenTransformOptions {
+export interface GeneratorOptions {
   ext: string;
   filename?: string;
 }
@@ -39,7 +40,9 @@ export class Generator<Opts extends GeneratorOptions = GeneratorOptions> {
       const expected = required[key as RequiredGeneratorOptionNames];
 
       if (type !== expected) {
-        errors.push(`Error: received option ${key} of type ${type}; expected ${expected}.`);
+        errors.push(
+          `Error: received option ${key} of type ${type}; expected ${expected}.`,
+        );
       }
     }
 
@@ -62,6 +65,22 @@ export class Generator<Opts extends GeneratorOptions = GeneratorOptions> {
     return null;
   }
 
+  protected prepareTokens(tokens: Token[], plugins: Plugin[]) {
+    return tokens.map(token =>
+      plugins.reduce((acc, plugin) => {
+        if (!matches(plugin.tokenType, token.type)) {
+          return acc;
+        }
+
+        if (!matches(plugin.outputType, this.options.ext)) {
+          return acc;
+        }
+
+        return plugin.toJSON(acc);
+      }, token),
+    );
+  }
+
   generateToken(_: Token) {
     throw new Error('You need to extend the Generator class');
   }
@@ -70,8 +89,12 @@ export class Generator<Opts extends GeneratorOptions = GeneratorOptions> {
     throw new Error('You need to extend the Generator class');
   }
 
-  generate(tokens: Token[]) {
-    return [this.header(), this.combinator(tokens), this.footer()]
+  generate(tokens: Token[], plugins: Plugin[] = []) {
+    return [
+      this.header(),
+      this.combinator(this.prepareTokens(tokens, plugins)),
+      this.footer(),
+    ]
       .filter(Boolean)
       .join(EOL)
       .trim();

@@ -1,26 +1,18 @@
 import { EOL } from 'os';
+
+import { Token } from '../Token';
 import SCSSGenerator from './SCSS';
-import { Token } from './Generator';
 
 export class SCSSVarsGenerator extends SCSSGenerator {
-  assembleToken({ usage, key, val }: { usage?: string; key: string; val: any }) {
-    // prettier-ignore
-    return [
-      usage && `/// ${usage}`,
-      `$${key}: ${val};`,
-    ]
-  }
-
   generateToken(token: Token) {
-    const { usage, key, val } = this.prepareToken(token);
-
-    return this.assembleToken({ usage, key, val })
+    const { usage, name, value } = token;
+    return [usage && `/// ${usage}`, `$${name}: ${value};`]
       .filter(Boolean)
       .join(EOL);
   }
 
   combinator(tokens: Token[]) {
-    const values = tokens.map(t => this.generateToken(t));
+    const values = tokens.map(token => this.generateToken(token));
 
     return values.join(EOL);
   }

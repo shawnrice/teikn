@@ -1,16 +1,9 @@
-import { EOL } from 'os';
 import kebabCase from 'lodash/kebabCase';
-import Generator, { Token, TokenTypes, GeneratorOptions } from './Generator';
-import { transformValue } from './value-transforms';
+import { EOL } from 'os';
+
+import { Token } from '../Token';
 import { getDate } from '../utils';
-
-const maybeWrap = (val: any, type: TokenTypes) => {
-  if (type === 'font' || type === 'font-family') {
-    return `unquote('#{${val}}')`;
-  }
-
-  return val;
-};
+import Generator, { GeneratorOptions } from './Generator';
 
 const defaultOptions = {
   ext: 'scss',
@@ -29,30 +22,30 @@ class SCSSGenerator extends Generator<Opts> {
     super(opts);
   }
 
-  prepareToken(token: Token) {
-    const { nameTransformer } = this.options;
-    const { name, type, usage } = token;
-    const key = nameTransformer!(name);
-    const val = maybeWrap(transformValue(token, this.options), type);
-
-    return { usage, key, val };
-  }
-
   generateToken(token: Token) {
-    const { usage, key, val } = this.prepareToken(token);
+    const { nameTransformer } = this.options;
+
+    const { usage, value } = token;
+    const key = nameTransformer!(token.name);
 
     // prettier-ignore
     return [
       usage && `  /// ${usage}`,
-      `  ${key}: ${val},`,
+      `  ${key}: ${value},`,
     ]
       .filter(Boolean)
       .join(EOL);
   }
 
   combinator(tokens: Token[]) {
-    const values = tokens.map(t => this.generateToken(t));
-    return [`// prettier-ignore`, `$token-values: (`, values.join(EOL), `);`, EOL].join(EOL);
+    const values = tokens.map(token => this.generateToken(token));
+    return [
+      `// prettier-ignore`,
+      `$token-values: (`,
+      values.join(EOL),
+      `);`,
+      EOL,
+    ].join(EOL);
   }
 
   header(): string | null {
