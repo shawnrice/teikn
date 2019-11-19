@@ -3,3 +3,4 @@ out
 .jest-cache
 .coverage
 .vscode
+.DS_STORE
