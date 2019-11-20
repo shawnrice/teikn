@@ -19,7 +19,7 @@ const Writer = new Teikn({
     new Teikn.plugins.PrefixTypePlugin(),
     new Teikn.plugins.SCSSQuoteValuePlugin(),
   ],
-  outDir: `${__dirname}/`,
+  outDir: `${__dirname}/lib`,
 });
 
 Writer.transform(tokens);
