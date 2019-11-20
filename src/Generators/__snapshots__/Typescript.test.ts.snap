@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`es5 tests it generates things 1`] = `
+exports[`TypeScript generator tests It matches the TypeScript snapshot 1`] = `
 "/**
  * Teikn v0.1.5
  * Generated null

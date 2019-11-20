@@ -16,7 +16,7 @@ export interface Opts extends GeneratorOptions {
   dateFn?: () => string | null;
 }
 
-class SCSSGenerator extends Generator<Opts> {
+export class ScssGenerator extends Generator<Opts> {
   constructor(options = {}) {
     const opts = Object.assign({}, defaultOptions, options);
     super(opts);
@@ -75,4 +75,4 @@ class SCSSGenerator extends Generator<Opts> {
   }
 }
 
-export default SCSSGenerator;
+export default ScssGenerator;

@@ -1,19 +1,19 @@
 import Generator from './Generator';
 import JavaScript from './JavaScript';
 import Json from './Json';
-import SCSS from './Scss';
-import SCSSVars from './ScssVars';
+import Scss from './Scss';
+import ScssVars from './ScssVars';
 import TypeScript from './TypeScript';
 
 export const generators = {
   Generator,
   JavaScript,
-  SCSS,
-  SCSSVars,
+  Scss,
+  ScssVars,
   Json,
   TypeScript,
 };
 
-export { Generator, JavaScript, SCSS, SCSSVars, Json, TypeScript };
+export { Generator, JavaScript, Scss, ScssVars, Json, TypeScript };
 
 export default generators;

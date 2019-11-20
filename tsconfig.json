@@ -3,7 +3,7 @@
     /* Basic Options */
     "incremental": true,
     "target": "ES2015",
-    "module": "es2015",
+    "module": "commonjs",
     "resolveJsonModule": true,
     "lib": [
       "scripthost",
