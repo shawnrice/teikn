@@ -26,9 +26,7 @@ export type RequiredGeneratorOptions = {
 
 export type RequiredGeneratorOptionNames = keyof RequiredGeneratorOptions;
 
-export abstract class Generator<
-  Opts extends GeneratorOptions = GeneratorOptions
-> {
+export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions> {
   options: Opts;
 
   constructor(opts: Opts) {
@@ -52,9 +50,7 @@ export abstract class Generator<
       const expected = required[key as RequiredGeneratorOptionNames];
 
       if (type !== expected) {
-        errors.push(
-          `Error: received option ${key} of type ${type}; expected ${expected}.`,
-        );
+        errors.push(`Error: received option ${key} of type ${type}; expected ${expected}.`);
       }
     }
 
@@ -98,11 +94,7 @@ export abstract class Generator<
   abstract combinator(_: Token[]): string;
 
   generate(tokens: Token[], plugins: Plugin[] = []) {
-    return [
-      this.header(),
-      this.combinator(this.prepareTokens(tokens, plugins)),
-      this.footer(),
-    ]
+    return [this.header(), this.combinator(this.prepareTokens(tokens, plugins)), this.footer()]
       .filter(Boolean)
       .join(EOL)
       .trim();

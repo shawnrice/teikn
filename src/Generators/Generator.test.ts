@@ -17,12 +17,13 @@ describe('Generator base class tests', () => {
 
   test('It throws when you do not extend it for generate', () => {
     expect(() => {
-      const g = new Generator({ ext: 'test' });
-      g.generate([]);
+      // @ts-ignore: this is an error test
+      new Generator({ ext: 'test' }).generate([]);
     }).toThrow();
   });
 
   test('It create the correct filename', () => {
+    // @ts-ignore: this is an error test
     expect(new Generator({ ext: 'test' }).file).toBe('tokens.test');
   });
 });

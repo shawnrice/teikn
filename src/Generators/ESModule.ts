@@ -6,7 +6,7 @@ import { getDate } from '../utils';
 import Generator, { GeneratorOptions } from './Generator';
 
 const defaultOptions = {
-  ext: 'js',
+  ext: 'mjs',
   nameTransformer: camelCase,
   dateFn: getDate,
 };
@@ -18,10 +18,12 @@ export interface Opts extends GeneratorOptions {
   nameTransformer?: (name: string) => string;
 }
 
-export class JavaScript extends Generator<Opts> {
+/**
+ * Generates tokens as an ES Module
+ */
+export class ESModules extends Generator<Opts> {
   constructor(options = {}) {
-    const opts = Object.assign({}, defaultOptions, options);
-    super(opts);
+    super(Object.assign({}, defaultOptions, options));
   }
 
   header() {
@@ -54,16 +56,10 @@ export class JavaScript extends Generator<Opts> {
 
   combinator(tokens: Token[]) {
     const values = tokens.map(t => this.generateToken(t));
-    return [
-      'const tokens = {',
-      values
-        .map((token, index, arr) => (index === arr.length - 1 ? token.slice(0, -1) : token))
-        .join(EOL),
-      '};',
+    return ['export const tokens = {', values.join(EOL), '};', EOL, `export default tokens;`].join(
       EOL,
-      `module.exports = { tokens: tokens, default: tokens };`,
-    ].join(EOL);
+    );
   }
 }
 
-export default JavaScript;
+export default ESModules;

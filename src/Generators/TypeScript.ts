@@ -66,9 +66,7 @@ export class TypeScript extends Generator<TypeScriptOpts> {
     return [
       'export const tokens: {',
       values
-        .map((token, index, arr) =>
-          index === arr.length - 1 ? token.slice(0, -1) : token,
-        )
+        .map((token, index, arr) => (index === arr.length - 1 ? token.slice(0, -1) : token))
         .join(EOL),
       '}',
     ].join(EOL);

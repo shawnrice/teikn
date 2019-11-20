@@ -18,7 +18,7 @@ export interface Opts extends GeneratorOptions {
   nameTransformer?: (name: string) => string;
 }
 
-export class JS extends Generator<Opts> {
+export class JavaScript extends Generator<Opts> {
   constructor(options = {}) {
     const opts = Object.assign({}, defaultOptions, options);
     super(opts);
@@ -57,9 +57,7 @@ export class JS extends Generator<Opts> {
     return [
       'const tokens = {',
       values
-        .map((token, index, arr) =>
-          index === arr.length - 1 ? token.slice(0, -1) : token,
-        )
+        .map((token, index, arr) => (index === arr.length - 1 ? token.slice(0, -1) : token))
         .join(EOL),
       '};',
       EOL,
@@ -68,4 +66,4 @@ export class JS extends Generator<Opts> {
   }
 }
 
-export default JS;
+export default JavaScript;

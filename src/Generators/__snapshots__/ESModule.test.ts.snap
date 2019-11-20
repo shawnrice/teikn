@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`TypeScript generator tests It matches the TypeScript snapshot 1`] = `
+exports[`ESModule tests it generates tokens as an esmodule 1`] = `
 "/**
  * Teikn v1.0.0-alpha
  * Generated null
@@ -8,22 +8,19 @@ exports[`TypeScript generator tests It matches the TypeScript snapshot 1`] = `
  * This file is generated and should be commited to source control
  *
  */
-
-
-/**
- * Design tokens
- */
-export const tokens: {
+export const tokens = {
   /**
    *  Use for body fonts
    *  Type: font-family
    */
-  body: string,
+  body: '\\"Roboto Condensed\\", Arial, sans',
   /**
    *  the primary branding color
    *  Type: color
    */
-  primary: string
-}
+  primary: 'aliceblue',
+};
+
+
 export default tokens;"
 `;

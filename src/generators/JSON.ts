@@ -8,11 +8,11 @@ const defaultOptions = {
   nameTransformer: camelCase,
 };
 
-export interface Opts extends GeneratorOptions {
+export interface JsonOpts extends GeneratorOptions {
   nameTransformer?: (name: string) => string;
 }
 
-class JSONGenerator extends Generator<Opts> {
+export class Json extends Generator<JsonOpts> {
   constructor(options = {}) {
     const opts = Object.assign({}, defaultOptions, options);
     super(opts);
@@ -36,4 +36,4 @@ class JSONGenerator extends Generator<Opts> {
   }
 }
 
-export default JSONGenerator;
+export default Json;

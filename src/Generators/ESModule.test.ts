@@ -1,8 +1,8 @@
 import { default as tokenSet1 } from '../fixtures/tokenSet1';
-import Generator from './JavaScript';
+import Generator from './ESModule';
 
-describe('es5 tests', () => {
-  test('it generates things', () => {
+describe('ESModule tests', () => {
+  test('it generates tokens as an esmodule', () => {
     expect(new Generator({ dateFn: () => 'null' }).generate(tokenSet1)).toMatchSnapshot();
   });
 });

@@ -7,8 +7,6 @@ describe('SCSS Vars Generator tests', () => {
   });
 
   test('It generates the token set', () => {
-    expect(
-      new Generator({ dateFn: () => 'null' }).generate(tokenSet1),
-    ).toMatchSnapshot();
+    expect(new Generator({ dateFn: () => 'null' }).generate(tokenSet1)).toMatchSnapshot();
   });
 });

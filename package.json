@@ -1,15 +1,16 @@
 {
   "name": "teikn",
-  "version": "0.1.5",
+  "version": "1.0.0-alpha",
   "main": "lib/Teikn.js",
   "author": "Shawn Patrick Rice",
   "license": "MIT",
   "scripts": {
+    "cli": "ts-node src/cli.ts",
     "build": "tsc",
     "test": "jest"
   },
   "dependencies": {
-    "lodash": "^4.17.15",
+    "lodash": "^4.0.0",
     "mkdirp": "^0.5.1"
   },
   "devDependencies": {
@@ -29,6 +30,7 @@
     "jest": "^24.9.0",
     "prettier": "^1.19.1",
     "pretty-quick": "^2.0.1",
+    "ts-node": "^8.5.2",
     "typescript": "^3.7.2"
   },
   "engines": {
