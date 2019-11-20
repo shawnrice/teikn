@@ -1,6 +1,6 @@
 {
-  "name": "@shawnrice/teikn",
-  "version": "1.0.0-alpha",
+  "name": "teikn",
+  "version": "1.0.0-alpha.3",
   "description": "Elegant form handling for React -- contains fields",
   "keywords": [
     "design",
@@ -13,11 +13,6 @@
   },
   "license": "MIT",
   "author": "Shawn Patrick Rice <rice@shawnrice.org>",
-  "files": [
-    "lib",
-    "README.md",
-    "package.json"
-  ],
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "bin": {
@@ -31,7 +26,7 @@
     "build": "tsc",
     "format": "prettier --write 'src/**/*.{json,ts,md}' './*.{js|json}'",
     "lint": "eslint --ext .ts -c .eslintrc.js './src/**/*.ts'",
-    "prepublish": "tsc",
+    "prepublishOnly": "tsc",
     "test": "jest"
   },
   "dependencies": {
