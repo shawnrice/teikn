@@ -1,0 +1,12 @@
+__mocks__
+.*
+*.ts
+example/
+jest.config.js
+prettier.config.js
+src
+tsconfig.*
+yarn-error.log
+# Make sure we whitelist the built files
+!lib/**/*
+lib/tsconfig.tsbuildinfo
