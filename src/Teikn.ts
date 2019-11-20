@@ -10,9 +10,24 @@ const plugins = { ColorTransformPlugin, PrefixTypePlugin, SCSSQuoteValuePlugin }
 const generators = { ESModule, JavaScript, Json, Scss, ScssVars, TypeScript };
 
 export interface TeiknOptions {
-  generators: Generator[];
-  plugins: Plugin[];
-  outDir: string;
+  /**
+   * The generators that you want to use
+   *
+   * default: `[new Teikn.generators.Json()]`
+   */
+  generators?: Generator[];
+  /**
+   * The plugins that you want to use
+   *
+   * default: `[]`
+   */
+  plugins?: Plugin[];
+  /**
+   * The directory to output the files
+   *
+   * defaults to `process.cwd()`
+   */
+  outDir?: string;
 }
 
 export class Teikn {
@@ -31,10 +46,10 @@ export class Teikn {
   static Generator = Generator;
 
   constructor(options: TeiknOptions) {
-    const { generators = [], outDir = './', plugins = [] } = options;
-    this.generators = generators;
-    this.plugins = plugins;
-    this.outDir = outDir;
+    const { generators, outDir, plugins } = options;
+    this.generators = generators || [new Teikn.generators.Json()];
+    this.plugins = plugins || [];
+    this.outDir = outDir || process.cwd();
   }
 
   async transform(tokens: Token[]) {
