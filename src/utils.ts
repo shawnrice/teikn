@@ -32,5 +32,3 @@ export const getDate = () => {
   ].join(':');
   return `${date} ${time}`;
 };
-
-export default getDate;

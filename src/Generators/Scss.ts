@@ -11,12 +11,12 @@ const defaultOptions = {
   dateFn: getDate,
 };
 
-export interface Opts extends GeneratorOptions {
+export interface ScssOpts extends GeneratorOptions {
   nameTransformer?: (name: string) => string;
   dateFn?: () => string | null;
 }
 
-export class ScssGenerator extends Generator<Opts> {
+export class Scss extends Generator<ScssOpts> {
   constructor(options = {}) {
     const opts = Object.assign({}, defaultOptions, options);
     super(opts);
@@ -39,13 +39,7 @@ export class ScssGenerator extends Generator<Opts> {
 
   combinator(tokens: Token[]) {
     const values = tokens.map(token => this.generateToken(token));
-    return [
-      `// prettier-ignore`,
-      `$token-values: (`,
-      values.join(EOL),
-      `);`,
-      EOL,
-    ].join(EOL);
+    return [`// prettier-ignore`, `$token-values: (`, values.join(EOL), `);`, EOL].join(EOL);
   }
 
   header(): string | null {
@@ -75,4 +69,4 @@ export class ScssGenerator extends Generator<Opts> {
   }
 }
 
-export default ScssGenerator;
+export default Scss;

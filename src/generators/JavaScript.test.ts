@@ -3,8 +3,6 @@ import Generator from './JavaScript';
 
 describe('es5 tests', () => {
   test('it generates things', () => {
-    expect(
-      new Generator({ dateFn: () => 'null' }).generate(tokenSet1),
-    ).toMatchSnapshot();
+    expect(new Generator({ dateFn: () => 'null' }).generate(tokenSet1)).toMatchSnapshot();
   });
 });

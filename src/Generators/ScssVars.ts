@@ -1,14 +1,12 @@
 import { EOL } from 'os';
 
 import { Token } from '../Token';
-import ScssGenerator from './Scss';
+import Scss from './Scss';
 
-export class ScssVarsGenerator extends ScssGenerator {
+export class ScssVars extends Scss {
   generateToken(token: Token) {
     const { usage, name, value } = token;
-    return [usage && `/// ${usage}`, `$${name}: ${value};`]
-      .filter(Boolean)
-      .join(EOL);
+    return [usage && `/// ${usage}`, `$${name}: ${value};`].filter(Boolean).join(EOL);
   }
 
   combinator(tokens: Token[]) {
@@ -22,4 +20,4 @@ export class ScssVarsGenerator extends ScssGenerator {
   }
 }
 
-export default SCSSVarsGenerator;
+export default ScssVars;

@@ -2,7 +2,7 @@
   "compilerOptions": {
     /* Basic Options */
     "incremental": true,
-    "target": "ES2015",
+    "target": "es2017",
     "module": "commonjs",
     "resolveJsonModule": true,
     "lib": [
@@ -14,9 +14,9 @@
     "sourceMap": true /* Generates corresponding '.map' file. */,
     "outDir": "./lib" /* Redirect output structure to the directory. */,
     "composite": true /* Enable project compilation */,
-    "removeComments": true /* Do not emit comments to output. */,
+    "removeComments": false /* Do not emit comments to output. */,
     // "noEmit": true,                        /* Do not emit outputs. */
-    "importHelpers": false /* Import emit helpers from 'tslib'. */,
+    "importHelpers": true /* Import emit helpers from 'tslib'. */,
     "downlevelIteration": false,
 
     /* Strict Type-Checking Options */
