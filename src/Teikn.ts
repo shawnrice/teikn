@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
+import { ensureDirectory } from './ensure-directory';
 import { Generator, generators } from './Generators';
 import * as plugins from './Plugins';
 import { Token } from './Token';
@@ -37,16 +38,22 @@ export class Teikn {
       map.set(generator, generator.generate(tokens, this.plugins));
     });
 
-    this.generators.forEach(generator => {
-      const filename = path.resolve(this.outDir, generator.file);
-      fs.writeFile(filename, map.get(generator), err => {
-        if (err) {
-          console.error(err);
-        } else {
-          console.log(`Wrote ${filename}`);
-        }
+    ensureDirectory(this.outDir)
+      .then(() => {
+        this.generators.forEach(generator => {
+          const filename = path.resolve(this.outDir, generator.file);
+          fs.writeFile(filename, map.get(generator), err => {
+            if (err) {
+              console.error(err);
+            } else {
+              console.log(`Wrote ${filename}`);
+            }
+          });
+        });
+      })
+      .catch(err => {
+        console.error(err);
       });
-    });
   }
 }
 
