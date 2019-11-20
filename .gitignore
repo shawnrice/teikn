@@ -2,3 +2,8 @@ node_modules
 out
 .jest-cache
 .coverage
+.vscode
+lib
+.cache
+.DS_Store
+yarn-error.log

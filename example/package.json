@@ -1,0 +1,15 @@
+{
+  "name": "example-teikn-usage",
+  "version": "1.0.0",
+  "description": "Design tokens in one place",
+  "main": "tokens.js",
+  "module": "tokens.esm.js",
+  "typings": "tokens.d.ts",
+  "scripts": {
+    "generate": "node example-usage.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "private": true
+}

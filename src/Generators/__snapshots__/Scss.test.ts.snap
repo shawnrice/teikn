@@ -1,0 +1,28 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`SCSSGenerator tests It generates the token set 1`] = `
+"///
+/// Teikn v1.0.0-alpha
+/// Generated null
+///
+/// This file is generated and should be commited to source control
+///
+
+
+// prettier-ignore
+$token-values: (
+  /// Use for body fonts
+  font-family-body: unquote('#{\\"Roboto Condensed\\", Arial, sans}'),
+  /// the primary branding color
+  color-primary: rgba(240, 248, 255, 1),
+);
+
+
+/// Use \\"get-token\\" to access tokens by name
+@function get-token($name) {
+  @if (not map-has-key($token-values, $name)) {
+    @error \\"Token '#{$name}' does not exist.\\";
+  }
+  @return map-get($token-values, $name);
+}"
+`;
