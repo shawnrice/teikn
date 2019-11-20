@@ -1,5 +1,5 @@
 import { default as tokenSet1 } from '../fixtures/tokenSet1';
-import Generator from './SCSS-vars';
+import Generator from './ScssVars';
 
 describe('SCSS Vars Generator tests', () => {
   test('It has the correct filename', () => {

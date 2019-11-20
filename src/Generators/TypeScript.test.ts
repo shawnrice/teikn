@@ -1,5 +1,5 @@
 import { default as tokenSet1 } from '../fixtures/tokenSet1';
-import Generator from './JS';
+import Generator from './TypeScript';
 
 describe('es5 tests', () => {
   test('it generates things', () => {
