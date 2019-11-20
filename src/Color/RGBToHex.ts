@@ -4,7 +4,7 @@ export const RGBToHex = (
   red: number,
   green: number,
   blue: number,
-  preferShort: boolean = false,
+  preferShort = false,
 ) => {
   const initial = [red, green, blue].map(x => x.toString(16)).map(pad0);
 

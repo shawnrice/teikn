@@ -1,6 +1,3 @@
-export type NamedColor = keyof typeof namedColors;
-export type NamedColorValue = keyof typeof namedColorsByValue;
-
 /**
  * @see https://www.w3schools.com/colors/colors_hex.asp
  */
@@ -174,3 +171,7 @@ const invert = <T extends Record<string, string>>(obj: T) =>
   }, {} as Invert<T>);
 
 export const namedColorsByValue = invert(namedColors);
+
+export type NamedColor = keyof typeof namedColors;
+
+export type NamedColorValue = keyof typeof namedColorsByValue;

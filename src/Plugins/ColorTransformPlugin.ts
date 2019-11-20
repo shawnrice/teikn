@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-useless-constructor */
 import { Color } from '../Color';
 import { Token } from '../Token';
 import { Plugin } from './Plugin';
