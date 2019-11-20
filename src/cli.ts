@@ -14,8 +14,6 @@ const processArgv = () => {
   return { caller, command, args };
 };
 
-console.log(processArgv());
-
 const { command, args } = processArgv();
 
 const signature = () => `Teikn v${version}`;
@@ -160,6 +158,9 @@ const generateTokens = async () => {
     outDir,
   });
 
+  banner();
+  console.log('Using generators', generators.map(f => f.name).join(', '));
+  console.log('Using plugins', plugins.map(f => f.name).join(', '));
   console.log(`Writing tokens to directory: ${outDir}`);
   writer.transform(tokens);
 };
