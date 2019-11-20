@@ -1,16 +1,16 @@
 const { Teikn } = require('..');
-console.log(Teikn);
-console.log(Teikn.generators);
-console.log(Teikn.plugins);
-console.log(Teikn.generators.SCSS);
-const tokens = [{ name: 'test', value: 'red', type: 'color', usage: 'TODO' }];
+const { tokens } = require('./raw-tokens');
 
 const Writer = new Teikn({
   generators: [
+    // Create the tokens.scss with the SCSS maps and the getter
     new Teikn.generators.SCSS(),
-    new Teikn.generators.SCSSVars(),
+    // Create a version of the tokens in SCSS just as variables (but name it differently)
+    new Teikn.generators.SCSSVars({ filename: 'tokens-vars' }),
     // Teikn.generators.SCSSCSSVars(),
     // Teikn.generators.ESM(),
+    new Teikn.generators.JavaScript(),
+    // Create the TypeScript types
     new Teikn.generators.TypeScript(),
     new Teikn.generators.Json(),
   ],
@@ -19,7 +19,7 @@ const Writer = new Teikn({
     new Teikn.plugins.PrefixTypePlugin(),
     new Teikn.plugins.SCSSQuoteValuePlugin(),
   ],
-  outDir: './tokens',
+  outDir: `${__dirname}/`,
 });
 
 Writer.transform(tokens);
