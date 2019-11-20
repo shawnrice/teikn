@@ -21,7 +21,7 @@ export interface ESModuleOpts extends GeneratorOptions {
 /**
  * Generates tokens as an ES Module
  */
-export class ESModules extends Generator<ESModuleOpts> {
+export class ESModule extends Generator<ESModuleOpts> {
   constructor(options = {}) {
     super(Object.assign({}, defaultOptions, options));
   }
@@ -62,4 +62,4 @@ export class ESModules extends Generator<ESModuleOpts> {
   }
 }
 
-export default ESModules;
+export default ESModule;
