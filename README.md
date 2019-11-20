@@ -5,7 +5,7 @@ Generates design tokens
 ## Tokens
 
 ```typescript
-interface token {
+interface Token {
   /**
    * The full name of the token
    */
