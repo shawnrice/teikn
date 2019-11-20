@@ -37,7 +37,7 @@ export class Teikn {
     this.outDir = outDir;
   }
 
-  transform(tokens: Token[]) {
+  async transform(tokens: Token[]) {
     const map = new Map<Generator, string>();
 
     // Go ahead and generate the file contents before trying to write anything
@@ -45,17 +45,17 @@ export class Teikn {
       map.set(generator, generator.generate(tokens, this.plugins));
     });
 
+    // TODO clean this up, remove sync but still ensure the process runs until the file is written
     ensureDirectory(this.outDir)
       .then(() => {
         this.generators.forEach(generator => {
           const filename = path.resolve(this.outDir, generator.file);
-          fs.writeFile(filename, map.get(generator), err => {
-            if (err) {
-              console.error(err);
-            } else {
-              console.log(`Wrote ${filename}`);
-            }
-          });
+          try {
+            fs.writeFileSync(filename, map.get(generator));
+            console.log(`Wrote ${filename}`);
+          } catch (err) {
+            console.error(`Error writing ${filename}`);
+          }
         });
       })
       .catch(err => {
