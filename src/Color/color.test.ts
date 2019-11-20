@@ -40,9 +40,7 @@ describe('Color tests', () => {
   });
 
   test('Color("aliceblue") can convert to HSLA', () => {
-    expect(new Color('aliceblue').toString('hsla')).toBe(
-      'hsla(208, 100%, 97%, 1)',
-    );
+    expect(new Color('aliceblue').toString('hsla')).toBe('hsla(208, 100%, 97%, 1)');
   });
 
   test('RGBToHSL -> HSLToRGB is non-destructive', () => {
@@ -62,9 +60,7 @@ describe('Color tests', () => {
   });
 
   test('Can set alpha channel', () => {
-    expect(new Color(0, 0, 0, 0).setAlpha(0.5).toString()).toBe(
-      'rgba(0, 0, 0, 0.5)',
-    );
+    expect(new Color(0, 0, 0, 0).setAlpha(0.5).toString()).toBe('rgba(0, 0, 0, 0.5)');
   });
 
   test('HSLToHex works', () => {
@@ -76,15 +72,11 @@ describe('Color tests', () => {
   });
 
   test('Setting Hue works', () => {
-    expect(new Color('green').setHue(200).toString()).toEqual(
-      'rgb(0, 85, 128)',
-    );
+    expect(new Color('green').setHue(200).toString()).toEqual('rgb(0, 85, 128)');
   });
 
   test('Setting Saturation works', () => {
-    expect(new Color('green').setSaturation(0.5).toString()).toEqual(
-      'rgb(32, 96, 32)',
-    );
+    expect(new Color('green').setSaturation(0.5).toString()).toEqual('rgb(32, 96, 32)');
   });
 
   test('Setting lightness works', () => {
@@ -234,41 +226,28 @@ describe('Color tests', () => {
   });
 
   test('contrast ratio works 2', () => {
-    expect(
-      round(2, new Color('aliceblue').contrastRatio(new Color('steelblue'))),
-    ).toBe(3.83);
+    expect(round(2, new Color('aliceblue').contrastRatio(new Color('steelblue')))).toBe(3.83);
   });
 
   test('checks for wcag2 compliance failure', () => {
-    expect(
-      new Color('aliceblue').isTextWCAG2CompliantWith(
-        new Color('steelblue'),
-        false,
-      ),
-    ).toBe(false);
+    expect(new Color('aliceblue').isTextWCAG2CompliantWith(new Color('steelblue'), false)).toBe(
+      false,
+    );
   });
 
   test('checks for wcag2 compliance pass', () => {
-    expect(
-      new Color('aliceblue').isTextWCAG2CompliantWith(
-        new Color('steelblue'),
-        true,
-      ),
-    ).toBe(true);
+    expect(new Color('aliceblue').isTextWCAG2CompliantWith(new Color('steelblue'), true)).toBe(
+      true,
+    );
   });
 
   test('checks for wgac3 compliance failure', () => {
-    expect(
-      new Color('aliceblue').isTextWCAG3CompliantWith(
-        new Color('steelblue'),
-        true,
-      ),
-    ).toBe(false);
+    expect(new Color('aliceblue').isTextWCAG3CompliantWith(new Color('steelblue'), true)).toBe(
+      false,
+    );
   });
 
   test('checks for wcagUI compliance pass', () => {
-    expect(
-      new Color('aliceblue').isUIWCAGCompliantWith(new Color('steelblue')),
-    ).toBe(true);
+    expect(new Color('aliceblue').isUIWCAGCompliantWith(new Color('steelblue'))).toBe(true);
   });
 });
