@@ -5,8 +5,11 @@
   "types": "lib/index.d.ts",
   "author": "Shawn Patrick Rice",
   "license": "MIT",
+  "bin": {
+    "teikn": "./lib/src/cli.js"
+  },
   "scripts": {
-    "cli": "ts-node src/cli.ts",
+    "cli": "teikn",
     "lint": "eslint --ext .ts -c .eslintrc.js './src/**/*.ts'",
     "build": "tsc",
     "test": "jest"
