@@ -26,7 +26,7 @@
     "build": "tsc",
     "format": "prettier --write 'src/**/*.{json,ts,md}' './*.{js|json}'",
     "lint": "eslint --ext .ts -c .eslintrc.js './src/**/*.ts'",
-    "prepublish": "tsc",
+    "prepublishOnly": "tsc",
     "test": "jest"
   },
   "dependencies": {
