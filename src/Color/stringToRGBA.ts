@@ -65,7 +65,7 @@ export const stringToRGBA = (c: string): RGBATuple => {
   }
 
   if (isRGBColor(c)) {
-    const [, r, g, b] = c
+    const [r, g, b] = c
       .match(RGBRegex)!
       .slice(1)
       .map(parseInt10);
