@@ -1,9 +1,9 @@
 import { EOL } from 'os';
 
 import { Token } from '../Token';
-import SCSSGenerator from './SCSS';
+import ScssGenerator from './Scss';
 
-export class SCSSVarsGenerator extends SCSSGenerator {
+export class ScssVarsGenerator extends ScssGenerator {
   generateToken(token: Token) {
     const { usage, name, value } = token;
     return [usage && `/// ${usage}`, `$${name}: ${value};`]

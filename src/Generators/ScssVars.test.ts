@@ -8,10 +8,7 @@ describe('SCSS Vars Generator tests', () => {
 
   test('It generates the token set', () => {
     expect(
-      new Generator({ dateFn: () => 'null', color: 'RGBA' }).generate(
-        tokenSet1,
-      ),
+      new Generator({ dateFn: () => 'null' }).generate(tokenSet1),
     ).toMatchSnapshot();
-    // expect(input).toBe(value);
   });
 });

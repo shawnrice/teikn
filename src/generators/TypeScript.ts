@@ -11,12 +11,20 @@ const defaultOptions = {
   dateFn: getDate,
 };
 
-export interface Opts extends GeneratorOptions {
+export interface TypeScriptOpts extends GeneratorOptions {
+  /**
+   * The function to get the build date
+   */
   dateFn?: () => string | null;
+  /**
+   * The function to transform the name of the token
+   *
+   * default: `camelCase`
+   */
   nameTransformer?: (name: string) => string;
 }
 
-class TypeScript extends Generator<Opts> {
+export class TypeScript extends Generator<TypeScriptOpts> {
   constructor(options = {}) {
     super(Object.assign({}, defaultOptions, options));
   }

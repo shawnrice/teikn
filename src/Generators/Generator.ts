@@ -5,18 +5,30 @@ import { Plugin } from '../Plugins';
 import { Token } from '../Token';
 import { matches } from '../utils';
 
-export interface GeneratorOptions {
+export type GeneratorOptions = {
+  /**
+   * The extension for the file
+   *
+   * (this is usually set when the Generator is extended)
+   */
   ext: string;
+  /**
+   * The basename for the file
+   *
+   * default: `tokens`
+   */
   filename?: string;
-}
+};
 
-export interface RequiredGeneratorOptions {
+export type RequiredGeneratorOptions = {
   ext: string;
-}
+};
 
 export type RequiredGeneratorOptionNames = keyof RequiredGeneratorOptions;
 
-export class Generator<Opts extends GeneratorOptions = GeneratorOptions> {
+export abstract class Generator<
+  Opts extends GeneratorOptions = GeneratorOptions
+> {
   options: Opts;
 
   constructor(opts: Opts) {
@@ -81,13 +93,9 @@ export class Generator<Opts extends GeneratorOptions = GeneratorOptions> {
     );
   }
 
-  generateToken(_: Token) {
-    throw new Error('You need to extend the Generator class');
-  }
+  abstract generateToken(_: Token): any;
 
-  combinator(_: Token[]) {
-    throw new Error('You need to extend the Generator class');
-  }
+  abstract combinator(_: Token[]): string;
 
   generate(tokens: Token[], plugins: Plugin[] = []) {
     return [
