@@ -1,16 +1,37 @@
 {
   "name": "teikn",
   "version": "1.0.0-alpha",
+  "description": "Elegant form handling for React -- contains fields",
+  "keywords": [
+    "design",
+    "design tokens",
+    "design-systems"
+  ],
+  "homepage": "https://github.com/shawnrice/teikn#readme",
+  "bugs": {
+    "url": "https://github.com/shawnrice/teikn/issues"
+  },
   "license": "MIT",
-  "author": "Shawn Patrick Rice",
+  "author": "Shawn Patrick Rice <rice@shawnrice.org>",
+  "files": [
+    "lib",
+    "README.md",
+    "package.json"
+  ],
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "bin": {
     "teikn": "./lib/src/cli.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shawnrice/teikn.git"
+  },
   "scripts": {
     "build": "tsc",
+    "format": "prettier --write 'src/**/*.{json,ts,md}' './*.{js|json}'",
     "lint": "eslint --ext .ts -c .eslintrc.js './src/**/*.ts'",
+    "prepublish": "tsc",
     "test": "jest"
   },
   "dependencies": {
@@ -47,6 +68,17 @@
   },
   "engines": {
     "node": ">=8.3.0"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "pretty-quick --staged"
+    }
+  },
+  "lint-staged": {
+    "*.{ts,json,md}": [
+      "prettier --write",
+      "git add"
+    ]
   },
   "resolutions": {
     "mixin-deep": "^1.3.2",

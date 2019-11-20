@@ -49,9 +49,7 @@ const isRGBAColor = (c: string) => {
 
   const [, r, g, b, a] = matches;
 
-  return (
-    [r, g, b].map(parseInt10).every(isHexRange) && isPercentRange(parseFloat(a))
-  );
+  return [r, g, b].map(parseInt10).every(isHexRange) && isPercentRange(parseFloat(a));
 };
 
 export type RGBATuple = [number, number, number, number];
