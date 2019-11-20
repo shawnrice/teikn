@@ -2,7 +2,7 @@
 
 exports[`es5 tests it generates things 1`] = `
 "/**
- * Teikn v1.0.0-alpha
+ * Teikn v1.0.0-alpha.2
  * Generated null
  *
  * This file is generated and should be commited to source control
