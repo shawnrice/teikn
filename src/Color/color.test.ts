@@ -67,6 +67,10 @@ describe('Color tests', () => {
     expect(HSLToHex(0, 0, 0)).toBe('000000');
   });
 
+  test('stringToRGBA works with an rgb string', () => {
+    expect(stringToRGBA('rgb(55, 95, 155)')).toEqual([55, 95, 155, 1]);
+  });
+
   test('rgb(black) conversion works', () => {
     expect(new Color('black').toString('hex3')).toEqual('#000');
   });
