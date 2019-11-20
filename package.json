@@ -1,7 +1,8 @@
 {
   "name": "teikn",
   "version": "1.0.0-alpha",
-  "main": "lib/Teikn.js",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "author": "Shawn Patrick Rice",
   "license": "MIT",
   "scripts": {
