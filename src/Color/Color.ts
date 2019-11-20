@@ -4,13 +4,9 @@ import { RGBToHex } from './RGBToHex';
 import { RGBToHSL } from './RGBToHSL';
 import { stringToRGBA } from './stringToRGBA';
 
-const clamp = (min: number, max: number, n: number) =>
-  Math.min(Math.max(n, min), max);
+const clamp = (min: number, max: number, n: number) => Math.min(Math.max(n, min), max);
 
-const checkNumberInRange = (
-  bounds: { lower: number; upper: number },
-  n: number,
-) => {
+const checkNumberInRange = (bounds: { lower: number; upper: number }, n: number) => {
   const { lower, upper } = bounds;
 
   if (typeof n !== 'number') {
@@ -32,8 +28,7 @@ const ensureHex = (c: number) => {
   return c;
 };
 
-export const round = (digits: number, n: number) =>
-  Math.round(n * 10 ** digits) / 10 ** digits;
+export const round = (digits: number, n: number) => Math.round(n * 10 ** digits) / 10 ** digits;
 
 export const roundArray = (nums: number[]) => (arr: number[]) =>
   arr.map((v, i) => round(nums[i], v));
@@ -66,11 +61,7 @@ export class Color {
       return this;
     }
 
-    if (
-      typeof r === 'number' &&
-      typeof g === 'number' &&
-      typeof b === 'number'
-    ) {
+    if (typeof r === 'number' && typeof g === 'number' && typeof b === 'number') {
       this.red = r;
       this.green = g;
       this.blue = b;
@@ -109,9 +100,26 @@ export class Color {
     return this;
   }
 
+  invert() {
+    const [r, g, b] = this.asRGB();
+    return this.setRGBA(0xff ^ r, 0xff ^ g, 0xff ^ b);
+  }
+
   get hue() {
     const [hue] = this.asHSL();
     return hue;
+  }
+
+  set hue(val: number) {
+    const [, s, l] = this.asHSL();
+    const hue = clamp(0, 360, val);
+    const [r, g, b] = HSLToRGB(hue, s, l);
+    this.setRGBA(r, g, b);
+  }
+
+  setHue(hue: number) {
+    this.hue = hue;
+    return this;
   }
 
   rotateHue(degrees: number) {
@@ -123,26 +131,9 @@ export class Color {
     return this.rotateHue(180);
   }
 
-  invert() {
-    const [r, g, b] = this.asRGB();
-    return this.setRGBA(0xff ^ r, 0xff ^ g, 0xff ^ b);
-  }
-
-  set hue(val: number) {
-    const [, s, l] = this.asHSL();
-    const hue = clamp(0, 360, val);
-    const [r, g, b] = HSLToRGB(hue, s, l);
-    this.setRGBA(r, g, b);
-  }
-
   get saturation() {
     const [, saturation] = this.asHSL();
     return saturation;
-  }
-
-  setHue(hue: number) {
-    this.hue = hue;
-    return this;
   }
 
   set saturation(val: number) {
@@ -177,20 +168,6 @@ export class Color {
   }
 
   /**
-   * Adds one color to another by averaging their [`r`, `g`, `b`, `a`] components
-   */
-  mix(color: Color | string) {
-    const c = color instanceof Color ? color : new Color(color);
-    const otherRGBA = c.asRGBA();
-    const [r, g, b, a] = [...this.asRGBA()].reduce(
-      (acc, val, index) => [...acc, Math.round((otherRGBA[index] + val) / 2)],
-      [] as number[],
-    );
-
-    return this.setRGBA(r, g, b, a);
-  }
-
-  /**
    * Lightens a color by a percetage, amount: `∈[0, 1]`
    *
    * Works like scaling a color's lightness in SCSS
@@ -212,9 +189,7 @@ export class Color {
    * Mixes a color with `amount% white`
    */
   tint(amount: number) {
-    const [r, g, b] = this.asRGB().map(c =>
-      clamp(0, 255, Math.round(c + 255 * amount)),
-    );
+    const [r, g, b] = this.asRGB().map(c => clamp(0, 255, Math.round(c + 255 * amount)));
     return this.setRGBA(r, g, b);
   }
 
@@ -222,10 +197,22 @@ export class Color {
    * Mixes a color with `amount% black`
    */
   shade(amount: number) {
-    const [r, g, b] = this.asRGB().map(c =>
-      clamp(0, 255, Math.round(c * (1 - amount))),
-    );
+    const [r, g, b] = this.asRGB().map(c => clamp(0, 255, Math.round(c * (1 - amount))));
     return this.setRGBA(r, g, b);
+  }
+
+  /**
+   * Adds one color to another by averaging their [`r`, `g`, `b`, `a`] components
+   */
+  mix(color: Color | string) {
+    const c = color instanceof Color ? color : new Color(color);
+    const otherRGBA = c.asRGBA();
+    const [r, g, b, a] = [...this.asRGBA()].reduce(
+      (acc, val, index) => [...acc, Math.round((otherRGBA[index] + val) / 2)],
+      [] as number[],
+    );
+
+    return this.setRGBA(r, g, b, a);
   }
 
   /**
@@ -237,12 +224,8 @@ export class Color {
    */
   luminance() {
     const [red, green, blue] = this.asRGB().map(x => x / 255);
-    const val = (x: number) =>
-      x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4;
-    return (
-      0.2126 * val(red) + 0.7152 * val(green) + 0.0722 * val(blue)
-      // Math.sqrt(0.299 * red ** 2 + 0.587 * green ** 2 + 0.114 * blue ** 2) / 255
-    );
+    const val = (x: number) => (x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4);
+    return 0.2126 * val(red) + 0.7152 * val(green) + 0.0722 * val(blue);
   }
 
   /**
@@ -262,7 +245,7 @@ export class Color {
    *
    * @see https://www.w3.org/TR/WCAG21/#contrast-minimum
    */
-  isTextWCAG2CompliantWith(color: Color, largeText: boolean = false) {
+  isTextWCAG2CompliantWith(color: Color, largeText = false) {
     return this.contrastRatio(color) >= (largeText ? 3 : 4.5);
   }
 
@@ -273,7 +256,7 @@ export class Color {
    *
    * @see https://www.w3.org/TR/WCAG21/#contrast-enhanced
    */
-  isTextWCAG3CompliantWith(color: Color, largeText: boolean = false) {
+  isTextWCAG3CompliantWith(color: Color, largeText = false) {
     return this.contrastRatio(color) >= (largeText ? 4.5 : 7);
   }
 
@@ -317,41 +300,41 @@ export class Color {
    * - For `hex3`, it will return an abbreviated hex if possible but fallback to a full hex
    * - Default: `rgba` if the alpha is not `1`, but `rgb` if the alpha is `1`
    */
-  toString(
-    type?: 'rgb' | 'rgba' | 'hex' | 'hex3' | 'hsl' | 'hsla' | 'named',
-  ): string {
+  toString(type?: 'rgb' | 'rgba' | 'hex' | 'hex3' | 'hsl' | 'hsla' | 'named'): string {
     const [red, green, blue, alpha] = [...this.asRGBA()];
     const [hue, saturation, lightness] = roundHSL([...this.asHSL()]);
+
+    const when = (condition: boolean) => (a: string, b: string) => (condition ? a : b);
+    const isOpaque = alpha === 1;
+    const whenOpaque = when(isOpaque);
+
+    const rgb = `rgb(${red}, ${green}, ${blue})`;
+    const rgba = `rgba(${red}, ${green}, ${blue}, ${alpha})`;
+
+    const hsl = `hsl(${hue}, ${toPercentage(saturation)}%, ${toPercentage(lightness)}%)`;
+    // prettier-ignore
+    const hsla = `hsla(${hue}, ${toPercentage(saturation)}%, ${toPercentage(lightness)}%, ${alpha})`;
 
     switch (type) {
       case 'named':
         if (this.toString('rgba') === 'rgba(0, 0, 0, 0)') {
           return 'transparent';
         }
-        return (
-          namedColorsByValue[this.toString('hex') as NamedColorValue] ??
-          this.toString('rgb')
-        );
+        return namedColorsByValue[this.toString('hex') as NamedColorValue] ?? this.toString('rgb');
       case 'rgb':
-        return `rgb(${red}, ${green}, ${blue})`;
+        return whenOpaque(rgb, rgba);
       case 'rgba':
-        return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
+        return rgba;
       case 'hex':
         return `#${RGBToHex(red, green, blue, false)}`;
       case 'hex3':
         return `#${RGBToHex(red, green, blue, true)}`;
       case 'hsl':
-        return `hsl(${hue}, ${toPercentage(saturation)}%, ${toPercentage(
-          lightness,
-        )}%)`;
+        return whenOpaque(hsl, hsla);
       case 'hsla':
-        return `hsla(${hue}, ${toPercentage(saturation)}%, ${toPercentage(
-          lightness,
-        )}%, ${alpha})`;
+        return hsla;
       default:
-        return alpha === 1
-          ? `rgb(${red}, ${green}, ${blue})`
-          : `rgba(${red}, ${green}, ${blue}, ${alpha})`;
+        return whenOpaque(rgb, rgba);
     }
   }
 }
