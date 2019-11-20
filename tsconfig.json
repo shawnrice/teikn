@@ -5,10 +5,7 @@
     "target": "es2017",
     "module": "commonjs",
     "resolveJsonModule": true,
-    "lib": [
-      "scripthost",
-      "esnext"
-    ] /* Specify library files to be included in the compilation. */,
+    "lib": ["scripthost", "esnext"] /* Specify library files to be included in the compilation. */,
     "declaration": true /* Generates corresponding '.d.ts' file. */,
     "declarationMap": true /* Generates a sourcemap for each corresponding '.d.ts' file. */,
     "sourceMap": true /* Generates corresponding '.map' file. */,
@@ -39,6 +36,6 @@
     "typeRoots": ["node_modules/@types"],
     "esModuleInterop": true
   },
-  "include": ["src", "./package.json"],
+  "include": ["src", "./package.json", "./index.ts"],
   "exclude": ["node_modules", "lib", "**/*.test.ts"]
 }

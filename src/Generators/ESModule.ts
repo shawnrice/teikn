@@ -13,7 +13,7 @@ const defaultOptions = {
 
 const maybeQuote = (val: any) => (typeof val === 'string' ? `'${val}'` : val);
 
-export interface Opts extends GeneratorOptions {
+export interface ESModuleOpts extends GeneratorOptions {
   dateFn?: () => string | null;
   nameTransformer?: (name: string) => string;
 }
@@ -21,7 +21,7 @@ export interface Opts extends GeneratorOptions {
 /**
  * Generates tokens as an ES Module
  */
-export class ESModules extends Generator<Opts> {
+export class ESModules extends Generator<ESModuleOpts> {
   constructor(options = {}) {
     super(Object.assign({}, defaultOptions, options));
   }

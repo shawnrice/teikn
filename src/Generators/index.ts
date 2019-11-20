@@ -1,3 +1,4 @@
+export * from './ESModule';
 export * from './Generator';
 export * from './JavaScript';
 export * from './Json';
