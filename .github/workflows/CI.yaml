@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node: ["13", "12", "10", "8"]
+        node: ['13', '12', '10', '8']
     name: Node ${{ matrix.node }}
     steps:
       - uses: actions/checkout@v1
@@ -48,3 +48,8 @@ jobs:
 
       - name: Test
         run: yarn test --ci
+
+      - name: Codecov
+        uses: codecov/codecov-action@v1.0.4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
