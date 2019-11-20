@@ -8,7 +8,7 @@ exports[`es5 tests it generates things 1`] = `
  * This file is generated and should be commited to source control
  *
  */
-module.exports = {
+const tokens = {
   /**
    *  Use for body fonts
    *  Type: font-family
@@ -19,5 +19,8 @@ module.exports = {
    *  Type: color
    */
   primary: 'aliceblue'
-}"
+};
+
+
+module.exports = { tokens: tokens, default: tokens };"
 `;
