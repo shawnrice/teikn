@@ -2,7 +2,7 @@
 
 exports[`SCSS Vars Generator tests It generates the token set 1`] = `
 "///
-/// Teikn v1.0.0-alpha.2
+/// Teikn v1.0.0-alpha.3
 /// Generated null
 ///
 /// This file is generated and should be commited to source control
