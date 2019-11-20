@@ -5,3 +5,4 @@ out
 .vscode
 .DS_STORE
 lib
+.cache
