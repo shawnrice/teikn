@@ -2,7 +2,7 @@
 
 exports[`ESModule tests it generates tokens as an esmodule 1`] = `
 "/**
- * Teikn v1.0.0-alpha.3
+ * Teikn v1.0.0-alpha.4
  * Generated null
  *
  * This file is generated and should be commited to source control
