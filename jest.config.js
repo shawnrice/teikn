@@ -1,9 +1,9 @@
 module.exports = {
   cacheDirectory: '<rootDir>/.jest-cache',
   collectCoverage: true,
-  collectCoverageFrom: ['**/*.ts', '!**/node_modules/**'],
+  collectCoverageFrom: ['src/**/*.ts', '!**/node_modules/**'],
   coverageDirectory: '.coverage',
-  coveragePathIgnorePatterns: ['/node_modules/', '<rootDir>/out/'],
+  coveragePathIgnorePatterns: ['/node_modules/', '<rootDir>/src/fixtures'],
   coverageThreshold: {
     global: {
       branches: 50,
