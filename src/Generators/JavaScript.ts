@@ -13,12 +13,12 @@ const defaultOptions = {
 
 const maybeQuote = (val: any) => (typeof val === 'string' ? `'${val}'` : val);
 
-export interface Opts extends GeneratorOptions {
+export interface JavaScriptOpts extends GeneratorOptions {
   dateFn?: () => string | null;
   nameTransformer?: (name: string) => string;
 }
 
-export class JavaScript extends Generator<Opts> {
+export class JavaScript extends Generator<JavaScriptOpts> {
   constructor(options = {}) {
     const opts = Object.assign({}, defaultOptions, options);
     super(opts);

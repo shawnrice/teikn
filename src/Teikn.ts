@@ -6,8 +6,8 @@ import { Generator, JavaScript, Json, Scss, ScssVars, TypeScript } from './Gener
 import { ColorTransformPlugin, Plugin, PrefixTypePlugin, SCSSQuoteValuePlugin } from './Plugins';
 import { Token } from './Token';
 
-const plugins = [ColorTransformPlugin, PrefixTypePlugin, SCSSQuoteValuePlugin];
-const generators = [JavaScript, Json, Scss, ScssVars, TypeScript];
+const plugins = { ColorTransformPlugin, PrefixTypePlugin, SCSSQuoteValuePlugin };
+const generators = { JavaScript, Json, Scss, ScssVars, TypeScript };
 
 export interface TeiknOptions {
   generators: Generator[];

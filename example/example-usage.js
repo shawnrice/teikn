@@ -1,5 +1,7 @@
-const { Teikn } = require('..');
+const { Teikn } = require('../lib');
 const { tokens } = require('./raw-tokens');
+
+console.log(Teikn.generators.Scss);
 
 const Writer = new Teikn({
   generators: [
