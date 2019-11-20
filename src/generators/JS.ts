@@ -55,13 +55,15 @@ export class JS extends Generator<Opts> {
   combinator(tokens: Token[]) {
     const values = tokens.map(t => this.generateToken(t));
     return [
-      'module.exports = {',
+      'const tokens = {',
       values
         .map((token, index, arr) =>
           index === arr.length - 1 ? token.slice(0, -1) : token,
         )
         .join(EOL),
-      '}',
+      '};',
+      EOL,
+      `module.exports = { tokens: tokens, default: tokens };`,
     ].join(EOL);
   }
 }
