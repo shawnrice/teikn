@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import * as fs from 'fs';
 import { EOL } from 'os';
 import * as path from 'path';
@@ -6,15 +7,13 @@ import { version } from '../package.json';
 import { Teikn } from './Teikn';
 
 const processArgv = () => {
-  const ME = path.resolve(__dirname, __filename);
-  const idx = process.argv.findIndex(x => x === ME);
-  const caller = process.argv.slice(0, idx + 1);
-  const [command, ...args] = process.argv.slice(idx + 1);
+  const caller = [process.argv0, process.argv.slice(1, 2)];
+  const [command, ...args] = process.argv.slice(2);
 
   return { caller, command, args };
 };
 
-const { command, args } = processArgv();
+const { caller, command, args } = processArgv();
 
 const signature = () => `Teikn v${version}`;
 
@@ -30,6 +29,14 @@ const help = () => {
 
   console.log('Commands:');
   console.log('*', 'help', 'prints this message');
+  console.log('*', 'list', 'generators|plugins', 'lists generators or plugins available');
+  console.log('*', 'usage', 'suggested usage');
+  console.log('*', 'usage', 'suggested usage');
+  console.log(
+    '*',
+    caller.join(' '),
+    'path/to/tokens.js --outDir=path/to/out --generators="Scss,Json,ESModule" --plugins="PrefixToken,ColorTransform,SCSSQuoteValue"',
+  );
 };
 
 const list = (type = '') => {
@@ -47,7 +54,7 @@ const list = (type = '') => {
       break;
     case 'plugins':
       banner();
-      console.log('Available Generators:');
+      console.log('Available Plugins:');
       console.log(
         Object.keys(Teikn.plugins)
           .map(x => `  * ${x}`)
@@ -57,14 +64,7 @@ const list = (type = '') => {
       process.exit(0);
       break;
     default:
-      console.error(
-        'Usage: ',
-        processArgv()
-          .caller.map(x => path.relative(process.cwd(), x))
-          .join(' '),
-        'list',
-        'generators | plugins',
-      );
+      console.error('Usage:', processArgv().caller.join(' '), 'list', 'generators | plugins');
       break;
   }
 };
@@ -72,15 +72,15 @@ const list = (type = '') => {
 const commands: { [key: string]: any } = {
   help,
   list,
+
+  version: () => signature(),
 };
 
 const usage = () => {
-  const { caller } = processArgv();
-
   banner();
   console.log(
-    'Usage: ',
-    caller.map(x => path.relative(process.cwd(), x)).join(' '),
+    'Usage:',
+    caller.join(' '),
     'path/to/tokens.js --outDir=path/to/out --generators="Scss,Json,ESModule" --plugins="PrefixToken,ColorTransform,SCSSQuoteValue"',
   );
   process.exit(2);
