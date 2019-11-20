@@ -27,4 +27,3 @@ export const ensureDirectory = (dirPath: string) =>
   });
 
 export default ensureDirectory;
-
