@@ -3,6 +3,6 @@ out
 .jest-cache
 .coverage
 .vscode
-.DS_STORE
 lib
 .cache
+.DS_Store
