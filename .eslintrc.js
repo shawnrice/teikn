@@ -1,7 +1,6 @@
 module.exports = {
   extends: [
     'eslint:recommended',
-    'plugin:@typescript-eslint/eslint-recommended',
     'plugin:@typescript-eslint/recommended',
     'prettier',
     'prettier/@typescript-eslint',
@@ -33,6 +32,7 @@ module.exports = {
       parser: '@typescript-eslint/parser',
       rules: {
         'no-undef': 'off',
+        '@typescript-eslint/ban-ts-ignore': 'off',
         '@typescript-eslint/no-unused-vars': [
           'error',
           {
@@ -65,6 +65,7 @@ module.exports = {
     'no-unused-vars': 'off',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/ban-ts-ignore': 'off',
+    '@typescript-eslint/ban-ts-comment': 'off',
     '@typescript-eslint/no-non-null-assertion': 'off',
     'prefer-promise-reject-errors': 'off',
     yoda: [2, 'never', { exceptRange: true }],

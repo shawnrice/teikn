@@ -1,8 +1,8 @@
+import fs from 'fs';
 import mkdirp from 'mkdirp';
 import path from 'path';
-import fs from 'fs';
 
-export const ensureDirectory = (dirPath: string) =>
+export const ensureDirectory = (dirPath: string): Promise<boolean> =>
   new Promise((res, rej) => {
     const dir = path.resolve(dirPath);
     try {
@@ -12,14 +12,18 @@ export const ensureDirectory = (dirPath: string) =>
       const { code } = error;
       if (code === 'ENOENT') {
         // The directory does not exist
-        mkdirp(dir, { mode: 0o755 & ~process.umask() }, err => {
-          if (err) {
-            return rej(err);
-          }
+        mkdirp(dir, { mode: 0o755 & ~process.umask(0o755) })
+          .then(err => {
+            if (err) {
+              return rej(err);
+            }
 
-          console.log(`Created ${dir}.`);
-          return res(true);
-        });
+            console.log(`Created ${dir}.`);
+            return res(true);
+          })
+          .catch(error => {
+            rej(error);
+          });
       } else {
         return rej(error);
       }

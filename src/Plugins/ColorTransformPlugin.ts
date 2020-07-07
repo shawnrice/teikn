@@ -15,7 +15,7 @@ export class ColorTransformPlugin extends Plugin {
     super(options);
   }
 
-  toJSON(token: Token) {
+  toJSON(token: Token): Token {
     const { type } = this.options;
 
     return {
