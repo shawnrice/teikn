@@ -29,7 +29,7 @@ export class PrefixTypePlugin extends Plugin {
 
   tokenType = /.*/;
 
-  toJSON(token: Token) {
+  toJSON(token: Token): Token {
     const { type, name } = token;
 
     return {

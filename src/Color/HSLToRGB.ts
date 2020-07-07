@@ -1,4 +1,8 @@
-export const HSLToRGB = (hue: number, saturation: number, lightness: number) => {
+export const HSLToRGB = (
+  hue: number,
+  saturation: number,
+  lightness: number,
+): [number, number, number] => {
   const f = (coefficient: number) => {
     const angle = saturation * Math.min(lightness, 1 - lightness);
     const k = (coefficient + hue / 30) % 12;

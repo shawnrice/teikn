@@ -1,4 +1,4 @@
-export const pad0 = (num: number | string) => {
+export const pad0 = (num: number | string): string | number => {
   if (typeof num === 'string') {
     return num.length < 2 ? `0${num}` : num;
   }
@@ -10,16 +10,17 @@ export const pad0 = (num: number | string) => {
   throw new TypeError('pad0 can only work with numbers and strings');
 };
 
-const matchesString = (t1: any, t2: string) => typeof t1 === 'string' && t1 === t2;
+const matchesString = (t1: any, t2: string): boolean => typeof t1 === 'string' && t1 === t2;
 
-const matchesRegexp = (t1: any, t2: string) => t1 instanceof RegExp && t1.test(t2);
+const matchesRegexp = (t1: any, t2: string): boolean => t1 instanceof RegExp && t1.test(t2);
 
-export const matches = (t1: any, t2: string) => matchesString(t1, t2) || matchesRegexp(t1, t2);
+export const matches = (t1: unknown, t2: string): boolean =>
+  matchesString(t1, t2) || matchesRegexp(t1, t2);
 
 /**
  * Default date function that is used if another one is not passed
  */
-export const getDate = () => {
+export const getDate = (): string => {
   const now = new Date();
   const date = now.toDateString();
   const time = [now.getHours(), pad0(now.getMinutes()), pad0(now.getSeconds())].join(':');

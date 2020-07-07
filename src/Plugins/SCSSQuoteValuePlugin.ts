@@ -11,7 +11,7 @@ export class SCSSQuoteValuePlugin extends Plugin {
 
   tokenType = /^(font|font-family)$/;
 
-  toJSON(token: Token) {
+  toJSON(token: Token): Token {
     const { value } = token;
 
     return {
