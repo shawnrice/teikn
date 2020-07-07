@@ -6,6 +6,10 @@ import { stringToRGBA } from './stringToRGBA';
 
 const clamp = (min: number, max: number, n: number) => Math.min(Math.max(n, min), max);
 
+const hexRange = (num: number) => clamp(0, 255, num);
+
+const percentRange = (num: number) => clamp(0, 1, num);
+
 const checkNumberInRange = (bounds: { lower: number; upper: number }, n: number) => {
   const { lower, upper } = bounds;
 
@@ -47,11 +51,19 @@ export class Color {
 
   alpha: number;
 
-  constructor(color: string);
+  constructor(color: string | Color);
 
   constructor(r: number, g: number, b: number, a?: number);
 
-  constructor(r: string | number, g?: number, b?: number, a?: number) {
+  constructor(r: string | Color | number, g?: number, b?: number, a?: number) {
+    if (r instanceof Color) {
+      this.red = r.red;
+      this.green = r.green;
+      this.blue = r.blue;
+      this.alpha = r.alpha;
+      return this;
+    }
+
     if (typeof r === 'string') {
       const [red, green, blue, alpha] = stringToRGBA(r);
       this.red = red;
@@ -65,11 +77,15 @@ export class Color {
       this.red = r;
       this.green = g;
       this.blue = b;
-      this.alpha = typeof a === 'number' ? clamp(0, 1, a) : 1;
+      this.alpha = typeof a === 'number' ? percentRange(a) : 1;
       return this;
     }
 
     throw new Error('Bad constructor');
+  }
+
+  static from(color: Color): Color {
+    return new Color(color);
   }
 
   setRed(red: number) {
@@ -155,7 +171,7 @@ export class Color {
 
   set lightness(lightness: number) {
     const [h, s] = this.asHSL();
-    const [red, green, blue] = HSLToRGB(h, s, clamp(0, 1, lightness));
+    const [red, green, blue] = HSLToRGB(h, s, percentRange(lightness));
     this.setRGBA(red, green, blue);
   }
 
@@ -189,7 +205,7 @@ export class Color {
    * Mixes a color with `amount% white`
    */
   tint(amount: number) {
-    const [r, g, b] = this.asRGB().map(c => clamp(0, 255, Math.round(c + 255 * amount)));
+    const [r, g, b] = this.asRGB().map(c => hexRange(Math.round(c + 255 * amount)));
     return this.setRGBA(r, g, b);
   }
 
@@ -197,7 +213,7 @@ export class Color {
    * Mixes a color with `amount% black`
    */
   shade(amount: number) {
-    const [r, g, b] = this.asRGB().map(c => clamp(0, 255, Math.round(c * (1 - amount))));
+    const [r, g, b] = this.asRGB().map(c => hexRange(Math.round(c * (1 - amount))));
     return this.setRGBA(r, g, b);
   }
 
@@ -207,8 +223,8 @@ export class Color {
   mix(color: Color | string) {
     const c = color instanceof Color ? color : new Color(color);
     const otherRGBA = c.asRGBA();
-    const [r, g, b, a] = [...this.asRGBA()].reduce(
-      (acc, val, index) => [...acc, Math.round((otherRGBA[index] + val) / 2)],
+    const [r, g, b, a] = this.asRGBA().reduce(
+      (acc, val, index) => acc.concat(Math.round((otherRGBA[index] + val) / 2)),
       [] as number[],
     );
 
