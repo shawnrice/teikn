@@ -1,4 +1,4 @@
-export const parseInt16 = (x: string) => parseInt(x, 16);
+export const parseInt16 = (x: string): number => parseInt(x, 16);
 
 type RGBTuple = [number, number, number];
 

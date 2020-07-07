@@ -52,7 +52,7 @@ export class Teikn {
     this.outDir = outDir || process.cwd();
   }
 
-  async transform(tokens: Token[]) {
+  async transform(tokens: Token[]): Promise<void> {
     const map = new Map<Generator, string>();
 
     // Go ahead and generate the file contents before trying to write anything

@@ -19,6 +19,14 @@ describe('Color tests', () => {
     expect(RGBToHex(255, 255, 255)).toBe('ffffff');
   });
 
+  test('You can construct a color from a color', () => {
+    expect(new Color(new Color('blue')).toString('named')).toBe('blue');
+  });
+
+  test('You can use Color.from', () => {
+    expect(Color.from(new Color('blue')).toString('named')).toBe('blue');
+  });
+
   test('inverting a color works', () => {
     expect(new Color('blue').invert().asRGB()).toEqual([255, 255, 0]);
   });

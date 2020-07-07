@@ -26,7 +26,7 @@ export class ESModule extends Generator<ESModuleOpts> {
     super(Object.assign({}, defaultOptions, options));
   }
 
-  header() {
+  header(): string {
     const { dateFn } = this.options;
 
     return [
@@ -40,7 +40,7 @@ export class ESModule extends Generator<ESModuleOpts> {
     ].join(EOL);
   }
 
-  generateToken(token: Token) {
+  generateToken(token: Token): string {
     const { nameTransformer } = this.options;
 
     return [
@@ -54,7 +54,7 @@ export class ESModule extends Generator<ESModuleOpts> {
       .join(EOL);
   }
 
-  combinator(tokens: Token[]) {
+  combinator(tokens: Token[]): string {
     const values = tokens.map(t => this.generateToken(t));
     return ['export const tokens = {', values.join(EOL), '};', EOL, `export default tokens;`].join(
       EOL,

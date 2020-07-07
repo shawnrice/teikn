@@ -12,6 +12,8 @@ module.exports = {
       statements: 50,
     },
   },
+  extraGlobals: [],
+  modulePathIgnorePatterns: ['<rootDir>/lib'],
   verbose: true,
   transform: {
     '^.+\\.[t|j]sx?$': 'babel-jest',

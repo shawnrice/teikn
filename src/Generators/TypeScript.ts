@@ -29,7 +29,7 @@ export class TypeScript extends Generator<TypeScriptOpts> {
     super(Object.assign({}, defaultOptions, options));
   }
 
-  header() {
+  header(): string {
     const { dateFn } = this.options;
 
     return [
@@ -47,7 +47,7 @@ export class TypeScript extends Generator<TypeScriptOpts> {
     ].join(EOL);
   }
 
-  generateToken(token: Token) {
+  generateToken(token: Token): string {
     const { nameTransformer } = this.options;
 
     return [
@@ -61,7 +61,7 @@ export class TypeScript extends Generator<TypeScriptOpts> {
       .join(EOL);
   }
 
-  combinator(tokens: Token[]) {
+  combinator(tokens: Token[]): string {
     const values = tokens.map(t => this.generateToken(t));
     return [
       'export const tokens: {',
@@ -72,7 +72,7 @@ export class TypeScript extends Generator<TypeScriptOpts> {
     ].join(EOL);
   }
 
-  footer() {
+  footer(): string {
     return `export default tokens;`;
   }
 }

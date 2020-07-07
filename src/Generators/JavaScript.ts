@@ -24,7 +24,7 @@ export class JavaScript extends Generator<JavaScriptOpts> {
     super(opts);
   }
 
-  header() {
+  header(): string {
     const { dateFn } = this.options;
 
     return [
@@ -38,7 +38,7 @@ export class JavaScript extends Generator<JavaScriptOpts> {
     ].join(EOL);
   }
 
-  generateToken(token: Token) {
+  generateToken(token: Token): string {
     const { nameTransformer } = this.options;
 
     return [
@@ -52,7 +52,7 @@ export class JavaScript extends Generator<JavaScriptOpts> {
       .join(EOL);
   }
 
-  combinator(tokens: Token[]) {
+  combinator(tokens: Token[]): string {
     const values = tokens.map(t => this.generateToken(t));
     return [
       'const tokens = {',
