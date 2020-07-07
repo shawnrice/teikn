@@ -2,25 +2,9 @@ import { Token } from '../Token';
 import { Plugin } from './Plugin';
 
 /**
- * Prefixes the token type to the token name
+ * Quotes some SCSS values
  *
- * E.g.
- *
- * ```javascript
- * {
- *   type: 'color',
- *   name: 'primary',
- *   value: 'orange'
- * }
- * ```
- * becomes
- * ```javascript
- * {
- *   type: 'color',
- *   name: 'colorPrimary',
- *   value: 'orange'
- * }
- * ```
+ * This is needed for things like font-families to get the right values
  */
 export class SCSSQuoteValuePlugin extends Plugin {
   outputType = /s(a|c)ss/;
