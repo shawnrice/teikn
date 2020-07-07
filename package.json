@@ -25,7 +25,7 @@
   "scripts": {
     "build": "tsc",
     "format": "prettier --write 'src/**/*.{json,ts,md}' './*.{js|json}'",
-    "lint": "eslint --ext .ts -c .eslintrc.js './src/**/*.ts'",
+    "lint": "eslint --ext .ts './src/**/*.ts'",
     "prepublishOnly": "tsc",
     "test": "jest"
   },

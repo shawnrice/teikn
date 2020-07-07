@@ -36,11 +36,11 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
     this.signature = this.signature.bind(this);
   }
 
-  signature() {
+  signature(): string {
     return `Teikn v${version}`;
   }
 
-  validateOptions() {
+  validateOptions(): void {
     const required: RequiredGeneratorOptions = { ext: 'string' };
 
     const errors: string[] = [];
@@ -59,7 +59,7 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
     }
   }
 
-  get file() {
+  get file(): string {
     const { ext, filename = 'tokens' } = this.options;
 
     return [filename, ext].join('.');
@@ -73,7 +73,7 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
     return null;
   }
 
-  protected prepareTokens(tokens: Token[], plugins: Plugin[]) {
+  protected prepareTokens(tokens: Token[], plugins: Plugin[]): Token[] {
     return tokens.map(token =>
       plugins.reduce((acc, plugin) => {
         if (!matches(plugin.tokenType, token.type)) {
@@ -93,7 +93,7 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
 
   abstract combinator(_: Token[]): string;
 
-  generate(tokens: Token[], plugins: Plugin[] = []) {
+  generate(tokens: Token[], plugins: Plugin[] = []): string {
     return [this.header(), this.combinator(this.prepareTokens(tokens, plugins)), this.footer()]
       .filter(Boolean)
       .join(EOL)

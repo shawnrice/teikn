@@ -22,7 +22,7 @@ export class Scss extends Generator<ScssOpts> {
     super(opts);
   }
 
-  generateToken(token: Token) {
+  generateToken(token: Token): string {
     const { nameTransformer } = this.options;
 
     const { usage, value } = token;
@@ -37,7 +37,7 @@ export class Scss extends Generator<ScssOpts> {
       .join(EOL);
   }
 
-  combinator(tokens: Token[]) {
+  combinator(tokens: Token[]): string {
     const values = tokens.map(token => this.generateToken(token));
     return [`// prettier-ignore`, `$token-values: (`, values.join(EOL), `);`, EOL].join(EOL);
   }
