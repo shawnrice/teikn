@@ -1,3 +1,4 @@
+import { Color } from '../Color';
 import { Token } from '../Token';
 
 const tokenSet1: Token[] = [
@@ -12,6 +13,12 @@ const tokenSet1: Token[] = [
     type: 'color',
     usage: 'the primary branding color',
     value: 'aliceblue',
+  },
+  {
+    name: 'secondary',
+    type: 'color',
+    usage: 'the secondary branding color',
+    value: new Color('mediumaquamarine'),
   },
 ];
 

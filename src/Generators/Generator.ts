@@ -1,6 +1,7 @@
 import { EOL } from 'os';
 
 import { version } from '../../package.json';
+import { Color } from '../Color';
 import { Plugin } from '../Plugins';
 import { Token } from '../Token';
 import { matches } from '../utils';
@@ -40,6 +41,10 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
     return `Teikn v${version}`;
   }
 
+  convertColorToString(token: Token): Token {
+    return token.value instanceof Color ? { ...token, value: token.value.toString() } : token;
+  }
+
   validateOptions(): void {
     const required: RequiredGeneratorOptions = { ext: 'string' };
 
@@ -74,7 +79,7 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
   }
 
   protected prepareTokens(tokens: Token[], plugins: Plugin[]): Token[] {
-    return tokens.map(token =>
+    return tokens.map(this.convertColorToString).map(token =>
       plugins.reduce((acc, plugin) => {
         if (!matches(plugin.tokenType, token.type)) {
           return acc;

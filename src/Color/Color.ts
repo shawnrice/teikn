@@ -91,22 +91,22 @@ export class Color {
 
   setRed(red: number): Color {
     this.red = ensureHex(red);
-    return this;
+    return Color.from(this);
   }
 
   setGreen(green: number): Color {
     this.green = ensureHex(green);
-    return this;
+    return Color.from(this);
   }
 
   setBlue(blue: number): Color {
     this.blue = ensureHex(blue);
-    return this;
+    return Color.from(this);
   }
 
   setAlpha(alpha: number): Color {
     this.alpha = ensurePercentage(alpha);
-    return this;
+    return Color.from(this);
   }
 
   private setRGBA(r?: number, g?: number, b?: number, a?: number): Color {
@@ -114,7 +114,7 @@ export class Color {
     this.green = typeof g !== 'undefined' ? g : this.green;
     this.blue = typeof b !== 'undefined' ? b : this.blue;
     this.alpha = typeof a !== 'undefined' ? a : this.alpha;
-    return this;
+    return Color.from(this);
   }
 
   invert(): Color {
@@ -136,12 +136,12 @@ export class Color {
 
   setHue(hue: number): Color {
     this.hue = hue;
-    return this;
+    return Color.from(this);
   }
 
   rotateHue(degrees: number): Color {
     this.hue = (this.hue + degrees) % 360;
-    return this;
+    return Color.from(this);
   }
 
   complement(): Color {
@@ -162,7 +162,7 @@ export class Color {
 
   setSaturation(saturation: number): Color {
     this.saturation = saturation;
-    return this;
+    return Color.from(this);
   }
 
   get lightness(): number {
@@ -181,7 +181,7 @@ export class Color {
    */
   setLightness(lightness: number): Color {
     this.lightness = lightness;
-    return this;
+    return Color.from(this);
   }
 
   /**
@@ -206,26 +206,26 @@ export class Color {
    * Mixes a color with `amount% white`
    */
   tint(amount: number): Color {
-    const [r, g, b] = this.asRGB().map(c => hexRange(Math.round(c + 255 * amount)));
-    return this.setRGBA(r, g, b);
+    return this.mix(new Color(255, 255, 255), amount);
   }
 
   /**
    * Mixes a color with `amount% black`
    */
   shade(amount: number): Color {
-    const [r, g, b] = this.asRGB().map(c => hexRange(Math.round(c * (1 - amount))));
-    return this.setRGBA(r, g, b);
+    return this.mix(new Color(0, 0, 0), amount);
   }
 
   /**
    * Adds one color to another by averaging their [`r`, `g`, `b`, `a`] components
    */
-  mix(color: Color | string): Color {
+  mix(color: Color | string, amount = 0.5): Color {
     const c = color instanceof Color ? color : new Color(color);
+    const amt = percentRange(amount);
     const otherRGBA = c.asRGBA();
     const [r, g, b, a] = this.asRGBA().reduce(
-      (acc, val, index) => acc.concat(Math.round((otherRGBA[index] + val) / 2)),
+      (acc, val, index) =>
+        acc.concat(hexRange(Math.round(otherRGBA[index] * amt + val * (1 - amt)))),
       [] as number[],
     );
 
