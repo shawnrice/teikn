@@ -23,7 +23,12 @@ export const tokens: {
    *  the primary branding color
    *  Type: color
    */
-  primary: string
+  primary: string,
+  /**
+   *  the secondary branding color
+   *  Type: color
+   */
+  secondary: string
 }
 export default tokens;"
 `;

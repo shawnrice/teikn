@@ -27,7 +27,7 @@ const Writer = new Teikn({
     new Teikn.plugins.SCSSQuoteValuePlugin(),
   ],
   // Output all the tokens to ./lib
-  outDir: `${__dirname}/lib`,
+  outDir: `${__dirname}/lib/tokens`,
 });
 
 // Transform the tokens. This actually does the work.

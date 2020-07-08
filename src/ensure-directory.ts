@@ -1,33 +1,24 @@
 import fs from 'fs';
-import mkdirp from 'mkdirp';
 import path from 'path';
 
-export const ensureDirectory = (dirPath: string): Promise<boolean> =>
-  new Promise((res, rej) => {
-    const dir = path.resolve(dirPath);
-    try {
-      fs.accessSync(dir);
-      return res(true);
-    } catch (error) {
-      const { code } = error;
-      if (code === 'ENOENT') {
-        // The directory does not exist
-        mkdirp(dir, { mode: 0o755 & ~process.umask(0o755) })
-          .then(err => {
-            if (err) {
-              return rej(err);
-            }
-
-            console.log(`Created ${dir}.`);
-            return res(true);
-          })
-          .catch(error => {
-            rej(error);
-          });
-      } else {
-        return rej(error);
-      }
+export const ensureDirectory = async (dirPath: string): Promise<void> => {
+  const dir = path.resolve(dirPath);
+  try {
+    await fs.promises.access(dir);
+    return Promise.resolve();
+  } catch (err) {
+    if (err.code !== 'ENOENT') {
+      return Promise.reject();
     }
-  });
+
+    try {
+      await fs.promises.mkdir(dir, { mode: 0o755, recursive: true });
+      console.log(`Created ${dir}.`);
+      return Promise.resolve();
+    } catch (error) {
+      return Promise.reject(error);
+    }
+  }
+};
 
 export default ensureDirectory;
