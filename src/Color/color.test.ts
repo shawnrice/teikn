@@ -116,7 +116,7 @@ describe('Color tests', () => {
     expect(new Color(0xff, 0xff, 0xff).toString('named')).toBe('white');
   });
 
-  test('an alternative constructor works', () => {
+  test('yet another alternative constructor works', () => {
     expect(new Color(255, 0, 0).toString('named')).toBe('red');
   });
 
@@ -149,7 +149,7 @@ describe('Color tests', () => {
     expect(new Color('black').lighten(1).toString('hex')).toEqual('#000000');
   });
 
-  test('Darkening colors works', () => {
+  test('Darkening white works', () => {
     expect(new Color('white').darken(1).toString('hex')).toEqual('#000000');
   });
 
@@ -185,8 +185,8 @@ describe('Color tests', () => {
     expect(new Color('#ffffff').toString('named')).toBe('white');
   });
 
-  test('Getting named colors works', () => {
-    expect(new Color('#ffffff').toString('named')).toBe('white');
+  test('Getting named black color works', () => {
+    expect(new Color('#000000').toString('named')).toBe('black');
   });
 
   test('Getting named transparent works', () => {
@@ -225,12 +225,28 @@ describe('Color tests', () => {
     expect(new Color('black').tint(1).toString('hex')).toBe('#ffffff');
   });
 
+  test('tinting black 10% works', () => {
+    expect(new Color('black').tint(0.1).toString('hex')).toBe('#1a1a1a');
+  });
+
+  test('tinting black 90% works', () => {
+    expect(new Color('black').tint(0.9).toString('hex')).toBe('#e6e6e6');
+  });
+
   test('tinting black with white .5 produces gray', () => {
     expect(new Color('black').tint(0.5).toString('hex')).toBe('#808080');
   });
 
   test('shading a color works', () => {
     expect(new Color('white').shade(0.5).toString('hex')).toBe('#808080');
+  });
+
+  test('shading white 10% works', () => {
+    expect(new Color('white').shade(0.1).toString('hex')).toBe('#e6e6e6');
+  });
+
+  test('shading white 90% works', () => {
+    expect(new Color('white').shade(0.9).toString('hex')).toBe('#1a1a1a');
   });
 
   test('contrast ratio works', () => {
