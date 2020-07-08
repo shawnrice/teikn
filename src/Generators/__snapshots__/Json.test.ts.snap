@@ -11,6 +11,11 @@ exports[`JSONGenerator tests It generates the token set 1`] = `
     \\"type\\": \\"color\\",
     \\"usage\\": \\"the primary branding color\\",
     \\"value\\": \\"aliceblue\\"
+  },
+  \\"secondary\\": {
+    \\"type\\": \\"color\\",
+    \\"usage\\": \\"the secondary branding color\\",
+    \\"value\\": \\"rgb(102, 205, 170)\\"
   }
 }"
 `;
