@@ -278,4 +278,8 @@ describe('Color tests', () => {
   test('checks for wcagUI compliance pass', () => {
     expect(new Color('aliceblue').isUIWCAGCompliantWith(new Color('steelblue'))).toBe(true);
   });
+
+  test('toJSON works as expected', () => {
+    expect(new Color('white').toJSON()).toBe('rgb(255, 255, 255)');
+  });
 });
