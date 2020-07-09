@@ -2,7 +2,7 @@
 
 exports[`TypeScript generator tests It matches the TypeScript snapshot 1`] = `
 "/**
- * Teikn v1.0.0-alpha.5
+ * Teikn v1.0.0-alpha.6
  * Generated null
  *
  * This file is generated and should be commited to source control
