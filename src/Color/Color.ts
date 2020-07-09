@@ -117,10 +117,10 @@ export class Color {
 
   private setRGBA(r?: number, g?: number, b?: number, a?: number): Color {
     const color = Color.from(this);
-    color.red = typeof r !== 'undefined' ? r : this.red;
-    color.green = typeof g !== 'undefined' ? g : this.green;
-    color.blue = typeof b !== 'undefined' ? b : this.blue;
-    color.alpha = typeof a !== 'undefined' ? a : this.alpha;
+    color.red = r ?? this.red;
+    color.green = g ?? this.green;
+    color.blue = b ?? this.blue;
+    color.alpha = a ?? this.alpha;
     return color;
   }
 
