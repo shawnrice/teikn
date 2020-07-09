@@ -10,6 +10,8 @@ const hexRange = (num: number) => clamp(0, 255, num);
 
 const percentRange = (num: number) => clamp(0, 1, num);
 
+const degreeRange = (num: number) => clamp(0, 360, num);
+
 const checkNumberInRange = (bounds: { lower: number; upper: number }, n: number) => {
   const { lower, upper } = bounds;
 
@@ -90,31 +92,36 @@ export class Color {
   }
 
   setRed(red: number): Color {
-    this.red = ensureHex(red);
-    return Color.from(this);
+    const color = Color.from(this);
+    color.red = ensureHex(red);
+    return color;
   }
 
   setGreen(green: number): Color {
-    this.green = ensureHex(green);
-    return Color.from(this);
+    const color = Color.from(this);
+    color.green = ensureHex(green);
+    return color;
   }
 
   setBlue(blue: number): Color {
-    this.blue = ensureHex(blue);
-    return Color.from(this);
+    const color = Color.from(this);
+    color.blue = ensureHex(blue);
+    return color;
   }
 
   setAlpha(alpha: number): Color {
-    this.alpha = ensurePercentage(alpha);
-    return Color.from(this);
+    const color = Color.from(this);
+    color.alpha = ensurePercentage(alpha);
+    return color;
   }
 
   private setRGBA(r?: number, g?: number, b?: number, a?: number): Color {
-    this.red = typeof r !== 'undefined' ? r : this.red;
-    this.green = typeof g !== 'undefined' ? g : this.green;
-    this.blue = typeof b !== 'undefined' ? b : this.blue;
-    this.alpha = typeof a !== 'undefined' ? a : this.alpha;
-    return Color.from(this);
+    const color = Color.from(this);
+    color.red = r ?? this.red;
+    color.green = g ?? this.green;
+    color.blue = b ?? this.blue;
+    color.alpha = a ?? this.alpha;
+    return color;
   }
 
   invert(): Color {
@@ -135,13 +142,12 @@ export class Color {
   }
 
   setHue(hue: number): Color {
-    this.hue = hue;
-    return Color.from(this);
+    const [, s, l] = this.asHSL();
+    return this.setRGBA(...HSLToRGB(degreeRange(hue), s, l));
   }
 
   rotateHue(degrees: number): Color {
-    this.hue = (this.hue + degrees) % 360;
-    return Color.from(this);
+    return this.setHue((this.hue + degrees) % 360);
   }
 
   complement(): Color {
@@ -155,14 +161,12 @@ export class Color {
 
   set saturation(val: number) {
     const [h, , l] = this.asHSL();
-    const saturation = clamp(0, 1, val);
-    const [r, g, b] = HSLToRGB(h, saturation, l);
-    this.setRGBA(r, g, b);
+    this.setRGBA(...HSLToRGB(h, percentRange(val), l));
   }
 
   setSaturation(saturation: number): Color {
-    this.saturation = saturation;
-    return Color.from(this);
+    const [h, , l] = this.asHSL();
+    return this.setRGBA(...HSLToRGB(h, percentRange(saturation), l));
   }
 
   get lightness(): number {
@@ -180,8 +184,8 @@ export class Color {
    * Sets the lightness of the color (as in HSL), lightness: `∈[0, 1]`
    */
   setLightness(lightness: number): Color {
-    this.lightness = lightness;
-    return Color.from(this);
+    const [h, s] = this.asHSL();
+    return this.setRGBA(...HSLToRGB(h, s, percentRange(lightness)));
   }
 
   /**
@@ -224,8 +228,13 @@ export class Color {
     const amt = percentRange(amount);
     const otherRGBA = c.asRGBA();
     const [r, g, b, a] = this.asRGBA().reduce(
-      (acc, val, index) =>
-        acc.concat(hexRange(Math.round(otherRGBA[index] * amt + val * (1 - amt)))),
+      (acc, val, index) => {
+        // Was hitting some floating point rounding errors in the tests, so we're employing
+        // a different rounding strategy
+        const computed = Math.round(round(2, otherRGBA[index] * amt + val * (1 - amt)));
+        return acc.concat(hexRange(computed));
+      },
+
       [] as number[],
     );
 
@@ -310,6 +319,10 @@ export class Color {
     return [red, green, blue, alpha] as const;
   }
 
+  toJSON() {
+    return this.toString();
+  }
+
   /**
    * Outputs the color as a string
    *
@@ -318,8 +331,8 @@ export class Color {
    * - Default: `rgba` if the alpha is not `1`, but `rgb` if the alpha is `1`
    */
   toString(type?: 'rgb' | 'rgba' | 'hex' | 'hex3' | 'hsl' | 'hsla' | 'named'): string {
-    const [red, green, blue, alpha] = [...this.asRGBA()];
-    const [hue, saturation, lightness] = roundHSL([...this.asHSL()]);
+    const [red, green, blue, alpha] = this.asRGBA();
+    const [hue, saturation, lightness] = roundHSL(Array.from(this.asHSL()));
 
     const when = (condition: boolean) => (a: string, b: string) => (condition ? a : b);
     const isOpaque = alpha === 1;
