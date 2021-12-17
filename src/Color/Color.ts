@@ -45,6 +45,8 @@ export const roundHSL = roundArray([0, 2, 2]);
 const toPercentage = (n: number, precision = 0): number =>
   Math.round(n * 10 ** (2 + precision)) / 10 ** precision;
 
+const toPercent = (n: number, precision = 0): string => `${toPercentage(n, precision)}%`;
+
 export class Color {
   red: number;
 
@@ -136,9 +138,10 @@ export class Color {
 
   set hue(val: number) {
     const [, s, l] = this.asHSL();
-    const hue = clamp(0, 360, val);
-    const [r, g, b] = HSLToRGB(hue, s, l);
-    this.setRGBA(r, g, b);
+    const [r, g, b] = HSLToRGB(clamp(0, 360, val), s, l);
+    this.red = r;
+    this.green = g;
+    this.blue = b;
   }
 
   setHue(hue: number): Color {
@@ -161,7 +164,10 @@ export class Color {
 
   set saturation(val: number) {
     const [h, , l] = this.asHSL();
-    this.setRGBA(...HSLToRGB(h, percentRange(val), l));
+    const [r, g, b] = HSLToRGB(h, percentRange(val), l);
+    this.red = r;
+    this.green = g;
+    this.blue = b;
   }
 
   setSaturation(saturation: number): Color {
@@ -176,8 +182,10 @@ export class Color {
 
   set lightness(lightness: number) {
     const [h, s] = this.asHSL();
-    const [red, green, blue] = HSLToRGB(h, s, percentRange(lightness));
-    this.setRGBA(red, green, blue);
+    const [r, g, b] = HSLToRGB(h, s, percentRange(lightness));
+    this.red = r;
+    this.green = g;
+    this.blue = b;
   }
 
   /**
@@ -303,12 +311,30 @@ export class Color {
     return RGBToHSL(red, green, blue);
   }
 
+  get hsl(): string {
+    const [h, s, l] = this.asHSL();
+    return `hsl(${[h, toPercent(s), toPercent(l)].join(', ')})`;
+  }
+
+  asHSLA(): readonly [number, number, number, number] {
+    return [...this.asHSL(), this.alpha];
+  }
+
+  get hsla(): string {
+    const [h, s, l, a] = this.asHSLA();
+    return `hsla(${[h, toPercent(s), toPercent(l), a].join(', ')})`;
+  }
+
   /**
    * Returns the color as `[red ∈[0, 255], green ∈[0, 255], blue ∈[0, 255]]`
    */
   asRGB(): readonly [number, number, number] {
     const { red, green, blue } = this;
     return [red, green, blue] as const;
+  }
+
+  get rgb(): string {
+    return `rgb(${this.asRGB().join(', ')})`;
   }
 
   /**
@@ -319,7 +345,27 @@ export class Color {
     return [red, green, blue, alpha] as const;
   }
 
-  toJSON() {
+  get rgba(): string {
+    return `rgba(${this.asRGBA().join(', ')})`;
+  }
+
+  asHex3(): string {
+    return ['#', RGBToHex(...this.asRGB(), true)].join('');
+  }
+
+  get hex3(): string {
+    return this.asHex3();
+  }
+
+  asHex(): string {
+    return ['#', RGBToHex(...this.asRGB(), false)].join('');
+  }
+
+  get hex(): string {
+    return this.asHex();
+  }
+
+  toJSON(): string {
     return this.toString();
   }
 
@@ -331,19 +377,9 @@ export class Color {
    * - Default: `rgba` if the alpha is not `1`, but `rgb` if the alpha is `1`
    */
   toString(type?: 'rgb' | 'rgba' | 'hex' | 'hex3' | 'hsl' | 'hsla' | 'named'): string {
-    const [red, green, blue, alpha] = this.asRGBA();
-    const [hue, saturation, lightness] = roundHSL(Array.from(this.asHSL()));
-
     const when = (condition: boolean) => (a: string, b: string) => (condition ? a : b);
-    const isOpaque = alpha === 1;
+    const isOpaque = this.alpha === 1;
     const whenOpaque = when(isOpaque);
-
-    const rgb = `rgb(${red}, ${green}, ${blue})`;
-    const rgba = `rgba(${red}, ${green}, ${blue}, ${alpha})`;
-
-    const hsl = `hsl(${hue}, ${toPercentage(saturation)}%, ${toPercentage(lightness)}%)`;
-    // prettier-ignore
-    const hsla = `hsla(${hue}, ${toPercentage(saturation)}%, ${toPercentage(lightness)}%, ${alpha})`;
 
     switch (type) {
       case 'named':
@@ -352,19 +388,19 @@ export class Color {
         }
         return namedColorsByValue[this.toString('hex') as NamedColorValue] ?? this.toString('rgb');
       case 'rgb':
-        return whenOpaque(rgb, rgba);
+        return whenOpaque(this.rgb, this.rgba);
       case 'rgba':
-        return rgba;
+        return this.rgba;
       case 'hex':
-        return `#${RGBToHex(red, green, blue, false)}`;
+        return this.hex;
       case 'hex3':
-        return `#${RGBToHex(red, green, blue, true)}`;
+        return this.hex3;
       case 'hsl':
-        return whenOpaque(hsl, hsla);
+        return whenOpaque(this.hsl, this.hsla);
       case 'hsla':
-        return hsla;
+        return this.hsla;
       default:
-        return whenOpaque(rgb, rgba);
+        return whenOpaque(this.rgb, this.rgba);
     }
   }
 }
