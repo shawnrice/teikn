@@ -31,7 +31,6 @@ const help = () => {
   console.log('*', 'help', 'prints this message');
   console.log('*', 'list', 'generators|plugins', 'lists generators or plugins available');
   console.log('*', 'usage', 'suggested usage');
-  console.log('*', 'usage', 'suggested usage');
   console.log(
     '*',
     caller.join(' '),

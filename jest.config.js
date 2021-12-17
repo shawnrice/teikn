@@ -3,7 +3,13 @@ module.exports = {
   collectCoverage: true,
   collectCoverageFrom: ['src/**/*.ts', '!**/node_modules/**'],
   coverageDirectory: '.coverage',
-  coveragePathIgnorePatterns: ['/node_modules/', '<rootDir>/src/fixtures'],
+  coveragePathIgnorePatterns: [
+    '/node_modules/',
+    '<rootDir>/src/fixtures',
+    '<rootDir>/src/cli.ts', // ignoring the cli to avoid mocking hell
+    '<rootDir>/src/Teikn.ts', // ignoring the cli to avoid mocking hell
+    '<rootDir>/src/ensure-directory.ts', // ignoring so as not to mock a file system
+  ],
   coverageThreshold: {
     global: {
       branches: 50,

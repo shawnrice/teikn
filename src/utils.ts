@@ -17,6 +17,8 @@ const matchesRegexp = (t1: any, t2: string): boolean => t1 instanceof RegExp && 
 export const matches = (t1: unknown, t2: string): boolean =>
   matchesString(t1, t2) || matchesRegexp(t1, t2);
 
+/* istanbul ignore next */
+
 /**
  * Default date function that is used if another one is not passed
  */
