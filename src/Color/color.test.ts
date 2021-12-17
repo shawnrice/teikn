@@ -47,6 +47,14 @@ describe('Color tests', () => {
     expect(roundHSL([...RGBToHSL(240, 155, 233)])).toEqual([305, 0.74, 0.77]);
   });
 
+  test('setting hsl directly works', () => {
+    const c = new Color('white');
+    c.lightness = 0.77;
+    c.saturation = 0.74;
+    c.hue = 305;
+    expect(c.toString('rgb')).toEqual('rgb(240, 152, 233)');
+  });
+
   test('Color("aliceblue") can convert to HSLA', () => {
     expect(new Color('aliceblue').toString('hsla')).toBe('hsla(208, 100%, 97%, 1)');
   });
