@@ -1,3 +1,5 @@
+import { flip } from './flip';
+
 /**
  * @see https://www.w3schools.com/colors/colors_hex.asp
  */
@@ -157,20 +159,7 @@ export const namedColors = {
   transparent: 'rgba(0,0,0,0)',
 } as const;
 
-type Invert<T extends Record<string, string>> = {
-  [V in T[keyof T]]: {
-    [K in keyof T]: V extends T[K] ? K : never;
-  }[keyof T];
-};
-
-const invert = <T extends Record<string, string>>(obj: T) =>
-  Object.keys(obj).reduce((acc, name) => {
-    // @ts-ignore
-    acc[obj[name]] = name;
-    return acc;
-  }, {} as Invert<T>);
-
-export const namedColorsByValue = invert(namedColors);
+export const namedColorsByValue = flip(namedColors);
 
 export type NamedColor = keyof typeof namedColors;
 

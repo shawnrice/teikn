@@ -1,6 +1,6 @@
-import kebabCase from 'lodash/kebabCase';
 import { EOL } from 'os';
 
+import { kebabCase } from '../string-utils';
 import { Token } from '../Token';
 import { getDate } from '../utils';
 import Generator, { GeneratorOptions } from './Generator';

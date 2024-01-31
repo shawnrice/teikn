@@ -16,7 +16,7 @@ const isHexRange = (x: number) => inRange(0, 255, x);
 
 const isPercentRange = (x: number) => inRange(0, 1, x);
 
-const isHexColor = (c: string) => hexRegex.test(c);
+export const isHexColor = (c: string) => hexRegex.test(c);
 
 const isRGBColor = (c: string) => {
   if (!RGBRegex.test(c.trim())) {
@@ -29,10 +29,7 @@ const isRGBColor = (c: string) => {
     return false;
   }
 
-  return matches
-    .slice(1)
-    .map(parseInt10)
-    .every(isHexRange);
+  return matches.slice(1).map(parseInt10).every(isHexRange);
 };
 
 const isRGBAColor = (c: string) => {
@@ -65,10 +62,7 @@ export const stringToRGBA = (c: string): RGBATuple => {
   }
 
   if (isRGBColor(c)) {
-    const [r, g, b] = c
-      .match(RGBRegex)!
-      .slice(1)
-      .map(parseInt10);
+    const [r, g, b] = c.match(RGBRegex)!.slice(1).map(parseInt10);
 
     return [r, g, b, 1] as RGBATuple;
   }

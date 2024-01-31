@@ -1,5 +1,4 @@
-import camelCase from 'lodash/camelCase';
-
+import { camelCase } from '../string-utils';
 import { Token } from '../Token';
 import Generator, { GeneratorOptions } from './Generator';
 
