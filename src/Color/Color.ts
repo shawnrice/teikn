@@ -12,6 +12,10 @@ const percentRange = (num: number) => clamp(0, 1, num);
 
 const degreeRange = (num: number) => clamp(0, 360, num);
 
+const hsl = (h: number, s: number, l: number) => `hsl(${h}, ${toPercent(s)}, ${toPercent(l)})`;
+const hsla = (h: number, s: number, l: number, a: number) =>
+  `hsla(${h}, ${toPercent(s)}, ${toPercent(l)}, ${a})`;
+
 const checkNumberInRange = (bounds: { lower: number; upper: number }, n: number) => {
   const { lower, upper } = bounds;
 
@@ -24,11 +28,6 @@ const checkNumberInRange = (bounds: { lower: number; upper: number }, n: number)
   }
 };
 
-const ensurePercentage = (p: number): number => {
-  checkNumberInRange({ lower: 0, upper: 1 }, p);
-  return p;
-};
-
 const ensureHex = (c: number): number => {
   checkNumberInRange({ lower: 0, upper: 255 }, c);
   return c;
@@ -37,8 +36,10 @@ const ensureHex = (c: number): number => {
 export const round = (digits: number, n: number): number =>
   Math.round(n * 10 ** digits) / 10 ** digits;
 
-export const roundArray = (nums: number[]) => (arr: number[]): number[] =>
-  arr.map((v, i) => round(nums[i], v));
+export const roundArray =
+  (numbers: number[]) =>
+  (arr: number[]): number[] =>
+    arr.map((v, i) => round(numbers[i], v));
 
 export const roundHSL = roundArray([0, 2, 2]);
 
@@ -94,36 +95,28 @@ export class Color {
   }
 
   setRed(red: number): Color {
-    const color = Color.from(this);
-    color.red = ensureHex(red);
-    return color;
+    return Object.assign(Color.from(this), { red: ensureHex(red) });
   }
 
   setGreen(green: number): Color {
-    const color = Color.from(this);
-    color.green = ensureHex(green);
-    return color;
+    return Object.assign(Color.from(this), { green: ensureHex(green) });
   }
 
   setBlue(blue: number): Color {
-    const color = Color.from(this);
-    color.blue = ensureHex(blue);
-    return color;
+    return Object.assign(Color.from(this), { blue: ensureHex(blue) });
   }
 
   setAlpha(alpha: number): Color {
-    const color = Color.from(this);
-    color.alpha = ensurePercentage(alpha);
-    return color;
+    return Object.assign(Color.from(this), { alpha: ensureHex(alpha) });
   }
 
   private setRGBA(r?: number, g?: number, b?: number, a?: number): Color {
-    const color = Color.from(this);
-    color.red = r ?? this.red;
-    color.green = g ?? this.green;
-    color.blue = b ?? this.blue;
-    color.alpha = a ?? this.alpha;
-    return color;
+    return Object.assign(Color.from(this), {
+      red: r ?? this.red,
+      green: g ?? this.green,
+      blue: b ?? this.blue,
+      alpha: a ?? this.alpha,
+    });
   }
 
   invert(): Color {
@@ -138,10 +131,8 @@ export class Color {
 
   set hue(val: number) {
     const [, s, l] = this.asHSL();
-    const [r, g, b] = HSLToRGB(clamp(0, 360, val), s, l);
-    this.red = r;
-    this.green = g;
-    this.blue = b;
+    const [red, green, blue] = HSLToRGB(clamp(0, 360, val), s, l);
+    Object.assign(this, { red, green, blue });
   }
 
   setHue(hue: number): Color {
@@ -164,10 +155,8 @@ export class Color {
 
   set saturation(val: number) {
     const [h, , l] = this.asHSL();
-    const [r, g, b] = HSLToRGB(h, percentRange(val), l);
-    this.red = r;
-    this.green = g;
-    this.blue = b;
+    const [red, green, blue] = HSLToRGB(h, percentRange(val), l);
+    Object.assign(this, { red, green, blue });
   }
 
   setSaturation(saturation: number): Color {
@@ -182,10 +171,8 @@ export class Color {
 
   set lightness(lightness: number) {
     const [h, s] = this.asHSL();
-    const [r, g, b] = HSLToRGB(h, s, percentRange(lightness));
-    this.red = r;
-    this.green = g;
-    this.blue = b;
+    const [red, green, blue] = HSLToRGB(h, s, percentRange(lightness));
+    Object.assign(this, { red, green, blue });
   }
 
   /**
@@ -197,7 +184,7 @@ export class Color {
   }
 
   /**
-   * Lightens a color by a percetage, amount: `∈[0, 1]`
+   * Lightens a color by a percentage, amount: `∈[0, 1]`
    *
    * Works like scaling a color's lightness in SCSS
    */
@@ -312,8 +299,7 @@ export class Color {
   }
 
   get hsl(): string {
-    const [h, s, l] = this.asHSL();
-    return `hsl(${[h, toPercent(s), toPercent(l)].join(', ')})`;
+    return hsl(...this.asHSL());
   }
 
   asHSLA(): readonly [number, number, number, number] {
@@ -321,8 +307,7 @@ export class Color {
   }
 
   get hsla(): string {
-    const [h, s, l, a] = this.asHSLA();
-    return `hsla(${[h, toPercent(s), toPercent(l), a].join(', ')})`;
+    return hsla(...this.asHSLA());
   }
 
   /**
@@ -377,7 +362,7 @@ export class Color {
    * - Default: `rgba` if the alpha is not `1`, but `rgb` if the alpha is `1`
    */
   toString(type?: 'rgb' | 'rgba' | 'hex' | 'hex3' | 'hsl' | 'hsla' | 'named'): string {
-    const when = (condition: boolean) => (a: string, b: string) => (condition ? a : b);
+    const when = (condition: boolean) => (a: string, b: string) => condition ? a : b;
     const isOpaque = this.alpha === 1;
     const whenOpaque = when(isOpaque);
 

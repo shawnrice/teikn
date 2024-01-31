@@ -36,6 +36,6 @@
     "typeRoots": ["node_modules/@types"],
     "esModuleInterop": true
   },
-  "include": ["src", "./package.json", "./index.ts"],
+  "include": ["src", "./package.json", "./index.ts", "index.d.ts"],
   "exclude": ["node_modules", "lib", "**/*.test.ts"]
 }

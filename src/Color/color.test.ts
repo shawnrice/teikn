@@ -4,9 +4,27 @@ import { HSLToHex } from './HSLToHex';
 import { HSLToRGB } from './HSLToRGB';
 import { RGBToHex } from './RGBToHex';
 import { RGBToHSL } from './RGBToHSL';
+import { RGBToXYZ } from './RGBToXYZ';
 import { stringToRGBA } from './stringToRGBA';
+import { XYZToRGB } from './XYZToRGB';
 
 describe('Color tests', () => {
+  test('RGBToXYZ correctly converts', () => {
+    expect(RGBToXYZ([55, 192, 122])).toEqual([
+      0.23935776325367514,
+      0.3991391182137695,
+      0.24851266776484887,
+    ]);
+  });
+
+  test('Symmetrical conversion from RGB -> XYZ -> RGB', () => {
+    expect(XYZToRGB(RGBToXYZ([55, 192, 122]))).toEqual([55, 192, 122]);
+  });
+
+  test('Symmetrical conversion from XYZ -> RGB -> XYZ', () => {
+    expect(RGBToXYZ(XYZToRGB([0.5, 0.5, 0.5]))).toEqual([0.5, 0.5, 0.5]);
+  });
+
   test('hexToRGB translates #ffffff', () => {
     expect(hexToRGB('#ffffff')).toEqual([255, 255, 255]);
   });

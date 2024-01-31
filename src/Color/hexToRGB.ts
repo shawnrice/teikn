@@ -1,6 +1,6 @@
 export const parseInt16 = (x: string): number => parseInt(x, 16);
 
-type RGBTuple = [number, number, number];
+export type RGBTuple = [number, number, number];
 
 export const hexToRGB = (c: string): RGBTuple => {
   // Possibly remove the hash
