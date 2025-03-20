@@ -23,7 +23,7 @@ type Flip<T extends Record<string, string>> = {
  */
 export const flip = <T extends Record<string, string>>(obj: T) =>
   Object.keys(obj).reduce((acc, name) => {
-    // @ts-ignore
+    // @ts-expect-error -- this is fine
     acc[obj[name]] = name;
     return acc;
   }, {} as Flip<T>);

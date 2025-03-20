@@ -1,21 +1,21 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Bun Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`JSONGenerator tests It generates the token set 1`] = `
 "{
-  \\"body\\": {
-    \\"type\\": \\"font-family\\",
-    \\"usage\\": \\"Use for body fonts\\",
-    \\"value\\": \\"\\\\\\"Roboto Condensed\\\\\\", Arial, sans\\"
+  "body": {
+    "type": "font-family",
+    "usage": "Use for body fonts",
+    "value": "\\"Roboto Condensed\\", Arial, sans"
   },
-  \\"primary\\": {
-    \\"type\\": \\"color\\",
-    \\"usage\\": \\"the primary branding color\\",
-    \\"value\\": \\"aliceblue\\"
+  "primary": {
+    "type": "color",
+    "usage": "the primary branding color",
+    "value": "aliceblue"
   },
-  \\"secondary\\": {
-    \\"type\\": \\"color\\",
-    \\"usage\\": \\"the secondary branding color\\",
-    \\"value\\": \\"rgb(102, 205, 170)\\"
+  "secondary": {
+    "type": "color",
+    "usage": "the secondary branding color",
+    "value": "rgb(102, 205, 170)"
   }
 }"
 `;

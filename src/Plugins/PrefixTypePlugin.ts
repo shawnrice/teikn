@@ -31,9 +31,13 @@ export class PrefixTypePlugin extends Plugin {
   toJSON(token: Token): Token {
     const { type, name } = token;
 
+    if (!type || !name) {
+      throw new Error('Token is missing type or name');
+    }
+
     return {
       ...token,
-      name: [camelCase(type), name[0].toUpperCase(), name.slice(1)].join(''),
+      name: [camelCase(type), name.at(0)?.toUpperCase(), name.slice(1)].join(''),
     };
   }
 }

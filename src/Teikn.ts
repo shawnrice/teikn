@@ -1,5 +1,5 @@
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 import { ensureDirectory } from './ensure-directory';
 import { ESModule, Generator, JavaScript, Json, Scss, ScssVars, TypeScript } from './Generators';
@@ -67,7 +67,7 @@ export class Teikn {
         try {
           await fs.promises.writeFile(filename, map.get(generator)!);
           console.log(`Wrote ${filename}`);
-        } catch (err) {
+        } catch (_) {
           console.error(`Error writing ${filename}`);
         }
       });

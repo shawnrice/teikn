@@ -1,13 +1,19 @@
 #!/usr/bin/env node
-import * as fs from 'fs';
-import { EOL } from 'os';
-import * as path from 'path';
+import * as fs from 'node:fs';
+import { EOL } from 'node:os';
+import * as path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-import { version } from '../package.json';
-import { Teikn } from './Teikn';
+// Get package.json dynamically
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const packagePath = path.resolve(__dirname, '../package.json');
+const { version } = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+
+import { Teikn } from './Teikn.js';
 
 const processArgv = () => {
-  const caller = [process.argv0, process.argv.slice(1, 2)];
+  const caller = [process.argv[0], process.argv[1]];
   const [command, ...args] = process.argv.slice(2);
 
   return { caller, command, args };
@@ -68,11 +74,10 @@ const list = (type = '') => {
   }
 };
 
-const commands: { [key: string]: any } = {
+const commands = {
   help,
   list,
-
-  version: () => signature(),
+  version: () => console.log(signature()),
 };
 
 const usage = () => {
@@ -94,82 +99,95 @@ const unquote = (str: string) => {
   return str;
 };
 
-const getDir = () => {
-  const rawDir = args.find(x => x.toLowerCase().slice(0, 8) === '--outdir') || '--outdir=./';
-  return unquote(rawDir.slice(9));
+const parseArgFlag = (argName: string, defaultValue = '') => {
+  const flag = `--${argName.toLowerCase()}=`;
+  const rawArg = args.find(x => x.toLowerCase().startsWith(flag)) || `${flag}${defaultValue}`;
+  return unquote(rawArg.slice(flag.length));
 };
 
-const getTokens = () => {
-  // eslint-disable-next-line
-  const input = require(`${getPathTo(command)}`);
-  const tokens = Array.isArray(input) ? input : input.tokens || input.default;
-  return tokens;
+const getDir = () => parseArgFlag('outdir', './');
+
+const getPathTo = (str: string) => path.resolve(process.cwd(), str);
+
+const getTokens = async () => {
+  const tokenPath = getPathTo(command);
+  try {
+    // Dynamic import for ESM compatibility
+    const module = await import(tokenPath);
+    const input = module.default || module;
+    return Array.isArray(input) ? input : input.tokens || input.default;
+  } catch (error) {
+    console.error(`Error loading tokens from ${tokenPath}:`, error);
+    process.exit(1);
+  }
 };
 
-const getPathTo = (str: string) => path.resolve(path.relative(process.cwd(), path.resolve(str)));
-
-const defaultGenerators = [Teikn.generators.Json];
 const getGenerators = () => {
-  const raw = args.find(x => x.toLowerCase().slice(0, 13) === '--generators=') || '--generators=';
-  const list = unquote(raw.slice(13))
+  const list = parseArgFlag('generators')
     .split(',')
     .filter(Boolean)
     .map(x => x.toLowerCase().trim());
 
-  const gens = Object.keys(Teikn.generators)
-    .filter(x => list.includes(x.toLowerCase()))
-    .reduce(
-      (acc, name) => [...acc, Teikn.generators[name as keyof typeof Teikn.generators]],
-      [] as any[],
-    );
+  const gens = Object.entries(Teikn.generators)
+    .filter(([name]) => list.includes(name.toLowerCase()))
+    .map(([, Generator]) => Generator);
 
-  return !gens.length ? defaultGenerators : gens;
+  return gens.length ? gens : [Teikn.generators.Json];
 };
 
-const defaultPlugins = [Teikn.plugins.ColorTransformPlugin, Teikn.plugins.SCSSQuoteValuePlugin];
 const getPlugins = () => {
-  const raw = args.find(x => x.toLowerCase().slice(0, 10) === '--plugins=') || '--plugins=';
-  const list = unquote(raw.slice(10))
+  const list = parseArgFlag('plugins')
     .split(',')
     .filter(Boolean)
     .map(x => x.toLowerCase().trim());
 
-  const plugins = Object.keys(Teikn.plugins)
-    .filter(x => list.includes(x.toLowerCase()))
-    .reduce(
-      (acc, name) => [...acc, Teikn.plugins[name as keyof typeof Teikn.plugins]],
-      [] as any[],
-    );
+  const plugins = Object.entries(Teikn.plugins)
+    .filter(([name]) => list.includes(name.toLowerCase()))
+    .map(([, Plugin]) => Plugin);
 
-  return !plugins.length ? defaultPlugins : plugins;
+  return plugins.length
+    ? plugins
+    : [Teikn.plugins.ColorTransformPlugin, Teikn.plugins.SCSSQuoteValuePlugin];
 };
 
 const generateTokens = async () => {
-  const tokens = getTokens();
-  const outDir = getPathTo(getDir());
-  const generators = getGenerators();
-  const plugins = getPlugins();
+  try {
+    const tokens = await getTokens();
+    const outDir = getPathTo(getDir());
+    const generators = getGenerators();
+    const plugins = getPlugins();
 
-  const writer = new Teikn({
-    plugins: plugins.map(p => new p()),
+    const writer = new Teikn({
+      plugins: plugins.map(Plugin => new Plugin()),
+      generators: generators.map(Generator => new Generator()),
+      outDir,
+    });
 
-    generators: generators.map(p => new p()),
-    outDir,
-  });
+    banner();
+    console.log('Using generators:', generators.map(f => f.name).join(', '));
+    console.log('Using plugins:', plugins.map(f => f.name).join(', '));
+    console.log(`Writing tokens to directory: ${outDir}`);
 
-  banner();
-  console.log('Using generators', generators.map(f => f.name).join(', '));
-  console.log('Using plugins', plugins.map(f => f.name).join(', '));
-  console.log(`Writing tokens to directory: ${outDir}`);
-  writer.transform(tokens);
+    await writer.transform(tokens);
+    console.log('Tokens generated successfully!');
+  } catch (error) {
+    console.error('Error generating tokens:', error);
+    process.exit(1);
+  }
 };
 
-if (!commands[command] && fs.existsSync(command) && command.slice(-3) === '.js') {
-  generateTokens().then(() => {
-    process.exit(0);
-  });
-} else {
-  // @ts-ignore
-  const handler = commands[command] || usage;
-  handler(...args);
-}
+const main = async () => {
+  if (command in commands) {
+    commands[command as keyof typeof commands](...args);
+  } else if (fs.existsSync(command) && command.endsWith('.js')) {
+    await generateTokens();
+  } else {
+    usage();
+  }
+};
+
+// Use top-level await to handle the async entry point
+main().catch(error => {
+  console.error('Unexpected error:', error);
+  process.exit(1);
+});

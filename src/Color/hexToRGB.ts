@@ -1,14 +1,15 @@
-export const parseInt16 = (x: string): number => parseInt(x, 16);
+import { RGB } from './types';
+import { parseInt16 } from './util';
 
-export type RGBTuple = [number, number, number];
-
-export const hexToRGB = (c: string): RGBTuple => {
+export const hexToRGB = (c: string): RGB => {
   // Possibly remove the hash
   const color = c.slice(0, 1) === '#' ? c.slice(1) : c;
 
   // If it's a 6-character hex, then just parse it
   if (color.length === 6) {
-    return [color.slice(0, 2), color.slice(2, 4), color.slice(4, 6)].map(parseInt16) as RGBTuple;
+    return [color.slice(0, 2), color.slice(2, 4), color.slice(4, 6)].map(
+      parseInt16,
+    ) as unknown as RGB;
   }
 
   // If it's an abbreviated hex, then double each value and parse it as a 6 color hex
@@ -16,7 +17,7 @@ export const hexToRGB = (c: string): RGBTuple => {
     return color
       .split('')
       .map(x => `${x}${x}`)
-      .map(parseInt16) as RGBTuple;
+      .map(parseInt16) as unknown as RGB;
   }
 
   throw new Error(`Cannot parse color ${c} as hex.`);

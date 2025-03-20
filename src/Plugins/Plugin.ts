@@ -1,12 +1,12 @@
 import { Token } from '../Token';
 
-export abstract class Plugin {
+export abstract class Plugin<Options extends Record<string, unknown> = Record<string, unknown>> {
   abstract tokenType: string | RegExp;
   abstract outputType: string | RegExp;
 
-  options: { [key: string]: any };
+  options: Options;
 
-  constructor(options: { [key: string]: any } = {}) {
+  constructor(options: Options = {} as Options) {
     this.options = options;
   }
 

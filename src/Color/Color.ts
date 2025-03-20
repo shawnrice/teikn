@@ -3,62 +3,40 @@ import { namedColorsByValue, NamedColorValue } from './namedColors';
 import { RGBToHex } from './RGBToHex';
 import { RGBToHSL } from './RGBToHSL';
 import { stringToRGBA } from './stringToRGBA';
+import type { RGB, RGBA, HSL, HSLA, ColorFormat } from './types';
+import { degreeRange, hexRange, percentRange, round, toPercent } from './util';
 
-const clamp = (min: number, max: number, n: number) => Math.min(Math.max(n, min), max);
-
-const hexRange = (num: number) => clamp(0, 255, num);
-
-const percentRange = (num: number) => clamp(0, 1, num);
-
-const degreeRange = (num: number) => clamp(0, 360, num);
-
+// String formatters
 const hsl = (h: number, s: number, l: number) => `hsl(${h}, ${toPercent(s)}, ${toPercent(l)})`;
 const hsla = (h: number, s: number, l: number, a: number) =>
   `hsla(${h}, ${toPercent(s)}, ${toPercent(l)}, ${a})`;
 
-const checkNumberInRange = (bounds: { lower: number; upper: number }, n: number) => {
-  const { lower, upper } = bounds;
-
-  if (typeof n !== 'number') {
-    throw new TypeError(`Must be a number`);
-  }
-
-  if (n < lower || upper < n) {
-    throw new TypeError(`Must be between ${lower} and ${upper}`);
-  }
-};
-
-const ensureHex = (c: number): number => {
-  checkNumberInRange({ lower: 0, upper: 255 }, c);
-  return c;
-};
-
-export const round = (digits: number, n: number): number =>
-  Math.round(n * 10 ** digits) / 10 ** digits;
-
-export const roundArray =
-  (numbers: number[]) =>
-  (arr: number[]): number[] =>
-    arr.map((v, i) => round(numbers[i], v));
-
-export const roundHSL = roundArray([0, 2, 2]);
-
-const toPercentage = (n: number, precision = 0): number =>
-  Math.round(n * 10 ** (2 + precision)) / 10 ** precision;
-
-const toPercent = (n: number, precision = 0): string => `${toPercentage(n, precision)}%`;
-
+/**
+ * A class for working with colors, supporting RGB, HSL, and Hex formats
+ * with utilities for color manipulation, contrast checking, and format conversion.
+ */
 export class Color {
-  red: number;
+  // Private cache for expensive calculations
+  #hslCache: HSL | null = null;
 
-  blue: number;
+  // Basic color components
+  readonly red: number;
+  readonly green: number;
+  readonly blue: number;
+  readonly alpha: number;
 
-  green: number;
-
-  alpha: number;
-
+  /**
+   * Create a color from a string (hex, rgb, named color)
+   */
   constructor(color: string | Color);
 
+  /**
+   * Create a color from RGB(A) values
+   * @param r Red component (0-255)
+   * @param g Green component (0-255)
+   * @param b Blue component (0-255)
+   * @param a Alpha component (0-1), defaults to 1
+   */
   constructor(r: number, g: number, b: number, a?: number);
 
   constructor(r: string | Color | number, g?: number, b?: number, a?: number) {
@@ -67,7 +45,7 @@ export class Color {
       this.green = r.green;
       this.blue = r.blue;
       this.alpha = r.alpha;
-      return this;
+      return;
     }
 
     if (typeof r === 'string') {
@@ -76,107 +54,164 @@ export class Color {
       this.green = green;
       this.blue = blue;
       this.alpha = alpha;
-      return this;
+      return;
     }
 
     if (typeof r === 'number' && typeof g === 'number' && typeof b === 'number') {
-      this.red = r;
-      this.green = g;
-      this.blue = b;
+      this.red = hexRange(r);
+      this.green = hexRange(g);
+      this.blue = hexRange(b);
       this.alpha = typeof a === 'number' ? percentRange(a) : 1;
-      return this;
+      return;
     }
 
-    throw new Error('Bad constructor');
+    throw new Error('Invalid color constructor arguments');
   }
 
+  /**
+   * Create a new Color instance from an existing one
+   */
   static from(color: Color): Color {
     return new Color(color);
   }
 
+  /**
+   * Create a modified copy with a new red value
+   */
   setRed(red: number): Color {
-    return Object.assign(Color.from(this), { red: ensureHex(red) });
+    return new Color(hexRange(red), this.green, this.blue, this.alpha);
   }
 
+  /**
+   * Create a modified copy with a new green value
+   */
   setGreen(green: number): Color {
-    return Object.assign(Color.from(this), { green: ensureHex(green) });
+    return new Color(this.red, hexRange(green), this.blue, this.alpha);
   }
 
+  /**
+   * Create a modified copy with a new blue value
+   */
   setBlue(blue: number): Color {
-    return Object.assign(Color.from(this), { blue: ensureHex(blue) });
+    return new Color(this.red, this.green, hexRange(blue), this.alpha);
   }
 
+  /**
+   * Create a modified copy with a new alpha value
+   */
   setAlpha(alpha: number): Color {
-    return Object.assign(Color.from(this), { alpha: ensureHex(alpha) });
+    return new Color(this.red, this.green, this.blue, percentRange(alpha));
   }
 
+  /**
+   * Create a modified copy with new RGBA values
+   */
   private setRGBA(r?: number, g?: number, b?: number, a?: number): Color {
-    return Object.assign(Color.from(this), {
-      red: r ?? this.red,
-      green: g ?? this.green,
-      blue: b ?? this.blue,
-      alpha: a ?? this.alpha,
-    });
+    return new Color(r ?? this.red, g ?? this.green, b ?? this.blue, a ?? this.alpha);
   }
 
+  /**
+   * Create a color with inverted RGB values
+   */
   invert(): Color {
-    const [r, g, b] = this.asRGB();
-    return this.setRGBA(0xff ^ r, 0xff ^ g, 0xff ^ b);
+    return this.setRGBA(255 - this.red, 255 - this.green, 255 - this.blue);
   }
 
+  /**
+   * Get the hue component of the color (0-360)
+   */
   get hue(): number {
-    const [hue] = this.asHSL();
-    return hue;
+    return this.asHSL()[0];
   }
 
+  /**
+   * Set the hue component, modifying the color in place
+   */
   set hue(val: number) {
     const [, s, l] = this.asHSL();
-    const [red, green, blue] = HSLToRGB(clamp(0, 360, val), s, l);
-    Object.assign(this, { red, green, blue });
+    const [red, green, blue] = HSLToRGB(degreeRange(val), s, l);
+    Object.defineProperties(this, {
+      red: { value: red },
+      green: { value: green },
+      blue: { value: blue },
+    });
+    this.#hslCache = null;
   }
 
+  /**
+   * Create a new color with the specified hue
+   */
   setHue(hue: number): Color {
     const [, s, l] = this.asHSL();
     return this.setRGBA(...HSLToRGB(degreeRange(hue), s, l));
   }
 
+  /**
+   * Create a new color with the hue rotated by the specified degrees
+   */
   rotateHue(degrees: number): Color {
     return this.setHue((this.hue + degrees) % 360);
   }
 
+  /**
+   * Create a complementary color (hue rotated by 180 degrees)
+   */
   complement(): Color {
     return this.rotateHue(180);
   }
 
+  /**
+   * Get the saturation component of the color (0-1)
+   */
   get saturation(): number {
-    const [, saturation] = this.asHSL();
-    return saturation;
+    return this.asHSL()[1];
   }
 
+  /**
+   * Set the saturation component, modifying the color in place
+   */
   set saturation(val: number) {
     const [h, , l] = this.asHSL();
     const [red, green, blue] = HSLToRGB(h, percentRange(val), l);
-    Object.assign(this, { red, green, blue });
+    Object.defineProperties(this, {
+      red: { value: red },
+      green: { value: green },
+      blue: { value: blue },
+    });
+    this.#hslCache = null;
   }
 
+  /**
+   * Create a new color with the specified saturation
+   */
   setSaturation(saturation: number): Color {
     const [h, , l] = this.asHSL();
     return this.setRGBA(...HSLToRGB(h, percentRange(saturation), l));
   }
 
+  /**
+   * Get the lightness component of the color (0-1)
+   */
   get lightness(): number {
-    const [, , lightness] = this.asHSL();
-    return lightness;
-  }
-
-  set lightness(lightness: number) {
-    const [h, s] = this.asHSL();
-    const [red, green, blue] = HSLToRGB(h, s, percentRange(lightness));
-    Object.assign(this, { red, green, blue });
+    return this.asHSL()[2];
   }
 
   /**
-   * Sets the lightness of the color (as in HSL), lightness: `∈[0, 1]`
+   * Set the lightness component, modifying the color in place
+   */
+  set lightness(val: number) {
+    const [h, s] = this.asHSL();
+    const [red, green, blue] = HSLToRGB(h, s, percentRange(val));
+    Object.defineProperties(this, {
+      red: { value: red },
+      green: { value: green },
+      blue: { value: blue },
+    });
+    this.#hslCache = null;
+  }
+
+  /**
+   * Create a new color with the specified lightness
    */
   setLightness(lightness: number): Color {
     const [h, s] = this.asHSL();
@@ -184,63 +219,61 @@ export class Color {
   }
 
   /**
-   * Lightens a color by a percentage, amount: `∈[0, 1]`
-   *
-   * Works like scaling a color's lightness in SCSS
+   * Create a new color lightened by the specified amount (0-1)
    */
   lighten(amount: number): Color {
     const lightness = this.lightness;
-
     return this.setLightness(lightness + amount * lightness);
   }
 
   /**
-   * Darkens a color by a percentage, amount: `∈[0, 1]`
+   * Create a new color darkened by the specified amount (0-1)
    */
   darken(amount: number): Color {
-    return this.lighten(amount * -1);
+    return this.lighten(-amount);
   }
 
   /**
-   * Mixes a color with `amount% white`
+   * Create a new color by mixing with white
    */
   tint(amount: number): Color {
     return this.mix(new Color(255, 255, 255), amount);
   }
 
   /**
-   * Mixes a color with `amount% black`
+   * Create a new color by mixing with black
    */
   shade(amount: number): Color {
     return this.mix(new Color(0, 0, 0), amount);
   }
 
   /**
-   * Adds one color to another by averaging their [`r`, `g`, `b`, `a`] components
+   * Create a new color by mixing with another color
+   * @param color Color to mix with
+   * @param amount Amount to mix (0-1), where 0 is this color and 1 is the other color
    */
   mix(color: Color | string, amount = 0.5): Color {
     const c = color instanceof Color ? color : new Color(color);
     const amt = percentRange(amount);
+    const thisRGBA = this.asRGBA();
     const otherRGBA = c.asRGBA();
-    const [r, g, b, a] = this.asRGBA().reduce(
-      (acc, val, index) => {
-        // Was hitting some floating point rounding errors in the tests, so we're employing
-        // a different rounding strategy
-        const computed = Math.round(round(2, otherRGBA[index] * amt + val * (1 - amt)));
-        return acc.concat(hexRange(computed));
-      },
 
-      [] as number[],
+    const result = thisRGBA.map((val, index) => {
+      const otherVal = otherRGBA[index] ?? 0;
+      const computed = Math.round(round(2, otherVal * amt + val * (1 - amt)));
+      return index < 3 ? hexRange(computed) : percentRange(computed);
+    });
+
+    return this.setRGBA(
+      result[0] as number,
+      result[1] as number,
+      result[2] as number,
+      result[3] as number,
     );
-
-    return this.setRGBA(r, g, b, a);
   }
 
   /**
-   * Gets the perceptual luminance of a color
-   *
-   * Note: `Color.luminance()` does not take into account alpha
-   *
+   * Calculate the perceptual luminance of the color
    * @see https://www.w3.org/TR/WCAG20-TECHS/G17.html#G17-testsq
    */
   luminance(): number {
@@ -250,40 +283,34 @@ export class Color {
   }
 
   /**
-   *
+   * Calculate the contrast ratio between this color and another
    * @see https://www.w3.org/TR/WCAG21/#dfn-contrast-ratio
    */
   contrastRatio(color: Color): number {
     const colors = [this.luminance(), color.luminance()].map(x => x + 0.05);
-
     return Math.max(...colors) / Math.min(...colors);
   }
 
   /**
-   * Checks if a text contrast is sufficient for WCAG2
-   *
-   * (Large text means `14pt + bold` or `18pt regular`)
-   *
-   * @see https://www.w3.org/TR/WCAG21/#contrast-minimum
+   * Check if this color has sufficient contrast with another for WCAG AA text
+   * @param color Color to compare with
+   * @param largeText Whether the text is large (18pt or 14pt bold)
    */
   isTextWCAG2CompliantWith(color: Color, largeText = false): boolean {
     return this.contrastRatio(color) >= (largeText ? 3 : 4.5);
   }
 
   /**
-   * Checks if a text contrast is sufficient for WCAG3
-   *
-   * (Large text means `14pt + bold` or `18pt regular`)
-   *
-   * @see https://www.w3.org/TR/WCAG21/#contrast-enhanced
+   * Check if this color has sufficient contrast with another for WCAG AAA text
+   * @param color Color to compare with
+   * @param largeText Whether the text is large (18pt or 14pt bold)
    */
   isTextWCAG3CompliantWith(color: Color, largeText = false): boolean {
     return this.contrastRatio(color) >= (largeText ? 4.5 : 7);
   }
 
   /**
-   * Checks if a non-text UI color contrast is sufficient
-   *
+   * Check if this color has sufficient contrast with another for UI elements
    * @see https://www.w3.org/TR/WCAG21/#non-text-contrast
    */
   isUIWCAGCompliantWith(color: Color): boolean {
@@ -291,80 +318,106 @@ export class Color {
   }
 
   /**
-   * Returns the color as `[hue ∈[0, 360], saturation ∈[0, 1], lightness ∈[0, 1]]`
+   * Get the color as an HSL tuple
    */
-  asHSL(): readonly [number, number, number] {
-    const { red, green, blue } = this;
-    return RGBToHSL(red, green, blue);
+  asHSL(): HSL {
+    if (!this.#hslCache) {
+      this.#hslCache = RGBToHSL(this.red, this.green, this.blue);
+    }
+    return this.#hslCache;
   }
 
+  /**
+   * Get the color as an HSL string
+   */
   get hsl(): string {
     return hsl(...this.asHSL());
   }
 
-  asHSLA(): readonly [number, number, number, number] {
+  /**
+   * Get the color as an HSLA tuple
+   */
+  asHSLA(): HSLA {
     return [...this.asHSL(), this.alpha];
   }
 
+  /**
+   * Get the color as an HSLA string
+   */
   get hsla(): string {
     return hsla(...this.asHSLA());
   }
 
   /**
-   * Returns the color as `[red ∈[0, 255], green ∈[0, 255], blue ∈[0, 255]]`
+   * Get the color as an RGB tuple
    */
-  asRGB(): readonly [number, number, number] {
-    const { red, green, blue } = this;
-    return [red, green, blue] as const;
+  asRGB(): RGB {
+    return [this.red, this.green, this.blue] as const;
   }
 
+  /**
+   * Get the color as an RGB string
+   */
   get rgb(): string {
     return `rgb(${this.asRGB().join(', ')})`;
   }
 
   /**
-   * Returns the color as `[red ∈[0, 255], green ∈[0, 255], blue ∈[0, 255], alpha ∈[0, 1]]`
+   * Get the color as an RGBA tuple
    */
-  asRGBA(): readonly [number, number, number, number] {
-    const { red, green, blue, alpha } = this;
-    return [red, green, blue, alpha] as const;
+  asRGBA(): RGBA {
+    return [this.red, this.green, this.blue, this.alpha] as const;
   }
 
+  /**
+   * Get the color as an RGBA string
+   */
   get rgba(): string {
     return `rgba(${this.asRGBA().join(', ')})`;
   }
 
+  /**
+   * Get the color as a 3-digit hex string (if possible)
+   */
   asHex3(): string {
-    return ['#', RGBToHex(...this.asRGB(), true)].join('');
+    return '#' + RGBToHex(...this.asRGB(), true);
   }
 
+  /**
+   * Get the color as a 3-digit hex string (if possible)
+   */
   get hex3(): string {
     return this.asHex3();
   }
 
+  /**
+   * Get the color as a 6-digit hex string
+   */
   asHex(): string {
-    return ['#', RGBToHex(...this.asRGB(), false)].join('');
+    return '#' + RGBToHex(...this.asRGB(), false);
   }
 
+  /**
+   * Get the color as a 6-digit hex string
+   */
   get hex(): string {
     return this.asHex();
   }
 
+  /**
+   * Serialize the color to JSON
+   */
   toJSON(): string {
     return this.toString();
   }
 
   /**
-   * Outputs the color as a string
-   *
-   * - If request is `named`, then it will attempt a named color, but fallback to `rgb`
-   * - For `hex3`, it will return an abbreviated hex if possible but fallback to a full hex
-   * - Default: `rgba` if the alpha is not `1`, but `rgb` if the alpha is `1`
+   * Convert the color to a string in the specified format
+   * @param type Format to use (defaults to rgb/rgba based on alpha)
    */
-  toString(type?: 'rgb' | 'rgba' | 'hex' | 'hex3' | 'hsl' | 'hsla' | 'named'): string {
-    const when = (condition: boolean) => (a: string, b: string) => condition ? a : b;
+  toString(type?: ColorFormat): string {
     const isOpaque = this.alpha === 1;
-    const whenOpaque = when(isOpaque);
+    const whenOpaque = (a: string, b: string) => (isOpaque ? a : b);
 
     switch (type) {
       case 'named':

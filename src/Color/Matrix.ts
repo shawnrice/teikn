@@ -36,10 +36,26 @@ export class Matrix {
   dot(matrix: Matrix): Matrix {
     const A = this.value;
     const B = matrix.value;
-    const next = A.map((row, i) =>
-      B[0].map((_, j) => row.reduce((acc, _, n) => acc + A[i][n] * B[n][j], 0)),
+    
+    // Check dimensions for matrix multiplication
+    if (A[0].length !== B.length) {
+      throw new Error(
+        `Matrix dimensions incompatible for multiplication: ${A.length}x${A[0].length} and ${B.length}x${B[0]?.length || 0}`
+      );
+    }
+    
+    // Handle empty matrices
+    if (A.length === 0 || B.length === 0 || A[0].length === 0 || (B[0] && B[0].length === 0)) {
+      return new Matrix([]);
+    }
+    
+    // Matrix multiplication
+    const result = A.map((row) =>
+      Array.from({ length: B[0].length }, (_, j) => 
+        row.reduce((acc, val, n) => acc + val * B[n][j], 0)
+      )
     );
-
-    return new Matrix(next);
+    
+    return new Matrix(result);
   }
 }

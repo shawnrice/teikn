@@ -1,3 +1,5 @@
+// cspell:disable
+
 import { flip } from './flip';
 
 /**

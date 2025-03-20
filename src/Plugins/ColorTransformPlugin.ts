@@ -3,15 +3,19 @@ import { Color } from '../Color';
 import { Token } from '../Token';
 import { Plugin } from './Plugin';
 
+type ColorTransformPluginOptions = {
+  type?: 'rgb' | 'rgba' | 'hex' | 'hex3' | 'hsl' | 'hsla' | 'named';
+};
+
 /**
  * Normalizes colors
  */
-export class ColorTransformPlugin extends Plugin {
+export class ColorTransformPlugin extends Plugin<ColorTransformPluginOptions> {
   outputType = /.*/;
 
   tokenType = 'color';
 
-  constructor(options: { type?: 'rgb' | 'rgba' | 'hex' | 'hex3' | 'hsl' | 'hsla' | 'named' }) {
+  constructor(options: ColorTransformPluginOptions) {
     super(options);
   }
 

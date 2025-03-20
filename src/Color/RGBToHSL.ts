@@ -1,3 +1,6 @@
+import { HSL, RGB } from './types';
+import { byteToUnit } from './util';
+
 const getRawHue = (red: number, green: number, blue: number): number => {
   const max = Math.max(red, green, blue);
   const min = Math.min(red, green, blue);
@@ -43,17 +46,7 @@ export const getSaturation = (red: number, green: number, blue: number): number 
   return chroma / (1 - Math.abs(2 * getLightness(red, green, blue) - 1));
 };
 
-export const RGBToHSL = (
-  red: number,
-  green: number,
-  blue: number,
-): readonly [number, number, number] => {
-  const [r, g, b] = [red, green, blue].map(x => x / 255);
-  const hue = getHue(r, g, b);
-
-  const lightness = getLightness(r, g, b);
-
-  const saturation = getSaturation(r, g, b);
-
-  return [hue, saturation, lightness] as const;
+export const RGBToHSL = (rgb: RGB): HSL => {
+  const [r, g, b] = rgb.map(byteToUnit);
+  return [getHue(r, g, b), getSaturation(r, g, b), getLightness(r, g, b)] as HSL;
 };

@@ -2,39 +2,50 @@
   "compilerOptions": {
     /* Basic Options */
     "incremental": true,
-    "target": "es2017",
-    "module": "commonjs",
+    "target": "es2022",
+    "module": "es2015",
+    "moduleResolution": "bundler",
     "resolveJsonModule": true,
-    "lib": ["scripthost", "esnext"] /* Specify library files to be included in the compilation. */,
-    "declaration": true /* Generates corresponding '.d.ts' file. */,
-    "declarationMap": true /* Generates a sourcemap for each corresponding '.d.ts' file. */,
-    "sourceMap": true /* Generates corresponding '.map' file. */,
-    "outDir": "./lib" /* Redirect output structure to the directory. */,
-    "composite": true /* Enable project compilation */,
-    "removeComments": false /* Do not emit comments to output. */,
-    // "noEmit": true,                        /* Do not emit outputs. */
-    "importHelpers": true /* Import emit helpers from 'tslib'. */,
-    "downlevelIteration": false,
+    "lib": ["esnext"] /* Modern library files only */,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "./lib",
+    "composite": true,
+    "removeComments": false,
+    "importHelpers": true,
 
-    /* Strict Type-Checking Options */
-    "strict": true /* Enable all strict type-checking options. */,
-    "noImplicitAny": true /* Raise error on expressions and declarations with an implied 'any' type. */,
-    "strictNullChecks": true /* Enable strict null checks. */,
-    "strictFunctionTypes": true /* Enable strict checking of function types. */,
-    "strictBindCallApply": true /* Enable strict 'bind', 'call', and 'apply' methods on functions. */,
-    "strictPropertyInitialization": true /* Enable strict checking of property initialization in classes. */,
-    "noImplicitThis": true /* Raise error on 'this' expressions with an implied 'any' type. */,
+    /* Type Checking */
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "strictBindCallApply": true,
+    "strictPropertyInitialization": true,
+    "noImplicitThis": true,
+    "useUnknownInCatchVariables": true,
     "alwaysStrict": true,
+    "noUncheckedIndexedAccess": false,
+    "noImplicitOverride": true,
 
     /* Additional Checks */
     "noUnusedLocals": true,
     "noUnusedParameters": true,
+    "exactOptionalPropertyTypes": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "moduleResolution": "node",
+    "noPropertyAccessFromIndexSignature": true,
+
+    /* Module Resolution */
     "baseUrl": "./",
     "typeRoots": ["node_modules/@types"],
-    "esModuleInterop": true
+    "types": ["node"],
+    "esModuleInterop": true,
+    "preserveSymlinks": false,
+
+    /* Advanced */
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
   },
   "include": ["src", "./package.json", "./index.ts", "index.d.ts"],
   "exclude": ["node_modules", "lib", "**/*.test.ts"]

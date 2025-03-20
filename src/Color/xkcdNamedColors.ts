@@ -8,7 +8,7 @@ import { Color } from './Color';
  * @source https://xkcd.com/color/rgb.txt
  */
 import { flip } from './flip';
-import { hexToRGB, RGBTuple } from './hexToRGB';
+import { hexToRGB } from './hexToRGB';
 import { isHexColor } from './stringToRGBA';
 
 // cspell:disable

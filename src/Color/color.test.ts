@@ -1,4 +1,5 @@
-import { Color, round, roundHSL } from './Color';
+import { Color } from './Color';
+import { round, roundHSL } from './util';
 import { hexToRGB } from './hexToRGB';
 import { HSLToHex } from './HSLToHex';
 import { HSLToRGB } from './HSLToRGB';
@@ -11,9 +12,7 @@ import { XYZToRGB } from './XYZToRGB';
 describe('Color tests', () => {
   test('RGBToXYZ correctly converts', () => {
     expect(RGBToXYZ([55, 192, 122])).toEqual([
-      0.23935776325367514,
-      0.3991391182137695,
-      0.24851266776484887,
+      0.23935776325367514, 0.3991391182137695, 0.24851266776484887,
     ]);
   });
 
@@ -147,7 +146,7 @@ describe('Color tests', () => {
   });
 
   test('not enough args throws an error', () => {
-    // @ts-ignore: this is supposed to be a failing test
+    // @ts-expect-error: this is supposed to be a failing test
     expect(() => new Color(255)).toThrow();
   });
 

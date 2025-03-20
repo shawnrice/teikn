@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Bun Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`SCSSGenerator tests It generates the token set 1`] = `
 "///
@@ -12,18 +12,18 @@ exports[`SCSSGenerator tests It generates the token set 1`] = `
 // prettier-ignore
 $token-values: (
   /// Use for body fonts
-  font-family-body: unquote('#{\\"Roboto Condensed\\", Arial, sans}'),
+  fontfamilybody: unquote('#{"Roboto Condensed", Arial, sans}'),
   /// the primary branding color
-  color-primary: rgba(240, 248, 255, 1),
+  colorprimary: rgba(240, 248, 255, 1),
   /// the secondary branding color
-  color-secondary: rgba(102, 205, 170, 1),
+  colorsecondary: rgba(102, 205, 170, 1),
 );
 
 
-/// Use \\"get-token\\" to access tokens by name
+/// Use "get-token" to access tokens by name
 @function get-token($name) {
   @if (not map-has-key($token-values, $name)) {
-    @error \\"Token '#{$name}' does not exist.\\";
+    @error "Token '#{$name}' does not exist.";
   }
   @return map-get($token-values, $name);
 }"

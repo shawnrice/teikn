@@ -1,6 +1,6 @@
 // Bun Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`ESModule tests it generates tokens as an esmodule 1`] = `
+exports[`TypeScript generator tests It matches the TypeScript snapshot 1`] = `
 "/**
  * Teikn v1.0.0-alpha.6
  * Generated null
@@ -8,24 +8,27 @@ exports[`ESModule tests it generates tokens as an esmodule 1`] = `
  * This file is generated and should be commited to source control
  *
  */
-export const tokens = {
+
+
+/**
+ * Design tokens
+ */
+export const tokens: {
   /**
    *  Use for body fonts
    *  Type: font-family
    */
-  body: '"Roboto Condensed", Arial, sans',
+  body: string,
   /**
    *  the primary branding color
    *  Type: color
    */
-  primary: 'aliceblue',
+  primary: string,
   /**
    *  the secondary branding color
    *  Type: color
    */
-  secondary: 'rgb(102, 205, 170)',
-};
-
-
+  secondary: string
+}
 export default tokens;"
 `;
