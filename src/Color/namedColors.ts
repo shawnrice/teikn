@@ -1,6 +1,6 @@
 // cspell:disable
 
-import { flip } from './flip';
+import { flip, type Flip } from './flip';
 
 /**
  * @see https://www.w3schools.com/colors/colors_hex.asp
@@ -161,7 +161,7 @@ export const namedColors = {
   transparent: 'rgba(0,0,0,0)',
 } as const;
 
-export const namedColorsByValue = flip(namedColors);
+export const namedColorsByValue: Flip<typeof namedColors> = flip(namedColors);
 
 export type NamedColor = keyof typeof namedColors;
 

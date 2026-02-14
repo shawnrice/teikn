@@ -28,12 +28,11 @@ export type ColorFormat =
   | 'hex' // same as 'hex6'
   | 'hsl'
   | 'hsla'
-  // | 'xyz'  // not yet supported
-  // | 'xyza' // not yet supported
-  // | 'lab'  // not yet supported
-  // | 'laba' // not yet supported
-  // | 'lch'  // not yet supported
-  // | 'lcha' // not yet supported
-  // | 'cmyk' // not yet supported
-  // | 'cmyka' // not yet supported
-  | 'named';
+  | 'xyz'
+  | 'xyza'
+  | 'lab'
+  | 'laba'
+  | 'lch'
+  | 'lcha'
+  | 'named'
+  | 'xkcd';

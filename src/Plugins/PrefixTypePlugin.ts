@@ -1,5 +1,5 @@
 import { camelCase } from '../string-utils';
-import { Token } from '../Token';
+import type { Token } from '../Token';
 import { Plugin } from './Plugin';
 
 /**
@@ -24,9 +24,9 @@ import { Plugin } from './Plugin';
  * ```
  */
 export class PrefixTypePlugin extends Plugin {
-  outputType = /.*/;
+  outputType: RegExp = /.*/;
 
-  tokenType = /.*/;
+  tokenType: RegExp = /.*/;
 
   toJSON(token: Token): Token {
     const { type, name } = token;

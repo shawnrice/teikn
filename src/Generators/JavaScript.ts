@@ -1,9 +1,10 @@
 import { EOL } from 'os';
 
 import { camelCase } from '../string-utils';
-import { Token } from '../Token';
+import type { Token } from '../Token';
 import { getDate } from '../utils';
-import Generator, { GeneratorOptions } from './Generator';
+import type { GeneratorOptions } from './Generator';
+import Generator from './Generator';
 
 const defaultOptions = {
   ext: 'js',
@@ -24,7 +25,7 @@ export class JavaScript extends Generator<JavaScriptOpts> {
     super(opts);
   }
 
-  header(): string {
+  override header(): string {
     const { dateFn } = this.options;
 
     return [

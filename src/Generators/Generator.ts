@@ -2,11 +2,11 @@ import { EOL } from 'os';
 
 import { version } from '../../package.json';
 import { Color } from '../Color';
-import { Plugin } from '../Plugins';
-import { Token } from '../Token';
+import type { Plugin } from '../Plugins';
+import type { Token } from '../Token';
 import { matches } from '../utils';
 
-export type GeneratorOptions = {
+export interface GeneratorOptions {
   /**
    * The extension for the file
    *
@@ -19,11 +19,11 @@ export type GeneratorOptions = {
    * default: `tokens`
    */
   filename?: string;
-};
+}
 
-export type RequiredGeneratorOptions = {
+export interface RequiredGeneratorOptions {
   ext: string;
-};
+}
 
 export type RequiredGeneratorOptionNames = keyof RequiredGeneratorOptions;
 

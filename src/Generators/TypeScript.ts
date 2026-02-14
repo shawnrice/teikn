@@ -1,9 +1,10 @@
 import { EOL } from 'os';
 
 import { camelCase } from '../string-utils';
-import { Token } from '../Token';
+import type { Token } from '../Token';
 import { getDate } from '../utils';
-import Generator, { GeneratorOptions } from './Generator';
+import type { GeneratorOptions } from './Generator';
+import Generator from './Generator';
 
 const defaultOptions = {
   ext: 'd.ts',
@@ -29,7 +30,7 @@ export class TypeScript extends Generator<TypeScriptOpts> {
     super(Object.assign({}, defaultOptions, options));
   }
 
-  header(): string {
+  override header(): string {
     const { dateFn } = this.options;
 
     return [
@@ -72,7 +73,7 @@ export class TypeScript extends Generator<TypeScriptOpts> {
     ].join(EOL);
   }
 
-  footer(): string {
+  override footer(): string {
     return `export default tokens;`;
   }
 }

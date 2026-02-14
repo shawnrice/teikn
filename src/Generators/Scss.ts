@@ -1,9 +1,10 @@
 import { EOL } from 'os';
 
 import { kebabCase } from '../string-utils';
-import { Token } from '../Token';
+import type { Token } from '../Token';
 import { getDate } from '../utils';
-import Generator, { GeneratorOptions } from './Generator';
+import type { GeneratorOptions } from './Generator';
+import Generator from './Generator';
 
 const defaultOptions = {
   ext: 'scss',
@@ -42,7 +43,7 @@ export class Scss extends Generator<ScssOpts> {
     return [`// prettier-ignore`, `$token-values: (`, values.join(EOL), `);`, EOL].join(EOL);
   }
 
-  header(): string | null {
+  override header(): string | null {
     const { dateFn } = this.options;
 
     return [
@@ -56,7 +57,7 @@ export class Scss extends Generator<ScssOpts> {
     ].join(EOL);
   }
 
-  footer(): string | null {
+  override footer(): string | null {
     return [
       `/// Use "get-token" to access tokens by name`,
       `@function get-token($name) {`,

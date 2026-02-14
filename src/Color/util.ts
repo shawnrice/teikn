@@ -1,11 +1,17 @@
-import { RGB, RGBA } from './types';
+import type { RGB, RGBA } from './types';
+
+/** Compose two unary functions: `pipe(f, g)(x)` === `g(f(x))` */
+export const pipe =
+  <A, B, C>(f: (a: A) => B, g: (b: B) => C) =>
+  (a: A): C =>
+    g(f(a));
 
 // Utility functions
-export const clamp = (min: number, max: number, n: number) => Math.min(Math.max(n, min), max);
+export const clamp = (min: number, max: number, n: number): number => Math.min(Math.max(n, min), max);
 export const pad0 = (x: string): string => (x.toString().length < 2 ? `0${x}` : x);
-export const hexRange = (num: number) => clamp(0, 255, num);
-export const percentRange = (num: number) => clamp(0, 1, num);
-export const degreeRange = (num: number) => clamp(0, 360, num);
+export const hexRange = (num: number): number => clamp(0, 255, num);
+export const percentRange = (num: number): number => clamp(0, 1, num);
+export const degreeRange = (num: number): number => clamp(0, 360, num);
 
 export const byteToUnit = (x: number): number => x / 255;
 export const unitToByte = (x: number): number => Math.round(x * 255);
@@ -18,7 +24,7 @@ export const roundArray =
   (arr: number[]): number[] =>
     arr.map((v, i) => round(numbers[i] ?? 0, v));
 
-export const roundHSL = roundArray([0, 2, 2]);
+export const roundHSL: (arr: number[]) => number[] = roundArray([0, 2, 2]);
 
 export const toPercentage = (n: number, precision = 0): number =>
   Math.round(n * 10 ** (2 + precision)) / 10 ** precision;
@@ -26,7 +32,7 @@ export const toPercentage = (n: number, precision = 0): number =>
 export const toPercent = (n: number, precision = 0): string => `${toPercentage(n, precision)}%`;
 
 export const parseInt16 = (x: string): number => parseInt(x, 16);
-export const parseInt10 = (x: string) => parseInt(x, 10);
+export const parseInt10 = (x: string): number => parseInt(x, 10);
 
 const inRange = (lower: number, upper: number, number: number) =>
   lower <= number && number <= upper;
@@ -106,10 +112,10 @@ const formats = {
   },
 } as const;
 
-const isValidColor = (format: keyof typeof formats) => {
+const isValidColor = (format: keyof typeof formats): ((color: string) => boolean) => {
   const { regex, validators, hasOptionalParams } = formats[format];
 
-  return (color: string) => {
+  return (color: string): boolean => {
     const c = color.trim();
 
     if (!regex.test(c)) {
@@ -131,44 +137,29 @@ const isValidColor = (format: keyof typeof formats) => {
       }
 
       const parsedValue = parseFloat(value);
-      return !Number.isNaN(parsedValue) && validators[index](parsedValue);
+      const validator = validators[index];
+      return validator !== undefined && !Number.isNaN(parsedValue) && validator(parsedValue);
     });
   };
 };
 
-const transformHex = (hex: string): RGBA => {
-  const h = hex[0] === '#' ? hex.slice(1) : hex;
-
-  const isShorthand = h.length <= 4;
-  const hasAlpha = h.length === 4 || h.length === 8;
-
-  const parseHexChannel = isShorthand
-    ? (i: number) => parseInt(h[i].repeat(2), 16)
-    : (i: number) => parseInt(h.slice(i * 2, i * 2 + 2), 16);
-
-  const channels = Array.from({ length: 3 }, (_, i) => parseHexChannel(i));
-  channels[3] = hasAlpha ? parseHexChannel(3) / 255 : 1;
-
-  return channels as unknown as RGBA;
-};
-
-export const isHex = (c: string) => regex.hex.test(c);
-export const isRGB = isValidColor('rgb');
-export const isRGBA = isValidColor('rgba');
-export const isHSL = isValidColor('hsl');
-export const isHSLA = isValidColor('hsla');
-export const isLAB = isValidColor('lab');
-export const isLCH = isValidColor('lch');
-export const isXYZ = isValidColor('xyz');
+export const isHex = (c: string): boolean => regex.hex.test(c);
+export const isRGB: (color: string) => boolean = isValidColor('rgb');
+export const isRGBA: (color: string) => boolean = isValidColor('rgba');
+export const isHSL: (color: string) => boolean = isValidColor('hsl');
+export const isHSLA: (color: string) => boolean = isValidColor('hsla');
+export const isLAB: (color: string) => boolean = isValidColor('lab');
+export const isLCH: (color: string) => boolean = isValidColor('lch');
+export const isXYZ: (color: string) => boolean = isValidColor('xyz');
 
 /**
- * Call only on a verifed RGB string
+ * Call only on a verified RGB string
  */
 export const stringToRgb = (c: string): RGB =>
   c.match(regex.rgb)!.slice(1).map(parseInt10) as unknown as RGB;
 
 /**
- * Call only on a verifed RGBA string
+ * Call only on a verified RGBA string
  */
 export const stringToRgba = (c: string): RGBA =>
   c

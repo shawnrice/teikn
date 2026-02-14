@@ -14,7 +14,7 @@ import { Teikn } from './Teikn.js';
 
 const processArgv = () => {
   const caller = [process.argv[0], process.argv[1]];
-  const [command, ...args] = process.argv.slice(2);
+  const [command = '', ...args] = process.argv.slice(2);
 
   return { caller, command, args };
 };
@@ -158,7 +158,7 @@ const generateTokens = async () => {
     const plugins = getPlugins();
 
     const writer = new Teikn({
-      plugins: plugins.map(Plugin => new Plugin()),
+      plugins: plugins.map(P => new P({} as Record<string, unknown>)),
       generators: generators.map(Generator => new Generator()),
       outDir,
     });

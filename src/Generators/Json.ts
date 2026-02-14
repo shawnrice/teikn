@@ -1,6 +1,7 @@
 import { camelCase } from '../string-utils';
-import { Token } from '../Token';
-import Generator, { GeneratorOptions } from './Generator';
+import type { Token } from '../Token';
+import type { GeneratorOptions } from './Generator';
+import Generator from './Generator';
 
 const defaultOptions = {
   ext: 'json',

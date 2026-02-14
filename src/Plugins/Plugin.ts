@@ -1,4 +1,4 @@
-import { Token } from '../Token';
+import type { Token } from '../Token';
 
 export abstract class Plugin<Options extends Record<string, unknown> = Record<string, unknown>> {
   abstract tokenType: string | RegExp;

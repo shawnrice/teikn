@@ -1,35 +1,75 @@
-import { HSLToRGB } from './HSLToRGB';
-import { namedColorsByValue, NamedColorValue } from './namedColors';
-import { RGBToHex } from './RGBToHex';
-import { RGBToHSL } from './RGBToHSL';
-import { stringToRGBA } from './stringToRGBA';
-import type { RGB, RGBA, HSL, HSLA, ColorFormat } from './types';
+import type { Space, SpaceData } from './ColorSpace';
+import { convertWithIntermediates } from './ColorSpace';
+import { RGBToHex } from './conversions';
+import type { NamedColorValue } from './namedColors';
+import { namedColorsByValue } from './namedColors';
+import { HSLOperations } from './operations/HSLOperations';
+import { LABOperations } from './operations/LABOperations';
+import { LCHOperations } from './operations/LCHOperations';
+import { RGBOperations } from './operations/RGBOperations';
+import { XYZOperations } from './operations/XYZOperations';
+import { parseColorString } from './parseColorString';
+import type { ColorFormat, HSL, HSLA, LAB, LABA, LCH, LCHA, RGB, RGBA, XYZ, XYZA } from './types';
 import { degreeRange, hexRange, percentRange, round, toPercent } from './util';
+import { closest } from './xkcdNamedColors';
 
-// String formatters
-const hsl = (h: number, s: number, l: number) => `hsl(${h}, ${toPercent(s)}, ${toPercent(l)})`;
-const hsla = (h: number, s: number, l: number, a: number) =>
-  `hsla(${h}, ${toPercent(s)}, ${toPercent(l)}, ${a})`;
+// Symbol for internal construction — only accessible within this module and operations
+const INTERNAL: unique symbol = Symbol('Color.internal');
+
+export type InternalCreate = (space: Space, data: SpaceData[Space], alpha: number) => Color;
+
+// String formatters — each handles both opaque and alpha variants
+const fmtTriplet = (
+  name: string,
+  precision: number,
+  a: number,
+  b: number,
+  c: number,
+  alpha?: number,
+): string => {
+  const core = `${round(precision, a)}, ${round(precision, b)}, ${round(precision, c)}`;
+  return alpha !== undefined ? `${name}(${core} / ${alpha})` : `${name}(${core})`;
+};
+
+const fmt = {
+  rgb: (r: number, g: number, b: number, a?: number): string => {
+    const core = `${r}, ${g}, ${b}`;
+    return a !== undefined ? `rgba(${core}, ${a})` : `rgb(${core})`;
+  },
+  hsl: (h: number, s: number, l: number, a?: number): string => {
+    const core = `${h}, ${toPercent(s)}, ${toPercent(l)}`;
+    return a !== undefined ? `hsla(${core}, ${a})` : `hsl(${core})`;
+  },
+  lab: (L: number, a: number, b: number, alpha?: number) => fmtTriplet('lab', 2, L, a, b, alpha),
+  lch: (L: number, c: number, h: number, alpha?: number) => fmtTriplet('lch', 2, L, c, h, alpha),
+  xyz: (x: number, y: number, z: number, alpha?: number) => fmtTriplet('xyz', 5, x, y, z, alpha),
+};
 
 /**
- * A class for working with colors, supporting RGB, HSL, and Hex formats
+ * A class for working with colors, supporting RGB, HSL, XYZ, LAB, and LCH formats
  * with utilities for color manipulation, contrast checking, and format conversion.
+ *
+ * Colors are immutable. All mutation methods return new Color instances.
+ * Internally, colors are stored in whatever space they were created in,
+ * with lazy conversion and caching for other spaces.
  */
 export class Color {
-  // Private cache for expensive calculations
-  #hslCache: HSL | null = null;
+  #nativeSpace: Space;
+  #nativeData: SpaceData[Space];
+  #alpha: number;
+  #cache: Partial<{ [K in Space]: SpaceData[K] }>;
 
-  // Basic color components
-  readonly red: number;
-  readonly green: number;
-  readonly blue: number;
-  readonly alpha: number;
+  // Cached operations objects
+  #rgb?: RGBOperations;
+  #hsl?: HSLOperations;
+  #lab?: LABOperations;
+  #lch?: LCHOperations;
+  #xyz?: XYZOperations;
 
   /**
-   * Create a color from a string (hex, rgb, named color)
+   * Create a color from a string (hex, rgb, hsl, lab, lch, xyz, named color) or Color
    */
   constructor(color: string | Color);
-
   /**
    * Create a color from RGB(A) values
    * @param r Red component (0-255)
@@ -38,211 +78,288 @@ export class Color {
    * @param a Alpha component (0-1), defaults to 1
    */
   constructor(r: number, g: number, b: number, a?: number);
+  /** @internal */
+  constructor(brand: typeof INTERNAL, space: Space, data: SpaceData[Space], alpha: number);
+  constructor(
+    r: string | Color | number | typeof INTERNAL,
+    g?: number | Space,
+    b?: number | SpaceData[Space],
+    a?: number,
+  ) {
+    // Internal branded construction
+    if (r === INTERNAL) {
+      this.#nativeSpace = g as Space;
+      this.#nativeData = b as SpaceData[Space];
+      this.#alpha = a as number;
+      this.#cache = { [this.#nativeSpace]: this.#nativeData };
+      return;
+    }
 
-  constructor(r: string | Color | number, g?: number, b?: number, a?: number) {
+    // Copy constructor
     if (r instanceof Color) {
-      this.red = r.red;
-      this.green = r.green;
-      this.blue = r.blue;
-      this.alpha = r.alpha;
+      this.#nativeSpace = r.#nativeSpace;
+      this.#nativeData = r.#nativeData;
+      this.#alpha = r.#alpha;
+      this.#cache = { ...r.#cache };
       return;
     }
 
+    // String constructor
     if (typeof r === 'string') {
-      const [red, green, blue, alpha] = stringToRGBA(r);
-      this.red = red;
-      this.green = green;
-      this.blue = blue;
-      this.alpha = alpha;
+      const parsed = parseColorString(r);
+      this.#nativeSpace = parsed.space;
+      this.#nativeData = parsed.data;
+      this.#alpha = parsed.alpha;
+      this.#cache = { [this.#nativeSpace]: this.#nativeData };
       return;
     }
 
+    // Numeric RGB constructor
     if (typeof r === 'number' && typeof g === 'number' && typeof b === 'number') {
-      this.red = hexRange(r);
-      this.green = hexRange(g);
-      this.blue = hexRange(b);
-      this.alpha = typeof a === 'number' ? percentRange(a) : 1;
+      this.#nativeSpace = 'rgb';
+      this.#nativeData = [hexRange(r), hexRange(g as number), hexRange(b as number)] as RGB;
+      this.#alpha = typeof a === 'number' ? percentRange(a) : 1;
+      this.#cache = { rgb: this.#nativeData as RGB };
       return;
     }
 
     throw new Error('Invalid color constructor arguments');
   }
 
-  /**
-   * Create a new Color instance from an existing one
-   */
-  static from(color: Color): Color {
-    return new Color(color);
+  // ─── Internal helpers ──────────────────────────────────────
+
+  #resolve<S extends Space>(space: S): SpaceData[S] {
+    const cached = this.#cache[space];
+    if (cached) {
+      return cached as SpaceData[S];
+    }
+
+    const intermediates = convertWithIntermediates(this.#nativeSpace, space, this.#nativeData);
+    Object.assign(this.#cache, intermediates);
+    return this.#cache[space] as SpaceData[S];
   }
 
-  /**
-   * Create a modified copy with a new red value
-   */
-  setRed(red: number): Color {
-    return new Color(hexRange(red), this.green, this.blue, this.alpha);
+  static #new(space: Space, data: SpaceData[Space], alpha: number): Color {
+    return new Color(INTERNAL, space, data, alpha);
   }
 
-  /**
-   * Create a modified copy with a new green value
-   */
-  setGreen(green: number): Color {
-    return new Color(this.red, hexRange(green), this.blue, this.alpha);
+  // Bound version for operations classes
+  #boundCreateInternal: InternalCreate = (space, data, alpha) => Color.#new(space, data, alpha);
+
+  // ─── Backward-compatible property getters ──────────────────
+
+  /** Red component (0-255) */
+  get red(): number {
+    return this.#resolve('rgb')[0];
   }
 
-  /**
-   * Create a modified copy with a new blue value
-   */
-  setBlue(blue: number): Color {
-    return new Color(this.red, this.green, hexRange(blue), this.alpha);
+  /** Green component (0-255) */
+  get green(): number {
+    return this.#resolve('rgb')[1];
   }
 
-  /**
-   * Create a modified copy with a new alpha value
-   */
-  setAlpha(alpha: number): Color {
-    return new Color(this.red, this.green, this.blue, percentRange(alpha));
+  /** Blue component (0-255) */
+  get blue(): number {
+    return this.#resolve('rgb')[2];
   }
 
-  /**
-   * Create a modified copy with new RGBA values
-   */
-  private setRGBA(r?: number, g?: number, b?: number, a?: number): Color {
-    return new Color(r ?? this.red, g ?? this.green, b ?? this.blue, a ?? this.alpha);
+  /** Alpha component (0-1) */
+  get alpha(): number {
+    return this.#alpha;
   }
 
-  /**
-   * Create a color with inverted RGB values
-   */
-  invert(): Color {
-    return this.setRGBA(255 - this.red, 255 - this.green, 255 - this.blue);
-  }
+  // ─── HSL property getters ──────────────────────────────────
 
-  /**
-   * Get the hue component of the color (0-360)
-   */
+  /** Hue component (0-360) */
   get hue(): number {
     return this.asHSL()[0];
   }
 
-  /**
-   * Set the hue component, modifying the color in place
-   */
-  set hue(val: number) {
-    const [, s, l] = this.asHSL();
-    const [red, green, blue] = HSLToRGB(degreeRange(val), s, l);
-    Object.defineProperties(this, {
-      red: { value: red },
-      green: { value: green },
-      blue: { value: blue },
-    });
-    this.#hslCache = null;
-  }
-
-  /**
-   * Create a new color with the specified hue
-   */
-  setHue(hue: number): Color {
-    const [, s, l] = this.asHSL();
-    return this.setRGBA(...HSLToRGB(degreeRange(hue), s, l));
-  }
-
-  /**
-   * Create a new color with the hue rotated by the specified degrees
-   */
-  rotateHue(degrees: number): Color {
-    return this.setHue((this.hue + degrees) % 360);
-  }
-
-  /**
-   * Create a complementary color (hue rotated by 180 degrees)
-   */
-  complement(): Color {
-    return this.rotateHue(180);
-  }
-
-  /**
-   * Get the saturation component of the color (0-1)
-   */
+  /** Saturation component (0-1) */
   get saturation(): number {
     return this.asHSL()[1];
   }
 
-  /**
-   * Set the saturation component, modifying the color in place
-   */
-  set saturation(val: number) {
-    const [h, , l] = this.asHSL();
-    const [red, green, blue] = HSLToRGB(h, percentRange(val), l);
-    Object.defineProperties(this, {
-      red: { value: red },
-      green: { value: green },
-      blue: { value: blue },
-    });
-    this.#hslCache = null;
-  }
-
-  /**
-   * Create a new color with the specified saturation
-   */
-  setSaturation(saturation: number): Color {
-    const [h, , l] = this.asHSL();
-    return this.setRGBA(...HSLToRGB(h, percentRange(saturation), l));
-  }
-
-  /**
-   * Get the lightness component of the color (0-1)
-   */
+  /** Lightness component (0-1) */
   get lightness(): number {
     return this.asHSL()[2];
   }
 
-  /**
-   * Set the lightness component, modifying the color in place
-   */
-  set lightness(val: number) {
-    const [h, s] = this.asHSL();
-    const [red, green, blue] = HSLToRGB(h, s, percentRange(val));
-    Object.defineProperties(this, {
-      red: { value: red },
-      green: { value: green },
-      blue: { value: blue },
-    });
-    this.#hslCache = null;
+  // ─── Factory methods ───────────────────────────────────────
+
+  /** Create a new Color instance from an existing one */
+  static from(color: Color): Color {
+    return new Color(color);
   }
 
-  /**
-   * Create a new color with the specified lightness
-   */
+  static #fromSpace<S extends Space>(
+    space: S,
+    first: number | SpaceData[S],
+    second?: number,
+    third?: number,
+    alpha?: number,
+  ): Color {
+    if (typeof first !== 'number') {
+      return Color.#new(space, first, second ?? 1);
+    }
+    return Color.#new(space, [first, second!, third!] as SpaceData[S], alpha ?? 1);
+  }
+
+  static fromRGB(r: number, g: number, b: number, a?: number): Color;
+  static fromRGB(rgb: RGB, a?: number): Color;
+  static fromRGB(first: number | RGB, second?: number, third?: number, alpha?: number): Color {
+    if (typeof first !== 'number') {
+      return Color.#fromSpace('rgb', first, second);
+    }
+    return Color.#new(
+      'rgb',
+      [hexRange(first), hexRange(second!), hexRange(third!)] as RGB,
+      alpha ?? 1,
+    );
+  }
+
+  static fromHSL(h: number, s: number, l: number, a?: number): Color;
+  static fromHSL(hsl: HSL, a?: number): Color;
+  static fromHSL(first: number | HSL, second?: number, third?: number, alpha?: number): Color {
+    return Color.#fromSpace('hsl', first, second, third, alpha);
+  }
+
+  static fromLAB(l: number, a: number, b: number, alpha?: number): Color;
+  static fromLAB(lab: LAB, alpha?: number): Color;
+  static fromLAB(first: number | LAB, second?: number, third?: number, alpha?: number): Color {
+    return Color.#fromSpace('lab', first, second, third, alpha);
+  }
+
+  static fromLCH(l: number, c: number, h: number, a?: number): Color;
+  static fromLCH(lch: LCH, a?: number): Color;
+  static fromLCH(first: number | LCH, second?: number, third?: number, alpha?: number): Color {
+    return Color.#fromSpace('lch', first, second, third, alpha);
+  }
+
+  static fromXYZ(x: number, y: number, z: number, a?: number): Color;
+  static fromXYZ(xyz: XYZ, a?: number): Color;
+  static fromXYZ(first: number | XYZ, second?: number, third?: number, alpha?: number): Color {
+    return Color.#fromSpace('xyz', first, second, third, alpha);
+  }
+
+  // ─── Space-scoped sub-APIs ─────────────────────────────────
+
+  /** RGB-space operations (red, green, blue, mix, invert) */
+  get rgb(): RGBOperations {
+    if (!this.#rgb) {
+      this.#rgb = new RGBOperations(this, this.#boundCreateInternal);
+    }
+    return this.#rgb;
+  }
+
+  /** HSL-space operations (hue, saturation, lightness, lighten, darken) */
+  get hsl(): HSLOperations {
+    if (!this.#hsl) {
+      this.#hsl = new HSLOperations(this, this.#boundCreateInternal);
+    }
+    return this.#hsl;
+  }
+
+  /** LAB-space operations (lightness, a, b, mix, lighten, darken) */
+  get lab(): LABOperations {
+    if (!this.#lab) {
+      this.#lab = new LABOperations(this, this.#boundCreateInternal);
+    }
+    return this.#lab;
+  }
+
+  /** LCH-space operations (lightness, chroma, hue, rotateHue, complement) */
+  get lch(): LCHOperations {
+    if (!this.#lch) {
+      this.#lch = new LCHOperations(this, this.#boundCreateInternal);
+    }
+    return this.#lch;
+  }
+
+  /** XYZ-space operations (x, y, z) */
+  get xyz(): XYZOperations {
+    if (!this.#xyz) {
+      this.#xyz = new XYZOperations(this, this.#boundCreateInternal);
+    }
+    return this.#xyz;
+  }
+
+  // ─── RGB mutation methods (backward-compatible) ────────────
+
+  /** Create a modified copy with a new red value */
+  setRed(red: number): Color {
+    return Color.#new('rgb', [hexRange(red), this.green, this.blue], this.#alpha);
+  }
+
+  /** Create a modified copy with a new green value */
+  setGreen(green: number): Color {
+    return Color.#new('rgb', [this.red, hexRange(green), this.blue], this.#alpha);
+  }
+
+  /** Create a modified copy with a new blue value */
+  setBlue(blue: number): Color {
+    return Color.#new('rgb', [this.red, this.green, hexRange(blue)], this.#alpha);
+  }
+
+  /** Create a modified copy with a new alpha value */
+  setAlpha(alpha: number): Color {
+    return Color.#new(this.#nativeSpace, this.#nativeData, percentRange(alpha));
+  }
+
+  /** Create a color with inverted RGB values */
+  invert(): Color {
+    const [r, g, b] = this.asRGB();
+    return Color.#new('rgb', [255 - r, 255 - g, 255 - b] as RGB, this.#alpha);
+  }
+
+  // ─── HSL mutation methods (backward-compatible) ────────────
+
+  /** Create a new color with the specified hue */
+  setHue(hue: number): Color {
+    const [, s, l] = this.asHSL();
+    return Color.#new('hsl', [degreeRange(hue), s, l] as HSL, this.#alpha);
+  }
+
+  /** Create a new color with the hue rotated by the specified degrees */
+  rotateHue(degrees: number): Color {
+    const newHue = (this.hue + degrees) % 360;
+    return this.setHue(newHue < 0 ? newHue + 360 : newHue);
+  }
+
+  /** Create a complementary color (hue rotated by 180 degrees) */
+  complement(): Color {
+    return this.rotateHue(180);
+  }
+
+  /** Create a new color with the specified saturation */
+  setSaturation(saturation: number): Color {
+    const [h, , l] = this.asHSL();
+    return Color.#new('hsl', [h, percentRange(saturation), l] as HSL, this.#alpha);
+  }
+
+  /** Create a new color with the specified lightness */
   setLightness(lightness: number): Color {
     const [h, s] = this.asHSL();
-    return this.setRGBA(...HSLToRGB(h, s, percentRange(lightness)));
+    return Color.#new('hsl', [h, s, percentRange(lightness)] as HSL, this.#alpha);
   }
 
-  /**
-   * Create a new color lightened by the specified amount (0-1)
-   */
+  /** Create a new color lightened by the specified amount (0-1) */
   lighten(amount: number): Color {
-    const lightness = this.lightness;
-    return this.setLightness(lightness + amount * lightness);
+    const l = this.lightness;
+    return this.setLightness(l + amount * l);
   }
 
-  /**
-   * Create a new color darkened by the specified amount (0-1)
-   */
+  /** Create a new color darkened by the specified amount (0-1) */
   darken(amount: number): Color {
     return this.lighten(-amount);
   }
 
-  /**
-   * Create a new color by mixing with white
-   */
+  /** Create a new color by mixing with white */
   tint(amount: number): Color {
     return this.mix(new Color(255, 255, 255), amount);
   }
 
-  /**
-   * Create a new color by mixing with black
-   */
+  /** Create a new color by mixing with black */
   shade(amount: number): Color {
     return this.mix(new Color(0, 0, 0), amount);
   }
@@ -264,20 +381,17 @@ export class Color {
       return index < 3 ? hexRange(computed) : percentRange(computed);
     });
 
-    return this.setRGBA(
-      result[0] as number,
-      result[1] as number,
-      result[2] as number,
-      result[3] as number,
-    );
+    return Color.#new('rgb', [result[0], result[1], result[2]] as RGB, result[3] as number);
   }
+
+  // ─── Luminance & contrast ─────────────────────────────────
 
   /**
    * Calculate the perceptual luminance of the color
    * @see https://www.w3.org/TR/WCAG20-TECHS/G17.html#G17-testsq
    */
   luminance(): number {
-    const [red, green, blue] = this.asRGB().map(x => x / 255);
+    const [red, green, blue] = this.asRGB().map(x => x / 255) as [number, number, number];
     const val = (x: number) => (x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4);
     return 0.2126 * val(red) + 0.7152 * val(green) + 0.0722 * val(blue);
   }
@@ -317,106 +431,88 @@ export class Color {
     return this.contrastRatio(color) >= 3;
   }
 
-  /**
-   * Get the color as an HSL tuple
-   */
-  asHSL(): HSL {
-    if (!this.#hslCache) {
-      this.#hslCache = RGBToHSL(this.red, this.green, this.blue);
-    }
-    return this.#hslCache;
-  }
+  // ─── Output methods (tuples) ──────────────────────────────
 
-  /**
-   * Get the color as an HSL string
-   */
-  get hsl(): string {
-    return hsl(...this.asHSL());
-  }
-
-  /**
-   * Get the color as an HSLA tuple
-   */
-  asHSLA(): HSLA {
-    return [...this.asHSL(), this.alpha];
-  }
-
-  /**
-   * Get the color as an HSLA string
-   */
-  get hsla(): string {
-    return hsla(...this.asHSLA());
-  }
-
-  /**
-   * Get the color as an RGB tuple
-   */
+  /** Get the color as an RGB tuple */
   asRGB(): RGB {
-    return [this.red, this.green, this.blue] as const;
+    return this.#resolve('rgb');
   }
 
-  /**
-   * Get the color as an RGB string
-   */
-  get rgb(): string {
-    return `rgb(${this.asRGB().join(', ')})`;
-  }
-
-  /**
-   * Get the color as an RGBA tuple
-   */
+  /** Get the color as an RGBA tuple */
   asRGBA(): RGBA {
-    return [this.red, this.green, this.blue, this.alpha] as const;
+    return [...this.asRGB(), this.#alpha] as unknown as RGBA;
   }
 
-  /**
-   * Get the color as an RGBA string
-   */
-  get rgba(): string {
-    return `rgba(${this.asRGBA().join(', ')})`;
+  /** Get the color as an HSL tuple */
+  asHSL(): HSL {
+    return this.#resolve('hsl');
   }
 
-  /**
-   * Get the color as a 3-digit hex string (if possible)
-   */
+  /** Get the color as an HSLA tuple */
+  asHSLA(): HSLA {
+    return [...this.asHSL(), this.#alpha] as unknown as HSLA;
+  }
+
+  /** Get the color as an XYZ tuple */
+  asXYZ(): XYZ {
+    return this.#resolve('xyz');
+  }
+
+  /** Get the color as an XYZA tuple */
+  asXYZA(): XYZA {
+    return [...this.asXYZ(), this.#alpha] as unknown as XYZA;
+  }
+
+  /** Get the color as a LAB tuple */
+  asLAB(): LAB {
+    return this.#resolve('lab');
+  }
+
+  /** Get the color as a LABA tuple */
+  asLABA(): LABA {
+    return [...this.asLAB(), this.#alpha] as unknown as LABA;
+  }
+
+  /** Get the color as an LCH tuple */
+  asLCH(): LCH {
+    return this.#resolve('lch');
+  }
+
+  /** Get the color as an LCHA tuple */
+  asLCHA(): LCHA {
+    return [...this.asLCH(), this.#alpha] as unknown as LCHA;
+  }
+
+  /** Get the color as a 3-digit hex string (if possible) */
   asHex3(): string {
-    return '#' + RGBToHex(...this.asRGB(), true);
+    return '#' + RGBToHex(this.asRGB(), true);
   }
 
-  /**
-   * Get the color as a 3-digit hex string (if possible)
-   */
+  /** Get the color as a 3-digit hex string */
   get hex3(): string {
     return this.asHex3();
   }
 
-  /**
-   * Get the color as a 6-digit hex string
-   */
+  /** Get the color as a 6-digit hex string */
   asHex(): string {
-    return '#' + RGBToHex(...this.asRGB(), false);
+    return '#' + RGBToHex(this.asRGB(), false);
   }
 
-  /**
-   * Get the color as a 6-digit hex string
-   */
+  /** Get the color as a 6-digit hex string */
   get hex(): string {
     return this.asHex();
   }
 
-  /**
-   * Serialize the color to JSON
-   */
+  // ─── Serialization ────────────────────────────────────────
+
+  /** Serialize to a string (defaults to RGB) */
   toJSON(): string {
     return this.toString();
   }
 
-  /**
-   * Convert the color to a string in the specified format
-   * @param type Format to use (defaults to rgb/rgba based on alpha)
-   */
+  /** Convert to a string in the specified format */
   toString(type?: ColorFormat): string {
-    const isOpaque = this.alpha === 1;
+    const isOpaque = this.#alpha === 1;
     const whenOpaque = (a: string, b: string) => (isOpaque ? a : b);
 
     switch (type) {
@@ -425,20 +521,36 @@ export class Color {
           return 'transparent';
         }
         return namedColorsByValue[this.toString('hex') as NamedColorValue] ?? this.toString('rgb');
+      case 'xkcd': {
+        const match = closest(this);
+        return match ? match.name : this.toString('hex');
+      }
       case 'rgb':
-        return whenOpaque(this.rgb, this.rgba);
+        return whenOpaque(fmt.rgb(...this.asRGB()), fmt.rgb(...this.asRGBA()));
       case 'rgba':
-        return this.rgba;
+        return fmt.rgb(...this.asRGBA());
       case 'hex':
         return this.hex;
       case 'hex3':
         return this.hex3;
       case 'hsl':
-        return whenOpaque(this.hsl, this.hsla);
+        return whenOpaque(fmt.hsl(...this.asHSL()), fmt.hsl(...this.asHSLA()));
       case 'hsla':
-        return this.hsla;
+        return fmt.hsl(...this.asHSLA());
+      case 'lab':
+        return whenOpaque(fmt.lab(...this.asLAB()), fmt.lab(...this.asLABA()));
+      case 'laba':
+        return fmt.lab(...this.asLABA());
+      case 'lch':
+        return whenOpaque(fmt.lch(...this.asLCH()), fmt.lch(...this.asLCHA()));
+      case 'lcha':
+        return fmt.lch(...this.asLCHA());
+      case 'xyz':
+        return whenOpaque(fmt.xyz(...this.asXYZ()), fmt.xyz(...this.asXYZA()));
+      case 'xyza':
+        return fmt.xyz(...this.asXYZA());
       default:
-        return whenOpaque(this.rgb, this.rgba);
+        return whenOpaque(fmt.rgb(...this.asRGB()), fmt.rgb(...this.asRGBA()));
     }
   }
 }

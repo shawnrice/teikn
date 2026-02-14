@@ -1,51 +1,41 @@
 {
   "compilerOptions": {
-    /* Basic Options */
-    "incremental": true,
-    "target": "es2022",
-    "module": "es2015",
+    // Output
+    "target": "es2023",
+    "module": "es2022",
     "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "lib": ["esnext"] /* Modern library files only */,
+    "lib": ["esnext"],
+    "outDir": "./lib",
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
-    "outDir": "./lib",
-    "composite": true,
     "removeComments": false,
-    "importHelpers": true,
 
-    /* Type Checking */
+    // Strictness — "strict" enables noImplicitAny, strictNullChecks,
+    // strictFunctionTypes, strictBindCallApply, strictPropertyInitialization,
+    // noImplicitThis, useUnknownInCatchVariables, alwaysStrict.
+    // Everything below is NOT covered by "strict" and must be opted in.
     "strict": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true,
-    "strictBindCallApply": true,
-    "strictPropertyInitialization": true,
-    "noImplicitThis": true,
-    "useUnknownInCatchVariables": true,
-    "alwaysStrict": true,
-    "noUncheckedIndexedAccess": false,
+    "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
-
-    /* Additional Checks */
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
     "exactOptionalPropertyTypes": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "noPropertyAccessFromIndexSignature": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "verbatimModuleSyntax": true,
+    "isolatedDeclarations": true,
 
-    /* Module Resolution */
-    "baseUrl": "./",
-    "typeRoots": ["node_modules/@types"],
-    "types": ["node"],
+    // Module resolution
+    "resolveJsonModule": true,
     "esModuleInterop": true,
-    "preserveSymlinks": false,
-
-    /* Advanced */
+    "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+
+    // Build
+    "incremental": true,
+    "composite": true
   },
   "include": ["src", "./package.json", "./index.ts", "index.d.ts"],
   "exclude": ["node_modules", "lib", "**/*.test.ts"]

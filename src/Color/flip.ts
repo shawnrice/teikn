@@ -1,4 +1,4 @@
-type Flip<T extends Record<string, string>> = {
+export type Flip<T extends Record<string, string>> = {
   [V in T[keyof T]]: {
     [K in keyof T]: V extends T[K] ? K : never;
   }[keyof T];
@@ -21,7 +21,7 @@ type Flip<T extends Record<string, string>> = {
  *
  * If you want to preserve the keys exactly, then we can implement this with a Map instead
  */
-export const flip = <T extends Record<string, string>>(obj: T) =>
+export const flip = <T extends Record<string, string>>(obj: T): Flip<T> =>
   Object.keys(obj).reduce((acc, name) => {
     // @ts-expect-error -- this is fine
     acc[obj[name]] = name;

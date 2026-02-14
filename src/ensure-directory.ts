@@ -7,7 +7,7 @@ export const ensureDirectory = async (dirPath: string): Promise<void> => {
     await fs.promises.access(dir);
     return Promise.resolve();
   } catch (err: unknown) {
-    if (err.code !== 'ENOENT') {
+    if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
       return Promise.reject();
     }
 

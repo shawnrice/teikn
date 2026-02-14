@@ -4,10 +4,22 @@ import path from 'node:path';
 import { ensureDirectory } from './ensure-directory';
 import { ESModule, Generator, JavaScript, Json, Scss, ScssVars, TypeScript } from './Generators';
 import { ColorTransformPlugin, Plugin, PrefixTypePlugin, SCSSQuoteValuePlugin } from './Plugins';
-import { Token } from './Token';
+import type { Token } from './Token';
 
-const plugins = { ColorTransformPlugin, PrefixTypePlugin, SCSSQuoteValuePlugin };
-const generators = { ESModule, JavaScript, Json, Scss, ScssVars, TypeScript };
+const plugins: {
+  ColorTransformPlugin: typeof ColorTransformPlugin;
+  PrefixTypePlugin: typeof PrefixTypePlugin;
+  SCSSQuoteValuePlugin: typeof SCSSQuoteValuePlugin;
+} = { ColorTransformPlugin, PrefixTypePlugin, SCSSQuoteValuePlugin };
+
+const generators: {
+  ESModule: typeof ESModule;
+  JavaScript: typeof JavaScript;
+  Json: typeof Json;
+  Scss: typeof Scss;
+  ScssVars: typeof ScssVars;
+  TypeScript: typeof TypeScript;
+} = { ESModule, JavaScript, Json, Scss, ScssVars, TypeScript };
 
 export interface TeiknOptions {
   /**
@@ -37,13 +49,13 @@ export class Teikn {
 
   outDir: string;
 
-  static generators = generators;
+  static generators: typeof generators = generators;
 
-  static plugins = plugins;
+  static plugins: typeof plugins = plugins;
 
-  static Plugin = Plugin;
+  static Plugin: typeof Plugin = Plugin;
 
-  static Generator = Generator;
+  static Generator: typeof Generator = Generator;
 
   constructor(options: TeiknOptions) {
     const { generators, outDir, plugins } = options;

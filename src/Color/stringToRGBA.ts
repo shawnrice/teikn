@@ -1,7 +1,6 @@
-import { hexToRGB } from './hexToRGB';
-import { namedColors } from './namedColors';
-import { RGBA } from './types';
-import { isHex, isRGB, isRGBA, stringToRgb, stringToRgba } from './util';
+import { convert } from './ColorSpace';
+import { parseColorString } from './parseColorString';
+import type { RGBA } from './types';
 
 /**
  * Takes a string and converts it to an RGBA tuple.
@@ -10,25 +9,15 @@ import { isHex, isRGB, isRGBA, stringToRgb, stringToRgba } from './util';
  * - hex: #RRGGBB or #RRGGBBAA
  * - rgb: rgb(r, g, b)
  * - rgba: rgba(r, g, b, a)
+ * - hsl: hsl(h, s%, l%)
+ * - hsla: hsla(h, s%, l%, a)
+ * - lab: lab(L, a, b)
+ * - lch: lch(L, C, H)
+ * - xyz: xyz(x, y, z)
  * - named colors: red, aliceblue, green, etc.
  */
 export const stringToRGBA = (c: string): RGBA => {
-  if (Object.keys(namedColors).includes(c.toLowerCase())) {
-    // @ts-expect-error: we've already checked for the key
-    return stringToRGBA(namedColors[c.toLowerCase()]);
-  }
-
-  if (isHex(c)) {
-    return [...hexToRGB(c), 1] as RGBA;
-  }
-
-  if (isRGB(c)) {
-    return [...stringToRgb(c), 1] as RGBA;
-  }
-
-  if (isRGBA(c)) {
-    return stringToRgba(c);
-  }
-
-  throw new Error(`Cannot extract color from "${c}"`);
+  const parsed = parseColorString(c);
+  const rgb = parsed.space === 'rgb' ? parsed.data : convert(parsed.space, 'rgb', parsed.data);
+  return [...(rgb as readonly [number, number, number]), parsed.alpha] as unknown as RGBA;
 };
