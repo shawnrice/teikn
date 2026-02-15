@@ -18,6 +18,13 @@ export class Json extends Generator<JsonOpts> {
     super(opts);
   }
 
+  override describe() {
+    return {
+      format: 'JSON',
+      usage: `// Import as a module\nimport tokens from './${this.file}';\n\n// Or fetch at runtime\nfetch('./${this.file}').then(r => r.json())`,
+    };
+  }
+
   generateToken(token: Token): Record<string, Omit<Token, 'name'>> {
     const { nameTransformer } = this.options;
     const { name, ...values } = token;

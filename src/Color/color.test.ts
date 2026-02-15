@@ -1,19 +1,21 @@
+import { describe, expect, test } from 'bun:test';
+
 import { Color } from './Color';
-import { round, roundHSL } from './util';
 import {
   hexToRGB,
   HSLToHex,
   HSLToRGB,
+  LABToLCH,
+  LABToXYZ,
+  LCHToLAB,
   RGBToHex,
   RGBToHSL,
   RGBToXYZ,
   XYZToLAB,
-  LABToXYZ,
-  LABToLCH,
-  LCHToLAB,
   XYZToRGB,
 } from './conversions';
 import { stringToRGBA } from './stringToRGBA';
+import { round, roundHSL } from './util';
 
 describe('Color tests', () => {
   // ─── Conversion function tests ───────────────────────────

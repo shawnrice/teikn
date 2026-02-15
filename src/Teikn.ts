@@ -2,9 +2,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { ensureDirectory } from './ensure-directory';
-import { ESModule, Generator, JavaScript, Json, Scss, ScssVars, TypeScript } from './Generators';
+import { CSSVars, DTCGGenerator, ESModule, Generator, HTML, JavaScript, Json, Scss, ScssVars, Storybook, TypeScript } from './Generators';
 import { ColorTransformPlugin, Plugin, PrefixTypePlugin, SCSSQuoteValuePlugin } from './Plugins';
+import { resolveReferences } from './resolve';
 import type { Token } from './Token';
+import { validate } from './validate';
+import type { ValidationResult } from './validate';
 
 const plugins: {
   ColorTransformPlugin: typeof ColorTransformPlugin;
@@ -13,13 +16,17 @@ const plugins: {
 } = { ColorTransformPlugin, PrefixTypePlugin, SCSSQuoteValuePlugin };
 
 const generators: {
+  CSSVars: typeof CSSVars;
+  DTCG: typeof DTCGGenerator;
   ESModule: typeof ESModule;
+  HTML: typeof HTML;
   JavaScript: typeof JavaScript;
   Json: typeof Json;
   Scss: typeof Scss;
   ScssVars: typeof ScssVars;
+  Storybook: typeof Storybook;
   TypeScript: typeof TypeScript;
-} = { ESModule, JavaScript, Json, Scss, ScssVars, TypeScript };
+} = { CSSVars, DTCG: DTCGGenerator, ESModule, HTML, JavaScript, Json, Scss, ScssVars, Storybook, TypeScript };
 
 export interface TeiknOptions {
   /**
@@ -57,6 +64,10 @@ export class Teikn {
 
   static Generator: typeof Generator = Generator;
 
+  static validate: typeof validate = validate;
+
+  static resolveReferences: typeof resolveReferences = resolveReferences;
+
   constructor(options: TeiknOptions) {
     const { generators, outDir, plugins } = options;
     this.generators = generators || [new Teikn.generators.Json()];
@@ -64,14 +75,23 @@ export class Teikn {
     this.outDir = outDir || process.cwd();
   }
 
+  validate(tokens: Token[]): ValidationResult {
+    return validate(tokens);
+  }
+
   async transform(tokens: Token[]): Promise<void> {
+    // Phase 1: Resolve references
+    const resolved = resolveReferences(tokens);
+
     const map = new Map<Generator, string>();
 
-    // Go ahead and generate the file contents before trying to write anything
+    // Phase 2: Share sibling references, then generate file contents
+    this.generators.forEach(g => { g.siblings = this.generators; });
     this.generators.forEach(generator => {
-      map.set(generator, generator.generate(tokens, this.plugins));
+      map.set(generator, generator.generate(resolved, this.plugins));
     });
 
+    // Phase 3: Write files
     try {
       await ensureDirectory(this.outDir);
       this.generators.forEach(async generator => {

@@ -1,6 +1,16 @@
 export * from './src/Teikn';
 export * from './src/Color';
+export * from './src/CubicBezier';
+export * from './src/BoxShadow';
+export * from './src/Gradient';
+export * from './src/Transition';
+export * from './src/TokenSet';
+export * from './src/dtcg';
 export * from './src/Generators';
 export * from './src/Plugins';
 export * from './src/Token';
+export * from './src/builders';
+export { resolveReferences } from './src/resolve';
+export { validate } from './src/validate';
+export type { ValidationResult, ValidationIssue, ValidationSeverity } from './src/validate';
 export { default } from './src/Teikn';

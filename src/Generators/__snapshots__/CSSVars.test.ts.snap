@@ -1,0 +1,36 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`CSSVars Generator tests It generates the token set 1`] = `
+"/**
+ * Teikn v1.0.0-alpha.6
+ * Generated null
+ *
+ * This file is generated and should be committed to source control
+ */
+:root {
+  /* Use for body fonts */
+  --body: "Roboto Condensed", Arial, sans;
+  /* the primary branding color */
+  --primary: aliceblue;
+  /* the secondary branding color */
+  --secondary: rgb(102, 205, 170);
+}"
+`;
+
+exports[`CSSVars Generator tests It generates themed tokens with modes 1`] = `
+"/**
+ * Teikn v1.0.0-alpha.6
+ * Generated null
+ *
+ * This file is generated and should be committed to source control
+ */
+:root {
+  --bg: #ffffff;
+  --text: #000000;
+}
+
+[data-theme="dark"] {
+  --bg: #1a1a1a;
+  --text: #eeeeee;
+}"
+`;

@@ -1,9 +1,14 @@
 import { EOL } from 'os';
 
 import { version } from '../../package.json';
+import { BoxShadow } from '../BoxShadow';
 import { Color } from '../Color';
+import { CubicBezier } from '../CubicBezier';
+import { LinearGradient, RadialGradient } from '../Gradient';
+import { Transition } from '../Transition';
 import type { Plugin } from '../Plugins';
 import type { Token } from '../Token';
+import { camelCase, deriveShortName } from '../string-utils';
 import { matches } from '../utils';
 
 export interface GeneratorOptions {
@@ -19,6 +24,10 @@ export interface GeneratorOptions {
    * default: `tokens`
    */
   filename?: string;
+  /**
+   * When true, emit typed getter functions grouped by token type
+   */
+  groups?: boolean;
 }
 
 export interface RequiredGeneratorOptions {
@@ -27,8 +36,15 @@ export interface RequiredGeneratorOptions {
 
 export type RequiredGeneratorOptionNames = keyof RequiredGeneratorOptions;
 
+export type GeneratorInfo = {
+  format: string;
+  usage: string;
+};
+
 export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions> {
   options: Opts;
+
+  #siblings: Generator[] = [];
 
   constructor(opts: Opts) {
     this.options = opts;
@@ -37,12 +53,40 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
     this.signature = this.signature.bind(this);
   }
 
+  get siblings(): Generator[] {
+    return this.#siblings;
+  }
+
+  set siblings(generators: Generator[]) {
+    this.#siblings = generators;
+  }
+
+  describe(): GeneratorInfo | null {
+    return null;
+  }
+
   signature(): string {
     return `Teikn v${version}`;
   }
 
   convertColorToString(token: Token): Token {
-    return token.value instanceof Color ? { ...token, value: token.value.toString() } : token;
+    const { value } = token;
+    if (value instanceof Color) {
+      return { ...token, value: value.toString() };
+    }
+    if (value instanceof CubicBezier) {
+      return { ...token, value: value.toString() };
+    }
+    if (value instanceof BoxShadow) {
+      return { ...token, value: value.toString() };
+    }
+    if (value instanceof LinearGradient || value instanceof RadialGradient) {
+      return { ...token, value: value.toString() };
+    }
+    if (value instanceof Transition) {
+      return { ...token, value: value.toString() };
+    }
+    return token;
   }
 
   validateOptions(): void {
@@ -92,6 +136,19 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
         return plugin.toJSON(acc);
       }, token),
     );
+  }
+
+  protected tokenGroups(tokens: Token[]): Array<{ groupName: string; entries: Array<{ shortName: string; token: Token }> }> {
+    const map = new Map<string, Array<{ shortName: string; token: Token }>>();
+    for (const token of tokens) {
+      const existing = map.get(token.type) ?? [];
+      map.set(token.type, [...existing, { shortName: deriveShortName(token.name, token.type), token }]);
+    }
+    return [...map.entries()].map(([type, entries]) => ({ groupName: camelCase(type), entries }));
+  }
+
+  tokenUsage(_token: Token): string | null {
+    return null;
   }
 
   abstract generateToken(_: Token): any;

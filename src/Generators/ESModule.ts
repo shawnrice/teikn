@@ -1,6 +1,6 @@
 import { EOL } from 'os';
 
-import { camelCase } from '../string-utils';
+import { camelCase, deriveShortName } from '../string-utils';
 import type { Token } from '../Token';
 import { getDate } from '../utils';
 import type { GeneratorOptions } from './Generator';
@@ -12,7 +12,15 @@ const defaultOptions = {
   dateFn: getDate,
 };
 
-const maybeQuote = (val: any) => (typeof val === 'string' ? `'${val}'` : val);
+const maybeQuote = (val: any): string => {
+  if (typeof val === 'string') { return `'${val}'`; }
+  if (typeof val === 'object' && val !== null) { return JSON.stringify(val); }
+  return String(val);
+};
+
+const isValidIdentifier = (name: string): boolean => /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(name);
+
+const quoteKey = (name: string): string => isValidIdentifier(name) ? name : `'${name}'`;
 
 export interface ESModuleOpts extends GeneratorOptions {
   dateFn?: () => string | null;
@@ -25,6 +33,27 @@ export interface ESModuleOpts extends GeneratorOptions {
 export class ESModule extends Generator<ESModuleOpts> {
   constructor(options = {}) {
     super(Object.assign({}, defaultOptions, options));
+  }
+
+  override describe() {
+    const base = `import { tokens } from './${this.file}';\n\ntokens.tokenName`;
+    const groupUsage = this.options.groups
+      ? `\n\n// Or use typed group accessors\nimport { color } from './${this.file}';\ncolor('primary')`
+      : '';
+    return {
+      format: 'ES Module',
+      usage: base + groupUsage,
+    };
+  }
+
+  override tokenUsage(token: Token): string | null {
+    const { nameTransformer, groups } = this.options;
+    if (groups) {
+      const shortName = deriveShortName(token.name, token.type);
+      const groupName = camelCase(token.type);
+      return `${groupName}('${shortName}')`;
+    }
+    return `tokens.${nameTransformer!(token.name)}`;
   }
 
   override header(): string {
@@ -56,10 +85,30 @@ export class ESModule extends Generator<ESModuleOpts> {
   }
 
   combinator(tokens: Token[]): string {
+    const { nameTransformer, groups } = this.options;
     const values = tokens.map(t => this.generateToken(t));
-    return ['export const tokens = {', values.join(EOL), '};', EOL, `export default tokens;`].join(
-      EOL,
-    );
+    const parts = ['export const tokens = {', values.join(EOL), '};'];
+
+    if (groups) {
+      const groupBlocks = this.tokenGroups(tokens).map(({ groupName, entries }) => {
+        const mapEntries = entries
+          .map(({ shortName, token }) => `  ${quoteKey(shortName)}: tokens.${nameTransformer!(token.name)},`)
+          .join(EOL);
+        return [
+          `const _${groupName} = {`,
+          mapEntries,
+          `};`,
+          `export const ${groupName} = (name) => {`,
+          `  if (!(name in _${groupName})) throw new Error(\`Unknown ${groupName} token: \${name}\`);`,
+          `  return _${groupName}[name];`,
+          `};`,
+        ].join(EOL);
+      });
+      parts.push('', ...groupBlocks);
+    }
+
+    parts.push('', `export default tokens;`);
+    return parts.join(EOL);
   }
 }
 

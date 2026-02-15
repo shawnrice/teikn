@@ -11,6 +11,7 @@ const packagePath = path.resolve(__dirname, '../package.json');
 const { version } = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
 
 import { Teikn } from './Teikn.js';
+import { validate } from './validate.js';
 
 const processArgv = () => {
   const caller = [process.argv[0], process.argv[1]];
@@ -36,11 +37,12 @@ const help = () => {
   console.log('Commands:');
   console.log('*', 'help', 'prints this message');
   console.log('*', 'list', 'generators|plugins', 'lists generators or plugins available');
+  console.log('*', 'validate', 'path/to/tokens.js', 'validate tokens for errors');
   console.log('*', 'usage', 'suggested usage');
   console.log(
     '*',
     caller.join(' '),
-    'path/to/tokens.js --outDir=path/to/out --generators="Scss,Json,ESModule" --plugins="PrefixToken,ColorTransform,SCSSQuoteValue"',
+    'path/to/tokens.js --outDir=path/to/out --generators="Scss,Json,ESModule,CSSVars,HTML" --plugins="PrefixToken,ColorTransform,SCSSQuoteValue"',
   );
 };
 
@@ -74,9 +76,55 @@ const list = (type = '') => {
   }
 };
 
+const validateTokens = async () => {
+  const tokenPath = getPathTo(args[0] ?? '');
+  if (!tokenPath || !fs.existsSync(tokenPath)) {
+    console.error('Usage:', caller.join(' '), 'validate path/to/tokens.js');
+    process.exit(2);
+  }
+
+  try {
+    const module = await import(tokenPath);
+    const input = module.default || module;
+    const tokens = Array.isArray(input) ? input : input.tokens || input.default;
+
+    banner();
+    console.log(`Validating tokens from ${tokenPath}...`);
+    console.log();
+
+    const result = validate(tokens);
+
+    if (result.issues.length === 0) {
+      console.log('No issues found. All tokens are valid.');
+      process.exit(0);
+    }
+
+    const errors = result.issues.filter(i => i.severity === 'error');
+    const warnings = result.issues.filter(i => i.severity === 'warning');
+
+    if (errors.length > 0) {
+      console.log(`Errors (${errors.length}):`);
+      errors.forEach(i => console.log(`  [ERROR] ${i.token}: ${i.message}`));
+      console.log();
+    }
+
+    if (warnings.length > 0) {
+      console.log(`Warnings (${warnings.length}):`);
+      warnings.forEach(i => console.log(`  [WARN]  ${i.token}: ${i.message}`));
+      console.log();
+    }
+
+    process.exit(result.valid ? 0 : 1);
+  } catch (error) {
+    console.error('Error loading tokens:', error);
+    process.exit(1);
+  }
+};
+
 const commands = {
   help,
   list,
+  validate: validateTokens,
   version: () => console.log(signature()),
 };
 

@@ -1,3 +1,5 @@
+import { describe, expect, test } from 'bun:test';
+
 import Generator from './Generator';
 
 describe('Generator base class tests', () => {

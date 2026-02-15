@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
 exports[`ESModule tests it generates tokens as an esmodule 1`] = `
 "/**
@@ -26,6 +26,47 @@ export const tokens = {
   secondary: 'rgb(102, 205, 170)',
 };
 
+export default tokens;"
+`;
+
+exports[`ESModule tests it generates group accessors when groups: true 1`] = `
+"/**
+ * Teikn v1.0.0-alpha.6
+ * Generated null
+ *
+ * This file is generated and should be commited to source control
+ *
+ */
+export const tokens = {
+  /**
+   *  Type: color
+   */
+  colorPrimary: 'aliceblue',
+  /**
+   *  Type: color
+   */
+  colorSecondary: 'rgb(102, 205, 170)',
+  /**
+   *  Type: spacing
+   */
+  spacingSm: '4px',
+};
+
+const _color = {
+  primary: tokens.colorPrimary,
+  secondary: tokens.colorSecondary,
+};
+export const color = (name) => {
+  if (!(name in _color)) throw new Error(\`Unknown color token: \${name}\`);
+  return _color[name];
+};
+const _spacing = {
+  sm: tokens.spacingSm,
+};
+export const spacing = (name) => {
+  if (!(name in _spacing)) throw new Error(\`Unknown spacing token: \${name}\`);
+  return _spacing[name];
+};
 
 export default tokens;"
 `;

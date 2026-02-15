@@ -1,6 +1,6 @@
 import { EOL } from 'os';
 
-import { camelCase } from '../string-utils';
+import { camelCase, deriveShortName } from '../string-utils';
 import type { Token } from '../Token';
 import { getDate } from '../utils';
 import type { GeneratorOptions } from './Generator';
@@ -28,6 +28,27 @@ export interface TypeScriptOpts extends GeneratorOptions {
 export class TypeScript extends Generator<TypeScriptOpts> {
   constructor(options = {}) {
     super(Object.assign({}, defaultOptions, options));
+  }
+
+  override describe() {
+    const base = this.options.filename ?? 'tokens';
+    const groupUsage = this.options.groups
+      ? `\n\n// Or use typed group accessors\nimport { color } from './${base}';\ncolor('primary') // compile-time checked`
+      : '';
+    return {
+      format: 'TypeScript Declarations',
+      usage: `import { tokens } from './${base}';\n\n// Pair with ES Module or CommonJS output for runtime values` + groupUsage,
+    };
+  }
+
+  override tokenUsage(token: Token): string | null {
+    const { nameTransformer, groups } = this.options;
+    if (groups) {
+      const shortName = deriveShortName(token.name, token.type);
+      const groupName = camelCase(token.type);
+      return `${groupName}('${shortName}')`;
+    }
+    return `tokens.${nameTransformer!(token.name)}`;
   }
 
   override header(): string {
@@ -64,13 +85,23 @@ export class TypeScript extends Generator<TypeScriptOpts> {
 
   combinator(tokens: Token[]): string {
     const values = tokens.map(t => this.generateToken(t));
-    return [
+    const parts = [
       'export const tokens: {',
       values
         .map((token, index, arr) => (index === arr.length - 1 ? token.slice(0, -1) : token))
         .join(EOL),
       '}',
-    ].join(EOL);
+    ];
+
+    if (this.options.groups) {
+      const groupDecls = this.tokenGroups(tokens).map(({ groupName, entries }) => {
+        const union = entries.map(({ shortName }) => `'${shortName}'`).join(' | ');
+        return `export const ${groupName}: (name: ${union}) => string;`;
+      });
+      parts.push('', ...groupDecls);
+    }
+
+    return parts.join(EOL);
   }
 
   override footer(): string {

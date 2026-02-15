@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
 exports[`TypeScript generator tests It matches the TypeScript snapshot 1`] = `
 "/**
@@ -30,5 +30,38 @@ export const tokens: {
    */
   secondary: string
 }
+export default tokens;"
+`;
+
+exports[`TypeScript generator tests it generates group type declarations when groups: true 1`] = `
+"/**
+ * Teikn v1.0.0-alpha.6
+ * Generated null
+ *
+ * This file is generated and should be commited to source control
+ *
+ */
+
+
+/**
+ * Design tokens
+ */
+export const tokens: {
+  /**
+   *  Type: color
+   */
+  colorPrimary: string,
+  /**
+   *  Type: color
+   */
+  colorSecondary: string,
+  /**
+   *  Type: spacing
+   */
+  spacingSm: string
+}
+
+export const color: (name: 'primary' | 'secondary') => string;
+export const spacing: (name: 'sm') => string;
 export default tokens;"
 `;
