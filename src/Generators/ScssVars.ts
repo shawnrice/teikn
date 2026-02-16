@@ -43,8 +43,26 @@ export class ScssVars extends Scss {
 
   override combinator(tokens: Token[]): string {
     const values = tokens.map(token => this.generateToken(token));
+    const lines = [values.join(EOL)];
 
-    return values.join(EOL);
+    const modeMap = new Map<string, { name: string; value: unknown }[]>();
+    for (const token of tokens) {
+      if (!token.modes) { continue; }
+      for (const [mode, val] of Object.entries(token.modes)) {
+        if (!modeMap.has(mode)) { modeMap.set(mode, []); }
+        modeMap.get(mode)!.push({ name: token.name, value: val });
+      }
+    }
+
+    for (const [mode, entries] of modeMap) {
+      lines.push('');
+      lines.push(`// Mode: ${mode}`);
+      for (const { name, value } of entries) {
+        lines.push(`$${name}--${mode}: ${scssValue(value)};`);
+      }
+    }
+
+    return lines.join(EOL);
   }
 
   override footer(): null {

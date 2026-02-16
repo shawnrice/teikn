@@ -1,14 +1,20 @@
 import { EOL } from 'os';
 
 import type { Plugin } from '../Plugins';
-import { camelCase, deriveShortName, kebabCase } from '../string-utils';
+import {
+  camelCase,
+  deriveShortName,
+  kebabCase,
+} from '../string-utils';
 import type { Token } from '../Token';
 import { getDate } from '../utils';
 import type { GeneratorOptions } from './Generator';
 import Generator from './Generator';
 
 const scssValue = (value: unknown): string => {
-  if (typeof value !== 'object' || value === null) { return String(value); }
+  if (typeof value !== 'object' || value === null) {
+    return String(value);
+  }
   const obj = value as Record<string, unknown>;
   if ('width' in obj && 'style' in obj && 'color' in obj) {
     return [obj.width, obj.style, obj.color].filter(Boolean).join(' ');
@@ -22,10 +28,10 @@ const defaultOptions = {
   dateFn: getDate,
 };
 
-export interface ScssOpts extends GeneratorOptions {
+export type ScssOpts = {
   nameTransformer?: (name: string) => string;
   dateFn?: () => string | null;
-}
+} & GeneratorOptions;
 
 export class Scss extends Generator<ScssOpts> {
   constructor(options = {}) {
@@ -71,8 +77,38 @@ export class Scss extends Generator<ScssOpts> {
   }
 
   combinator(tokens: Token[]): string {
+    const { nameTransformer } = this.options;
     const values = tokens.map(token => this.generateToken(token));
-    return [`// prettier-ignore`, `$token-values: (`, values.join(EOL), `);`, EOL].join(EOL);
+    const lines = [`// prettier-ignore`, `$token-values: (`, values.join(EOL), `);`];
+
+    const modeMap = new Map<string, string[]>();
+    for (const token of tokens) {
+      if (!token.modes) {
+        continue;
+      }
+      const key = nameTransformer!(token.name);
+      for (const [mode, val] of Object.entries(token.modes)) {
+        if (!modeMap.has(mode)) {
+          modeMap.set(mode, []);
+        }
+        modeMap.get(mode)!.push(`    ${key}: ${scssValue(val)},`);
+      }
+    }
+
+    if (modeMap.size > 0) {
+      lines.push('');
+      lines.push('// prettier-ignore');
+      lines.push('$modes: (');
+      for (const [mode, entries] of modeMap) {
+        lines.push(`  ${mode}: (`);
+        lines.push(...entries);
+        lines.push(`  ),`);
+      }
+      lines.push(') !default;');
+    }
+
+    lines.push('');
+    return lines.join(EOL);
   }
 
   override header(): string | null {
@@ -113,7 +149,10 @@ export class Scss extends Generator<ScssOpts> {
       .map(({ groupName, entries }) => {
         const groupKebab = kebabCase(groupName);
         const mapEntries = entries
-          .map(({ shortName, token }) => `  ${kebabCase(shortName)}: map-get($token-values, ${nameTransformer!(token.name)}),`)
+          .map(
+            ({ shortName, token }) =>
+              `  ${kebabCase(shortName)}: map-get($token-values, ${nameTransformer!(token.name)}),`,
+          )
           .join(EOL);
         return [
           `$${groupKebab}-values: (`,

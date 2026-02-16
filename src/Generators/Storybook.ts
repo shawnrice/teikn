@@ -17,12 +17,12 @@ const defaultOptions = {
   storyTitle: 'Design Tokens',
 };
 
-export interface StorybookOpts extends GeneratorOptions {
+export type StorybookOpts = {
   nameTransformer?: (name: string) => string;
   importPath?: string;
   storyTitle?: string;
   dateFn?: () => string | null;
-}
+} & GeneratorOptions
 
 // ─── Type classifiers ───────────────────────────────────────
 
@@ -345,6 +345,38 @@ const transitionDemoComponent = `const TransitionDemo = ({ name, value }: { name
   </div>
 );`;
 
+const modeTableComponent = `const ModeTable = ({ tokenKeys }: { tokenKeys: readonly string[] }) => {
+  const relevant = tokenKeys.filter(k => modesData[k]);
+  if (relevant.length === 0) return null;
+  return (
+    <div style={{ marginTop: '1.5rem', borderTop: '1px solid #e0e0e0', paddingTop: '1rem' }}>
+      <div style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.75rem' }}>Mode Variants</div>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8125rem' }}>
+        <thead>
+          <tr>
+            <th style={{ textAlign: 'left', padding: '0.375rem 0.625rem', background: '#f5f5f5', borderBottom: '2px solid #e0e0e0', fontWeight: 600, fontSize: '0.6875rem', textTransform: 'uppercase', letterSpacing: '0.03em', color: '#666' }}>Token</th>
+            <th style={{ textAlign: 'left', padding: '0.375rem 0.625rem', background: '#f5f5f5', borderBottom: '2px solid #e0e0e0', fontWeight: 600, fontSize: '0.6875rem', textTransform: 'uppercase', letterSpacing: '0.03em', color: '#666' }}>Mode</th>
+            <th style={{ textAlign: 'left', padding: '0.375rem 0.625rem', background: '#f5f5f5', borderBottom: '2px solid #e0e0e0', fontWeight: 600, fontSize: '0.6875rem', textTransform: 'uppercase', letterSpacing: '0.03em', color: '#666' }}>Value</th>
+          </tr>
+        </thead>
+        <tbody>
+          {relevant.flatMap(key =>
+            Object.entries(modesData[key]!).map(([mode, val]) => (
+              <tr key={\`\${key}-\${mode}\`}>
+                <td style={{ padding: '0.375rem 0.625rem', borderBottom: '1px solid #e0e0e0', fontWeight: 500 }}>{key}</td>
+                <td style={{ padding: '0.375rem 0.625rem', borderBottom: '1px solid #e0e0e0' }}>
+                  <span style={{ fontSize: '0.6875rem', padding: '0.125rem 0.375rem', background: '#f0f0f0', borderRadius: 3, fontFamily: 'monospace' }}>{mode}</span>
+                </td>
+                <td style={{ padding: '0.375rem 0.625rem', borderBottom: '1px solid #e0e0e0', fontFamily: 'monospace' }}>{val}</td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+};`;
+
 const tokenTableComponent = `const TokenTable = ({ items }: { items: Array<{ name: string; value: string }> }) => (
   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
     <thead>
@@ -388,6 +420,7 @@ const componentRegistry: Record<string, ComponentDef> = {
   zLayerStack: { name: 'ZLayerStack', source: zLayerStackComponent, needsState: false },
   transitionDemo: { name: 'TransitionDemo', source: transitionDemoComponent, needsState: false },
   tokenTable: { name: 'TokenTable', source: tokenTableComponent, needsState: false },
+  modeTable: { name: 'ModeTable', source: modeTableComponent, needsState: false },
 };
 
 // ─── Type → component mapping ───────────────────────────────
@@ -539,6 +572,12 @@ export class Storybook extends Generator<StorybookOpts> {
       neededComponents.add(classifyType(type));
     }
 
+    // Check if any tokens have modes
+    const hasModes = tokens.some(t => t.modes && Object.keys(t.modes).length > 0);
+    if (hasModes) {
+      neededComponents.add('modeTable');
+    }
+
     const needsState = [...neededComponents].some(key => componentRegistry[key]?.needsState);
 
     // Build import statements
@@ -557,6 +596,23 @@ export class Storybook extends Generator<StorybookOpts> {
       lines.push(`const ${varName} = [${keys}] as const;`);
     }
     lines.push('');
+
+    // Modes data (if any tokens have modes)
+    if (hasModes) {
+      lines.push(`const modesData: Record<string, Record<string, string>> = {`);
+      for (const token of tokens) {
+        if (!token.modes || Object.keys(token.modes).length === 0) { continue; }
+        const key = nameTransformer!(token.name);
+        const modeEntries = Object.entries(token.modes)
+          .map(([mode, val]) => `    '${mode}': ${JSON.stringify(String(val))}`)
+          .join(`,${EOL}`);
+        lines.push(`  '${key}': {`);
+        lines.push(modeEntries);
+        lines.push(`  },`);
+      }
+      lines.push(`};`);
+      lines.push('');
+    }
 
     // Helper components (only emit those needed)
     for (const key of neededComponents) {
@@ -578,15 +634,19 @@ export class Storybook extends Generator<StorybookOpts> {
     lines.push('');
 
     // Stories
-    for (const [type, _typeTokens] of groups) {
+    for (const [type, typeTokens] of groups) {
       const storyName = toStoryName(type);
       const keysVarName = `${camelCase(type)}Keys`;
       const renderBody = buildStoryRender(type, keysVarName);
+      const typeModes = hasModes && typeTokens.some(t => t.modes && Object.keys(t.modes).length > 0);
 
       lines.push(`export const ${storyName}: Story = {`);
       lines.push(`  render: () => (`);
       lines.push(`    <>`);
       lines.push(renderBody);
+      if (typeModes) {
+        lines.push(`        <ModeTable tokenKeys={${keysVarName}} />`);
+      }
       lines.push(`    </>`);
       lines.push(`  ),`);
       lines.push(`};`);

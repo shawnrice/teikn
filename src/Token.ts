@@ -1,26 +1,50 @@
-import type { BoxShadow } from './BoxShadow';
-import type { Color } from './Color';
-import type { CubicBezier } from './CubicBezier';
-import type { LinearGradient, RadialGradient } from './Gradient';
-import type { Transition } from './Transition';
+import type {
+  BoxShadow,
+  BoxShadowList,
+} from './TokenTypes/BoxShadow';
+import type { Color } from './TokenTypes/Color';
+import type { CubicBezier } from './TokenTypes/CubicBezier';
+import type { Dimension } from './TokenTypes/Dimension';
+import type { Duration } from './TokenTypes/Duration';
+import type {
+  GradientList,
+  LinearGradient,
+  RadialGradient,
+} from './TokenTypes/Gradient';
+import type {
+  Transition,
+  TransitionList,
+} from './TokenTypes/Transition';
 
-export type TokenValue = string | number | Color | CubicBezier | BoxShadow | LinearGradient | RadialGradient | Transition;
+export type TokenValue =
+  | string
+  | number
+  | Color
+  | CubicBezier
+  | BoxShadow
+  | BoxShadowList
+  | LinearGradient
+  | RadialGradient
+  | GradientList
+  | Transition
+  | TransitionList
+  | Dimension
+  | Duration;
 
 export type CompositeValue = Record<string, TokenValue>;
 
 export type ModeValues = Record<string, any>;
 
 // Token.value stays as `any` for backward compat — plugins and generators
-// already depend on untyped access. The builder functions provide type
-// safety at the construction boundary.
-export interface Token {
+// depend on untyped access. Conceptually: TokenValue | CompositeValue.
+export type Token = {
   name: string;
   value: any;
   usage?: string;
   type: string;
   group?: string;
   modes?: ModeValues;
-}
+};
 
 export type TokenInput = TokenValue | [value: TokenValue, usage: string] | TokenInputObject;
 

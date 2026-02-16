@@ -1,12 +1,21 @@
-import { describe, expect, test } from 'bun:test';
+import {
+  describe,
+  expect,
+  test,
+} from 'bun:test';
 
-import { Color } from '../Color';
-import { CubicBezier } from '../CubicBezier';
 import type { Token } from '../Token';
+import { Color } from '../TokenTypes/Color';
+import { CubicBezier } from '../TokenTypes/CubicBezier';
 import { DTCGGenerator } from './DTCG';
 
 const sampleTokens: Token[] = [
-  { name: 'color.primary', value: new Color(255, 0, 0), type: 'color', usage: 'Primary brand color' },
+  {
+    name: 'color.primary',
+    value: new Color(255, 0, 0),
+    type: 'color',
+    usage: 'Primary brand color',
+  },
   { name: 'color.secondary', value: new Color(0, 0, 255), type: 'color' },
   { name: 'spacing.sm', value: '8px', type: 'spacing' },
   { name: 'spacing.md', value: '16px', type: 'spacing' },
@@ -74,5 +83,21 @@ describe('DTCGGenerator', () => {
     const output = JSON.parse(gen.generate(tokens));
     expect(output.color).toBeDefined();
     expect(output.color.primary).toBeDefined();
+  });
+
+  test('tokens with modes include $extensions.mode', () => {
+    const tokens: Token[] = [
+      {
+        name: 'surface',
+        value: new Color(255, 255, 255),
+        type: 'color',
+        modes: { dark: new Color(26, 26, 26) },
+      },
+    ];
+    const gen = new DTCGGenerator();
+    const output = JSON.parse(gen.generate(tokens));
+    expect(output.surface.$extensions).toBeDefined();
+    expect(output.surface.$extensions.mode.dark).toBeDefined();
+    expect(output.surface.$extensions.mode.dark.colorSpace).toBe('srgb');
   });
 });

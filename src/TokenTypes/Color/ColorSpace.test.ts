@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
+
 import { convert, convertWithIntermediates } from './ColorSpace';
-import type { Space } from './ColorSpace';
 
 describe('convert', () => {
   test('same-space conversion returns original data', () => {

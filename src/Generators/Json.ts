@@ -8,9 +8,9 @@ const defaultOptions = {
   nameTransformer: camelCase,
 };
 
-export interface JsonOpts extends GeneratorOptions {
+export type JsonOpts = {
   nameTransformer?: (name: string) => string;
-}
+} & GeneratorOptions
 
 export class Json extends Generator<JsonOpts> {
   constructor(options = {}) {

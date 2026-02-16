@@ -78,6 +78,14 @@ const tokenToDTCG = (token: Token): DTCGToken => {
     result.$description = token.usage;
   }
 
+  if (token.modes && Object.keys(token.modes).length > 0) {
+    const modeEntries: Record<string, unknown> = {};
+    for (const [mode, val] of Object.entries(token.modes)) {
+      modeEntries[mode] = teiknValueToDTCG(val, token.type);
+    }
+    result.$extensions = { mode: modeEntries };
+  }
+
   return result;
 };
 

@@ -11,16 +11,27 @@ const packagePath = path.resolve(__dirname, '../package.json');
 const { version } = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
 
 import { Teikn } from './Teikn.js';
+import { resolveReferences } from './resolve.js';
 import { validate } from './validate.js';
+
+const SUPPORTED_EXTENSIONS = new Set(['.ts', '.js', '.mjs', '.cjs', '.json']);
+const CONFIG_FILES = ['teikn.config.ts', 'teikn.config.js', '.teiknrc.js'];
 
 const processArgv = () => {
   const caller = [process.argv[0], process.argv[1]];
-  const [command = '', ...args] = process.argv.slice(2);
+  const rawArgs = process.argv.slice(2);
+  const positional = rawArgs.filter(a => !a.startsWith('-'));
+  const flags = rawArgs.filter(a => a.startsWith('-'));
+  const command = positional[0] ?? '';
+  const args = [...positional.slice(1), ...flags];
 
   return { caller, command, args };
 };
 
 const { caller, command, args } = processArgv();
+
+const hasFlag = (name: string, short?: string) =>
+  args.some(a => a === `--${name}` || (short ? a === `-${short}` : false));
 
 const signature = () => `Teikn v${version}`;
 
@@ -37,13 +48,19 @@ const help = () => {
   console.log('Commands:');
   console.log('*', 'help', 'prints this message');
   console.log('*', 'list', 'generators|plugins', 'lists generators or plugins available');
-  console.log('*', 'validate', 'path/to/tokens.js', 'validate tokens for errors');
+  console.log('*', 'validate', 'path/to/tokens.{ts,js}', 'validate tokens for errors');
   console.log('*', 'usage', 'suggested usage');
   console.log(
     '*',
     caller.join(' '),
-    'path/to/tokens.js --outDir=path/to/out --generators="Scss,Json,ESModule,CSSVars,HTML" --plugins="PrefixToken,ColorTransform,SCSSQuoteValue"',
+    'path/to/tokens.ts --outDir=path/to/out --generators="Scss,Json,ESModule,CSSVars,HTML" --plugins="PrefixToken,ColorTransform,SCSSQuoteValue"',
   );
+  console.log();
+
+  console.log('Flags:');
+  console.log('  --watch, -w      Watch input file for changes and regenerate');
+  console.log('  --dry-run        Show what would be generated without writing files');
+  console.log('  --config=<path>  Path to config file');
 };
 
 const list = (type = '') => {
@@ -76,10 +93,12 @@ const list = (type = '') => {
   }
 };
 
+const getPathTo = (str: string) => path.resolve(process.cwd(), str);
+
 const validateTokens = async () => {
   const tokenPath = getPathTo(args[0] ?? '');
   if (!tokenPath || !fs.existsSync(tokenPath)) {
-    console.error('Usage:', caller.join(' '), 'validate path/to/tokens.js');
+    console.error('Usage:', caller.join(' '), 'validate path/to/tokens.{ts,js}');
     process.exit(2);
   }
 
@@ -133,7 +152,7 @@ const usage = () => {
   console.log(
     'Usage:',
     caller.join(' '),
-    'path/to/tokens.js --outDir=path/to/out --generators="Scss,Json,ESModule" --plugins="PrefixToken,ColorTransform,SCSSQuoteValue"',
+    'path/to/tokens.ts --outDir=path/to/out --generators="Scss,Json,ESModule" --plugins="PrefixToken,ColorTransform,SCSSQuoteValue"',
   );
   process.exit(2);
 };
@@ -155,19 +174,40 @@ const parseArgFlag = (argName: string, defaultValue = '') => {
 
 const getDir = () => parseArgFlag('outdir', './');
 
-const getPathTo = (str: string) => path.resolve(process.cwd(), str);
+const isSupportedFile = (filePath: string) =>
+  SUPPORTED_EXTENSIONS.has(path.extname(filePath).toLowerCase());
 
-const getTokens = async () => {
-  const tokenPath = getPathTo(command);
+const loadTokensFromPath = async (tokenPath: string, bustCache = false) => {
   try {
-    // Dynamic import for ESM compatibility
-    const module = await import(tokenPath);
+    if (path.extname(tokenPath).toLowerCase() === '.json') {
+      const raw = await fs.promises.readFile(tokenPath, 'utf8');
+      const content = JSON.parse(raw);
+      return Array.isArray(content) ? content : content.tokens ?? content;
+    }
+    const importPath = bustCache ? `${tokenPath}?t=${Date.now()}` : tokenPath;
+    const module = await import(importPath);
     const input = module.default || module;
-    return Array.isArray(input) ? input : input.tokens || input.default;
+    return Array.isArray(input) ? input : input.tokens ?? input.default;
   } catch (error) {
     console.error(`Error loading tokens from ${tokenPath}:`, error);
     process.exit(1);
   }
+};
+
+const formatSize = (bytes: number) =>
+  bytes < 1024 ? `${bytes} B` : `${(bytes / 1024).toFixed(1)} KB`;
+
+const resolveConfigPath = () => {
+  const configFlag = parseArgFlag('config');
+  if (configFlag) {
+    const configPath = getPathTo(configFlag);
+    if (!fs.existsSync(configPath)) {
+      console.error(`Config file not found: ${configPath}`);
+      process.exit(1);
+    }
+    return configPath;
+  }
+  return CONFIG_FILES.map(name => getPathTo(name)).find(p => fs.existsSync(p)) ?? null;
 };
 
 const getGenerators = () => {
@@ -198,9 +238,46 @@ const getPlugins = () => {
     : [Teikn.plugins.ColorTransformPlugin, Teikn.plugins.SCSSQuoteValuePlugin];
 };
 
+const dryRun = (writer: Teikn, tokens: any) => {
+  const resolved = resolveReferences(tokens);
+  writer.generators.forEach(g => { g.siblings = writer.generators; });
+  console.log();
+  console.log('[teikn] Dry run — no files written');
+  writer.generators.forEach(g => {
+    const content = g.generate(resolved, writer.plugins);
+    const size = formatSize(Buffer.byteLength(content, 'utf8'));
+    console.log(`  ${g.file.padEnd(20)} ${size}`);
+  });
+  process.exit(0);
+};
+
+const startWatch = (inputPath: string, onchange: () => Promise<void>) => {
+  console.log('[teikn] Watching for changes...');
+  let timeout: ReturnType<typeof setTimeout> | null = null;
+  fs.watch(inputPath, () => {
+    if (timeout) {
+      clearTimeout(timeout);
+    }
+    timeout = setTimeout(async () => {
+      const start = performance.now();
+      try {
+        await onchange();
+        console.log(`[teikn] Regenerated (${Math.round(performance.now() - start)}ms)`);
+      } catch (error) {
+        console.error('[teikn] Error during regeneration:', error);
+      }
+    }, 100);
+  });
+  process.on('SIGINT', () => {
+    console.log('\n[teikn] Stopped watching.');
+    process.exit(0);
+  });
+};
+
 const generateTokens = async () => {
   try {
-    const tokens = await getTokens();
+    const tokenPath = getPathTo(command);
+    const tokens = await loadTokensFromPath(tokenPath);
     const outDir = getPathTo(getDir());
     const generators = getGenerators();
     const plugins = getPlugins();
@@ -214,12 +291,107 @@ const generateTokens = async () => {
     banner();
     console.log('Using generators:', generators.map(f => f.name).join(', '));
     console.log('Using plugins:', plugins.map(f => f.name).join(', '));
-    console.log(`Writing tokens to directory: ${outDir}`);
 
+    if (hasFlag('dry-run')) {
+      dryRun(writer, tokens);
+      return;
+    }
+
+    console.log(`Writing tokens to directory: ${outDir}`);
     await writer.transform(tokens);
     console.log('Tokens generated successfully!');
+
+    if (hasFlag('watch', 'w')) {
+      startWatch(tokenPath, async () => {
+        const freshTokens = await loadTokensFromPath(tokenPath, true);
+        await writer.transform(freshTokens);
+      });
+    }
   } catch (error) {
     console.error('Error generating tokens:', error);
+    process.exit(1);
+  }
+};
+
+const resolveFromConfig = (configGenerators: unknown[], configPlugins: unknown[]) => {
+  const generators = configGenerators.length
+    ? configGenerators.map(g => {
+        if (typeof g === 'string') {
+          const entry = Object.entries(Teikn.generators)
+            .find(([k]) => k.toLowerCase() === g.toLowerCase());
+          if (!entry) {
+            console.error(`Unknown generator: ${g}`);
+            process.exit(1);
+          }
+          return new entry![1]();
+        }
+        return g as InstanceType<typeof Teikn.Generator>;
+      })
+    : [new Teikn.generators.Json()];
+
+  const plugins = configPlugins.length
+    ? configPlugins.map(p => {
+        if (typeof p === 'string') {
+          const entry = Object.entries(Teikn.plugins)
+            .find(([k]) => k.toLowerCase() === p.toLowerCase());
+          if (!entry) {
+            console.error(`Unknown plugin: ${p}`);
+            process.exit(1);
+          }
+          return new entry![1]({} as Record<string, unknown>);
+        }
+        return p as InstanceType<typeof Teikn.Plugin>;
+      })
+    : [];
+
+  return { generators, plugins };
+};
+
+const runFromConfig = async (configPath: string) => {
+  try {
+    const configModule = await import(configPath);
+    const config = configModule.default ?? configModule;
+
+    const inputPath = getPathTo(config.input ?? './tokens.ts');
+    const outDir = getPathTo(config.outDir ?? './dist');
+
+    if (!fs.existsSync(inputPath)) {
+      console.error(`Input file not found: ${inputPath}`);
+      process.exit(1);
+    }
+
+    const { generators, plugins } = resolveFromConfig(
+      config.generators ?? [],
+      config.plugins ?? [],
+    );
+
+    const tokens = await loadTokensFromPath(inputPath);
+    const writer = new Teikn({ plugins, generators, outDir });
+
+    banner();
+    console.log(`Config: ${path.relative(process.cwd(), configPath)}`);
+    console.log('Using generators:', writer.generators.map(g => g.constructor.name).join(', '));
+    if (writer.plugins.length) {
+      console.log('Using plugins:', writer.plugins.map(p => p.constructor.name).join(', '));
+    }
+
+    if (hasFlag('dry-run')) {
+      dryRun(writer, tokens);
+      return;
+    }
+
+    console.log(`Writing tokens to directory: ${outDir}`);
+    await writer.transform(tokens);
+    console.log('Tokens generated successfully!');
+
+    if (hasFlag('watch', 'w')) {
+      startWatch(inputPath, async () => {
+        const freshTokens = await loadTokensFromPath(inputPath, true);
+        await writer.transform(freshTokens);
+      });
+    }
+  } catch (error) {
+    console.error('Error loading config:', error);
     process.exit(1);
   }
 };
@@ -227,10 +399,19 @@ const generateTokens = async () => {
 const main = async () => {
   if (command in commands) {
     commands[command as keyof typeof commands](...args);
-  } else if (fs.existsSync(command) && command.endsWith('.js')) {
+  } else if (command && fs.existsSync(command) && isSupportedFile(command)) {
     await generateTokens();
   } else {
-    usage();
+    const configPath = resolveConfigPath();
+    if (configPath) {
+      await runFromConfig(configPath);
+    } else if (command) {
+      console.error(`File not found or unsupported extension: ${command}`);
+      console.error('Supported extensions: .ts, .js, .mjs, .cjs, .json');
+      process.exit(1);
+    } else {
+      usage();
+    }
   }
 };
 

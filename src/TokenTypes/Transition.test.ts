@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import { CubicBezier } from './CubicBezier';
-import { Transition } from './Transition';
+import { Transition, TransitionList } from './Transition';
 
 describe('Transition', () => {
   // ─── Construction ────────────────────────────────────────────
@@ -219,5 +219,71 @@ describe('Transition', () => {
     expect(roundTripped.timingFunction.controlPoints).toEqual(original.timingFunction.controlPoints);
     expect(roundTripped.delay).toBe(original.delay);
     expect(roundTripped.property).toBe(original.property);
+  });
+});
+
+describe('TransitionList', () => {
+  const t1 = new Transition('0.2s', 'ease', '0s', 'opacity');
+  const t2 = new Transition('0.3s', CubicBezier.standard, '0s', 'transform');
+
+  it('creates from an array of Transitions', () => {
+    const list = new TransitionList([t1, t2]);
+    expect(list.length).toBe(2);
+    expect(list.at(0)!.property).toBe('opacity');
+    expect(list.at(1)!.property).toBe('transform');
+  });
+
+  it('creates from a CSS string', () => {
+    const css = 'opacity 0.2s ease, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+    const list = new TransitionList(css);
+    expect(list.length).toBe(2);
+    expect(list.at(0)!.property).toBe('opacity');
+    expect(list.at(0)!.duration).toBe('0.2s');
+    expect(list.at(1)!.property).toBe('transform');
+    expect(list.at(1)!.duration).toBe('0.3s');
+  });
+
+  it('creates as a copy', () => {
+    const a = new TransitionList([t1, t2]);
+    const b = new TransitionList(a);
+    expect(b.length).toBe(2);
+    expect(b.toString()).toBe(a.toString());
+  });
+
+  it('layers returns readonly array', () => {
+    const list = new TransitionList([t1]);
+    expect(list.layers).toHaveLength(1);
+  });
+
+  it('at() returns undefined for out-of-bounds', () => {
+    const list = new TransitionList([t1]);
+    expect(list.at(5)).toBeUndefined();
+  });
+
+  it('map() transforms each transition', () => {
+    const list = new TransitionList([t1, t2]);
+    const mapped = list.map(t => t.setDuration('1s'));
+    expect(mapped.at(0)!.duration).toBe('1s');
+    expect(mapped.at(1)!.duration).toBe('1s');
+    expect(t1.duration).toBe('0.2s'); // original unchanged
+  });
+
+  it('toString() joins with comma', () => {
+    const list = new TransitionList([t1, t2]);
+    const str = list.toString();
+    expect(str).toBe('opacity 0.2s ease, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)');
+  });
+
+  it('toJSON() equals toString()', () => {
+    const list = new TransitionList([t1, t2]);
+    expect(list.toJSON()).toBe(list.toString());
+  });
+
+  it('handles CSS with cubic-bezier parentheses correctly', () => {
+    const css = 'opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease-in-out';
+    const list = new TransitionList(css);
+    expect(list.length).toBe(2);
+    expect(list.at(0)!.timingFunction.x1).toBe(0.4);
+    expect(list.at(1)!.timingFunction.keyword).toBe('ease-in-out');
   });
 });

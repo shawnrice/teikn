@@ -1,19 +1,31 @@
+import { clamp } from '../utils';
+
 const EPSILON = 1e-6;
 const MAX_ITERATIONS = 8;
 
 type ControlPoints = readonly [x1: number, y1: number, x2: number, y2: number];
 
-const presets: Record<string, ControlPoints> = {
-  ease: [0.25, 0.1, 0.25, 1],
-  'ease-in': [0.42, 0, 1, 1],
-  'ease-out': [0, 0, 0.58, 1],
-  'ease-in-out': [0.42, 0, 0.58, 1],
-  linear: [0, 0, 1, 1],
+// prettier-ignore
+const cssTimings: Record<string, ControlPoints> = {
+  ease:          [0.25, 0.1,   0.25, 1],
+  'ease-in':     [0.42,   0,      1, 1],
+  'ease-out':    [0,      0,   0.58, 1],
+  'ease-in-out': [0.42,   0,   0.58, 1],
+  linear:        [0,      0,      1, 1],
 };
 
-const RE = /cubic-bezier\(\s*([\d.e+-]+)\s*,\s*([\d.e+-]+)\s*,\s*([\d.e+-]+)\s*,\s*([\d.e+-]+)\s*\)/i;
+// prettier-ignore
+const presets: Record<string, ControlPoints> = {
+  ...cssTimings,
+  standard:      [0.4,    0,    0.2, 1],
+  accelerate:    [0.4,    0,      1, 1],
+  decelerate:    [0,      0,    0.2, 1],
+};
 
-const clampX = (v: number): number => Math.min(1, Math.max(0, v));
+const RE =
+  /cubic-bezier\(\s*([\d.e+-]+)\s*,\s*([\d.e+-]+)\s*,\s*([\d.e+-]+)\s*,\s*([\d.e+-]+)\s*\)/i;
+
+const clampX = (v: number): number => clamp(0, 1, v);
 
 // Parametric cubic bezier for one axis:
 //   B(t) = 3(1-t)^2 * t * p1 + 3(1-t) * t^2 * p2 + t^3
@@ -68,14 +80,8 @@ export class CubicBezier {
   readonly #y2: number;
 
   constructor(x1: number, y1: number, x2: number, y2: number);
-  constructor(value: string);
-  constructor(value: CubicBezier);
-  constructor(
-    first: number | string | CubicBezier,
-    y1?: number,
-    x2?: number,
-    y2?: number,
-  ) {
+  constructor(value: CubicBezier | string);
+  constructor(first: number | string | CubicBezier, y1?: number, x2?: number, y2?: number) {
     if (first instanceof CubicBezier) {
       this.#x1 = first.#x1;
       this.#y1 = first.#y1;
@@ -107,10 +113,25 @@ export class CubicBezier {
     this.#y2 = y2!;
   }
 
-  get x1(): number { return this.#x1; }
-  get y1(): number { return this.#y1; }
-  get x2(): number { return this.#x2; }
-  get y2(): number { return this.#y2; }
+  static from(x: CubicBezier) {
+    return new CubicBezier(x);
+  }
+
+  get x1(): number {
+    return this.#x1;
+  }
+
+  get y1(): number {
+    return this.#y1;
+  }
+
+  get x2(): number {
+    return this.#x2;
+  }
+
+  get y2(): number {
+    return this.#y2;
+  }
 
   get controlPoints(): ControlPoints {
     return [this.#x1, this.#y1, this.#x2, this.#y2];
@@ -139,8 +160,13 @@ export class CubicBezier {
 
   /** The CSS keyword for this curve, or null if it doesn't match a named timing */
   get keyword(): string | null {
-    for (const [name, pts] of Object.entries(presets)) {
-      if (this.#x1 === pts[0] && this.#y1 === pts[1] && this.#x2 === pts[2] && this.#y2 === pts[3]) {
+    for (const [name, pts] of Object.entries(cssTimings)) {
+      if (
+        this.#x1 === pts[0] &&
+        this.#y1 === pts[1] &&
+        this.#x2 === pts[2] &&
+        this.#y2 === pts[3]
+      ) {
         return name;
       }
     }
@@ -157,14 +183,14 @@ export class CubicBezier {
 
   // ─── Named presets ──────────────────────────────────────────
 
-  static readonly ease: CubicBezier = new CubicBezier(0.25, 0.1, 0.25, 1);
-  static readonly easeIn: CubicBezier = new CubicBezier(0.42, 0, 1, 1);
-  static readonly easeOut: CubicBezier = new CubicBezier(0, 0, 0.58, 1);
-  static readonly easeInOut: CubicBezier = new CubicBezier(0.42, 0, 0.58, 1);
-  static readonly linear: CubicBezier = new CubicBezier(0, 0, 1, 1);
+  static readonly ease: CubicBezier = new CubicBezier(...presets['ease']!);
+  static readonly easeIn: CubicBezier = new CubicBezier(...presets['ease-in']!);
+  static readonly easeOut: CubicBezier = new CubicBezier(...presets['ease-out']!);
+  static readonly easeInOut: CubicBezier = new CubicBezier(...presets['ease-in-out']!);
+  static readonly linear: CubicBezier = new CubicBezier(...presets['linear']!);
 
   // Material Design standard curves
-  static readonly standard: CubicBezier = new CubicBezier(0.4, 0, 0.2, 1);
-  static readonly accelerate: CubicBezier = new CubicBezier(0.4, 0, 1, 1);
-  static readonly decelerate: CubicBezier = new CubicBezier(0, 0, 0.2, 1);
+  static readonly standard: CubicBezier = new CubicBezier(...presets['standard']!);
+  static readonly accelerate: CubicBezier = new CubicBezier(...presets['accelerate']!);
+  static readonly decelerate: CubicBezier = new CubicBezier(...presets['decelerate']!);
 }

@@ -126,6 +126,10 @@ export class Color {
     throw new Error('Invalid color constructor arguments');
   }
 
+  static isColor(x: unknown): x is Color {
+    return x instanceof this;
+  }
+
   // ─── Internal helpers ──────────────────────────────────────
 
   #resolve<S extends Space>(space: S): SpaceData[S] {

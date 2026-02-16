@@ -1,9 +1,9 @@
-import { BoxShadow } from './BoxShadow';
-import { Color } from './Color';
-import { CubicBezier } from './CubicBezier';
-import { LinearGradient, RadialGradient } from './Gradient';
-import type { Token, CompositeValue } from './Token';
-import { Transition } from './Transition';
+import type {
+  CompositeValue,
+  Token,
+} from './Token';
+import { Color } from './TokenTypes/Color';
+import { isFirstClassValue } from './type-classifiers';
 
 export type ValidationSeverity = 'error' | 'warning';
 
@@ -20,14 +20,6 @@ export type ValidationResult = {
 
 const REF_PATTERN = /^\{([^}]+)\}$/;
 
-const isFirstClassValue = (v: unknown): boolean =>
-  v instanceof Color ||
-  v instanceof CubicBezier ||
-  v instanceof BoxShadow ||
-  v instanceof LinearGradient ||
-  v instanceof RadialGradient ||
-  v instanceof Transition;
-
 const isComposite = (v: unknown): v is CompositeValue =>
   typeof v === 'object' && v !== null && !isFirstClassValue(v) && !Array.isArray(v);
 
@@ -37,7 +29,13 @@ const isRef = (value: unknown): value is string =>
 const COLOR_TYPES = new Set(['color']);
 const COMPOSITE_TYPES = new Set(['typography', 'border', 'shadow', 'transition', 'gradient']);
 
-const TYPOGRAPHY_FIELDS = new Set(['fontFamily', 'fontSize', 'fontWeight', 'lineHeight', 'letterSpacing']);
+const TYPOGRAPHY_FIELDS = new Set([
+  'fontFamily',
+  'fontSize',
+  'fontWeight',
+  'lineHeight',
+  'letterSpacing',
+]);
 const BORDER_FIELDS = new Set(['width', 'style', 'color']);
 const SHADOW_FIELDS = new Set(['color', 'offsetX', 'offsetY', 'blur', 'spread']);
 const TRANSITION_FIELDS = new Set(['duration', 'timingFunction']);
@@ -62,11 +60,67 @@ const validateCompositeShape = (type: string, value: CompositeValue): string | n
   };
 
   switch (type) {
-    case 'typography': return check(TYPOGRAPHY_FIELDS, 'Typography');
-    case 'border': return check(BORDER_FIELDS, 'Border');
-    case 'shadow': return check(SHADOW_FIELDS, 'Shadow');
-    case 'transition': return check(TRANSITION_FIELDS, 'Transition');
-    default: return null;
+    case 'typography':
+      return check(TYPOGRAPHY_FIELDS, 'Typography');
+    case 'border':
+      return check(BORDER_FIELDS, 'Border');
+    case 'shadow':
+      return check(SHADOW_FIELDS, 'Shadow');
+    case 'transition':
+      return check(TRANSITION_FIELDS, 'Transition');
+    default:
+      return null;
+  }
+};
+
+/**
+ * Validate a single value (main or mode) for common issues.
+ * Factored out so both token.value and token.modes[x] use the same checks.
+ */
+const validateValue = (
+  value: unknown,
+  token: Token,
+  label: string,
+  tokenMap: Map<string, Token>,
+  issue: (severity: ValidationSeverity, tokenName: string, message: string) => void,
+): void => {
+  // Check color parseability
+  if (COLOR_TYPES.has(token.type) && typeof value === 'string' && !isRef(value)) {
+    if (!tryParseColor(value)) {
+      issue('warning', token.name, `${label}Color value "${value}" could not be parsed`);
+    }
+  }
+
+  // Check references
+  if (isRef(value)) {
+    const refName = value.match(REF_PATTERN)![1]!;
+    if (!tokenMap.has(refName)) {
+      issue('error', token.name, `${label}Unresolved reference: {${refName}}`);
+    }
+  }
+
+  // Check composite shapes
+  if (COMPOSITE_TYPES.has(token.type) && isComposite(value)) {
+    const shapeError = validateCompositeShape(token.type, value as CompositeValue);
+    if (shapeError) {
+      issue('warning', token.name, `${label}${shapeError}`);
+    }
+  }
+
+  // Check for references in composite values
+  if (isComposite(value)) {
+    for (const [field, fieldValue] of Object.entries(value as CompositeValue)) {
+      if (isRef(fieldValue)) {
+        const refName = (fieldValue as string).match(REF_PATTERN)![1]!;
+        if (!tokenMap.has(refName)) {
+          issue(
+            'error',
+            token.name,
+            `${label}Unresolved reference in field "${field}": {${refName}}`,
+          );
+        }
+      }
+    }
   }
 };
 
@@ -80,6 +134,7 @@ const validateCompositeShape = (type: string, value: CompositeValue): string | n
  * - References point to existing tokens
  * - No circular references
  * - Composite token shapes match expected fields
+ * - Mode values pass the same checks as the main value
  *
  * @example
  * ```ts
@@ -123,46 +178,17 @@ export const validate = (tokens: Token[]): ValidationResult => {
     }
   }
 
-  // Validate values
+  // Validate values (main + modes)
   for (const token of tokens) {
     if (!token.name || token.value === undefined) {
       continue;
     }
 
-    const value = token.value;
+    validateValue(token.value, token, '', tokenMap, issue);
 
-    // Check color parseability
-    if (COLOR_TYPES.has(token.type) && typeof value === 'string' && !isRef(value)) {
-      if (!tryParseColor(value)) {
-        issue('warning', token.name, `Color value "${value}" could not be parsed`);
-      }
-    }
-
-    // Check references
-    if (isRef(value)) {
-      const refName = value.match(REF_PATTERN)![1]!;
-      if (!tokenMap.has(refName)) {
-        issue('error', token.name, `Unresolved reference: {${refName}}`);
-      }
-    }
-
-    // Check composite shapes
-    if (COMPOSITE_TYPES.has(token.type) && isComposite(value)) {
-      const shapeError = validateCompositeShape(token.type, value as CompositeValue);
-      if (shapeError) {
-        issue('warning', token.name, shapeError);
-      }
-    }
-
-    // Check for references in composite values
-    if (isComposite(value)) {
-      for (const [field, fieldValue] of Object.entries(value as CompositeValue)) {
-        if (isRef(fieldValue)) {
-          const refName = (fieldValue as string).match(REF_PATTERN)![1]!;
-          if (!tokenMap.has(refName)) {
-            issue('error', token.name, `Unresolved reference in field "${field}": {${refName}}`);
-          }
-        }
+    if (token.modes) {
+      for (const [mode, modeValue] of Object.entries(token.modes)) {
+        validateValue(modeValue, token, `[mode "${mode}"] `, tokenMap, issue);
       }
     }
   }
@@ -170,10 +196,14 @@ export const validate = (tokens: Token[]): ValidationResult => {
   // Check for circular references
   const checkCircular = (name: string, visited: Set<string>): boolean => {
     const token = tokenMap.get(name);
-    if (!token) { return false; }
+    if (!token) {
+      return false;
+    }
 
     const value = token.value;
-    if (!isRef(value)) { return false; }
+    if (!isRef(value)) {
+      return false;
+    }
 
     const refName = (value as string).match(REF_PATTERN)![1]!;
     if (visited.has(refName)) {

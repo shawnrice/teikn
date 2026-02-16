@@ -1,13 +1,25 @@
 import { EOL } from 'os';
 
-import { BoxShadow } from '../BoxShadow';
-import { Color } from '../Color';
-import { CubicBezier } from '../CubicBezier';
-import { LinearGradient, RadialGradient } from '../Gradient';
-import { Transition } from '../Transition';
 import { kebabCase } from '../string-utils';
-import type { Token } from '../Token';
-import type { CompositeValue, TokenValue } from '../Token';
+import type {
+  CompositeValue,
+  Token,
+  TokenValue,
+} from '../Token';
+import { BoxShadow } from '../TokenTypes/BoxShadow';
+import { Color } from '../TokenTypes/Color';
+import { CubicBezier } from '../TokenTypes/CubicBezier';
+import { Dimension } from '../TokenTypes/Dimension';
+import { Duration } from '../TokenTypes/Duration';
+import {
+  GradientList,
+  LinearGradient,
+  RadialGradient,
+} from '../TokenTypes/Gradient';
+import {
+  Transition,
+  TransitionList,
+} from '../TokenTypes/Transition';
 import { getDate } from '../utils';
 import type { GeneratorOptions } from './Generator';
 import Generator from './Generator';
@@ -18,10 +30,10 @@ const defaultOptions = {
   dateFn: getDate,
 };
 
-export interface HTMLOpts extends GeneratorOptions {
+export type HTMLOpts = {
   nameTransformer?: (name: string) => string;
   dateFn?: () => string | null;
-}
+} & GeneratorOptions;
 
 // ─── Helpers ─────────────────────────────────────────────────
 
@@ -43,8 +55,18 @@ const toColor = (value: TokenValue | CompositeValue): Color | null => {
 };
 
 const valueToString = (value: TokenValue | CompositeValue): string => {
-  if (value instanceof Color || value instanceof CubicBezier || value instanceof BoxShadow
-    || value instanceof LinearGradient || value instanceof RadialGradient || value instanceof Transition) {
+  if (
+    value instanceof Color ||
+    value instanceof CubicBezier ||
+    value instanceof BoxShadow ||
+    value instanceof LinearGradient ||
+    value instanceof RadialGradient ||
+    value instanceof GradientList ||
+    value instanceof Transition ||
+    value instanceof TransitionList ||
+    value instanceof Dimension ||
+    value instanceof Duration
+  ) {
     return value.toString();
   }
   if (typeof value === 'object') {
@@ -62,9 +84,10 @@ const wcagBadge = (ratio: number, level: string, threshold: number): string => {
   const pass = ratio >= threshold;
   const cls = pass ? 'pass' : 'fail';
   const icon = pass ? '✓' : '✗';
-  const levelDesc = level === 'AA'
-    ? 'WCAG AA requires 4.5:1 for normal text, 3:1 for large text (18pt+ or 14pt bold).'
-    : 'WCAG AAA requires 7:1 for normal text, 4.5:1 for large text (18pt+ or 14pt bold).';
+  const levelDesc =
+    level === 'AA'
+      ? 'WCAG AA requires 4.5:1 for normal text, 3:1 for large text (18pt+ or 14pt bold).'
+      : 'WCAG AAA requires 7:1 for normal text, 4.5:1 for large text (18pt+ or 14pt bold).';
   const verdict = pass
     ? `Passes — ${ratio.toFixed(2)}:1 meets the ${threshold}:1 threshold.`
     : `Fails — ${ratio.toFixed(2)}:1 is below the ${threshold}:1 threshold.`;
@@ -150,7 +173,10 @@ const buildBezierSvg = (x1: number, y1: number, x2: number, y2: number): string 
 // ─── Type classifiers ───────────────────────────────────────
 
 const slugify = (str: string): string =>
-  str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  str
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
 
 const isColorType = (type: string): boolean => type === 'color';
 const isFontSizeType = (type: string): boolean => /font[-_]?size/i.test(type);
@@ -350,6 +376,9 @@ section h2{font-size:1.25rem;font-weight:600;margin-bottom:1rem;padding-bottom:0
 .format-card-name{font-weight:600;font-size:0.9rem}
 .format-card-file{font-size:0.75rem;color:#666;font-family:ui-monospace,SFMono-Regular,monospace;background:#f0f0f0;padding:0.15rem 0.5rem;border-radius:3px}
 .format-card-code{margin:0;padding:1rem;background:#1e1f36;color:#e0e0e0;font-size:0.8125rem;font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace;line-height:1.6;overflow-x:auto;white-space:pre}
+.mode-variants{display:flex;flex-wrap:wrap;gap:0.375rem;margin-top:0.625rem;padding-top:0.625rem;border-top:1px solid #f0f0f0}
+.mode-badge{font-size:0.6875rem;font-family:monospace;padding:0.2rem 0.5rem;background:#f5f5f5;border:1px solid #e0e0e0;border-radius:4px;display:inline-flex;align-items:center;gap:0.375rem}
+.mode-swatch{width:14px;height:14px;border-radius:3px;border:1px solid rgba(0,0,0,.1);flex-shrink:0}
 @media(max-width:768px){.layout{flex-direction:column}.sidebar{width:100%;height:auto;position:static;border-right:none;border-bottom:1px solid #e0e0e0}.sidebar ul{display:flex;flex-wrap:wrap;gap:0.25rem}.content{padding:1rem}.color-grid,.shadow-grid,.radius-grid{justify-content:center}.gradient-grid{grid-template-columns:1fr}.color-card{width:100%;max-width:320px}.timing-layout{flex-direction:column}.timing-viz{border-radius:12px 12px 0 0}}
 .flip-card{perspective:1000px}
 .flip-inner{position:relative;transition:transform .5s;transform-style:preserve-3d}
@@ -412,8 +441,12 @@ export class HTML extends Generator<HTMLOpts> {
     super(Object.assign({}, defaultOptions, options));
   }
 
-  override convertColorToString(token: Token): Token {
+  override stringifyValue(token: Token): Token {
     return token;
+  }
+
+  override convertColorToString(token: Token): Token {
+    return this.stringifyValue(token);
   }
 
   generateToken(token: Token): string {
@@ -421,9 +454,17 @@ export class HTML extends Generator<HTMLOpts> {
     const usage = token.usage ? escapeHtml(token.usage) : '';
 
     // Composite values get a formatted pre block instead of inline JSON
-    const isFirstClass = token.value instanceof Color || token.value instanceof CubicBezier
-      || token.value instanceof BoxShadow || token.value instanceof LinearGradient
-      || token.value instanceof RadialGradient || token.value instanceof Transition;
+    const isFirstClass =
+      token.value instanceof Color ||
+      token.value instanceof CubicBezier ||
+      token.value instanceof BoxShadow ||
+      token.value instanceof LinearGradient ||
+      token.value instanceof RadialGradient ||
+      token.value instanceof GradientList ||
+      token.value instanceof Transition ||
+      token.value instanceof TransitionList ||
+      token.value instanceof Dimension ||
+      token.value instanceof Duration;
     if (typeof token.value === 'object' && !isFirstClass) {
       const formatted = compositeToFormatted(token.value as Record<string, unknown>);
       return [
@@ -598,7 +639,9 @@ export class HTML extends Generator<HTMLOpts> {
       `<div class="card-name">${escapeHtml(name)}</div>`,
       `<dl>${propEntries}</dl>`,
       `</div>`,
-      token.usage ? `<div class="token-usage" style="padding:0 1rem 0.75rem">${escapeHtml(token.usage)}</div>` : '',
+      token.usage
+        ? `<div class="token-usage" style="padding:0 1rem 0.75rem">${escapeHtml(token.usage)}</div>`
+        : '',
       `</div>`,
     ]
       .filter(Boolean)
@@ -652,9 +695,8 @@ export class HTML extends Generator<HTMLOpts> {
     const name = this.options.nameTransformer!(token.name);
     const val = valueToString(token.value);
 
-    const bezier = token.value instanceof CubicBezier
-      ? token.value.controlPoints
-      : parseBezier(val);
+    const bezier =
+      token.value instanceof CubicBezier ? token.value.controlPoints : parseBezier(val);
 
     if (!bezier) {
       return '';
@@ -683,7 +725,9 @@ export class HTML extends Generator<HTMLOpts> {
       `</div>`,
       `</div>`,
       `</div>`,
-      token.usage ? `<div class="token-usage" style="padding:0 1.25rem 1rem">${escapeHtml(token.usage)}</div>` : '',
+      token.usage
+        ? `<div class="token-usage" style="padding:0 1.25rem 1rem">${escapeHtml(token.usage)}</div>`
+        : '',
       `</div>`,
     ]
       .filter(Boolean)
@@ -740,7 +784,7 @@ export class HTML extends Generator<HTMLOpts> {
     const { value } = token;
     const isLinear = value instanceof LinearGradient;
     const isRadial = value instanceof RadialGradient;
-    const cssValue = (isLinear || isRadial) ? value.toString() : valueToString(value);
+    const cssValue = isLinear || isRadial ? value.toString() : valueToString(value);
 
     // Badge overlay on the swatch
     const typeBadge = isLinear
@@ -753,19 +797,30 @@ export class HTML extends Generator<HTMLOpts> {
     const meta = isLinear
       ? `${value.angle}°`
       : isRadial
-        ? [value.shape, value.size !== 'farthest-corner' ? value.size : ''].filter(Boolean).join(' · ')
+        ? [value.shape, value.size !== 'farthest-corner' ? value.size : '']
+            .filter(Boolean)
+            .join(' · ')
         : '';
 
     // Color stop swatches with hex + position labels
-    const stops = (isLinear || isRadial)
-      ? value.stops.map(s => [
-          `<div class="gradient-stop-item">`,
-          `<div class="gradient-stop-swatch" style="background:${escapeHtml(s.color.toString())}"></div>`,
-          `<div class="gradient-stop-hex">${escapeHtml(s.color.hex)}</div>`,
-          s.position ? `<div class="gradient-stop-label">${escapeHtml(s.position)}</div>` : '',
-          `</div>`,
-        ].filter(Boolean).join('')).join('')
-      : '';
+    const stops =
+      isLinear || isRadial
+        ? value.stops
+            .map(s =>
+              [
+                `<div class="gradient-stop-item">`,
+                `<div class="gradient-stop-swatch" style="background:${escapeHtml(s.color.toString())}"></div>`,
+                `<div class="gradient-stop-hex">${escapeHtml(s.color.hex)}</div>`,
+                s.position
+                  ? `<div class="gradient-stop-label">${escapeHtml(s.position)}</div>`
+                  : '',
+                `</div>`,
+              ]
+                .filter(Boolean)
+                .join(''),
+            )
+            .join('')
+        : '';
 
     return [
       `<div class="gradient-card">`,
@@ -779,7 +834,9 @@ export class HTML extends Generator<HTMLOpts> {
       `</div>`,
       stops ? `<div class="gradient-stops-row">${stops}</div>` : '',
       `<div class="gradient-css">${escapeHtml(cssValue)}</div>`,
-      token.usage ? `<div class="token-usage" style="margin-top:0.5rem">${escapeHtml(token.usage)}</div>` : '',
+      token.usage
+        ? `<div class="token-usage" style="margin-top:0.5rem">${escapeHtml(token.usage)}</div>`
+        : '',
       `</div>`,
       `</div>`,
     ]
@@ -906,7 +963,16 @@ export class HTML extends Generator<HTMLOpts> {
   private renderZLayerToken(token: Token, index: number, total: number): string {
     const name = this.options.nameTransformer!(token.name);
     const val = valueToString(token.value);
-    const colors = ['#6366f1', '#8b5cf6', '#a855f7', '#d946ef', '#ec4899', '#f43f5e', '#f97316', '#eab308'];
+    const colors = [
+      '#6366f1',
+      '#8b5cf6',
+      '#a855f7',
+      '#d946ef',
+      '#ec4899',
+      '#f43f5e',
+      '#f97316',
+      '#eab308',
+    ];
     const color = colors[index % colors.length]!;
     const widthPct = 40 + Math.round((index / Math.max(total - 1, 1)) * 55);
 
@@ -987,6 +1053,40 @@ export class HTML extends Generator<HTMLOpts> {
       .join(EOL);
   }
 
+  // ── Mode variants ─────────────────────────────────────────
+
+  private renderModeVariants(token: Token): string {
+    if (!token.modes || Object.keys(token.modes).length === 0) {
+      return '';
+    }
+
+    const isColor = isColorType(token.type);
+    const badges = Object.entries(token.modes)
+      .map(([mode, val]) => {
+        if (isColor) {
+          const color = toColor(val);
+          const colorStr = color ? color.hex : String(val);
+          return `<span class="mode-badge"><span class="mode-swatch" style="background:${escapeHtml(colorStr)}"></span>${escapeHtml(mode)}: ${escapeHtml(colorStr)}</span>`;
+        }
+        return `<span class="mode-badge">${escapeHtml(mode)}: ${escapeHtml(valueToString(val))}</span>`;
+      })
+      .join('');
+
+    return `<div class="mode-variants">${badges}</div>`;
+  }
+
+  private addModeVariants(cardHtml: string, token: Token): string {
+    const modesHtml = this.renderModeVariants(token);
+    if (!modesHtml) {
+      return cardHtml;
+    }
+    const idx = cardHtml.lastIndexOf('</div>');
+    if (idx === -1) {
+      return cardHtml + modesHtml;
+    }
+    return cardHtml.slice(0, idx) + modesHtml + cardHtml.slice(idx);
+  }
+
   // ── Routing ────────────────────────────────────────────────
 
   private renderVisualization(token: Token): string {
@@ -1029,7 +1129,12 @@ export class HTML extends Generator<HTMLOpts> {
     if (isSpacingType(type)) {
       return this.renderSpacingToken(token);
     }
-    if (isGradientType(type) || value instanceof LinearGradient || value instanceof RadialGradient) {
+    if (
+      isGradientType(type) ||
+      value instanceof LinearGradient ||
+      value instanceof RadialGradient ||
+      value instanceof GradientList
+    ) {
       return this.renderGradientToken(token);
     }
     if (isOpacityType(type)) {
@@ -1052,7 +1157,17 @@ export class HTML extends Generator<HTMLOpts> {
     }
 
     // Generic composite fallback
-    if (typeof value === 'object' && !(value instanceof Color) && !(value instanceof CubicBezier) && !(value instanceof BoxShadow) && !(value instanceof Transition)) {
+    if (
+      typeof value === 'object' &&
+      !(value instanceof Color) &&
+      !(value instanceof CubicBezier) &&
+      !(value instanceof BoxShadow) &&
+      !(value instanceof Transition) &&
+      !(value instanceof TransitionList) &&
+      !(value instanceof GradientList) &&
+      !(value instanceof Dimension) &&
+      !(value instanceof Duration)
+    ) {
       return this.renderCompositeToken(token);
     }
 
@@ -1143,7 +1258,11 @@ export class HTML extends Generator<HTMLOpts> {
       : tokens
           .map(t => {
             const viz = this.renderVisualization(t);
-            return viz ? this.wrapWithFlip(viz, t) : '';
+            if (!viz) {
+              return '';
+            }
+            const withModes = this.addModeVariants(viz, t);
+            return this.wrapWithFlip(withModes, t);
           })
           .filter(Boolean);
 
@@ -1180,15 +1299,17 @@ export class HTML extends Generator<HTMLOpts> {
       return '';
     }
 
-    const cards = siblingInfos.map(({ format, usage, file }) => [
-      `<div class="format-card">`,
-      `<div class="format-card-header">`,
-      `<span class="format-card-name">${escapeHtml(format)}</span>`,
-      `<span class="format-card-file">${escapeHtml(file)}</span>`,
-      `</div>`,
-      `<pre class="format-card-code">${escapeHtml(usage)}</pre>`,
-      `</div>`,
-    ].join(EOL));
+    const cards = siblingInfos.map(({ format, usage, file }) =>
+      [
+        `<div class="format-card">`,
+        `<div class="format-card-header">`,
+        `<span class="format-card-name">${escapeHtml(format)}</span>`,
+        `<span class="format-card-file">${escapeHtml(file)}</span>`,
+        `</div>`,
+        `<pre class="format-card-code">${escapeHtml(usage)}</pre>`,
+        `</div>`,
+      ].join(EOL),
+    );
 
     return [
       `<section id="getting-started" class="getting-started">`,
@@ -1208,7 +1329,9 @@ export class HTML extends Generator<HTMLOpts> {
     const tocItems = [
       hasGettingStarted ? `<li><a href="#getting-started">Getting Started</a></li>` : '',
       ...types.map(type => `<li><a href="#section-${slugify(type)}">${escapeHtml(type)}</a></li>`),
-    ].filter(Boolean).join(EOL);
+    ]
+      .filter(Boolean)
+      .join(EOL);
 
     const toc = [
       `<nav class="sidebar">`,

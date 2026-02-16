@@ -55,4 +55,21 @@ describe('TypeScript generator tests', () => {
     ]);
     expect(output).toContain('export const color:');
   });
+
+  test('emits modes type when tokens have modes', () => {
+    const tokens: Token[] = [
+      { name: 'colorSurface', type: 'color', value: '#ffffff', modes: { dark: '#1a1a1a' } },
+    ];
+    const output = new Generator({ dateFn: fixedDate }).generate(tokens);
+    expect(output).toContain('export const modes: {');
+    expect(output).toContain('dark: Partial<typeof tokens>;');
+  });
+
+  test('omits modes type when no tokens have modes', () => {
+    const tokens: Token[] = [
+      { name: 'colorSurface', type: 'color', value: '#ffffff' },
+    ];
+    const output = new Generator({ dateFn: fixedDate }).generate(tokens);
+    expect(output).not.toContain('modes');
+  });
 });

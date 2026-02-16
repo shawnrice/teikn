@@ -19,7 +19,6 @@ $token-values: (
   color-secondary: rgba(102, 205, 170, 1),
 );
 
-
 /// Use "get-token" to access tokens by name
 @function get-token($name) {
   @if (not map-has-key($token-values, $name)) {
@@ -44,7 +43,6 @@ $token-values: (
   color-secondary: rgb(102, 205, 170),
   spacing-sm: 4px,
 );
-
 
 /// Use "get-token" to access tokens by name
 @function get-token($name) {
@@ -96,7 +94,6 @@ $token-values: (
   /// the secondary branding color
   color-secondary: rgba(102, 205, 170, 1),
 );
-
 
 /// Use "get-token" to access tokens by name
 @function get-token($name) {

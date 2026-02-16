@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 
 import tokenSet1 from '../fixtures/tokenSet1';
+import type { Token } from '../Token';
 import Generator from './Json';
 
 describe('JSONGenerator tests', () => {
@@ -13,5 +14,21 @@ describe('JSONGenerator tests', () => {
     const info = gen.describe();
     expect(info.format).toBe('JSON');
     expect(info.usage).toContain('fetch');
+  });
+
+  test('includes mode values in output', () => {
+    const tokens: Token[] = [
+      { name: 'colorSurface', type: 'color', value: '#ffffff', modes: { dark: '#1a1a1a' } },
+    ];
+    const output = new Generator().generate(tokens);
+    const parsed = JSON.parse(output);
+    expect(parsed.colorSurface.modes).toEqual({ dark: '#1a1a1a' });
+  });
+
+  test('omits modes when not present', () => {
+    const tokens: Token[] = [{ name: 'colorSurface', type: 'color', value: '#ffffff' }];
+    const output = new Generator().generate(tokens);
+    const parsed = JSON.parse(output);
+    expect(parsed.colorSurface.modes).toBeUndefined();
   });
 });

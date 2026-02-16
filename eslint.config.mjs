@@ -46,6 +46,7 @@ export default tseslint.config(
       '@typescript-eslint/no-import-type-side-effects': 'error',
       // isolatedDeclarations requires explicit types on public class properties
       '@typescript-eslint/no-inferrable-types': ['error', { ignoreProperties: true }],
+      '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
     },
   },
 

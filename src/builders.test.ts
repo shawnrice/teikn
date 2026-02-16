@@ -1,7 +1,9 @@
 import { describe, expect, test } from 'bun:test';
 
-import { composite, dp, group, onColor, onColors, ref, scale, themed, tokens } from './builders';
-import { Color } from './Color';
+import { composite, dim, dp, dur, group, onColor, onColors, ref, scale, themed, tokens } from './builders';
+import { Color } from './TokenTypes/Color';
+import { Dimension } from './TokenTypes/Dimension';
+import { Duration } from './TokenTypes/Duration';
 
 describe('builders', () => {
   describe('group', () => {
@@ -202,11 +204,36 @@ describe('builders', () => {
   });
 
   describe('dp', () => {
-    test('converts px to rem', () => {
-      expect(dp(16)).toBe('1rem');
-      expect(dp(8)).toBe('0.5rem');
-      expect(dp(4)).toBe('0.25rem');
-      expect(dp(-16)).toBe('-1rem');
+    test('converts px to rem Dimension', () => {
+      const d = dp(16);
+      expect(d).toBeInstanceOf(Dimension);
+      expect(d.value).toBe(1);
+      expect(d.unit).toBe('rem');
+      expect(d.toString()).toBe('1rem');
+    });
+
+    test('converts various px values', () => {
+      expect(dp(8).toString()).toBe('0.5rem');
+      expect(dp(4).toString()).toBe('0.25rem');
+      expect(dp(-16).toString()).toBe('-1rem');
+    });
+  });
+
+  describe('dim', () => {
+    test('creates a Dimension', () => {
+      const d = dim(16, 'px');
+      expect(d).toBeInstanceOf(Dimension);
+      expect(d.value).toBe(16);
+      expect(d.unit).toBe('px');
+    });
+  });
+
+  describe('dur', () => {
+    test('creates a Duration', () => {
+      const d = dur(200, 'ms');
+      expect(d).toBeInstanceOf(Duration);
+      expect(d.value).toBe(200);
+      expect(d.unit).toBe('ms');
     });
   });
 

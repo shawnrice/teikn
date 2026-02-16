@@ -89,4 +89,39 @@ describe('SCSS Vars Generator tests', () => {
     const gen = new Generator();
     expect(gen.footer()).toBeNull();
   });
+
+  test('it emits mode-namespaced variables when tokens have modes', () => {
+    const tokens: Token[] = [
+      { name: 'colorSurface', type: 'color', value: '#ffffff', modes: { dark: '#1a1a1a' } },
+      { name: 'colorText', type: 'color', value: '#000000', modes: { dark: '#e0e0e0' } },
+      { name: 'spacingSm', type: 'spacing', value: '4px' },
+    ];
+    const output = new Generator({ dateFn: () => 'null' }).generate(tokens);
+
+    expect(output).toContain('// Mode: dark');
+    expect(output).toContain('$colorSurface--dark: #1a1a1a;');
+    expect(output).toContain('$colorText--dark: #e0e0e0;');
+  });
+
+  test('it does not emit mode variables when no tokens have modes', () => {
+    const tokens: Token[] = [
+      { name: 'colorPrimary', type: 'color', value: '#ff0000' },
+    ];
+    const output = new Generator({ dateFn: () => 'null' }).generate(tokens);
+
+    expect(output).not.toContain('// Mode:');
+    expect(output).not.toContain('--');
+  });
+
+  test('it handles multiple modes', () => {
+    const tokens: Token[] = [
+      { name: 'colorSurface', type: 'color', value: '#fff', modes: { dark: '#111', dim: '#333' } },
+    ];
+    const output = new Generator({ dateFn: () => 'null' }).generate(tokens);
+
+    expect(output).toContain('// Mode: dark');
+    expect(output).toContain('$colorSurface--dark: #111;');
+    expect(output).toContain('// Mode: dim');
+    expect(output).toContain('$colorSurface--dim: #333;');
+  });
 });

@@ -1,10 +1,25 @@
-import { describe, expect, test } from 'bun:test';
+import {
+  describe,
+  expect,
+  test,
+} from 'bun:test';
 
-import { BoxShadow } from '../BoxShadow';
-import { Color } from '../Color';
-import { CubicBezier } from '../CubicBezier';
-import { LinearGradient, RadialGradient } from '../Gradient';
-import { dtcgTypeToTeikn, dtcgValueToTeikn, teiknTypeToDTCG, teiknValueToDTCG } from './values';
+import { BoxShadow } from '../TokenTypes/BoxShadow';
+import { Color } from '../TokenTypes/Color';
+import { CubicBezier } from '../TokenTypes/CubicBezier';
+import { Dimension } from '../TokenTypes/Dimension';
+import { Duration } from '../TokenTypes/Duration';
+import {
+  LinearGradient,
+  RadialGradient,
+} from '../TokenTypes/Gradient';
+import { Transition } from '../TokenTypes/Transition';
+import {
+  dtcgTypeToTeikn,
+  dtcgValueToTeikn,
+  teiknTypeToDTCG,
+  teiknValueToDTCG,
+} from './values';
 
 describe('teiknValueToDTCG', () => {
   test('Color instance converts to structured DTCG color', () => {
@@ -81,6 +96,16 @@ describe('teiknValueToDTCG', () => {
     expect(result).toEqual({ value: 200, unit: 'ms' });
   });
 
+  test('Dimension instance converts to structured dimension', () => {
+    const result = teiknValueToDTCG(new Dimension(16, 'px'), 'spacing');
+    expect(result).toEqual({ value: 16, unit: 'px' });
+  });
+
+  test('Duration instance converts to structured duration', () => {
+    const result = teiknValueToDTCG(new Duration(200, 'ms'), 'duration');
+    expect(result).toEqual({ value: 200, unit: 'ms' });
+  });
+
   test('number values pass through', () => {
     expect(teiknValueToDTCG(42, 'opacity')).toBe(42);
   });
@@ -90,10 +115,7 @@ describe('teiknValueToDTCG', () => {
   });
 
   test('composite object with nested Color gets color converted', () => {
-    const result = teiknValueToDTCG(
-      { color: new Color(255, 0, 0), width: '1px' },
-      'border',
-    ) as any;
+    const result = teiknValueToDTCG({ color: new Color(255, 0, 0), width: '1px' }, 'border') as any;
     expect(result.color).toEqual({ colorSpace: 'srgb', components: [1, 0, 0] });
     expect(result.width).toEqual({ value: 1, unit: 'px' });
   });
@@ -116,10 +138,7 @@ describe('teiknValueToDTCG', () => {
   });
 
   test('composite object with non-dimension string passes through', () => {
-    const result = teiknValueToDTCG(
-      { fontFamily: 'Arial', fontSize: '16px' },
-      'typography',
-    ) as any;
+    const result = teiknValueToDTCG({ fontFamily: 'Arial', fontSize: '16px' }, 'typography') as any;
     expect(result.fontFamily).toBe('Arial');
     expect(result.fontSize).toEqual({ value: 16, unit: 'px' });
   });
@@ -133,26 +152,59 @@ describe('teiknValueToDTCG', () => {
     const result = teiknValueToDTCG('not-a-color-zzz', 'color');
     expect(result).toBe('not-a-color-zzz');
   });
+
+  test('Transition instance converts to DTCG transition composite', () => {
+    const t = new Transition('300ms', new CubicBezier(0.4, 0, 0.2, 1));
+    const result = teiknValueToDTCG(t, 'transition') as any;
+    expect(result.duration).toEqual({ value: 300, unit: 'ms' });
+    expect(result.timingFunction).toEqual([0.4, 0, 0.2, 1]);
+    expect(result.delay).toBeUndefined();
+    expect(result.property).toBeUndefined();
+  });
+
+  test('Transition with delay includes delay field', () => {
+    const t = new Transition('0.3s', 'ease', '0.1s');
+    const result = teiknValueToDTCG(t, 'transition') as any;
+    expect(result.duration).toEqual({ value: 0.3, unit: 's' });
+    expect(result.delay).toEqual({ value: 0.1, unit: 's' });
+  });
+
+  test('Transition with non-all property includes property field', () => {
+    const t = new Transition('0.3s', 'ease', '0s', 'opacity');
+    const result = teiknValueToDTCG(t, 'transition') as any;
+    expect(result.property).toBe('opacity');
+    expect(result.delay).toBeUndefined();
+  });
+
+  test('Transition with delay=0s and property=all omits both', () => {
+    const t = new Transition('0.2s', 'ease');
+    const result = teiknValueToDTCG(t, 'transition') as any;
+    expect(result.delay).toBeUndefined();
+    expect(result.property).toBeUndefined();
+  });
 });
 
 describe('dtcgValueToTeikn', () => {
   test('structured color converts to Color instance', () => {
-    const result = dtcgValueToTeikn(
-      { colorSpace: 'srgb', components: [1, 0, 0] },
-      'color',
-    );
+    const result = dtcgValueToTeikn({ colorSpace: 'srgb', components: [1, 0, 0] }, 'color');
     expect(result).toBeInstanceOf(Color);
     expect(result.red).toBe(255);
   });
 
-  test('structured dimension converts to string', () => {
+  test('structured dimension converts to Dimension instance', () => {
     const result = dtcgValueToTeikn({ value: 16, unit: 'px' }, 'dimension');
-    expect(result).toBe('16px');
+    expect(result).toBeInstanceOf(Dimension);
+    expect(result.value).toBe(16);
+    expect(result.unit).toBe('px');
+    expect(result.toString()).toBe('16px');
   });
 
-  test('structured duration converts to string', () => {
+  test('structured duration converts to Duration instance', () => {
     const result = dtcgValueToTeikn({ value: 200, unit: 'ms' }, 'duration');
-    expect(result).toBe('200ms');
+    expect(result).toBeInstanceOf(Duration);
+    expect(result.value).toBe(200);
+    expect(result.unit).toBe('ms');
+    expect(result.toString()).toBe('200ms');
   });
 
   test('cubic bezier array converts to CubicBezier instance', () => {
@@ -229,7 +281,8 @@ describe('dtcgValueToTeikn', () => {
       'border',
     );
     expect(result.color).toBeInstanceOf(Color);
-    expect(result.width).toBe('1px');
+    expect(result.width).toBeInstanceOf(Dimension);
+    expect(result.width.toString()).toBe('1px');
     expect(result.style).toBe('solid');
   });
 
@@ -239,16 +292,18 @@ describe('dtcgValueToTeikn', () => {
       'border',
     );
     expect(result.color).toBe('{brandColor}');
-    expect(result.width).toBe('2px');
+    expect(result.width).toBeInstanceOf(Dimension);
+    expect(result.width.toString()).toBe('2px');
   });
 
-  test('convertCompositeFields with cubic bezier array', () => {
+  test('convertCompositeFields with cubic bezier array and duration', () => {
     const result = dtcgValueToTeikn(
       { timingFunction: [0.4, 0, 0.2, 1], duration: { value: 300, unit: 'ms' } },
       'transition',
     );
     expect(result.timingFunction).toBeInstanceOf(CubicBezier);
-    expect(result.duration).toBe('300ms');
+    expect(result.duration).toBeInstanceOf(Duration);
+    expect(result.duration.toString()).toBe('300ms');
   });
 
   test('unknown type passes through', () => {

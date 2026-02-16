@@ -22,10 +22,10 @@ const isValidIdentifier = (name: string): boolean => /^[a-zA-Z_$][a-zA-Z0-9_$]*$
 
 const quoteKey = (name: string): string => isValidIdentifier(name) ? name : `'${name}'`;
 
-export interface ESModuleOpts extends GeneratorOptions {
+export type ESModuleOpts = {
   dateFn?: () => string | null;
   nameTransformer?: (name: string) => string;
-}
+} & GeneratorOptions
 
 /**
  * Generates tokens as an ES Module
@@ -105,6 +105,22 @@ export class ESModule extends Generator<ESModuleOpts> {
         ].join(EOL);
       });
       parts.push('', ...groupBlocks);
+    }
+
+    const modeMap = new Map<string, string[]>();
+    for (const token of tokens) {
+      if (!token.modes) { continue; }
+      for (const [mode, val] of Object.entries(token.modes)) {
+        if (!modeMap.has(mode)) { modeMap.set(mode, []); }
+        modeMap.get(mode)!.push(`    ${nameTransformer!(token.name)}: ${maybeQuote(val)},`);
+      }
+    }
+
+    if (modeMap.size > 0) {
+      const modeEntries = [...modeMap.entries()].map(([mode, entries]) =>
+        [`  ${quoteKey(mode)}: {`, ...entries, `  },`].join(EOL),
+      );
+      parts.push('', `export const modes = {`, ...modeEntries, `};`);
     }
 
     parts.push('', `export default tokens;`);

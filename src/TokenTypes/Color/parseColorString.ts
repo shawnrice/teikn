@@ -15,11 +15,11 @@ import {
 } from './util';
 import { xkcdColors } from './xkcdNamedColors';
 
-export interface ParsedColor {
+export type ParsedColor = {
   space: Space;
   data: SpaceData[Space];
   alpha: number;
-}
+};
 
 const hslRegex =
   /^hsla?\([\s]*([0-9]+(?:\.[0-9]+)?)(?:deg)?[\s,]*([0-9]+(?:\.[0-9]+)?)%[\s,]*([0-9]+(?:\.[0-9]+)?)%(?:[\s,]*(?:\/[\s]*)?([0-9]*\.?[0-9]+))?\)$/i;

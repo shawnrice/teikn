@@ -1,17 +1,19 @@
 import { EOL } from 'os';
 
 import { version } from '../../package.json';
-import { BoxShadow } from '../BoxShadow';
-import { Color } from '../Color';
-import { CubicBezier } from '../CubicBezier';
-import { LinearGradient, RadialGradient } from '../Gradient';
-import { Transition } from '../Transition';
 import type { Plugin } from '../Plugins';
-import type { Token } from '../Token';
 import { camelCase, deriveShortName } from '../string-utils';
+import type { Token } from '../Token';
+import { BoxShadow, BoxShadowList } from '../TokenTypes/BoxShadow';
+import { Color } from '../TokenTypes/Color';
+import { CubicBezier } from '../TokenTypes/CubicBezier';
+import { Dimension } from '../TokenTypes/Dimension';
+import { Duration } from '../TokenTypes/Duration';
+import { GradientList, LinearGradient, RadialGradient } from '../TokenTypes/Gradient';
+import { Transition, TransitionList } from '../TokenTypes/Transition';
 import { matches } from '../utils';
 
-export interface GeneratorOptions {
+export type GeneratorOptions = {
   /**
    * The extension for the file
    *
@@ -28,11 +30,11 @@ export interface GeneratorOptions {
    * When true, emit typed getter functions grouped by token type
    */
   groups?: boolean;
-}
+};
 
-export interface RequiredGeneratorOptions {
+export type RequiredGeneratorOptions = {
   ext: string;
-}
+};
 
 export type RequiredGeneratorOptionNames = keyof RequiredGeneratorOptions;
 
@@ -77,16 +79,27 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
     if (value instanceof CubicBezier) {
       return { ...token, value: value.toString() };
     }
-    if (value instanceof BoxShadow) {
+    if (value instanceof BoxShadow || value instanceof BoxShadowList) {
       return { ...token, value: value.toString() };
     }
-    if (value instanceof LinearGradient || value instanceof RadialGradient) {
+    if (
+      value instanceof LinearGradient ||
+      value instanceof RadialGradient ||
+      value instanceof GradientList
+    ) {
       return { ...token, value: value.toString() };
     }
-    if (value instanceof Transition) {
+    if (value instanceof Transition || value instanceof TransitionList) {
+      return { ...token, value: value.toString() };
+    }
+    if (value instanceof Dimension || value instanceof Duration) {
       return { ...token, value: value.toString() };
     }
     return token;
+  }
+
+  stringifyValue(token: Token): Token {
+    return this.convertColorToString(token);
   }
 
   validateOptions(): void {
@@ -123,31 +136,38 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
   }
 
   protected prepareTokens(tokens: Token[], plugins: Plugin[]): Token[] {
-    return tokens.map(this.convertColorToString).map(token =>
-      plugins.reduce((acc, plugin) => {
-        if (!matches(plugin.tokenType, token.type)) {
-          return acc;
-        }
+    return tokens
+      .map(t => this.convertColorToString(t))
+      .map(token =>
+        plugins.reduce((acc, plugin) => {
+          if (!matches(plugin.tokenType, token.type)) {
+            return acc;
+          }
 
-        if (!matches(plugin.outputType, this.options.ext)) {
-          return acc;
-        }
+          if (!matches(plugin.outputType, this.options.ext)) {
+            return acc;
+          }
 
-        return plugin.toJSON(acc);
-      }, token),
-    );
+          return plugin.toJSON(acc);
+        }, token),
+      );
   }
 
-  protected tokenGroups(tokens: Token[]): Array<{ groupName: string; entries: Array<{ shortName: string; token: Token }> }> {
-    const map = new Map<string, Array<{ shortName: string; token: Token }>>();
+  protected tokenGroups(
+    tokens: Token[],
+  ): { groupName: string; entries: { shortName: string; token: Token }[] }[] {
+    const map = new Map<string, { shortName: string; token: Token }[]>();
     for (const token of tokens) {
       const existing = map.get(token.type) ?? [];
-      map.set(token.type, [...existing, { shortName: deriveShortName(token.name, token.type), token }]);
+      map.set(token.type, [
+        ...existing,
+        { shortName: deriveShortName(token.name, token.type), token },
+      ]);
     }
     return [...map.entries()].map(([type, entries]) => ({ groupName: camelCase(type), entries }));
   }
 
-  tokenUsage(_token: Token): string | null {
+  tokenUsage(_: Token): string | null {
     return null;
   }
 

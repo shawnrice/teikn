@@ -21,10 +21,12 @@ const defaultOptions = {
   dateFn: getDate,
 };
 
-export interface CSSVarsOpts extends GeneratorOptions {
+export type CSSVarsOpts = {
   nameTransformer?: (name: string) => string;
   dateFn?: () => string | null;
-}
+  useMediaQuery?: boolean;
+  modeSelectors?: Record<string, string>;
+} & GeneratorOptions
 
 export class CSSVars extends Generator<CSSVarsOpts> {
   constructor(options = {}) {
@@ -93,7 +95,14 @@ export class CSSVars extends Generator<CSSVarsOpts> {
     const blocks = [`:root {`, rootVars.join(EOL), `}`];
 
     for (const [mode, vars] of modeMap) {
-      blocks.push('', `[data-theme="${mode}"] {`, vars.join(EOL), `}`);
+      const { useMediaQuery, modeSelectors } = this.options;
+      const selector = modeSelectors?.[mode] ?? `[data-theme="${mode}"]`;
+      blocks.push('', `${selector} {`, vars.join(EOL), `}`);
+
+      if (useMediaQuery && mode === 'dark') {
+        const indented = vars.map(v => `  ${v}`);
+        blocks.push('', `@media (prefers-color-scheme: dark) {`, `  :root {`, indented.join(EOL), `  }`, `}`);
+      }
     }
 
     return blocks.join(EOL);

@@ -1,3 +1,4 @@
+import { clamp } from '../../utils';
 import type { RGB, RGBA } from './types';
 
 /** Compose two unary functions: `pipe(f, g)(x)` === `g(f(x))` */
@@ -6,8 +7,7 @@ export const pipe =
   (a: A): C =>
     g(f(a));
 
-// Utility functions
-export const clamp = (min: number, max: number, n: number): number => Math.min(Math.max(n, min), max);
+export { clamp };
 export const pad0 = (x: string): string => (x.toString().length < 2 ? `0${x}` : x);
 export const hexRange = (num: number): number => clamp(0, 255, num);
 export const percentRange = (num: number): number => clamp(0, 1, num);

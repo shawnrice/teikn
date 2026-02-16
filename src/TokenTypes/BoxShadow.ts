@@ -4,7 +4,9 @@ const lengthRe = /^(-?\d+(?:\.\d+)?)(px|rem|em)?/;
 
 const fmtLength = (v: number): string => (v === 0 ? '0' : `${v}px`);
 
-const parse = (str: string): {
+const parse = (
+  str: string,
+): {
   offsetX: number;
   offsetY: number;
   blur: number;
@@ -61,8 +63,7 @@ export class BoxShadow {
     color?: Color | string,
     inset?: boolean,
   );
-  constructor(value: string);
-  constructor(value: BoxShadow);
+  constructor(value: BoxShadow | string);
   constructor(
     first: number | string | BoxShadow,
     offsetY?: number,
@@ -100,12 +101,35 @@ export class BoxShadow {
     this.#inset = inset ?? false;
   }
 
-  get offsetX(): number { return this.#offsetX; }
-  get offsetY(): number { return this.#offsetY; }
-  get blur(): number { return this.#blur; }
-  get spread(): number { return this.#spread; }
-  get color(): Color { return this.#color; }
-  get inset(): boolean { return this.#inset; }
+  public offsetX(): number;
+  public offsetX(x: number): BoxShadow;
+  public offsetX(x?: number): BoxShadow | number {
+    if (typeof x === 'undefined') {
+      return this.#offsetX;
+    }
+
+    return new BoxShadow(x, this.#offsetY, this.#blur, this.#spread, this.#color, this.#inset);
+  }
+
+  get offsetX(): number {
+    return this.#offsetX;
+  }
+
+  get offsetY(): number {
+    return this.#offsetY;
+  }
+  get blur(): number {
+    return this.#blur;
+  }
+  get spread(): number {
+    return this.#spread;
+  }
+  get color(): Color {
+    return this.#color;
+  }
+  get inset(): boolean {
+    return this.#inset;
+  }
 
   setOffsetX(x: number): BoxShadow {
     return new BoxShadow(x, this.#offsetY, this.#blur, this.#spread, this.#color, this.#inset);
@@ -116,19 +140,47 @@ export class BoxShadow {
   }
 
   setBlur(blur: number): BoxShadow {
-    return new BoxShadow(this.#offsetX, this.#offsetY, blur, this.#spread, this.#color, this.#inset);
+    return new BoxShadow(
+      this.#offsetX,
+      this.#offsetY,
+      blur,
+      this.#spread,
+      this.#color,
+      this.#inset,
+    );
   }
 
   setSpread(spread: number): BoxShadow {
-    return new BoxShadow(this.#offsetX, this.#offsetY, this.#blur, spread, this.#color, this.#inset);
+    return new BoxShadow(
+      this.#offsetX,
+      this.#offsetY,
+      this.#blur,
+      spread,
+      this.#color,
+      this.#inset,
+    );
   }
 
   setColor(color: Color | string): BoxShadow {
-    return new BoxShadow(this.#offsetX, this.#offsetY, this.#blur, this.#spread, color, this.#inset);
+    return new BoxShadow(
+      this.#offsetX,
+      this.#offsetY,
+      this.#blur,
+      this.#spread,
+      color,
+      this.#inset,
+    );
   }
 
   setInset(inset: boolean): BoxShadow {
-    return new BoxShadow(this.#offsetX, this.#offsetY, this.#blur, this.#spread, this.#color, inset);
+    return new BoxShadow(
+      this.#offsetX,
+      this.#offsetY,
+      this.#blur,
+      this.#spread,
+      this.#color,
+      inset,
+    );
   }
 
   /** Scale all numeric values (offsets, blur, spread) by a factor */
@@ -169,3 +221,74 @@ export class BoxShadow {
     return shadows.map(s => s.toString()).join(', ');
   }
 }
+
+export class BoxShadowList {
+  readonly #layers: readonly BoxShadow[];
+
+  constructor(layers: BoxShadow[]);
+  constructor(value: string);
+  constructor(value: BoxShadowList);
+  constructor(first: BoxShadow[] | string | BoxShadowList) {
+    if (first instanceof BoxShadowList) {
+      this.#layers = first.#layers;
+      return;
+    }
+
+    if (typeof first === 'string') {
+      this.#layers = splitShadows(first).map(s => new BoxShadow(s));
+      return;
+    }
+
+    this.#layers = [...first];
+  }
+
+  get layers(): readonly BoxShadow[] {
+    return this.#layers;
+  }
+  get length(): number {
+    return this.#layers.length;
+  }
+
+  at(index: number): BoxShadow | undefined {
+    return this.#layers[index];
+  }
+
+  map(fn: (shadow: BoxShadow, index: number) => BoxShadow): BoxShadowList {
+    return new BoxShadowList(this.#layers.map(fn));
+  }
+
+  toJSON(): string {
+    return this.toString();
+  }
+
+  toString(): string {
+    return this.#layers.map(s => s.toString()).join(', ');
+  }
+}
+
+const splitShadows = (value: string): string[] => {
+  const results: string[] = [];
+  let depth = 0;
+  let start = 0;
+
+  for (let i = 0; i < value.length; i++) {
+    const ch = value[i]!;
+    if (ch === '(') {
+      depth++;
+    }
+    if (ch === ')') {
+      depth--;
+    }
+    if (ch === ',' && depth === 0) {
+      results.push(value.slice(start, i).trim());
+      start = i + 1;
+    }
+  }
+
+  const last = value.slice(start).trim();
+  if (last.length > 0) {
+    results.push(last);
+  }
+
+  return results;
+};

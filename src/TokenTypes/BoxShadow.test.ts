@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { BoxShadow } from './BoxShadow';
+import { BoxShadow, BoxShadowList } from './BoxShadow';
 import { Color } from './Color';
 
 describe('BoxShadow', () => {
@@ -182,5 +182,69 @@ describe('BoxShadow', () => {
     const b = new BoxShadow(0, 4, 8, 0, '#000');
     const combined = BoxShadow.combine(a, b);
     expect(combined).toBe(`${a.toString()}, ${b.toString()}`);
+  });
+});
+
+describe('BoxShadowList', () => {
+  it('creates from an array of BoxShadow instances', () => {
+    const a = new BoxShadow(0, 1, 2, 0, '#000');
+    const b = new BoxShadow(0, 4, 8, 0, '#000');
+    const list = new BoxShadowList([a, b]);
+    expect(list.length).toBe(2);
+    expect(list.at(0)!.offsetY).toBe(1);
+    expect(list.at(1)!.blur).toBe(8);
+  });
+
+  it('creates from a CSS multi-shadow string', () => {
+    const list = new BoxShadowList('0 1px 2px rgba(0,0,0,.1), 0 4px 8px rgba(0,0,0,.05)');
+    expect(list.length).toBe(2);
+    expect(list.at(0)!.offsetY).toBe(1);
+    expect(list.at(0)!.blur).toBe(2);
+    expect(list.at(1)!.offsetY).toBe(4);
+    expect(list.at(1)!.blur).toBe(8);
+  });
+
+  it('creates as a copy from another BoxShadowList', () => {
+    const original = new BoxShadowList([
+      new BoxShadow(0, 1, 2, 0, '#000'),
+      new BoxShadow(0, 4, 8, 0, '#000'),
+    ]);
+    const copy = new BoxShadowList(original);
+    expect(copy.length).toBe(2);
+    expect(copy.toString()).toBe(original.toString());
+  });
+
+  it('toString() joins shadows with commas', () => {
+    const a = new BoxShadow(0, 1, 2, 0, '#000');
+    const b = new BoxShadow(0, 4, 8, 0, '#000');
+    const list = new BoxShadowList([a, b]);
+    expect(list.toString()).toBe(`${a.toString()}, ${b.toString()}`);
+  });
+
+  it('toJSON() equals toString()', () => {
+    const list = new BoxShadowList([new BoxShadow(0, 1, 2, 0, '#000')]);
+    expect(list.toJSON()).toBe(list.toString());
+  });
+
+  it('map() transforms each shadow', () => {
+    const list = new BoxShadowList([
+      new BoxShadow(1, 2, 4, 1, '#000'),
+      new BoxShadow(2, 4, 8, 2, '#000'),
+    ]);
+    const scaled = list.map(s => s.scale(2));
+    expect(scaled.at(0)!.offsetX).toBe(2);
+    expect(scaled.at(1)!.offsetX).toBe(4);
+  });
+
+  it('layers property returns readonly array', () => {
+    const list = new BoxShadowList([new BoxShadow(0, 1, 2, 0, '#000')]);
+    expect(list.layers).toHaveLength(1);
+  });
+
+  it('parses complex multi-shadow with inset', () => {
+    const list = new BoxShadowList('inset 0 1px 2px #000, 0 4px 8px rgba(0,0,0,.1)');
+    expect(list.length).toBe(2);
+    expect(list.at(0)!.inset).toBe(true);
+    expect(list.at(1)!.inset).toBe(false);
   });
 });

@@ -42,4 +42,38 @@ describe('SCSSGenerator tests', () => {
       ]),
     ).toMatchSnapshot();
   });
+
+  test('it emits a $modes map when tokens have modes', () => {
+    const tokens: Token[] = [
+      { name: 'colorSurface', type: 'color', value: '#ffffff', modes: { dark: '#1a1a1a' } },
+      { name: 'colorText', type: 'color', value: '#000000', modes: { dark: '#e0e0e0' } },
+      { name: 'spacingSm', type: 'spacing', value: '4px' },
+    ];
+    const output = new Generator({ dateFn: () => 'null' }).generate(tokens);
+
+    expect(output).toContain('$modes: (');
+    expect(output).toContain('dark: (');
+    expect(output).toContain('color-surface: #1a1a1a,');
+    expect(output).toContain('color-text: #e0e0e0,');
+    expect(output).toContain(') !default;');
+  });
+
+  test('it does not emit $modes when no tokens have modes', () => {
+    const tokens: Token[] = [
+      { name: 'colorPrimary', type: 'color', value: '#ff0000' },
+    ];
+    const output = new Generator({ dateFn: () => 'null' }).generate(tokens);
+
+    expect(output).not.toContain('$modes');
+  });
+
+  test('it groups multiple modes separately', () => {
+    const tokens: Token[] = [
+      { name: 'colorSurface', type: 'color', value: '#fff', modes: { dark: '#111', dim: '#333' } },
+    ];
+    const output = new Generator({ dateFn: () => 'null' }).generate(tokens);
+
+    expect(output).toContain('dark: (');
+    expect(output).toContain('dim: (');
+  });
 });

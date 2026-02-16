@@ -152,3 +152,61 @@ export class Transition {
   static readonly slide: Transition = new Transition('0.3s', CubicBezier.standard);
   static readonly quick: Transition = new Transition('0.1s', 'ease');
 }
+
+// ─── TransitionList ───────────────────────────────────────────
+
+const splitTransitionCommas = (str: string): string[] => {
+  const parts: string[] = [];
+  let depth = 0;
+  let start = 0;
+  for (let i = 0; i < str.length; i++) {
+    const ch = str[i]!;
+    if (ch === '(') { depth++; }
+    if (ch === ')') { depth--; }
+    if (ch === ',' && depth === 0) {
+      parts.push(str.slice(start, i).trim());
+      start = i + 1;
+    }
+  }
+  const last = str.slice(start).trim();
+  if (last.length > 0) {
+    parts.push(last);
+  }
+  return parts;
+};
+
+export class TransitionList {
+  readonly #layers: readonly Transition[];
+
+  constructor(layers: Transition[]);
+  constructor(css: string);
+  constructor(value: TransitionList);
+  constructor(first: Transition[] | string | TransitionList) {
+    if (first instanceof TransitionList) {
+      this.#layers = first.#layers;
+      return;
+    }
+
+    if (typeof first === 'string') {
+      this.#layers = splitTransitionCommas(first).map(s => new Transition(s));
+      return;
+    }
+
+    this.#layers = [...first];
+  }
+
+  get layers(): readonly Transition[] { return this.#layers; }
+  get length(): number { return this.#layers.length; }
+
+  at(index: number): Transition | undefined { return this.#layers[index]; }
+
+  map(fn: (transition: Transition, index: number) => Transition): TransitionList {
+    return new TransitionList(this.#layers.map(fn));
+  }
+
+  toJSON(): string { return this.toString(); }
+
+  toString(): string {
+    return this.#layers.map(t => t.toString()).join(', ');
+  }
+}

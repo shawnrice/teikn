@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import { Color } from './Color';
+import { Color } from './TokenTypes/Color';
 import type { Token } from './Token';
 import { validate } from './validate';
 
@@ -116,5 +116,67 @@ describe('validate', () => {
     const result = validate(tokens);
     const typographyIssues = result.issues.filter(i => i.message.includes('missing'));
     expect(typographyIssues).toHaveLength(0);
+  });
+
+  // ─── Mode validation ──────────────────────────────────────────
+
+  test('warns on unparseable color in mode value', () => {
+    const tokens: Token[] = [
+      {
+        name: 'surface',
+        type: 'color',
+        value: '#ffffff',
+        modes: { dark: 'not-a-color-value' },
+      },
+    ];
+
+    const result = validate(tokens);
+    expect(result.issues.some(i => i.message.includes('mode "dark"') && i.message.includes('could not be parsed'))).toBe(true);
+  });
+
+  test('detects unresolved references in mode values', () => {
+    const tokens: Token[] = [
+      {
+        name: 'surface',
+        type: 'color',
+        value: '#ffffff',
+        modes: { dark: '{nonexistent}' },
+      },
+    ];
+
+    const result = validate(tokens);
+    expect(result.valid).toBe(false);
+    expect(result.issues.some(i => i.message.includes('mode "dark"') && i.message.includes('Unresolved reference'))).toBe(true);
+  });
+
+  test('accepts valid mode values', () => {
+    const tokens: Token[] = [
+      {
+        name: 'primary',
+        type: 'color',
+        value: '#0066cc',
+        modes: { dark: '#3399ff' },
+      },
+    ];
+
+    const result = validate(tokens);
+    expect(result.valid).toBe(true);
+    expect(result.issues).toHaveLength(0);
+  });
+
+  test('accepts mode values that reference existing tokens', () => {
+    const tokens: Token[] = [
+      { name: 'darkBlue', type: 'color', value: '#3399ff' },
+      {
+        name: 'primary',
+        type: 'color',
+        value: '#0066cc',
+        modes: { dark: '{darkBlue}' },
+      },
+    ];
+
+    const result = validate(tokens);
+    const modeIssues = result.issues.filter(i => i.message.includes('mode'));
+    expect(modeIssues).toHaveLength(0);
   });
 });

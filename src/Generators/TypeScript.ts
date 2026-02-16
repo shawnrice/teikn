@@ -6,13 +6,17 @@ import { getDate } from '../utils';
 import type { GeneratorOptions } from './Generator';
 import Generator from './Generator';
 
+const isValidIdentifier = (name: string): boolean => /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(name);
+
+const quoteKey = (name: string): string => isValidIdentifier(name) ? name : `'${name}'`;
+
 const defaultOptions = {
   ext: 'd.ts',
   nameTransformer: camelCase,
   dateFn: getDate,
 };
 
-export interface TypeScriptOpts extends GeneratorOptions {
+export type TypeScriptOpts = {
   /**
    * The function to get the build date
    */
@@ -23,7 +27,7 @@ export interface TypeScriptOpts extends GeneratorOptions {
    * default: `camelCase`
    */
   nameTransformer?: (name: string) => string;
-}
+} & GeneratorOptions
 
 export class TypeScript extends Generator<TypeScriptOpts> {
   constructor(options = {}) {
@@ -99,6 +103,20 @@ export class TypeScript extends Generator<TypeScriptOpts> {
         return `export const ${groupName}: (name: ${union}) => string;`;
       });
       parts.push('', ...groupDecls);
+    }
+
+    const modeNames = new Set<string>();
+    for (const token of tokens) {
+      if (token.modes) {
+        for (const mode of Object.keys(token.modes)) {
+          modeNames.add(mode);
+        }
+      }
+    }
+
+    if (modeNames.size > 0) {
+      const modeEntries = [...modeNames].map(mode => `  ${quoteKey(mode)}: Partial<typeof tokens>;`);
+      parts.push('', `export const modes: {`, ...modeEntries, `}`);
     }
 
     return parts.join(EOL);

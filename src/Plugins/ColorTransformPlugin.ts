@@ -1,12 +1,12 @@
-/* eslint-disable @typescript-eslint/no-useless-constructor */
-import { Color } from '../Color';
-import type { ColorFormat } from '../Color/types';
 import type { Token } from '../Token';
+/* eslint-disable @typescript-eslint/no-useless-constructor */
+import { Color } from '../TokenTypes/Color';
+import type { ColorFormat } from '../TokenTypes/Color/types';
 import { Plugin } from './Plugin';
 
-interface ColorTransformPluginOptions extends Record<string, unknown> {
+type ColorTransformPluginOptions = {
   type?: ColorFormat;
-}
+} & Record<string, unknown>;
 
 /**
  * Normalizes colors

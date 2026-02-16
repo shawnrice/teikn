@@ -16,6 +16,21 @@
   "author": "Shawn Patrick Rice <rice@shawnrice.org>",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./lib/index.js",
+      "require": "./lib/index.js",
+      "types": "./lib/index.d.ts"
+    },
+    "./builders": {
+      "import": "./lib/src/builders.js",
+      "types": "./lib/src/builders.d.ts"
+    },
+    "./generators": {
+      "import": "./lib/src/Generators/index.js",
+      "types": "./lib/src/Generators/index.d.ts"
+    }
+  },
   "bin": "./lib/src/cli.js",
   "repository": {
     "type": "git",

@@ -22,10 +22,10 @@ const isValidIdentifier = (name: string): boolean => /^[a-zA-Z_$][a-zA-Z0-9_$]*$
 
 const quoteKey = (name: string): string => isValidIdentifier(name) ? name : `'${name}'`;
 
-export interface JavaScriptOpts extends GeneratorOptions {
+export type JavaScriptOpts = {
   dateFn?: () => string | null;
   nameTransformer?: (name: string) => string;
-}
+} & GeneratorOptions
 
 export class JavaScript extends Generator<JavaScriptOpts> {
   constructor(options = {}) {
@@ -112,6 +112,23 @@ export class JavaScript extends Generator<JavaScriptOpts> {
         ].join(EOL);
       });
       parts.push('', ...groupBlocks);
+    }
+
+    const modeMap = new Map<string, string[]>();
+    for (const token of tokens) {
+      if (!token.modes) { continue; }
+      for (const [mode, val] of Object.entries(token.modes)) {
+        if (!modeMap.has(mode)) { modeMap.set(mode, []); }
+        modeMap.get(mode)!.push(`    ${nameTransformer!(token.name)}: ${maybeQuote(val)},`);
+      }
+    }
+
+    if (modeMap.size > 0) {
+      const modeEntries = [...modeMap.entries()].map(([mode, entries]) =>
+        [`  ${quoteKey(mode)}: {`, ...entries, `  },`].join(EOL),
+      );
+      parts.push('', `const modes = {`, ...modeEntries, `};`);
+      exportNames.push('modes');
     }
 
     const exportsStr = exportNames.map(n => `${n}: ${n}`).join(', ');

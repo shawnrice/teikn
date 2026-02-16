@@ -28,26 +28,11 @@ const generators: {
   TypeScript: typeof TypeScript;
 } = { CSSVars, DTCG: DTCGGenerator, ESModule, HTML, JavaScript, Json, Scss, ScssVars, Storybook, TypeScript };
 
-export interface TeiknOptions {
-  /**
-   * The generators that you want to use
-   *
-   * default: `[new Teikn.generators.Json()]`
-   */
+export type TeiknOptions = {
   generators?: Generator[];
-  /**
-   * The plugins that you want to use
-   *
-   * default: `[]`
-   */
   plugins?: Plugin[];
-  /**
-   * The directory to output the files
-   *
-   * defaults to `process.cwd()`
-   */
   outDir?: string;
-}
+};
 
 export class Teikn {
   generators: Generator[];
@@ -79,34 +64,36 @@ export class Teikn {
     return validate(tokens);
   }
 
-  async transform(tokens: Token[]): Promise<void> {
-    // Phase 1: Resolve references
+  generateToStrings(tokens: Token[]): Map<string, string> {
     const resolved = resolveReferences(tokens);
 
-    const map = new Map<Generator, string>();
-
-    // Phase 2: Share sibling references, then generate file contents
     this.generators.forEach(g => { g.siblings = this.generators; });
-    this.generators.forEach(generator => {
-      map.set(generator, generator.generate(resolved, this.plugins));
-    });
 
-    // Phase 3: Write files
+    const results = new Map<string, string>();
+    for (const generator of this.generators) {
+      results.set(generator.file, generator.generate(resolved, this.plugins));
+    }
+    return results;
+  }
+
+  async transform(tokens: Token[]): Promise<void> {
+    const files = this.generateToStrings(tokens);
+
     try {
       await ensureDirectory(this.outDir);
-      this.generators.forEach(async generator => {
-        const filename = path.resolve(this.outDir, generator.file);
-        try {
-          await fs.promises.writeFile(filename, map.get(generator)!);
-          console.log(`Wrote ${filename}`);
-        } catch (_) {
-          console.error(`Error writing ${filename}`);
-        }
-      });
+      await Promise.all(
+        [...files.entries()].map(async ([file, content]) => {
+          const filename = path.resolve(this.outDir, file);
+          try {
+            await fs.promises.writeFile(filename, content);
+            console.log(`Wrote ${filename}`);
+          } catch (_) {
+            console.error(`Error writing ${filename}`);
+          }
+        }),
+      );
     } catch (error) {
       console.error(error);
     }
   }
 }
-
-export default Teikn;

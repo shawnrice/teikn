@@ -56,4 +56,25 @@ describe('es5 tests', () => {
     ]);
     expect(output).toContain('{"fontFamily":"Arial"}');
   });
+
+  test('exports modes object when tokens have modes', () => {
+    const tokens: Token[] = [
+      { name: 'colorSurface', type: 'color', value: '#ffffff', modes: { dark: '#1a1a1a' } },
+      { name: 'colorText', type: 'color', value: '#000000', modes: { dark: '#eeeeee' } },
+    ];
+    const output = new Generator({ dateFn: fixedDate }).generate(tokens);
+    expect(output).toContain('const modes = {');
+    expect(output).toContain("colorSurface: '#1a1a1a',");
+    expect(output).toContain("colorText: '#eeeeee',");
+    expect(output).toContain('module.exports = { tokens: tokens, modes: modes, default: tokens };');
+  });
+
+  test('omits modes when no tokens have modes', () => {
+    const tokens: Token[] = [
+      { name: 'colorSurface', type: 'color', value: '#ffffff' },
+    ];
+    const output = new Generator({ dateFn: fixedDate }).generate(tokens);
+    expect(output).not.toContain('modes');
+    expect(output).toContain('module.exports = { tokens: tokens, default: tokens };');
+  });
 });

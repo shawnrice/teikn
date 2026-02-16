@@ -1,11 +1,17 @@
-import { describe, expect, test } from 'bun:test';
+import {
+  describe,
+  expect,
+  test,
+} from 'bun:test';
 
-import { BoxShadow } from '../BoxShadow';
-import { Color } from '../Color';
-import { CubicBezier } from '../CubicBezier';
-import { LinearGradient } from '../Gradient';
-import type { DTCGDocument } from './types';
+import { BoxShadow } from '../TokenTypes/BoxShadow';
+import { Color } from '../TokenTypes/Color';
+import { CubicBezier } from '../TokenTypes/CubicBezier';
+import { Dimension } from '../TokenTypes/Dimension';
+import { Duration } from '../TokenTypes/Duration';
+import { LinearGradient } from '../TokenTypes/Gradient';
 import { parseDTCG } from './parse';
+import type { DTCGDocument } from './types';
 
 describe('parseDTCG', () => {
   test('parses a simple color token', () => {
@@ -66,7 +72,8 @@ describe('parseDTCG', () => {
     };
     const tokens = parseDTCG(doc);
     expect(tokens[0]!.type).toBe('dimension');
-    expect(tokens[0]!.value).toBe('16px');
+    expect(tokens[0]!.value).toBeInstanceOf(Dimension);
+    expect(tokens[0]!.value.toString()).toBe('16px');
   });
 
   test('nested groups produce dot-separated names', () => {
@@ -97,7 +104,7 @@ describe('parseDTCG', () => {
     expect(tokens[0]!.name).toBe('color/primary');
   });
 
-  test('dimension values are converted to strings', () => {
+  test('dimension values are converted to Dimension instances', () => {
     const doc: DTCGDocument = {
       spacing: {
         sm: {
@@ -111,11 +118,13 @@ describe('parseDTCG', () => {
       },
     };
     const tokens = parseDTCG(doc);
-    expect(tokens[0]!.value).toBe('8px');
-    expect(tokens[1]!.value).toBe('1rem');
+    expect(tokens[0]!.value).toBeInstanceOf(Dimension);
+    expect(tokens[0]!.value.toString()).toBe('8px');
+    expect(tokens[1]!.value).toBeInstanceOf(Dimension);
+    expect(tokens[1]!.value.toString()).toBe('1rem');
   });
 
-  test('duration values are converted to strings', () => {
+  test('duration values are converted to Duration instances', () => {
     const doc: DTCGDocument = {
       fast: {
         $value: { value: 200, unit: 'ms' },
@@ -127,8 +136,10 @@ describe('parseDTCG', () => {
       },
     };
     const tokens = parseDTCG(doc);
-    expect(tokens[0]!.value).toBe('200ms');
-    expect(tokens[1]!.value).toBe('0.5s');
+    expect(tokens[0]!.value).toBeInstanceOf(Duration);
+    expect(tokens[0]!.value.toString()).toBe('200ms');
+    expect(tokens[1]!.value).toBeInstanceOf(Duration);
+    expect(tokens[1]!.value.toString()).toBe('0.5s');
   });
 
   test('cubicBezier values are converted to CubicBezier instances', () => {
@@ -276,7 +287,8 @@ describe('parseDTCG', () => {
     };
     const tokens = parseDTCG(doc);
     expect(tokens[0]!.value.color).toBeInstanceOf(Color);
-    expect(tokens[0]!.value.width).toBe('1px');
+    expect(tokens[0]!.value.width).toBeInstanceOf(Dimension);
+    expect(tokens[0]!.value.width.toString()).toBe('1px');
     expect(tokens[0]!.value.style).toBe('solid');
   });
 
@@ -292,9 +304,11 @@ describe('parseDTCG', () => {
       },
     };
     const tokens = parseDTCG(doc);
-    expect(tokens[0]!.value.duration).toBe('200ms');
+    expect(tokens[0]!.value.duration).toBeInstanceOf(Duration);
+    expect(tokens[0]!.value.duration.toString()).toBe('200ms');
     expect(tokens[0]!.value.timingFunction).toBeInstanceOf(CubicBezier);
-    expect(tokens[0]!.value.delay).toBe('0ms');
+    expect(tokens[0]!.value.delay).toBeInstanceOf(Duration);
+    expect(tokens[0]!.value.delay.toString()).toBe('0ms');
   });
 
   test('typography composite is converted', () => {
@@ -310,7 +324,8 @@ describe('parseDTCG', () => {
       },
     };
     const tokens = parseDTCG(doc);
-    expect(tokens[0]!.value.fontSize).toBe('24px');
+    expect(tokens[0]!.value.fontSize).toBeInstanceOf(Dimension);
+    expect(tokens[0]!.value.fontSize.toString()).toBe('24px');
     expect(tokens[0]!.value.fontWeight).toBe(700);
     expect(tokens[0]!.value.lineHeight).toBe(1.2);
   });

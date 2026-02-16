@@ -1,3 +1,6 @@
+export const clamp = (min: number, max: number, value: number): number =>
+  Math.min(max, Math.max(min, value));
+
 export const pad0 = (num: number | string): string | number => {
   if (typeof num === 'string') {
     return num.length < 2 ? `0${num}` : num;

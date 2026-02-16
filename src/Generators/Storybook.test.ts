@@ -1,9 +1,8 @@
 import { describe, expect, test } from 'bun:test';
 
-import { BoxShadow } from '../BoxShadow';
-import { Color } from '../Color';
-import { CubicBezier } from '../CubicBezier';
-import { LinearGradient } from '../Gradient';
+import { BoxShadow } from '../TokenTypes/BoxShadow';
+import { CubicBezier } from '../TokenTypes/CubicBezier';
+import { LinearGradient } from '../TokenTypes/Gradient';
 import tokenSet1 from '../fixtures/tokenSet1';
 import type { Token } from '../Token';
 import { ESModule } from './ESModule';
@@ -98,9 +97,7 @@ describe('Storybook generator', () => {
 
   test('It renders font-size stories with FontSample', () => {
     const sb = new Storybook({ dateFn: fixedDate });
-    const tokens: Token[] = [
-      { name: 'fontSizeBase', type: 'font-size', value: '1rem' },
-    ];
+    const tokens: Token[] = [{ name: 'fontSizeBase', type: 'font-size', value: '1rem' }];
     const output = sb.generate(tokens);
 
     expect(output).toContain('export const FontSize: Story');
@@ -121,9 +118,7 @@ describe('Storybook generator', () => {
 
   test('It renders font-weight stories with correct styleProp', () => {
     const sb = new Storybook({ dateFn: fixedDate });
-    const tokens: Token[] = [
-      { name: 'fontWeightBold', type: 'font-weight', value: '700' },
-    ];
+    const tokens: Token[] = [{ name: 'fontWeightBold', type: 'font-weight', value: '700' }];
     const output = sb.generate(tokens);
 
     expect(output).toContain('export const FontWeight: Story');
@@ -133,7 +128,11 @@ describe('Storybook generator', () => {
   test('It renders typography stories with TypographyBlock', () => {
     const sb = new Storybook({ dateFn: fixedDate });
     const tokens: Token[] = [
-      { name: 'typographyBody', type: 'typography', value: { fontFamily: 'Arial', fontSize: '1rem', fontWeight: 400 } },
+      {
+        name: 'typographyBody',
+        type: 'typography',
+        value: { fontFamily: 'Arial', fontSize: '1rem', fontWeight: 400 },
+      },
     ];
     const output = sb.generate(tokens);
 
@@ -155,9 +154,7 @@ describe('Storybook generator', () => {
 
   test('It renders duration stories with DurationBar', () => {
     const sb = new Storybook({ dateFn: fixedDate });
-    const tokens: Token[] = [
-      { name: 'durationFast', type: 'duration', value: '0.1s' },
-    ];
+    const tokens: Token[] = [{ name: 'durationFast', type: 'duration', value: '0.1s' }];
     const output = sb.generate(tokens);
 
     expect(output).toContain('export const Duration: Story');
@@ -167,9 +164,7 @@ describe('Storybook generator', () => {
 
   test('It renders timing stories with TimingDemo', () => {
     const sb = new Storybook({ dateFn: fixedDate });
-    const tokens: Token[] = [
-      { name: 'timingEase', type: 'timing', value: CubicBezier.standard },
-    ];
+    const tokens: Token[] = [{ name: 'timingEase', type: 'timing', value: CubicBezier.standard }];
     const output = sb.generate(tokens);
 
     expect(output).toContain('export const Timing: Story');
@@ -178,9 +173,7 @@ describe('Storybook generator', () => {
 
   test('It renders border-radius stories with RadiusBox', () => {
     const sb = new Storybook({ dateFn: fixedDate });
-    const tokens: Token[] = [
-      { name: 'borderRadiusStandard', type: 'border-radius', value: '8px' },
-    ];
+    const tokens: Token[] = [{ name: 'borderRadiusStandard', type: 'border-radius', value: '8px' }];
     const output = sb.generate(tokens);
 
     expect(output).toContain('export const BorderRadius: Story');
@@ -190,7 +183,11 @@ describe('Storybook generator', () => {
   test('It renders border stories with BorderDemo', () => {
     const sb = new Storybook({ dateFn: fixedDate });
     const tokens: Token[] = [
-      { name: 'borderDefault', type: 'border', value: { width: '1px', style: 'solid', color: '#e0e0e0' } },
+      {
+        name: 'borderDefault',
+        type: 'border',
+        value: { width: '1px', style: 'solid', color: '#e0e0e0' },
+      },
     ];
     const output = sb.generate(tokens);
 
@@ -201,7 +198,14 @@ describe('Storybook generator', () => {
   test('It renders gradient stories with GradientSwatch', () => {
     const sb = new Storybook({ dateFn: fixedDate });
     const tokens: Token[] = [
-      { name: 'gradientBrand', type: 'gradient', value: new LinearGradient(135, [['#ff0000', '0%'], ['#0000ff', '100%']]) },
+      {
+        name: 'gradientBrand',
+        type: 'gradient',
+        value: new LinearGradient(135, [
+          ['#ff0000', '0%'],
+          ['#0000ff', '100%'],
+        ]),
+      },
     ];
     const output = sb.generate(tokens);
 
@@ -211,9 +215,7 @@ describe('Storybook generator', () => {
 
   test('It renders opacity stories with OpacityDemo', () => {
     const sb = new Storybook({ dateFn: fixedDate });
-    const tokens: Token[] = [
-      { name: 'opacityDisabled', type: 'opacity', value: 0.38 },
-    ];
+    const tokens: Token[] = [{ name: 'opacityDisabled', type: 'opacity', value: 0.38 }];
     const output = sb.generate(tokens);
 
     expect(output).toContain('export const Opacity: Story');
@@ -222,9 +224,7 @@ describe('Storybook generator', () => {
 
   test('It renders line-height stories with LineHeightSample', () => {
     const sb = new Storybook({ dateFn: fixedDate });
-    const tokens: Token[] = [
-      { name: 'lineHeightTight', type: 'line-height', value: 1.2 },
-    ];
+    const tokens: Token[] = [{ name: 'lineHeightTight', type: 'line-height', value: 1.2 }];
     const output = sb.generate(tokens);
 
     expect(output).toContain('export const LineHeight: Story');
@@ -244,9 +244,7 @@ describe('Storybook generator', () => {
 
   test('It renders breakpoint stories with BreakpointBar', () => {
     const sb = new Storybook({ dateFn: fixedDate });
-    const tokens: Token[] = [
-      { name: 'breakpointMd', type: 'breakpoint', value: '768px' },
-    ];
+    const tokens: Token[] = [{ name: 'breakpointMd', type: 'breakpoint', value: '768px' }];
     const output = sb.generate(tokens);
 
     expect(output).toContain('export const Breakpoint: Story');
@@ -255,9 +253,7 @@ describe('Storybook generator', () => {
 
   test('It renders size stories with SizeBox', () => {
     const sb = new Storybook({ dateFn: fixedDate });
-    const tokens: Token[] = [
-      { name: 'sizeIconSm', type: 'size', value: '16px' },
-    ];
+    const tokens: Token[] = [{ name: 'sizeIconSm', type: 'size', value: '16px' }];
     const output = sb.generate(tokens);
 
     expect(output).toContain('export const Size: Story');
@@ -266,9 +262,7 @@ describe('Storybook generator', () => {
 
   test('It renders aspect-ratio stories with RatioBox', () => {
     const sb = new Storybook({ dateFn: fixedDate });
-    const tokens: Token[] = [
-      { name: 'aspectRatioVideo', type: 'aspect-ratio', value: '16/9' },
-    ];
+    const tokens: Token[] = [{ name: 'aspectRatioVideo', type: 'aspect-ratio', value: '16/9' }];
     const output = sb.generate(tokens);
 
     expect(output).toContain('export const AspectRatio: Story');
@@ -289,9 +283,7 @@ describe('Storybook generator', () => {
 
   test('It renders unknown types with TokenTable fallback', () => {
     const sb = new Storybook({ dateFn: fixedDate });
-    const tokens: Token[] = [
-      { name: 'customThing', type: 'custom-type', value: 'some-value' },
-    ];
+    const tokens: Token[] = [{ name: 'customThing', type: 'custom-type', value: 'some-value' }];
     const output = sb.generate(tokens);
 
     expect(output).toContain('export const CustomType: Story');
@@ -313,9 +305,7 @@ describe('Storybook generator', () => {
 
   test('It only emits components needed by present token types', () => {
     const sb = new Storybook({ dateFn: fixedDate });
-    const tokens: Token[] = [
-      { name: 'primary', type: 'color', value: '#ff0000' },
-    ];
+    const tokens: Token[] = [{ name: 'primary', type: 'color', value: '#ff0000' }];
     const output = sb.generate(tokens);
 
     expect(output).toContain('const Swatch');
@@ -385,5 +375,49 @@ describe('Storybook generator', () => {
     expect(output).toContain('Teikn v');
     expect(output).toContain('Mon Jan 01 2024 12:00:00');
     expect(output).toContain('Storybook stories for design tokens');
+  });
+
+  // ── Mode variants ─────────────────────────────────────────
+
+  test('It emits modesData and ModeTable when tokens have modes', () => {
+    const sb = new Storybook({ dateFn: fixedDate });
+    const tokens: Token[] = [
+      { name: 'colorSurface', type: 'color', value: '#ffffff', modes: { dark: '#1a1a1a' } },
+    ];
+    const output = sb.generate(tokens);
+
+    expect(output).toContain('modesData');
+    expect(output).toContain("'colorSurface'");
+    expect(output).toContain("'dark'");
+    expect(output).toContain('#1a1a1a');
+    expect(output).toContain('ModeTable');
+  });
+
+  test('It does not emit modesData when no tokens have modes', () => {
+    const sb = new Storybook({ dateFn: fixedDate });
+    const tokens: Token[] = [{ name: 'primary', type: 'color', value: '#ff0000' }];
+    const output = sb.generate(tokens);
+
+    expect(output).not.toContain('modesData');
+    expect(output).not.toContain('ModeTable');
+  });
+
+  test('It only shows ModeTable in stories with mode tokens', () => {
+    const sb = new Storybook({ dateFn: fixedDate });
+    const tokens: Token[] = [
+      { name: 'colorSurface', type: 'color', value: '#fff', modes: { dark: '#111' } },
+      { name: 'spacingSm', type: 'spacing', value: '4px' },
+    ];
+    const output = sb.generate(tokens);
+
+    // Color story should have ModeTable
+    const colorStoryMatch = output.match(/export const Color: Story[\s\S]*?};/);
+    expect(colorStoryMatch).toBeTruthy();
+    expect(colorStoryMatch![0]).toContain('ModeTable');
+
+    // Spacing story should NOT have ModeTable
+    const spacingStoryMatch = output.match(/export const Spacing: Story[\s\S]*?};/);
+    expect(spacingStoryMatch).toBeTruthy();
+    expect(spacingStoryMatch![0]).not.toContain('ModeTable');
   });
 });

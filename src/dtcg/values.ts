@@ -1,7 +1,23 @@
-import { BoxShadow } from '../BoxShadow';
-import { Color } from '../Color';
-import { CubicBezier } from '../CubicBezier';
-import { LinearGradient, RadialGradient } from '../Gradient';
+import {
+  BoxShadow,
+  BoxShadowList,
+} from '../TokenTypes/BoxShadow';
+import { Color } from '../TokenTypes/Color';
+import { CubicBezier } from '../TokenTypes/CubicBezier';
+import { Dimension } from '../TokenTypes/Dimension';
+import {
+  Duration,
+  isDurationUnit,
+} from '../TokenTypes/Duration';
+import {
+  GradientList,
+  LinearGradient,
+  RadialGradient,
+} from '../TokenTypes/Gradient';
+import {
+  Transition,
+  TransitionList,
+} from '../TokenTypes/Transition';
 import type {
   DTCGColorValue,
   DTCGCubicBezierValue,
@@ -66,11 +82,9 @@ const teiknToDtcgMap: Record<string, string> = {
   'font-style': 'fontStyle',
 };
 
-export const dtcgTypeToTeikn = (type: string): string =>
-  dtcgToTeiknMap[type] ?? type;
+export const dtcgTypeToTeikn = (type: string): string => dtcgToTeiknMap[type] ?? type;
 
-export const teiknTypeToDTCG = (type: string): string =>
-  teiknToDtcgMap[type] ?? type;
+export const teiknTypeToDTCG = (type: string): string => teiknToDtcgMap[type] ?? type;
 
 // ─── DTCG → teikn value converters ──────────────────────────
 
@@ -84,11 +98,11 @@ const colorToTeikn = (value: DTCGColorValue): Color => {
   );
 };
 
-const dimensionToTeikn = (value: DTCGDimensionValue): string =>
-  `${value.value}${value.unit}`;
+const dimensionToTeikn = (value: DTCGDimensionValue): Dimension =>
+  new Dimension(value.value, value.unit);
 
-const durationToTeikn = (value: DTCGDurationValue): string =>
-  `${value.value}${value.unit}`;
+const durationToTeikn = (value: DTCGDurationValue): Duration =>
+  new Duration(value.value, value.unit as 'ms' | 's');
 
 const cubicBezierToTeikn = (value: DTCGCubicBezierValue): CubicBezier =>
   new CubicBezier(value[0], value[1], value[2], value[3]);
@@ -126,7 +140,10 @@ const convertCompositeFields = (obj: Record<string, unknown>): Record<string, un
     if (isAlias(val)) {
       result[key] = val;
     } else if (val && typeof val === 'object' && 'value' in val && 'unit' in val) {
-      result[key] = dimensionToTeikn(val as DTCGDimensionValue);
+      const typed = val as { value: number; unit: string };
+      result[key] = isDurationUnit(typed.unit)
+        ? durationToTeikn(typed as DTCGDurationValue)
+        : dimensionToTeikn(typed as DTCGDimensionValue);
     } else if (val && typeof val === 'object' && 'colorSpace' in val) {
       result[key] = colorToTeikn(val as DTCGColorValue);
     } else if (Array.isArray(val) && val.length === 4 && val.every(v => typeof v === 'number')) {
@@ -200,8 +217,7 @@ const stringDurationToDTCG = (str: string): DTCGDurationValue | string => {
   return parsed ?? str;
 };
 
-const cubicBezierToDTCG = (cb: CubicBezier): DTCGCubicBezierValue =>
-  [cb.x1, cb.y1, cb.x2, cb.y2];
+const cubicBezierToDTCG = (cb: CubicBezier): DTCGCubicBezierValue => [cb.x1, cb.y1, cb.x2, cb.y2];
 
 const shadowToDTCG = (shadow: BoxShadow): DTCGShadowValue => ({
   color: colorToDTCG(shadow.color),
@@ -240,8 +256,54 @@ export const teiknValueToDTCG = (value: any, type: string): DTCGValue => {
     return shadowToDTCG(value);
   }
 
+  if (value instanceof BoxShadowList) {
+    return value.layers.map(shadowToDTCG) as unknown as DTCGValue;
+  }
+
   if (value instanceof LinearGradient || value instanceof RadialGradient) {
     return gradientToDTCG(value);
+  }
+
+  if (value instanceof GradientList) {
+    return value.layers.map(g => gradientToDTCG(g)) as unknown as DTCGValue;
+  }
+
+  if (value instanceof TransitionList) {
+    return value.layers.map(t => {
+      const result: Record<string, unknown> = {
+        duration: stringDurationToDTCG(t.duration),
+        timingFunction: cubicBezierToDTCG(t.timingFunction),
+      };
+      if (t.delay && t.delay !== '0s') {
+        result.delay = stringDurationToDTCG(t.delay);
+      }
+      if (t.property && t.property !== 'all') {
+        result.property = t.property;
+      }
+      return result;
+    }) as unknown as DTCGValue;
+  }
+
+  if (value instanceof Transition) {
+    const result: Record<string, unknown> = {
+      duration: stringDurationToDTCG(value.duration),
+      timingFunction: cubicBezierToDTCG(value.timingFunction),
+    };
+    if (value.delay && value.delay !== '0s') {
+      result.delay = stringDurationToDTCG(value.delay);
+    }
+    if (value.property && value.property !== 'all') {
+      result.property = value.property;
+    }
+    return result as DTCGValue;
+  }
+
+  if (value instanceof Dimension) {
+    return { value: value.value, unit: value.unit } as DTCGDimensionValue;
+  }
+
+  if (value instanceof Duration) {
+    return { value: value.value, unit: value.unit } as DTCGDurationValue;
   }
 
   if (typeof value === 'number') {
@@ -252,7 +314,11 @@ export const teiknValueToDTCG = (value: any, type: string): DTCGValue => {
 
   if (typeof value === 'string') {
     if (dtcgType === DTCG_TYPES.color) {
-      try { return colorToDTCG(new Color(value)); } catch { return value; }
+      try {
+        return colorToDTCG(new Color(value));
+      } catch {
+        return value;
+      }
     }
     if (dtcgType === DTCG_TYPES.dimension) {
       return stringDimensionToDTCG(value);
@@ -273,6 +339,10 @@ export const teiknValueToDTCG = (value: any, type: string): DTCGValue => {
         result[key] = cubicBezierToDTCG(val);
       } else if (val instanceof BoxShadow) {
         result[key] = shadowToDTCG(val);
+      } else if (val instanceof Dimension) {
+        result[key] = { value: val.value, unit: val.unit } as DTCGDimensionValue;
+      } else if (val instanceof Duration) {
+        result[key] = { value: val.value, unit: val.unit } as DTCGDurationValue;
       } else if (typeof val === 'string') {
         const dim = parseDimension(val);
         if (dim) {

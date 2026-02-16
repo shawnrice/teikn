@@ -12,7 +12,7 @@ import type { HSL, LAB, LCH, RGB, XYZ } from './types';
 
 export type Space = 'rgb' | 'hsl' | 'xyz' | 'lab' | 'lch';
 
-export interface SpaceData {
+export type SpaceData = {
   hsl: HSL;
   lab: LAB;
   lch: LCH;

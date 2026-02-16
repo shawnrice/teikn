@@ -54,4 +54,25 @@ describe('CSSVars Generator tests', () => {
     const token: Token = { name: 'primary', type: 'color', value: '#0066cc' };
     expect(gen.generateToken(token)).toContain('--PRIMARY:');
   });
+
+  test('useMediaQuery emits @media block for dark mode', () => {
+    const gen = new Generator({ dateFn: () => 'null', useMediaQuery: true });
+    const tokens: Token[] = [
+      { name: 'bg', type: 'color', value: '#ffffff', modes: { dark: '#1a1a1a' } },
+    ];
+    const output = gen.generate(tokens);
+    expect(output).toContain('[data-theme="dark"]');
+    expect(output).toContain('@media (prefers-color-scheme: dark)');
+    expect(output).toContain('--bg: #1a1a1a;');
+  });
+
+  test('modeSelectors overrides default data-theme selector', () => {
+    const gen = new Generator({ dateFn: () => 'null', modeSelectors: { dark: '.dark' } });
+    const tokens: Token[] = [
+      { name: 'bg', type: 'color', value: '#ffffff', modes: { dark: '#1a1a1a' } },
+    ];
+    const output = gen.generate(tokens);
+    expect(output).toContain('.dark {');
+    expect(output).not.toContain('[data-theme="dark"]');
+  });
 });

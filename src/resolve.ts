@@ -1,22 +1,10 @@
-import { BoxShadow } from './BoxShadow';
-import { Color } from './Color';
-import { CubicBezier } from './CubicBezier';
-import { LinearGradient, RadialGradient } from './Gradient';
 import type { Token } from './Token';
-import { Transition } from './Transition';
+import { isFirstClassValue } from './type-classifiers';
 
 const REF_PATTERN = /^\{([^}]+)\}$/;
 
 const isRef = (value: unknown): value is string =>
   typeof value === 'string' && REF_PATTERN.test(value);
-
-const isFirstClassValue = (value: unknown): boolean =>
-  value instanceof Color ||
-  value instanceof CubicBezier ||
-  value instanceof BoxShadow ||
-  value instanceof LinearGradient ||
-  value instanceof RadialGradient ||
-  value instanceof Transition;
 
 const isCompositeValue = (value: unknown): value is Record<string, any> =>
   typeof value === 'object' &&
@@ -57,6 +45,18 @@ const resolveValue = (
   return resolveValue(referenced.value, tokenMap, seen, refName);
 };
 
+const resolveModes = (
+  modes: Record<string, any>,
+  tokenMap: Map<string, Token>,
+  tokenName: string,
+): Record<string, any> => {
+  const resolved: Record<string, any> = {};
+  for (const [mode, value] of Object.entries(modes)) {
+    resolved[mode] = resolveValue(value, tokenMap, new Set([tokenName]), tokenName);
+  }
+  return resolved;
+};
+
 /**
  * Resolve all `{tokenName}` references in a token set.
  * References are looked up by token name (case-sensitive).
@@ -69,10 +69,19 @@ export const resolveReferences = (tokens: Token[]): Token[] => {
   }
 
   return tokens.map(token => {
-    const resolved = resolveValue(token.value, tokenMap, new Set([token.name]), token.name);
-    if (resolved === token.value) {
+    const resolvedValue = resolveValue(token.value, tokenMap, new Set([token.name]), token.name);
+    const resolvedModes = token.modes
+      ? resolveModes(token.modes, tokenMap, token.name)
+      : undefined;
+
+    if (resolvedValue === token.value && resolvedModes === undefined) {
       return token;
     }
-    return { ...token, value: resolved };
+
+    const result = { ...token, value: resolvedValue };
+    if (resolvedModes) {
+      result.modes = resolvedModes;
+    }
+    return result;
   });
 };

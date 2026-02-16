@@ -8,13 +8,13 @@
 
 type Point3 = readonly [number, number, number];
 
-export interface NearestResult<T> {
+export type NearestResult<T> = {
   data: T;
   coords: Point3;
   d2: number;
 }
 
-interface Entry<T> {
+type Entry<T> = {
   point: Point3;
   data: T;
 }

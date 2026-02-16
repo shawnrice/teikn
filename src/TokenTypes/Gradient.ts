@@ -366,3 +366,74 @@ export class RadialGradient {
     return `radial-gradient(${stopsStr})`;
   }
 }
+
+// ─── GradientList ────────────────────────────────────────────
+
+type AnyGradient = LinearGradient | RadialGradient;
+
+const splitTopLevelCommas = (str: string): string[] => {
+  const parts: string[] = [];
+  let depth = 0;
+  let start = 0;
+  for (let i = 0; i < str.length; i++) {
+    const ch = str[i]!;
+    if (ch === '(') { depth++; }
+    if (ch === ')') { depth--; }
+    if (ch === ',' && depth === 0) {
+      parts.push(str.slice(start, i).trim());
+      start = i + 1;
+    }
+  }
+  const last = str.slice(start).trim();
+  if (last.length > 0) {
+    parts.push(last);
+  }
+  return parts;
+};
+
+const parseGradient = (str: string): AnyGradient => {
+  const s = str.trim();
+  if (/^linear-gradient\(/i.test(s)) {
+    return new LinearGradient(s);
+  }
+  if (/^radial-gradient\(/i.test(s)) {
+    return new RadialGradient(s);
+  }
+  throw new Error(`Unknown gradient type: "${s}"`);
+};
+
+export class GradientList {
+  readonly #layers: readonly AnyGradient[];
+
+  constructor(layers: AnyGradient[]);
+  constructor(css: string);
+  constructor(value: GradientList);
+  constructor(first: AnyGradient[] | string | GradientList) {
+    if (first instanceof GradientList) {
+      this.#layers = first.#layers;
+      return;
+    }
+
+    if (typeof first === 'string') {
+      this.#layers = splitTopLevelCommas(first).map(parseGradient);
+      return;
+    }
+
+    this.#layers = [...first];
+  }
+
+  get layers(): readonly AnyGradient[] { return this.#layers; }
+  get length(): number { return this.#layers.length; }
+
+  at(index: number): AnyGradient | undefined { return this.#layers[index]; }
+
+  map(fn: (gradient: AnyGradient, index: number) => AnyGradient): GradientList {
+    return new GradientList(this.#layers.map(fn));
+  }
+
+  toJSON(): string { return this.toString(); }
+
+  toString(): string {
+    return this.#layers.map(g => g.toString()).join(', ');
+  }
+}

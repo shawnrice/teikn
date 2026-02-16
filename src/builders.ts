@@ -1,4 +1,8 @@
-import { Color } from './Color';
+import { Color } from './TokenTypes/Color';
+import { Dimension } from './TokenTypes/Dimension';
+import type { DimensionUnit } from './TokenTypes/Dimension';
+import { Duration } from './TokenTypes/Duration';
+import type { DurationUnit } from './TokenTypes/Duration';
 import type {
   CompositeInput,
   CompositeTokenInput,
@@ -8,10 +12,8 @@ import type {
   TokenValue,
 } from './Token';
 
-const isColor = (v: unknown): v is Color => v instanceof Color;
-
 const isTokenInputObject = (v: unknown): v is TokenInputObject =>
-  typeof v === 'object' && v !== null && !isColor(v) && !Array.isArray(v) && 'value' in v;
+  typeof v === 'object' && v !== null && !Color.isColor(v) && !Array.isArray(v) && 'value' in v;
 
 const resolveTokenInput = (name: string, input: TokenInput): Omit<Token, 'type'> => {
   if (Array.isArray(input)) {
@@ -24,6 +26,7 @@ const resolveTokenInput = (name: string, input: TokenInput): Omit<Token, 'type'>
     if (usage) {
       token.usage = usage;
     }
+
     if (modes) {
       token.modes = modes;
     }
@@ -41,12 +44,15 @@ const resolveCompositeInput = (name: string, input: CompositeTokenInput): Omit<T
   if (typeof input === 'object' && 'value' in input && typeof input.value === 'object') {
     const obj = input as { value: CompositeInput; usage?: string; modes?: Record<string, any> };
     const token: Omit<Token, 'type'> = { name, value: obj.value };
+
     if (obj.usage) {
       token.usage = obj.usage;
     }
+
     if (obj.modes) {
       token.modes = obj.modes;
     }
+
     return token;
   }
 
@@ -106,9 +112,11 @@ export const scale = (
     return values.map((v, i) => {
       const name = names?.[i] ?? String(i);
       const token: Token = { name, value: transform(v), type, group: type };
+
       if (usage) {
         token.usage = usage;
       }
+
       return token;
     });
   }
@@ -185,16 +193,37 @@ export const onColors = (
   }));
 
 /**
- * Convert a pixel value to rem (assuming 16px base).
+ * Convert a pixel value to a rem Dimension (assuming 16px base).
  *
  * @example
  * ```ts
- * dp(16)  // => '1rem'
- * dp(8)   // => '0.5rem'
- * dp(-4)  // => '-0.25rem'
+ * dp(16)  // => Dimension(1, 'rem')
+ * dp(8)   // => Dimension(0.5, 'rem')
  * ```
  */
-export const dp = (px: number): string => `${px / 16}rem`;
+export const dp = (px: number): Dimension => new Dimension(px / 16, 'rem');
+
+/**
+ * Create a Dimension value.
+ *
+ * @example
+ * ```ts
+ * dim(16, 'px')  // => Dimension(16, 'px')
+ * dim(1, 'rem')  // => Dimension(1, 'rem')
+ * ```
+ */
+export const dim = (value: number, unit: DimensionUnit): Dimension => new Dimension(value, unit);
+
+/**
+ * Create a Duration value.
+ *
+ * @example
+ * ```ts
+ * dur(200, 'ms')  // => Duration(200, 'ms')
+ * dur(0.3, 's')   // => Duration(0.3, 's')
+ * ```
+ */
+export const dur = (value: number, unit: DurationUnit): Duration => new Duration(value, unit);
 
 /**
  * Merge multiple token arrays into one.

@@ -971,7 +971,7 @@ export type XKCDColorValue = (typeof xkcdColors)[XKCDColor];
 const colors = Object.entries(xkcdColors).map(([name, hex]) => ({ name, hex }));
 const index = new Octree(colors, item => hexToRGB(item.hex));
 
-export interface XKCDColorSearchResult {
+export type XKCDColorSearchResult = {
   name: XKCDColor;
   hex: (typeof xkcdColors)[XKCDColor];
   d2: number;

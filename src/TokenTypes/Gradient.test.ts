@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test';
 import { Color } from './Color';
-import { LinearGradient, RadialGradient } from './Gradient';
+import { GradientList, LinearGradient, RadialGradient } from './Gradient';
 
 describe('LinearGradient', () => {
   // ─── Construction ────────────────────────────────────────────
@@ -247,5 +247,72 @@ describe('RadialGradient', () => {
   it('toJSON() equals toString()', () => {
     const g = new RadialGradient({}, ['red', 'blue']);
     expect(g.toJSON()).toBe(g.toString());
+  });
+});
+
+describe('GradientList', () => {
+  const lg = new LinearGradient(90, ['red', 'blue']);
+  const rg = new RadialGradient({ shape: 'circle' }, ['green', 'yellow']);
+
+  it('creates from an array of gradients', () => {
+    const list = new GradientList([lg, rg]);
+    expect(list.length).toBe(2);
+    expect(list.at(0)).toBeInstanceOf(LinearGradient);
+    expect(list.at(1)).toBeInstanceOf(RadialGradient);
+  });
+
+  it('creates from a CSS string with multiple gradients', () => {
+    const css = 'linear-gradient(to right, red, blue), radial-gradient(circle, green, yellow)';
+    const list = new GradientList(css);
+    expect(list.length).toBe(2);
+    expect(list.at(0)).toBeInstanceOf(LinearGradient);
+    expect(list.at(1)).toBeInstanceOf(RadialGradient);
+  });
+
+  it('creates as a copy', () => {
+    const a = new GradientList([lg, rg]);
+    const b = new GradientList(a);
+    expect(b.length).toBe(2);
+    expect(b.toString()).toBe(a.toString());
+  });
+
+  it('layers returns readonly array', () => {
+    const list = new GradientList([lg]);
+    expect(list.layers).toHaveLength(1);
+  });
+
+  it('at() returns undefined for out-of-bounds', () => {
+    const list = new GradientList([lg]);
+    expect(list.at(5)).toBeUndefined();
+  });
+
+  it('map() transforms each gradient', () => {
+    const list = new GradientList([lg]);
+    const mapped = list.map(g => {
+      if (g instanceof LinearGradient) {
+        return g.rotate(90);
+      }
+      return g;
+    });
+    expect(mapped.at(0)!.toString()).toContain('to bottom');
+  });
+
+  it('toString() joins with comma', () => {
+    const list = new GradientList([lg, rg]);
+    const str = list.toString();
+    expect(str).toContain('linear-gradient(');
+    expect(str).toContain('radial-gradient(');
+    expect(str.split(', radial-gradient').length).toBe(2);
+  });
+
+  it('toJSON() equals toString()', () => {
+    const list = new GradientList([lg, rg]);
+    expect(list.toJSON()).toBe(list.toString());
+  });
+
+  it('handles CSS with nested parentheses correctly', () => {
+    const css = 'linear-gradient(90deg, rgba(255, 0, 0, 0.5), blue), radial-gradient(circle, green, yellow)';
+    const list = new GradientList(css);
+    expect(list.length).toBe(2);
   });
 });
