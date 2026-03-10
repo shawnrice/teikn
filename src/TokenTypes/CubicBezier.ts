@@ -113,7 +113,7 @@ export class CubicBezier {
     this.#y2 = y2!;
   }
 
-  static from(x: CubicBezier) {
+  static from(x: CubicBezier): CubicBezier {
     return new CubicBezier(x);
   }
 

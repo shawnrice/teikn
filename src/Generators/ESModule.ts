@@ -3,7 +3,7 @@ import { EOL } from 'os';
 import { camelCase, deriveShortName } from '../string-utils';
 import type { Token } from '../Token';
 import { getDate } from '../utils';
-import type { GeneratorOptions } from './Generator';
+import type { GeneratorInfo, GeneratorOptions } from './Generator';
 import { Generator } from './Generator';
 
 const defaultOptions = {
@@ -35,7 +35,7 @@ export class ESModule extends Generator<ESModuleOpts> {
     super(Object.assign({}, defaultOptions, options));
   }
 
-  override describe() {
+  override describe(): GeneratorInfo | null {
     const base = `import { tokens } from './${this.file}';\n\ntokens.tokenName`;
     const groupUsage = this.options.groups
       ? `\n\n// Or use typed group accessors\nimport { color } from './${this.file}';\ncolor('primary')`

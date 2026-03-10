@@ -3,7 +3,7 @@ import { EOL } from 'os';
 import { camelCase, deriveShortName } from '../string-utils';
 import type { Token } from '../Token';
 import { getDate } from '../utils';
-import type { GeneratorOptions } from './Generator';
+import type { GeneratorInfo, GeneratorOptions } from './Generator';
 import { Generator } from './Generator';
 
 const defaultOptions = {
@@ -33,7 +33,7 @@ export class JavaScript extends Generator<JavaScriptOpts> {
     super(opts);
   }
 
-  override describe() {
+  override describe(): GeneratorInfo | null {
     const base = `const { tokens } = require('./${this.file}');\n\ntokens.tokenName`;
     const groupUsage = this.options.groups
       ? `\n\n// Or use typed group accessors\nconst { color } = require('./${this.file}');\ncolor('primary')`

@@ -21,7 +21,7 @@ export class ContrastValidatorPlugin extends Plugin<ContrastValidatorPluginOptio
     return token;
   }
 
-  audit(tokens: Token[]): AuditIssue[] {
+  override audit(tokens: Token[]): AuditIssue[] {
     const tokenMap = new Map(tokens.map(t => [t.name, t]));
     const { pairs, minRatio } = this.options;
 

@@ -2,6 +2,7 @@ import { EOL } from 'os';
 
 import { camelCase, deriveShortName, kebabCase } from '../string-utils';
 import type { Token } from '../Token';
+import type { GeneratorInfo } from './Generator';
 import { Scss } from './Scss';
 
 const scssValue = (value: unknown): string => {
@@ -14,7 +15,7 @@ const scssValue = (value: unknown): string => {
 };
 
 export class ScssVars extends Scss {
-  override describe() {
+  override describe(): GeneratorInfo | null {
     const base = `@use '${this.options.filename ?? 'tokens'}';\n\n// Access variables with namespace\ntokens.$tokenName`;
     const groupUsage = this.options.groups
       ? `\n\n// Or use typed group accessors\ntokens.color('primary')`

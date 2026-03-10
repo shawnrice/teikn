@@ -3,7 +3,7 @@ import { EOL } from 'os';
 import { camelCase, deriveShortName } from '../string-utils';
 import type { Token } from '../Token';
 import { getDate } from '../utils';
-import type { GeneratorOptions } from './Generator';
+import type { GeneratorInfo, GeneratorOptions } from './Generator';
 import { Generator } from './Generator';
 
 const isValidIdentifier = (name: string): boolean => /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(name);
@@ -34,7 +34,7 @@ export class TypeScript extends Generator<TypeScriptOpts> {
     super(Object.assign({}, defaultOptions, options));
   }
 
-  override describe() {
+  override describe(): GeneratorInfo | null {
     const base = this.options.filename ?? 'tokens';
     const groupUsage = this.options.groups
       ? `\n\n// Or use typed group accessors\nimport { color } from './${base}';\ncolor('primary') // compile-time checked`

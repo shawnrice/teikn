@@ -8,7 +8,7 @@ import {
 } from '../string-utils';
 import type { Token } from '../Token';
 import { getDate } from '../utils';
-import type { GeneratorOptions } from './Generator';
+import type { GeneratorInfo, GeneratorOptions } from './Generator';
 import { Generator } from './Generator';
 
 const scssValue = (value: unknown): string => {
@@ -39,7 +39,7 @@ export class Scss extends Generator<ScssOpts> {
     super(opts);
   }
 
-  override describe() {
+  override describe(): GeneratorInfo | null {
     const base = `@use '${this.options.filename ?? 'tokens'}' as *;\n\n// Access tokens by name\nget-token('token-name')`;
     const groupUsage = this.options.groups
       ? `\n\n// Or use typed group accessors\ncolor('primary')`

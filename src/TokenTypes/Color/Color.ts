@@ -506,12 +506,12 @@ export class Color {
     };
 
     const isAnomaly = type in anomalyTypes;
-    const baseType = isAnomaly ? anomalyTypes[type] : type as 'protanopia' | 'deuteranopia' | 'tritanopia';
-    const matrix = matrices[baseType];
+    const baseType = isAnomaly ? anomalyTypes[type]! : type as 'protanopia' | 'deuteranopia' | 'tritanopia';
+    const [row0, row1, row2] = matrices[baseType] as unknown as [readonly number[], readonly number[], readonly number[]];
 
-    const sr = matrix[0][0] * lr + matrix[0][1] * lg + matrix[0][2] * lb;
-    const sg = matrix[1][0] * lr + matrix[1][1] * lg + matrix[1][2] * lb;
-    const sb = matrix[2][0] * lr + matrix[2][1] * lg + matrix[2][2] * lb;
+    const sr = row0[0]! * lr + row0[1]! * lg + row0[2]! * lb;
+    const sg = row1[0]! * lr + row1[1]! * lg + row1[2]! * lb;
+    const sb = row2[0]! * lr + row2[1]! * lg + row2[2]! * lb;
 
     const finalR = isAnomaly ? (lr + sr) / 2 : sr;
     const finalG = isAnomaly ? (lg + sg) / 2 : sg;

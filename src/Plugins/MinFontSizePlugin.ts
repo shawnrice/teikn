@@ -53,7 +53,7 @@ export class MinFontSizePlugin extends Plugin<MinFontSizePluginOptions> {
     return token;
   }
 
-  audit(tokens: Token[]): AuditIssue[] {
+  override audit(tokens: Token[]): AuditIssue[] {
     const { minPx = 12, basePx = 16 } = this.options;
 
     return tokens
