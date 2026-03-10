@@ -17,6 +17,14 @@ export type LABA = WithAlpha<LAB>;
 export type LCHA = WithAlpha<LCH>;
 export type CMYKA = WithAlpha<CMYK>;
 
+export type ColorBlindnessType =
+  | 'protanopia'
+  | 'deuteranopia'
+  | 'tritanopia'
+  | 'protanomaly'
+  | 'deuteranomaly'
+  | 'tritanomaly';
+
 // Type definitions
 export type ColorFormat =
   | 'rgb'

@@ -9,7 +9,7 @@ import { LCHOperations } from './operations/LCHOperations';
 import { RGBOperations } from './operations/RGBOperations';
 import { XYZOperations } from './operations/XYZOperations';
 import { parseColorString } from './parseColorString';
-import type { ColorFormat, HSL, HSLA, LAB, LABA, LCH, LCHA, RGB, RGBA, XYZ, XYZA } from './types';
+import type { ColorBlindnessType, ColorFormat, HSL, HSLA, LAB, LABA, LCH, LCHA, RGB, RGBA, XYZ, XYZA } from './types';
 import { degreeRange, hexRange, percentRange, round, toPercent } from './util';
 import { closest } from './xkcdNamedColors';
 
@@ -377,6 +377,151 @@ export class Color {
   /** Create a new color by mixing with black */
   shade(amount: number): Color {
     return this.mix(new Color(0, 0, 0), amount);
+  }
+
+  /**
+   * Calculate the CIEDE2000 color difference between this color and another
+   * @see Sharma, Wu, Dalal (2005) "The CIEDE2000 color-difference formula"
+   */
+  deltaE(other: Color): number {
+    const [L1, a1, b1] = this.asLAB();
+    const [L2, a2, b2] = other.asLAB();
+
+    const RAD = Math.PI / 180;
+    const DEG = 180 / Math.PI;
+    const POW25_7 = 6103515625; // 25^7
+
+    const C1 = Math.sqrt(a1 * a1 + b1 * b1);
+    const C2 = Math.sqrt(a2 * a2 + b2 * b2);
+    const Cab = (C1 + C2) / 2;
+    const Cab7 = Cab ** 7;
+    const G = 0.5 * (1 - Math.sqrt(Cab7 / (Cab7 + POW25_7)));
+
+    const a1p = a1 * (1 + G);
+    const a2p = a2 * (1 + G);
+    const C1p = Math.sqrt(a1p * a1p + b1 * b1);
+    const C2p = Math.sqrt(a2p * a2p + b2 * b2);
+
+    const h1p = Math.abs(a1p) < 1e-10 && Math.abs(b1) < 1e-10 ? 0 : (Math.atan2(b1, a1p) * DEG + 360) % 360;
+    const h2p = Math.abs(a2p) < 1e-10 && Math.abs(b2) < 1e-10 ? 0 : (Math.atan2(b2, a2p) * DEG + 360) % 360;
+
+    const dLp = L2 - L1;
+    const dCp = C2p - C1p;
+
+    const dhp = (() => {
+      if (C1p * C2p === 0) {
+        return 0;
+      }
+      const diff = h2p - h1p;
+      if (Math.abs(diff) <= 180) {
+        return diff;
+      }
+      return diff > 180 ? diff - 360 : diff + 360;
+    })();
+
+    const dHp = 2 * Math.sqrt(C1p * C2p) * Math.sin((dhp / 2) * RAD);
+
+    const Lbp = (L1 + L2) / 2;
+    const Cbp = (C1p + C2p) / 2;
+
+    const hbp = (() => {
+      if (C1p * C2p === 0) {
+        return h1p + h2p;
+      }
+      if (Math.abs(h1p - h2p) <= 180) {
+        return (h1p + h2p) / 2;
+      }
+      return h1p + h2p < 360
+        ? (h1p + h2p + 360) / 2
+        : (h1p + h2p - 360) / 2;
+    })();
+
+    const T =
+      1 -
+      0.17 * Math.cos((hbp - 30) * RAD) +
+      0.24 * Math.cos(2 * hbp * RAD) +
+      0.32 * Math.cos((3 * hbp + 6) * RAD) -
+      0.20 * Math.cos((4 * hbp - 63) * RAD);
+
+    const Lbp50sq = (Lbp - 50) ** 2;
+    const SL = 1 + (0.015 * Lbp50sq) / Math.sqrt(20 + Lbp50sq);
+    const SC = 1 + 0.045 * Cbp;
+    const SH = 1 + 0.015 * Cbp * T;
+
+    const Cbp7 = Cbp ** 7;
+    const RC = 2 * Math.sqrt(Cbp7 / (Cbp7 + POW25_7));
+    const dtheta = 30 * Math.exp(-(((hbp - 275) / 25) ** 2));
+    const RT = -Math.sin(2 * dtheta * RAD) * RC;
+
+    // kL = kC = kH = 1 (standard viewing conditions)
+    const termL = dLp / SL;
+    const termC = dCp / SC;
+    const termH = dHp / SH;
+
+    return Math.sqrt(
+      termL * termL + termC * termC + termH * termH + RT * termC * termH,
+    );
+  }
+
+  /**
+   * Simulate how this color appears under a color vision deficiency
+   * Uses Brettel/Vienot simulation matrices on linearized sRGB
+   */
+  simulateColorBlindness(type: ColorBlindnessType): Color {
+    const matrices: Record<'protanopia' | 'deuteranopia' | 'tritanopia', readonly (readonly [number, number, number])[]> = {
+      protanopia: [
+        [0.56667, 0.43333, 0],
+        [0.55833, 0.44167, 0],
+        [0, 0.24167, 0.75833],
+      ],
+      deuteranopia: [
+        [0.625, 0.375, 0],
+        [0.70, 0.30, 0],
+        [0, 0.30, 0.70],
+      ],
+      tritanopia: [
+        [0.95, 0.05, 0],
+        [0, 0.43333, 0.56667],
+        [0, 0.475, 0.525],
+      ],
+    };
+
+    const linearize = (c: number): number =>
+      c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+
+    const delinearize = (c: number): number =>
+      c <= 0.0031308 ? c * 12.92 : 1.055 * c ** (1 / 2.4) - 0.055;
+
+    const clamp = (v: number): number => Math.min(1, Math.max(0, v));
+
+    const [r, g, b] = this.asRGB();
+    const lr = linearize(r / 255);
+    const lg = linearize(g / 255);
+    const lb = linearize(b / 255);
+
+    const anomalyTypes: Record<string, 'protanopia' | 'deuteranopia' | 'tritanopia'> = {
+      protanomaly: 'protanopia',
+      deuteranomaly: 'deuteranopia',
+      tritanomaly: 'tritanopia',
+    };
+
+    const isAnomaly = type in anomalyTypes;
+    const baseType = isAnomaly ? anomalyTypes[type] : type as 'protanopia' | 'deuteranopia' | 'tritanopia';
+    const matrix = matrices[baseType];
+
+    const sr = matrix[0][0] * lr + matrix[0][1] * lg + matrix[0][2] * lb;
+    const sg = matrix[1][0] * lr + matrix[1][1] * lg + matrix[1][2] * lb;
+    const sb = matrix[2][0] * lr + matrix[2][1] * lg + matrix[2][2] * lb;
+
+    const finalR = isAnomaly ? (lr + sr) / 2 : sr;
+    const finalG = isAnomaly ? (lg + sg) / 2 : sg;
+    const finalB = isAnomaly ? (lb + sb) / 2 : sb;
+
+    const outR = Math.round(clamp(delinearize(finalR)) * 255);
+    const outG = Math.round(clamp(delinearize(finalG)) * 255);
+    const outB = Math.round(clamp(delinearize(finalB)) * 255);
+
+    return Color.#new('rgb', [outR, outG, outB] as RGB, this.#alpha);
   }
 
   /**

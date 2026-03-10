@@ -906,6 +906,130 @@ describe('Round-trip conversion symmetry', () => {
   });
 });
 
+// ─── deltaE (CIEDE2000) tests ──────────────────────────────
+
+describe('deltaE (CIEDE2000)', () => {
+  test('same color returns 0', () => {
+    const c = new Color('red');
+    expect(c.deltaE(c)).toBe(0);
+  });
+
+  test('white vs black is approximately 100', () => {
+    const white = new Color('white');
+    const black = new Color('black');
+    const dE = white.deltaE(black);
+    expect(dE).toBeGreaterThan(95);
+    expect(dE).toBeLessThan(105);
+  });
+
+  test('similar colors have small deltaE (< 5)', () => {
+    const c1 = new Color('#ff0000');
+    const c2 = new Color('#fe0302');
+    expect(c1.deltaE(c2)).toBeLessThan(5);
+  });
+
+  test('symmetry: a.deltaE(b) === b.deltaE(a)', () => {
+    const a = new Color('#336699');
+    const b = new Color('#993366');
+    expect(a.deltaE(b)).toBeCloseTo(b.deltaE(a), 10);
+  });
+
+  test('Sharma 2005 reference pair 1: near-neutral pair', () => {
+    // L*=50.0000, a*=2.6772, b*=-79.7751 vs L*=50.0000, a*=0.0000, b*=-82.7485
+    // Expected deltaE = 2.0425
+    const c1 = Color.fromLAB(50.0, 2.6772, -79.7751);
+    const c2 = Color.fromLAB(50.0, 0.0, -82.7485);
+    expect(c1.deltaE(c2)).toBeCloseTo(2.0425, 3);
+  });
+
+  test('Sharma 2005 reference pair 2', () => {
+    // L*=50.0000, a*=3.1571, b*=-77.2803 vs L*=50.0000, a*=0.0000, b*=-82.7485
+    // Expected deltaE = 2.8615
+    const c1 = Color.fromLAB(50.0, 3.1571, -77.2803);
+    const c2 = Color.fromLAB(50.0, 0.0, -82.7485);
+    expect(c1.deltaE(c2)).toBeCloseTo(2.8615, 3);
+  });
+
+  test('Sharma 2005 reference pair 3', () => {
+    // L*=50.0000, a*=2.8361, b*=-74.0200 vs L*=50.0000, a*=0.0000, b*=-82.7485
+    // Expected deltaE = 3.4412
+    const c1 = Color.fromLAB(50.0, 2.8361, -74.02);
+    const c2 = Color.fromLAB(50.0, 0.0, -82.7485);
+    expect(c1.deltaE(c2)).toBeCloseTo(3.4412, 3);
+  });
+
+  test('distant colors have large deltaE', () => {
+    const red = new Color('red');
+    const cyan = new Color('cyan');
+    expect(red.deltaE(cyan)).toBeGreaterThan(40);
+  });
+});
+
+// ─── simulateColorBlindness tests ──────────────────────────
+
+describe('simulateColorBlindness', () => {
+  test('pure red under protanopia should lose redness', () => {
+    const red = new Color(255, 0, 0);
+    const simulated = red.simulateColorBlindness('protanopia');
+    // Protanopia makes red appear much darker/different — red channel should drop significantly
+    expect(simulated.red).toBeLessThan(200);
+    // The simulated color should look less "red" — green should be comparable or higher
+    expect(simulated.green).toBeGreaterThan(0);
+  });
+
+  test('pure green under deuteranopia should lose greenness', () => {
+    const green = new Color(0, 255, 0);
+    const simulated = green.simulateColorBlindness('deuteranopia');
+    // Should lose the strong green; red channel comes up, green drops
+    expect(simulated.red).toBeGreaterThan(0);
+    expect(simulated.green).toBeLessThan(200);
+  });
+
+  test('gray should remain gray (achromatic colors unaffected)', () => {
+    const gray = new Color(128, 128, 128);
+    const simProtanopia = gray.simulateColorBlindness('protanopia');
+    const simDeuteranopia = gray.simulateColorBlindness('deuteranopia');
+    const simTritanopia = gray.simulateColorBlindness('tritanopia');
+    // All channels should remain close to 128
+    [simProtanopia, simDeuteranopia, simTritanopia].forEach(sim => {
+      expect(Math.abs(sim.red - 128)).toBeLessThanOrEqual(2);
+      expect(Math.abs(sim.green - 128)).toBeLessThanOrEqual(2);
+      expect(Math.abs(sim.blue - 128)).toBeLessThanOrEqual(2);
+    });
+  });
+
+  test('protanomaly should be between original and protanopia', () => {
+    const red = new Color(255, 0, 0);
+    const full = red.simulateColorBlindness('protanopia');
+    const partial = red.simulateColorBlindness('protanomaly');
+    // Partial simulation should have red between original and full simulation
+    expect(partial.red).toBeGreaterThan(full.red);
+    expect(partial.red).toBeLessThan(255);
+  });
+
+  test('alpha is preserved', () => {
+    const c = new Color(255, 0, 0).setAlpha(0.5);
+    const sim = c.simulateColorBlindness('protanopia');
+    expect(sim.alpha).toBe(0.5);
+  });
+
+  test('white and black are unaffected by all types', () => {
+    const white = new Color('white');
+    const black = new Color('black');
+    const types = ['protanopia', 'deuteranopia', 'tritanopia', 'protanomaly', 'deuteranomaly', 'tritanomaly'] as const;
+    types.forEach(type => {
+      const simW = white.simulateColorBlindness(type);
+      expect(simW.red).toBe(255);
+      expect(simW.green).toBe(255);
+      expect(simW.blue).toBe(255);
+      const simB = black.simulateColorBlindness(type);
+      expect(simB.red).toBe(0);
+      expect(simB.green).toBe(0);
+      expect(simB.blue).toBe(0);
+    });
+  });
+});
+
 // ─── HSL string construction test ──────────────────────────
 
 describe('HSL string construction', () => {

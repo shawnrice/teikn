@@ -1,5 +1,11 @@
 import type { Token } from '../Token';
 
+export type AuditIssue = {
+  severity: 'error' | 'warning' | 'info';
+  token: string;
+  message: string;
+};
+
 export abstract class Plugin<Options extends Record<string, unknown> = Record<string, unknown>> {
   abstract tokenType: string | RegExp;
   abstract outputType: string | RegExp;
@@ -11,4 +17,6 @@ export abstract class Plugin<Options extends Record<string, unknown> = Record<st
   }
 
   abstract toJSON(token: Token): Token;
+
+  audit?(tokens: Token[]): AuditIssue[];
 }
