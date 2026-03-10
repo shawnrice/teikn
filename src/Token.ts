@@ -60,3 +60,10 @@ export type CompositeTokenInput =
   | CompositeInput
   | [value: CompositeInput, usage: string]
   | { value: CompositeInput; usage?: string; modes?: ModeValues };
+
+/** A named partial override layer for theming. */
+export type ThemeLayer = {
+  name: string;
+  tokenNames: string[];
+  overrides: Record<string, TokenValue>;
+};

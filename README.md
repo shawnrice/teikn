@@ -122,18 +122,46 @@ import { tokens } from 'teikn';
 export const allTokens = tokens(colors, fontSizes, spacing, typography, shadows);
 ```
 
-### `themed(defaultValue, modes)`
+### `theme(name, source, overrides)`
 
-Create tokens with theme variants.
+Create a named theme layer — a partial override of a token set. Themes are applied as a stack: base tokens → layer A → layer B. Each layer only overrides the tokens it cares about, and keys are validated against the source.
 
 ```typescript
-import { themed, group } from 'teikn';
+import { theme, group } from 'teikn';
 
 const colors = group('color', {
-  surface: themed('#ffffff', { dark: '#1a1a1a' }),
-  background: themed('#fafafa', { dark: '#121212' }),
-  onSurface: themed('rgba(0, 0, 0, .87)', { dark: 'rgba(255, 255, 255, .87)' }),
+  surface: '#ffffff',
+  background: '#fafafa',
+  onSurface: 'rgba(0, 0, 0, .87)',
+  primary: '#0066cc',
 });
+
+// Override only what changes — primary stays the same
+const dark = theme('dark', colors, {
+  surface: '#1a1a1a',
+  background: '#121212',
+  onSurface: 'rgba(255, 255, 255, .87)',
+});
+
+// Derive from another theme — inherits dark's overrides + adds more
+const colorblindDark = theme('colorblind-dark', dark, {
+  primary: '#0077bb',
+});
+```
+
+Multiple theme dimensions (color scheme, density, brand) are independent layers:
+
+```typescript
+const spacing = group('spacing', { gap: '8px', padding: '16px' });
+
+const dense = theme('dense', spacing, { gap: '4px', padding: '8px' });
+
+// Pass all layers to Teikn — generators output them as scoped overrides
+const writer = new Teikn({
+  themes: [dark, dense, colorblindDark],
+  generators: [new CSSVars()],
+});
+await writer.transform(tokens(colors, spacing));
 ```
 
 ### `ref(tokenName, usage?)`

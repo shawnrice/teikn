@@ -12,7 +12,7 @@ const { version } = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
 
 import { Teikn } from './Teikn.js';
 import type { Plugin } from './Plugins/Plugin.js';
-import { resolveReferences } from './resolve.js';
+
 import { validate } from './validate.js';
 
 const SUPPORTED_EXTENSIONS = new Set(['.ts', '.js', '.mjs', '.cjs', '.json']);
@@ -104,9 +104,8 @@ const validateTokens = async () => {
   }
 
   try {
-    const module = await import(tokenPath);
-    const input = module.default || module;
-    const tokens = Array.isArray(input) ? input : input.tokens || input.default;
+    const mod = await import(tokenPath);
+    const tokens = extractTokens(mod);
 
     banner();
     console.log(`Validating tokens from ${tokenPath}...`);
@@ -178,22 +177,29 @@ const getDir = () => parseArgFlag('outdir', './');
 const isSupportedFile = (filePath: string) =>
   SUPPORTED_EXTENSIONS.has(path.extname(filePath).toLowerCase());
 
-const loadTokensFromPath = async (tokenPath: string, bustCache = false) => {
+const loadModuleFromPath = async (tokenPath: string, bustCache = false) => {
   try {
     if (path.extname(tokenPath).toLowerCase() === '.json') {
       const raw = await fs.promises.readFile(tokenPath, 'utf8');
-      const content = JSON.parse(raw);
-      return Array.isArray(content) ? content : content.tokens ?? content;
+      return JSON.parse(raw);
     }
     const importPath = bustCache ? `${tokenPath}?t=${Date.now()}` : tokenPath;
-    const module = await import(importPath);
-    const input = module.default || module;
-    return Array.isArray(input) ? input : input.tokens ?? input.default;
+    return await import(importPath);
   } catch (error) {
     console.error(`Error loading tokens from ${tokenPath}:`, error);
     process.exit(1);
   }
 };
+
+const extractTokens = (mod: any) => {
+  const input = mod.default || mod;
+  return Array.isArray(input) ? input : input.tokens ?? input.default;
+};
+
+const extractThemes = (mod: any) => mod.themes ?? mod.default?.themes ?? [];
+
+const loadTokensFromPath = async (tokenPath: string, bustCache = false) =>
+  extractTokens(await loadModuleFromPath(tokenPath, bustCache));
 
 const formatSize = (bytes: number) =>
   bytes < 1024 ? `${bytes} B` : `${(bytes / 1024).toFixed(1)} KB`;
@@ -240,15 +246,13 @@ const getPlugins = () => {
 };
 
 const dryRun = (writer: Teikn, tokens: any) => {
-  const resolved = resolveReferences(tokens);
-  writer.generators.forEach(g => { g.siblings = writer.generators; });
+  const files = writer.generateToStrings(tokens);
   console.log();
   console.log('[teikn] Dry run — no files written');
-  writer.generators.forEach(g => {
-    const content = g.generate(resolved, writer.plugins);
+  for (const [file, content] of files) {
     const size = formatSize(Buffer.byteLength(content, 'utf8'));
-    console.log(`  ${g.file.padEnd(20)} ${size}`);
-  });
+    console.log(`  ${file.padEnd(20)} ${size}`);
+  }
   process.exit(0);
 };
 
@@ -278,7 +282,9 @@ const startWatch = (inputPath: string, onchange: () => Promise<void>) => {
 const generateTokens = async () => {
   try {
     const tokenPath = getPathTo(command);
-    const tokens = await loadTokensFromPath(tokenPath);
+    const mod = await loadModuleFromPath(tokenPath);
+    const tokens = extractTokens(mod);
+    const themes = extractThemes(mod);
     const outDir = getPathTo(getDir());
     const generators = getGenerators();
     const plugins = getPlugins();
@@ -286,6 +292,7 @@ const generateTokens = async () => {
     const writer = new Teikn({
       plugins: plugins.map(P => new (P as new (opts: Record<string, unknown>) => Plugin)({})),
       generators: generators.map(Generator => new Generator()),
+      themes,
       outDir,
     });
 
@@ -304,8 +311,9 @@ const generateTokens = async () => {
 
     if (hasFlag('watch', 'w')) {
       startWatch(tokenPath, async () => {
-        const freshTokens = await loadTokensFromPath(tokenPath, true);
-        await writer.transform(freshTokens);
+        const freshMod = await loadModuleFromPath(tokenPath, true);
+        writer.themes = extractThemes(freshMod);
+        await writer.transform(extractTokens(freshMod));
       });
     }
   } catch (error) {
@@ -367,7 +375,8 @@ const runFromConfig = async (configPath: string) => {
     );
 
     const tokens = await loadTokensFromPath(inputPath);
-    const writer = new Teikn({ plugins, generators, outDir });
+    const themes = config.themes ?? [];
+    const writer = new Teikn({ plugins, generators, themes, outDir });
 
     banner();
     console.log(`Config: ${path.relative(process.cwd(), configPath)}`);
@@ -387,8 +396,9 @@ const runFromConfig = async (configPath: string) => {
 
     if (hasFlag('watch', 'w')) {
       startWatch(inputPath, async () => {
-        const freshTokens = await loadTokensFromPath(inputPath, true);
-        await writer.transform(freshTokens);
+        const freshMod = await loadModuleFromPath(inputPath, true);
+        writer.themes = extractThemes(freshMod);
+        await writer.transform(extractTokens(freshMod));
       });
     }
   } catch (error) {

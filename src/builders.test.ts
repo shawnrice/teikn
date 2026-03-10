@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import { composite, dim, dp, dur, group, onColor, onColors, ref, scale, themed, tokens } from './builders';
+import { composite, dim, dp, dur, group, onColor, onColors, ref, scale, theme, tokens } from './builders';
 import { Color } from './TokenTypes/Color';
 import { Dimension } from './TokenTypes/Dimension';
 import { Duration } from './TokenTypes/Duration';
@@ -249,11 +249,94 @@ describe('builders', () => {
     });
   });
 
-  describe('themed', () => {
-    test('creates a themed token input', () => {
-      const result = themed('#ffffff', { dark: '#1a1a1a' });
-      expect(result.value).toBe('#ffffff');
-      expect(result.modes).toEqual({ dark: '#1a1a1a' });
+  describe('theme', () => {
+    test('creates a theme layer from tokens', () => {
+      const colors = group('color', {
+        background: '#ffffff',
+        text: '#333',
+        primary: '#0066cc',
+      });
+
+      const dark = theme('dark', colors, {
+        background: '#1a1a1a',
+        text: '#eee',
+      });
+
+      expect(dark.name).toBe('dark');
+      expect(dark.tokenNames).toEqual(['background', 'text', 'primary']);
+      expect(dark.overrides).toEqual({
+        background: '#1a1a1a',
+        text: '#eee',
+      });
+    });
+
+    test('throws on unknown token name', () => {
+      const colors = group('color', {
+        background: '#ffffff',
+        text: '#333',
+      });
+
+      expect(() => theme('dark', colors, {
+        background: '#1a1a1a',
+        typo: '#red',
+      } as any)).toThrow('unknown token "typo"');
+    });
+
+    test('derives from another theme layer', () => {
+      const colors = group('color', {
+        background: '#ffffff',
+        text: '#333',
+        primary: '#0066cc',
+      });
+
+      const dark = theme('dark', colors, {
+        background: '#1a1a1a',
+        text: '#eee',
+      });
+
+      const colorblindDark = theme('colorblind-dark', dark, {
+        primary: '#0077bb',
+      });
+
+      expect(colorblindDark.name).toBe('colorblind-dark');
+      expect(colorblindDark.tokenNames).toEqual(['background', 'text', 'primary']);
+      // Merges parent overrides with own
+      expect(colorblindDark.overrides).toEqual({
+        background: '#1a1a1a',
+        text: '#eee',
+        primary: '#0077bb',
+      });
+    });
+
+    test('derived theme can override parent values', () => {
+      const colors = group('color', {
+        background: '#ffffff',
+        text: '#333',
+      });
+
+      const dark = theme('dark', colors, {
+        background: '#1a1a1a',
+        text: '#eee',
+      });
+
+      const darkHighContrast = theme('dark-hc', dark, {
+        background: '#000000',
+        text: '#ffffff',
+      });
+
+      expect(darkHighContrast.overrides).toEqual({
+        background: '#000000',
+        text: '#ffffff',
+      });
+    });
+
+    test('derived theme throws on unknown token', () => {
+      const colors = group('color', { primary: '#0066cc' });
+      const dark = theme('dark', colors, { primary: '#3399ff' });
+
+      expect(() => theme('bad', dark, {
+        nonexistent: '#red',
+      } as any)).toThrow('unknown token "nonexistent"');
     });
   });
 

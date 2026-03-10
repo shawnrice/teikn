@@ -6,6 +6,7 @@ import type { DurationUnit } from './TokenTypes/Duration';
 import type {
   CompositeInput,
   CompositeTokenInput,
+  ThemeLayer,
   Token,
   TokenInput,
   TokenInputObject,
@@ -236,23 +237,34 @@ export const dur = (value: number, unit: DurationUnit): Duration => new Duration
 export const tokens = (...groups: Token[][]): Token[] => groups.flat();
 
 /**
- * Create themed token values.
+ * Create a theme layer — a named partial override of a token set.
  *
  * @example
  * ```ts
- * const colors = group('color', {
- *   background: themed({ light: '#ffffff', dark: '#1a1a1a' }),
- *   text: themed({ light: '#333', dark: '#eee' }),
- * });
+ * const dark = theme('dark', colors, { background: '#1a1a1a', text: '#eee' });
+ * const highContrast = theme('high-contrast', dark, { text: '#fff' });
  * ```
  */
-export const themed = (
-  defaultValue: TokenValue,
-  modes: Record<string, TokenValue>,
-): TokenInputObject => ({
-  value: defaultValue,
-  modes,
-});
+export const theme = (
+  name: string,
+  source: Token[] | ThemeLayer,
+  overrides: Record<string, TokenValue>,
+): ThemeLayer => {
+  const isTokenArray = Array.isArray(source);
+  const tokenNames = isTokenArray ? source.map(t => t.name) : source.tokenNames;
+  const validNames = new Set(tokenNames);
+
+  for (const key of Object.keys(overrides)) {
+    if (!validNames.has(key)) {
+      throw new Error(
+        `Theme "${name}": unknown token "${key}". Available: ${tokenNames.join(', ')}`,
+      );
+    }
+  }
+
+  const merged = isTokenArray ? overrides : { ...source.overrides, ...overrides };
+  return { name, tokenNames, overrides: merged };
+};
 
 /**
  * Create a token that references another token by name.

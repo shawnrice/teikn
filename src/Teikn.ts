@@ -23,9 +23,39 @@ import {
 } from './Plugins';
 import type { AuditIssue } from './Plugins';
 import { resolveReferences } from './resolve';
-import type { Token } from './Token';
+import type { ThemeLayer, Token, TokenValue } from './Token';
 import { validate } from './validate';
 import type { ValidationResult } from './validate';
+
+/**
+ * Apply theme layers to tokens, merging each layer's overrides into token.modes.
+ */
+const applyThemes = (themes: ThemeLayer[], tokens: Token[]): Token[] => {
+  if (themes.length === 0) {
+    return tokens;
+  }
+
+  const modeUpdates = new Map<string, Record<string, TokenValue>>();
+  for (const layer of themes) {
+    for (const [name, value] of Object.entries(layer.overrides)) {
+      if (!modeUpdates.has(name)) {
+        modeUpdates.set(name, {});
+      }
+      modeUpdates.get(name)![layer.name] = value;
+    }
+  }
+
+  return tokens.map(token => {
+    const updates = modeUpdates.get(token.name);
+    if (!updates) {
+      return token;
+    }
+    return {
+      ...token,
+      modes: { ...token.modes, ...updates },
+    };
+  });
+};
 
 const plugins: {
   AlphaMultiplyPlugin: typeof AlphaMultiplyPlugin;
@@ -77,6 +107,7 @@ const generators: {
 export type TeiknOptions = {
   generators?: Generator[];
   plugins?: Plugin[];
+  themes?: ThemeLayer[];
   outDir?: string;
 };
 
@@ -84,6 +115,8 @@ export class Teikn {
   generators: Generator[];
 
   plugins: Plugin[];
+
+  themes: ThemeLayer[];
 
   outDir: string;
 
@@ -100,10 +133,11 @@ export class Teikn {
   static resolveReferences: typeof resolveReferences = resolveReferences;
 
   constructor(options: TeiknOptions) {
-    const { generators, outDir, plugins } = options;
-    this.generators = generators || [new Teikn.generators.Json()];
-    this.plugins = plugins || [];
-    this.outDir = outDir || process.cwd();
+    const { generators, outDir, plugins, themes } = options;
+    this.generators = generators ?? [new Teikn.generators.Json()];
+    this.plugins = plugins ?? [];
+    this.themes = themes ?? [];
+    this.outDir = outDir ?? process.cwd();
   }
 
   validate(tokens: Token[]): ValidationResult {
@@ -134,7 +168,8 @@ export class Teikn {
 
   generateToStrings(tokens: Token[]): Map<string, string> {
     const expanded = this.expand(tokens);
-    const resolved = resolveReferences(expanded);
+    const withThemes = applyThemes(this.themes, expanded);
+    const resolved = resolveReferences(withThemes);
 
     this.generators.forEach(g => { g.siblings = this.generators; });
 

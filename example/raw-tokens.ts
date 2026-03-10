@@ -10,7 +10,7 @@ import {
   RadialGradient,
   ref,
   scale,
-  themed,
+  theme,
   tokens,
   Transition,
 } from '../index';
@@ -33,9 +33,17 @@ const colors = group('color', {
   textPrimary: ['rgba(0, 0, 0, .95)', 'Use for prominent text'],
   textSecondary: 'rgba(0, 0, 0, .54)',
   link: ref('primary'),
-  surface: themed('#ffffff', { dark: '#1a1a1a' }),
-  background: themed('#fafafa', { dark: '#121212' }),
-  onSurface: themed('rgba(0, 0, 0, .87)', { dark: 'rgba(255, 255, 255, .87)' }),
+  surface: '#ffffff',
+  background: '#fafafa',
+  onSurface: 'rgba(0, 0, 0, .87)',
+});
+
+// ─── Color Themes ───────────────────────────────────────────
+
+const darkColors = theme('dark', colors, {
+  surface: '#1a1a1a',
+  background: '#121212',
+  onSurface: 'rgba(255, 255, 255, .87)',
 });
 
 const autoContrast = onColors('color', {
@@ -247,5 +255,7 @@ export const allTokens = tokens(
   aspectRatios,
   zLayers,
 );
+
+export const themes = [darkColors];
 
 export default allTokens;
