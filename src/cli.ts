@@ -11,6 +11,7 @@ const packagePath = path.resolve(__dirname, '../package.json');
 const { version } = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
 
 import { Teikn } from './Teikn.js';
+import type { Plugin } from './Plugins/Plugin.js';
 import { resolveReferences } from './resolve.js';
 import { validate } from './validate.js';
 
@@ -283,7 +284,7 @@ const generateTokens = async () => {
     const plugins = getPlugins();
 
     const writer = new Teikn({
-      plugins: plugins.map(P => new P({} as Record<string, unknown>)),
+      plugins: plugins.map(P => new (P as new (opts: Record<string, unknown>) => Plugin)({})),
       generators: generators.map(Generator => new Generator()),
       outDir,
     });
@@ -338,7 +339,7 @@ const resolveFromConfig = (configGenerators: unknown[], configPlugins: unknown[]
             console.error(`Unknown plugin: ${p}`);
             process.exit(1);
           }
-          return new entry![1]({} as Record<string, unknown>);
+          return new (entry![1] as new (opts: Record<string, unknown>) => Plugin)({});
         }
         return p as InstanceType<typeof Teikn.Plugin>;
       })

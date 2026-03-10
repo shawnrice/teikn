@@ -3,17 +3,63 @@ import path from 'node:path';
 
 import { ensureDirectory } from './ensure-directory';
 import { CSSVars, DTCGGenerator, ESModule, Generator, HTML, JavaScript, Json, Scss, ScssVars, Storybook, TypeScript } from './Generators';
-import { ColorTransformPlugin, Plugin, PrefixTypePlugin, SCSSQuoteValuePlugin } from './Plugins';
+import {
+  AlphaMultiplyPlugin,
+  ClampPlugin,
+  ColorBlindnessPlugin,
+  ColorTransformPlugin,
+  ContrastValidatorPlugin,
+  DeprecationPlugin,
+  MinFontSizePlugin,
+  NameConventionPlugin,
+  PalettePlugin,
+  PerceptualDistancePlugin,
+  Plugin,
+  PrefixTypePlugin,
+  ReducedMotionPlugin,
+  RemUnitPlugin,
+  SCSSQuoteValuePlugin,
+  TouchTargetPlugin,
+} from './Plugins';
+import type { AuditIssue } from './Plugins';
 import { resolveReferences } from './resolve';
 import type { Token } from './Token';
 import { validate } from './validate';
 import type { ValidationResult } from './validate';
 
 const plugins: {
+  AlphaMultiplyPlugin: typeof AlphaMultiplyPlugin;
+  ClampPlugin: typeof ClampPlugin;
+  ColorBlindnessPlugin: typeof ColorBlindnessPlugin;
   ColorTransformPlugin: typeof ColorTransformPlugin;
+  ContrastValidatorPlugin: typeof ContrastValidatorPlugin;
+  DeprecationPlugin: typeof DeprecationPlugin;
+  MinFontSizePlugin: typeof MinFontSizePlugin;
+  NameConventionPlugin: typeof NameConventionPlugin;
+  PalettePlugin: typeof PalettePlugin;
+  PerceptualDistancePlugin: typeof PerceptualDistancePlugin;
   PrefixTypePlugin: typeof PrefixTypePlugin;
+  ReducedMotionPlugin: typeof ReducedMotionPlugin;
+  RemUnitPlugin: typeof RemUnitPlugin;
   SCSSQuoteValuePlugin: typeof SCSSQuoteValuePlugin;
-} = { ColorTransformPlugin, PrefixTypePlugin, SCSSQuoteValuePlugin };
+  TouchTargetPlugin: typeof TouchTargetPlugin;
+} = {
+  AlphaMultiplyPlugin,
+  ClampPlugin,
+  ColorBlindnessPlugin,
+  ColorTransformPlugin,
+  ContrastValidatorPlugin,
+  DeprecationPlugin,
+  MinFontSizePlugin,
+  NameConventionPlugin,
+  PalettePlugin,
+  PerceptualDistancePlugin,
+  PrefixTypePlugin,
+  ReducedMotionPlugin,
+  RemUnitPlugin,
+  SCSSQuoteValuePlugin,
+  TouchTargetPlugin,
+};
 
 const generators: {
   CSSVars: typeof CSSVars;
@@ -64,8 +110,31 @@ export class Teikn {
     return validate(tokens);
   }
 
+  /** Run expand() on all plugins that support it, returning the expanded token set. */
+  expand(tokens: Token[]): Token[] {
+    let result = tokens;
+    for (const plugin of this.plugins) {
+      if ('expand' in plugin && typeof plugin.expand === 'function') {
+        result = plugin.expand(result);
+      }
+    }
+    return result;
+  }
+
+  /** Run audit() on all plugins that support it, returning all issues. */
+  audit(tokens: Token[]): AuditIssue[] {
+    const issues: AuditIssue[] = [];
+    for (const plugin of this.plugins) {
+      if (plugin.audit) {
+        issues.push(...plugin.audit(tokens));
+      }
+    }
+    return issues;
+  }
+
   generateToStrings(tokens: Token[]): Map<string, string> {
-    const resolved = resolveReferences(tokens);
+    const expanded = this.expand(tokens);
+    const resolved = resolveReferences(expanded);
 
     this.generators.forEach(g => { g.siblings = this.generators; });
 
@@ -77,6 +146,14 @@ export class Teikn {
   }
 
   async transform(tokens: Token[]): Promise<void> {
+    const auditIssues = this.audit(tokens);
+    if (auditIssues.length > 0) {
+      for (const issue of auditIssues) {
+        const prefix = issue.severity === 'error' ? 'ERROR' : issue.severity === 'warning' ? 'WARN' : 'INFO';
+        console.warn(`[${prefix}] ${issue.token}: ${issue.message}`);
+      }
+    }
+
     const files = this.generateToStrings(tokens);
 
     try {
