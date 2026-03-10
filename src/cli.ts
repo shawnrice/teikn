@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { spawn as spawnProcess } from 'node:child_process';
 import * as fs from 'node:fs';
 import { EOL } from 'node:os';
 import * as path from 'node:path';
@@ -177,14 +178,13 @@ const getDir = () => parseArgFlag('outdir', './');
 const isSupportedFile = (filePath: string) =>
   SUPPORTED_EXTENSIONS.has(path.extname(filePath).toLowerCase());
 
-const loadModuleFromPath = async (tokenPath: string, bustCache = false) => {
+const loadModuleFromPath = async (tokenPath: string) => {
   try {
     if (path.extname(tokenPath).toLowerCase() === '.json') {
       const raw = await fs.promises.readFile(tokenPath, 'utf8');
       return JSON.parse(raw);
     }
-    const importPath = bustCache ? `${tokenPath}?t=${Date.now()}` : tokenPath;
-    return await import(importPath);
+    return await import(tokenPath);
   } catch (error) {
     console.error(`Error loading tokens from ${tokenPath}:`, error);
     process.exit(1);
@@ -198,8 +198,8 @@ const extractTokens = (mod: any) => {
 
 const extractThemes = (mod: any) => mod.themes ?? mod.default?.themes ?? [];
 
-const loadTokensFromPath = async (tokenPath: string, bustCache = false) =>
-  extractTokens(await loadModuleFromPath(tokenPath, bustCache));
+const loadTokensFromPath = async (tokenPath: string) =>
+  extractTokens(await loadModuleFromPath(tokenPath));
 
 const formatSize = (bytes: number) =>
   bytes < 1024 ? `${bytes} B` : `${(bytes / 1024).toFixed(1)} KB`;
@@ -256,23 +256,31 @@ const dryRun = (writer: Teikn, tokens: any) => {
   process.exit(0);
 };
 
-const startWatch = (inputPath: string, onchange: () => Promise<void>) => {
+// Spawns a fresh subprocess on each file change so the module cache is clean.
+const startWatch = (inputPath: string) => {
   console.log('[teikn] Watching for changes...');
+  const rerunArgs = process.argv.slice(2).filter(a => a !== '--watch' && a !== '-w');
   let timeout: ReturnType<typeof setTimeout> | null = null;
+
   fs.watch(inputPath, () => {
     if (timeout) {
       clearTimeout(timeout);
     }
-    timeout = setTimeout(async () => {
+    timeout = setTimeout(() => {
       const start = performance.now();
-      try {
-        await onchange();
-        console.log(`[teikn] Regenerated (${Math.round(performance.now() - start)}ms)`);
-      } catch (error) {
-        console.error('[teikn] Error during regeneration:', error);
-      }
+      const child = spawnProcess(process.execPath, [process.argv[1]!, ...rerunArgs], {
+        stdio: 'inherit',
+      });
+      child.on('close', (code) => {
+        if (code === 0) {
+          console.log(`[teikn] Regenerated (${Math.round(performance.now() - start)}ms)`);
+        } else {
+          console.error(`[teikn] Regeneration failed (exit code ${code})`);
+        }
+      });
     }, 100);
   });
+
   process.on('SIGINT', () => {
     console.log('\n[teikn] Stopped watching.');
     process.exit(0);
@@ -310,11 +318,7 @@ const generateTokens = async () => {
     console.log('Tokens generated successfully!');
 
     if (hasFlag('watch', 'w')) {
-      startWatch(tokenPath, async () => {
-        const freshMod = await loadModuleFromPath(tokenPath, true);
-        writer.themes = extractThemes(freshMod);
-        await writer.transform(extractTokens(freshMod));
-      });
+      startWatch(tokenPath);
     }
   } catch (error) {
     console.error('Error generating tokens:', error);
@@ -395,11 +399,7 @@ const runFromConfig = async (configPath: string) => {
     console.log('Tokens generated successfully!');
 
     if (hasFlag('watch', 'w')) {
-      startWatch(inputPath, async () => {
-        const freshMod = await loadModuleFromPath(inputPath, true);
-        writer.themes = extractThemes(freshMod);
-        await writer.transform(extractTokens(freshMod));
-      });
+      startWatch(inputPath);
     }
   } catch (error) {
     console.error('Error loading config:', error);
