@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import tokenSet1 from '../fixtures/tokenSet1';
+import { tokenSet1 } from '../fixtures/tokenSet1';
 import type { Token } from '../Token';
 import { BoxShadow } from '../TokenTypes/BoxShadow';
 import { Color } from '../TokenTypes/Color';
@@ -9,7 +9,7 @@ import { LinearGradient, RadialGradient } from '../TokenTypes/Gradient';
 import { Transition } from '../TokenTypes/Transition';
 import { CSSVars } from './CSSVars';
 import { ESModule } from './ESModule';
-import Generator from './HTML';
+import { HTML as Generator } from './HTML';
 import { Scss } from './Scss';
 
 const fixedDate = () => 'Mon Jan 01 2024 12:00:00';

@@ -22,4 +22,4 @@ const tokenSet1: Token[] = [
   },
 ];
 
-export default tokenSet1;
+export { tokenSet1 };

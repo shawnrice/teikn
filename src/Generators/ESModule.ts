@@ -4,7 +4,7 @@ import { camelCase, deriveShortName } from '../string-utils';
 import type { Token } from '../Token';
 import { getDate } from '../utils';
 import type { GeneratorOptions } from './Generator';
-import Generator from './Generator';
+import { Generator } from './Generator';
 
 const defaultOptions = {
   ext: 'mjs',
@@ -127,5 +127,3 @@ export class ESModule extends Generator<ESModuleOpts> {
     return parts.join(EOL);
   }
 }
-
-export default ESModule;

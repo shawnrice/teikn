@@ -1,5 +1,5 @@
 import type { Space, SpaceData } from './ColorSpace';
-import { hexToRGB } from './conversions';
+import { hexToRGBWithAlpha } from './conversions';
 import { namedColors } from './namedColors';
 import {
   isHex,
@@ -10,6 +10,7 @@ import {
   isRGB,
   isRGBA,
   isXYZ,
+  normalizeDegrees,
   stringToRgb,
   stringToRgba,
 } from './util';
@@ -22,7 +23,7 @@ export type ParsedColor = {
 };
 
 const hslRegex =
-  /^hsla?\([\s]*([0-9]+(?:\.[0-9]+)?)(?:deg)?[\s,]*([0-9]+(?:\.[0-9]+)?)%[\s,]*([0-9]+(?:\.[0-9]+)?)%(?:[\s,]*(?:\/[\s]*)?([0-9]*\.?[0-9]+))?\)$/i;
+  /^hsla?\([\s]*(-?[0-9]+(?:\.[0-9]+)?)(?:deg)?[\s,]*([0-9]+(?:\.[0-9]+)?)%[\s,]*([0-9]+(?:\.[0-9]+)?)%(?:[\s,]*(?:\/[\s]*)?([0-9]*\.?[0-9]+))?\)$/i;
 const labRegex =
   /^lab\([\s]*([0-9]+(?:\.[0-9]+)?)[\s,]*([+-]?[0-9]+(?:\.[0-9]+)?)[\s,]*([+-]?[0-9]+(?:\.[0-9]+)?)(?:[\s]*\/[\s]*([0-9]*\.?[0-9]+))?\)$/i;
 const lchRegex =
@@ -35,7 +36,7 @@ const parseHSLString = (c: string): ParsedColor => {
   if (!m) {
     throw new Error(`Cannot parse HSL from "${c}"`);
   }
-  const h = parseFloat(m[1]!);
+  const h = normalizeDegrees(parseFloat(m[1]!));
   const s = parseFloat(m[2]!) / 100;
   const l = parseFloat(m[3]!) / 100;
   const a = m[4] !== undefined ? parseFloat(m[4]) : 1;
@@ -98,7 +99,8 @@ export const parseColorString = (c: string): ParsedColor => {
 
   // Hex
   if (isHex(trimmed)) {
-    return { space: 'rgb', data: hexToRGB(trimmed), alpha: 1 };
+    const { rgb, alpha } = hexToRGBWithAlpha(trimmed);
+    return { space: 'rgb', data: rgb, alpha };
   }
 
   // RGB / RGBA

@@ -19,6 +19,25 @@ describe('parseColorString', () => {
     expect(result.alpha).toBe(1);
   });
 
+  test('parses 4-digit hex with alpha', () => {
+    const result = parseColorString('#f008');
+    expect(result.space).toBe('rgb');
+    expect(result.data).toEqual([255, 0, 0]);
+    expect(result.alpha).toBeCloseTo(0x88 / 255);
+  });
+
+  test('parses 8-digit hex with alpha', () => {
+    const result = parseColorString('#ff000080');
+    expect(result.space).toBe('rgb');
+    expect(result.data).toEqual([255, 0, 0]);
+    expect(result.alpha).toBeCloseTo(128 / 255);
+  });
+
+  test('rejects 5-digit and 7-digit hex', () => {
+    expect(() => parseColorString('#abcde')).toThrow();
+    expect(() => parseColorString('#abcdeff')).toThrow();
+  });
+
   // ─── RGB / RGBA ───────────────────────────────────────────
 
   test('parses rgb string', () => {
@@ -50,6 +69,18 @@ describe('parseColorString', () => {
     const result = parseColorString('hsla(120, 50%, 50%, 0.7)');
     expect(result.space).toBe('hsl');
     expect(result.alpha).toBeCloseTo(0.7);
+  });
+
+  test('parses hsl with hue > 360 by wrapping', () => {
+    const result = parseColorString('hsl(361, 50%, 50%)');
+    expect(result.space).toBe('hsl');
+    expect(result.data[0]).toBeCloseTo(1);
+  });
+
+  test('parses hsl with negative hue by wrapping', () => {
+    const result = parseColorString('hsl(-90, 50%, 50%)');
+    expect(result.space).toBe('hsl');
+    expect(result.data[0]).toBeCloseTo(270);
   });
 
   test('parses hsl with slash alpha', () => {

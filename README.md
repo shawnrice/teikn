@@ -77,6 +77,15 @@ writer.transform(tokens);
 
 Typings are included, so you should be good to go.
 
+## Color Space References
+
+- [W3C CSS Color 4 spec conversions](https://github.com/w3c/csswg-drafts/blob/main/css-color-4/conversions.js)
+- [Bruce Lindbloom's color math reference](http://www.brucelindbloom.com/index.html?Math.html)
+- [CSS Color spec on LAB colors](https://drafts.csswg.org/css-color/#lab-colors)
+- [sRGB / LAB / LCH conversion article](https://mina86.com/2021/srgb-lab-lchab-conversions/)
+- [CIE XYZ color space](https://www.image-engineering.de/library/technotes/958-how-to-convert-between-srgb-and-ciexyz)
+- [Illuminant D65](https://en.wikipedia.org/wiki/Illuminant_D65)
+
 ## License
 
 MIT

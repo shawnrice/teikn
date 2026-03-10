@@ -9,8 +9,6 @@ export type ParseOptions = {
   mapTypes?: boolean;
 };
 
-const DTCG_KEYS = new Set(['$type', '$description', '$extensions', '$deprecated', '$value']);
-
 const isDTCGToken = (node: unknown): node is DTCGToken =>
   node !== null && typeof node === 'object' && '$value' in node;
 

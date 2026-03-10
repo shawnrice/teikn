@@ -9,7 +9,7 @@ import {
 import type { Token } from '../Token';
 import { getDate } from '../utils';
 import type { GeneratorOptions } from './Generator';
-import Generator from './Generator';
+import { Generator } from './Generator';
 
 const scssValue = (value: unknown): string => {
   if (typeof value !== 'object' || value === null) {
@@ -180,5 +180,3 @@ export class Scss extends Generator<ScssOpts> {
     return [base, '', groupBlocks].join(EOL).trim();
   }
 }
-
-export default Scss;

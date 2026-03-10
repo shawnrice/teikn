@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'bun:test';
 
-import tokenSet1 from '../fixtures/tokenSet1';
+import { tokenSet1 } from '../fixtures/tokenSet1';
 import type { Token } from '../Token';
-import Generator from './TypeScript';
+import { TypeScript as Generator } from './TypeScript';
 
 const fixedDate = () => 'Mon Jan 01 2024 12:00:00';
 

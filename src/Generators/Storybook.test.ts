@@ -3,7 +3,7 @@ import { describe, expect, test } from 'bun:test';
 import { BoxShadow } from '../TokenTypes/BoxShadow';
 import { CubicBezier } from '../TokenTypes/CubicBezier';
 import { LinearGradient } from '../TokenTypes/Gradient';
-import tokenSet1 from '../fixtures/tokenSet1';
+import { tokenSet1 } from '../fixtures/tokenSet1';
 import type { Token } from '../Token';
 import { ESModule } from './ESModule';
 import { JavaScript } from './JavaScript';

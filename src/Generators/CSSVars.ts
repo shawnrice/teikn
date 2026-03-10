@@ -4,7 +4,7 @@ import { kebabCase } from '../string-utils';
 import type { Token } from '../Token';
 import { getDate } from '../utils';
 import type { GeneratorOptions } from './Generator';
-import Generator from './Generator';
+import { Generator } from './Generator';
 
 const cssValue = (value: unknown): string => {
   if (typeof value !== 'object' || value === null) { return String(value); }
@@ -108,5 +108,3 @@ export class CSSVars extends Generator<CSSVarsOpts> {
     return blocks.join(EOL);
   }
 }
-
-export default CSSVars;

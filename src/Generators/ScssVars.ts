@@ -2,7 +2,7 @@ import { EOL } from 'os';
 
 import { camelCase, deriveShortName, kebabCase } from '../string-utils';
 import type { Token } from '../Token';
-import Scss from './Scss';
+import { Scss } from './Scss';
 
 const scssValue = (value: unknown): string => {
   if (typeof value !== 'object' || value === null) { return String(value); }
@@ -98,5 +98,3 @@ export class ScssVars extends Scss {
       .join(EOL + EOL);
   }
 }
-
-export default ScssVars;

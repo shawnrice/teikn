@@ -13,6 +13,9 @@ export const hexRange = (num: number): number => clamp(0, 255, num);
 export const percentRange = (num: number): number => clamp(0, 1, num);
 export const degreeRange = (num: number): number => clamp(0, 360, num);
 
+/** Normalize any angle to 0-359 range via modular arithmetic */
+export const normalizeDegrees = (hue: number): number => ((hue % 360) + 360) % 360;
+
 export const byteToUnit = (x: number): number => x / 255;
 export const unitToByte = (x: number): number => Math.round(x * 255);
 
@@ -39,20 +42,15 @@ const inRange = (lower: number, upper: number, number: number) =>
 
 const inHex = (x: number) => inRange(0, 255, x); // 0-255
 const inUnit = (x: number) => inRange(0, 1, x); // 0-1
-const inDegrees = (x: number) => inRange(0, 359, x); // 0-359
+const inAnyDegrees = (_x: number) => true; // any hue is valid (will be normalized)
 const inPercent = (x: number) => inRange(0, 100, x); // 0-100
 
-const regex = {
-  hex: /^(#)?[a-f0-9]{3,6}$/i,
-  rgb: /^rgb\(([0-9]{1,3})[\s,]*([0-9]{1,3})[\s,]*([0-9]{1,3})\)$/i,
-  rgba: /^rgba\([\s]*([0-9]{1,3})[\s,]*([0-9]{1,3})[\s,]*([0-9]{1,3})[\s,]*([0-9.]+)\)$/i,
-  hsl: /^hsl\([\s]*([0-9]{1,3})(?:deg)?[\s,]*([0-9]{1,3})%[\s,]*([0-9]{1,3})%(?:[\s]*\/[\s]*([0-9.]+))?\)$/i,
-  hsla: /^hsla\([\s]*([0-9]{1,3})(?:deg)?[\s,]*([0-9]{1,3})%[\s,]*([0-9]{1,3})%[\s,]*([0-9.]+)\)$/i,
-  lab: /^lab\(([0-9]{1,3}),[\s]*([0-9]{1,3}),[\s]*([0-9]{1,3})\)$/i,
-  lch: /^lch\(([0-9]{1,3}),[\s]*([0-9]{1,3}),[\s]*([0-9]{1,3})\)$/i,
-};
-
 const formats = {
+  hex: {
+    regex: /^(#)?([a-f0-9]{3}|[a-f0-9]{4}|[a-f0-9]{6}|[a-f0-9]{8})$/i,
+    validators: [] as ((x: number) => boolean)[],
+    hasOptionalParams: false,
+  },
   rgb: {
     regex:
       /^rgb\(([0-9]{1,3}(?:\.[0-9]+)?)[\s,]*([0-9]{1,3}(?:\.[0-9]+)?)[\s,]*([0-9]{1,3}(?:\.[0-9]+)?)\)$/i,
@@ -67,14 +65,14 @@ const formats = {
   },
   hsl: {
     regex:
-      /^hsl\([\s]*([0-9]+(?:\.[0-9]+)?)(?:deg)?[\s,]*([0-9]+(?:\.[0-9]+)?)%[\s,]*([0-9]+(?:\.[0-9]+)?)%(?:[\s]*\/[\s]*([0-9]*\.?[0-9]+))?\)$/i,
-    validators: [inDegrees, inPercent, inPercent, inUnit],
+      /^hsl\([\s]*(-?[0-9]+(?:\.[0-9]+)?)(?:deg)?[\s,]*([0-9]+(?:\.[0-9]+)?)%[\s,]*([0-9]+(?:\.[0-9]+)?)%(?:[\s]*\/[\s]*([0-9]*\.?[0-9]+))?\)$/i,
+    validators: [inAnyDegrees, inPercent, inPercent, inUnit],
     hasOptionalParams: true,
   },
   hsla: {
     regex:
-      /^hsla\([\s]*([0-9]+(?:\.[0-9]+)?)(?:deg)?[\s,]*([0-9]+(?:\.[0-9]+)?)%[\s,]*([0-9]+(?:\.[0-9]+)?)%[\s,]*([0-9]*\.?[0-9]+)\)$/i,
-    validators: [inDegrees, inPercent, inPercent, inUnit],
+      /^hsla\([\s]*(-?[0-9]+(?:\.[0-9]+)?)(?:deg)?[\s,]*([0-9]+(?:\.[0-9]+)?)%[\s,]*([0-9]+(?:\.[0-9]+)?)%[\s,]*([0-9]*\.?[0-9]+)\)$/i,
+    validators: [inAnyDegrees, inPercent, inPercent, inUnit],
     hasOptionalParams: false,
   },
   lab: {
@@ -103,9 +101,9 @@ const formats = {
     regex:
       /^xyz\([\s]*([0-9]+(?:\.[0-9]+)?)[\s,]*([0-9]+(?:\.[0-9]+)?)[\s,]*([0-9]+(?:\.[0-9]+)?)(?:[\s]*\/[\s]*([0-9]*\.?[0-9]+))?\)$/i,
     validators: [
-      (x: number) => inRange(0, 0.95, x), // X: 0 to ~0.95
+      (x: number) => inRange(0, 0.955, x), // X: 0 to ~0.955
       (y: number) => inRange(0, 1, y), // Y: 0 to 1
-      (z: number) => inRange(0, 1.08, z), // Z: 0 to ~1.08
+      (z: number) => inRange(0, 1.09, z), // Z: 0 to ~1.09
       inUnit, // alpha: 0 to 1
     ],
     hasOptionalParams: true,
@@ -120,6 +118,11 @@ const isValidColor = (format: keyof typeof formats): ((color: string) => boolean
 
     if (!regex.test(c)) {
       return false;
+    }
+
+    // Hex format has no numeric validators — the regex is sufficient
+    if (validators.length === 0) {
+      return true;
     }
 
     const matches = c.match(regex);
@@ -143,7 +146,7 @@ const isValidColor = (format: keyof typeof formats): ((color: string) => boolean
   };
 };
 
-export const isHex = (c: string): boolean => regex.hex.test(c);
+export const isHex: (color: string) => boolean = isValidColor('hex');
 export const isRGB: (color: string) => boolean = isValidColor('rgb');
 export const isRGBA: (color: string) => boolean = isValidColor('rgba');
 export const isHSL: (color: string) => boolean = isValidColor('hsl');
@@ -156,13 +159,13 @@ export const isXYZ: (color: string) => boolean = isValidColor('xyz');
  * Call only on a verified RGB string
  */
 export const stringToRgb = (c: string): RGB =>
-  c.match(regex.rgb)!.slice(1).map(parseInt10) as unknown as RGB;
+  c.match(formats.rgb.regex)!.slice(1).map(parseInt10) as unknown as RGB;
 
 /**
  * Call only on a verified RGBA string
  */
 export const stringToRgba = (c: string): RGBA =>
   c
-    .match(regex.rgba)!
+    .match(formats.rgba.regex)!
     .slice(1)
     .map((x, i) => (i === 3 ? parseFloat(x) : parseInt10(x))) as unknown as RGBA;

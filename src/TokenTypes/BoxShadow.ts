@@ -1,3 +1,4 @@
+import { splitTopLevel } from '../string-utils';
 import { Color } from './Color';
 
 const lengthRe = /^(-?\d+(?:\.\d+)?)(px|rem|em)?/;
@@ -14,18 +15,17 @@ const parse = (
   color: Color;
   inset: boolean;
 } => {
-  let s = str.trim();
+  const trimmed = str.trim();
 
-  let inset = false;
-  if (s.startsWith('inset ')) {
-    inset = true;
-    s = s.slice(6).trim();
-  } else if (s.endsWith(' inset')) {
-    inset = true;
-    s = s.slice(0, -6).trim();
-  }
+  const inset = trimmed.startsWith('inset ') || trimmed.endsWith(' inset');
+  const withoutInset = trimmed.startsWith('inset ')
+    ? trimmed.slice(6).trim()
+    : trimmed.endsWith(' inset')
+      ? trimmed.slice(0, -6).trim()
+      : trimmed;
 
   const nums: number[] = [];
+  let s = withoutInset;
   while (s.length > 0) {
     const m = s.match(lengthRe);
     if (!m) {
@@ -101,20 +101,9 @@ export class BoxShadow {
     this.#inset = inset ?? false;
   }
 
-  public offsetX(): number;
-  public offsetX(x: number): BoxShadow;
-  public offsetX(x?: number): BoxShadow | number {
-    if (typeof x === 'undefined') {
-      return this.#offsetX;
-    }
-
-    return new BoxShadow(x, this.#offsetY, this.#blur, this.#spread, this.#color, this.#inset);
-  }
-
   get offsetX(): number {
     return this.#offsetX;
   }
-
   get offsetY(): number {
     return this.#offsetY;
   }
@@ -131,55 +120,14 @@ export class BoxShadow {
     return this.#inset;
   }
 
-  setOffsetX(x: number): BoxShadow {
-    return new BoxShadow(x, this.#offsetY, this.#blur, this.#spread, this.#color, this.#inset);
-  }
-
-  setOffsetY(y: number): BoxShadow {
-    return new BoxShadow(this.#offsetX, y, this.#blur, this.#spread, this.#color, this.#inset);
-  }
-
-  setBlur(blur: number): BoxShadow {
+  with(updates: Partial<{ offsetX: number; offsetY: number; blur: number; spread: number; color: Color | string; inset: boolean }>): BoxShadow {
     return new BoxShadow(
-      this.#offsetX,
-      this.#offsetY,
-      blur,
-      this.#spread,
-      this.#color,
-      this.#inset,
-    );
-  }
-
-  setSpread(spread: number): BoxShadow {
-    return new BoxShadow(
-      this.#offsetX,
-      this.#offsetY,
-      this.#blur,
-      spread,
-      this.#color,
-      this.#inset,
-    );
-  }
-
-  setColor(color: Color | string): BoxShadow {
-    return new BoxShadow(
-      this.#offsetX,
-      this.#offsetY,
-      this.#blur,
-      this.#spread,
-      color,
-      this.#inset,
-    );
-  }
-
-  setInset(inset: boolean): BoxShadow {
-    return new BoxShadow(
-      this.#offsetX,
-      this.#offsetY,
-      this.#blur,
-      this.#spread,
-      this.#color,
-      inset,
+      updates.offsetX ?? this.#offsetX,
+      updates.offsetY ?? this.#offsetY,
+      updates.blur ?? this.#blur,
+      updates.spread ?? this.#spread,
+      updates.color ?? this.#color,
+      updates.inset ?? this.#inset,
     );
   }
 
@@ -235,7 +183,7 @@ export class BoxShadowList {
     }
 
     if (typeof first === 'string') {
-      this.#layers = splitShadows(first).map(s => new BoxShadow(s));
+      this.#layers = splitTopLevel(first).map(s => new BoxShadow(s));
       return;
     }
 
@@ -266,29 +214,3 @@ export class BoxShadowList {
   }
 }
 
-const splitShadows = (value: string): string[] => {
-  const results: string[] = [];
-  let depth = 0;
-  let start = 0;
-
-  for (let i = 0; i < value.length; i++) {
-    const ch = value[i]!;
-    if (ch === '(') {
-      depth++;
-    }
-    if (ch === ')') {
-      depth--;
-    }
-    if (ch === ',' && depth === 0) {
-      results.push(value.slice(start, i).trim());
-      start = i + 1;
-    }
-  }
-
-  const last = value.slice(start).trim();
-  if (last.length > 0) {
-    results.push(last);
-  }
-
-  return results;
-};

@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'bun:test';
 
-import tokenSet1 from '../fixtures/tokenSet1';
+import { tokenSet1 } from '../fixtures/tokenSet1';
 import type { Token } from '../Token';
-import Generator from './CSSVars';
+import { CSSVars as Generator } from './CSSVars';
 
 describe('CSSVars Generator tests', () => {
   test('It has the correct filename', () => {

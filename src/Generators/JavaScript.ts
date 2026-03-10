@@ -4,7 +4,7 @@ import { camelCase, deriveShortName } from '../string-utils';
 import type { Token } from '../Token';
 import { getDate } from '../utils';
 import type { GeneratorOptions } from './Generator';
-import Generator from './Generator';
+import { Generator } from './Generator';
 
 const defaultOptions = {
   ext: 'js',
@@ -136,5 +136,3 @@ export class JavaScript extends Generator<JavaScriptOpts> {
     return parts.join(EOL);
   }
 }
-
-export default JavaScript;

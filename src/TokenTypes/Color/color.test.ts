@@ -3,6 +3,7 @@ import { describe, expect, test } from 'bun:test';
 import { Color } from './Color';
 import {
   hexToRGB,
+  hexToRGBWithAlpha,
   HSLToHex,
   HSLToRGB,
   LABToLCH,
@@ -45,6 +46,41 @@ describe('Color tests', () => {
 
   test('hexToRGB translates #fff', () => {
     expect(hexToRGB('#fff')).toEqual([255, 255, 255]);
+  });
+
+  test('hexToRGBWithAlpha handles 4-char hex with alpha', () => {
+    const result = hexToRGBWithAlpha('#f008');
+    expect(result.rgb).toEqual([255, 0, 0]);
+    expect(result.alpha).toBeCloseTo(0x88 / 255);
+  });
+
+  test('hexToRGBWithAlpha handles 4-char hex with full alpha', () => {
+    const result = hexToRGBWithAlpha('#ffff');
+    expect(result.rgb).toEqual([255, 255, 255]);
+    expect(result.alpha).toBe(1);
+  });
+
+  test('hexToRGBWithAlpha handles 8-char hex with alpha', () => {
+    const result = hexToRGBWithAlpha('#ff000080');
+    expect(result.rgb).toEqual([255, 0, 0]);
+    expect(result.alpha).toBeCloseTo(128 / 255);
+  });
+
+  test('hexToRGBWithAlpha handles 8-char hex with full alpha', () => {
+    const result = hexToRGBWithAlpha('#ffffffff');
+    expect(result.rgb).toEqual([255, 255, 255]);
+    expect(result.alpha).toBe(1);
+  });
+
+  test('hexToRGBWithAlpha handles 8-char hex with zero alpha', () => {
+    const result = hexToRGBWithAlpha('#ff000000');
+    expect(result.rgb).toEqual([255, 0, 0]);
+    expect(result.alpha).toBe(0);
+  });
+
+  test('hexToRGBWithAlpha returns alpha 1 for 3-char and 6-char hex', () => {
+    expect(hexToRGBWithAlpha('#fff').alpha).toBe(1);
+    expect(hexToRGBWithAlpha('#ffffff').alpha).toBe(1);
   });
 
   test('RGBToHex translates [255, 255, 255] to ffffff', () => {
@@ -709,6 +745,164 @@ describe('Space-scoped sub-APIs', () => {
     expect(c.xyz.z()).toBe(0.5);
     const c2 = c.xyz.z(0.8);
     expect(c2.xyz.z()).toBe(0.8);
+  });
+});
+
+// ─── Round-trip color conversion symmetry tests ────────────
+
+describe('Round-trip conversion symmetry', () => {
+  type TestColor = {
+    name: string;
+    r: number;
+    g: number;
+    b: number;
+    a?: number;
+  };
+
+  const testColors: TestColor[] = [
+    { name: 'pure red', r: 255, g: 0, b: 0 },
+    { name: 'pure green', r: 0, g: 255, b: 0 },
+    { name: 'pure blue', r: 0, g: 0, b: 255 },
+    { name: 'white', r: 255, g: 255, b: 255 },
+    { name: 'black', r: 0, g: 0, b: 0 },
+    { name: 'mid-gray', r: 128, g: 128, b: 128 },
+    { name: 'saturated orange', r: 200, g: 100, b: 50 },
+    { name: 'red with alpha', r: 255, g: 0, b: 0, a: 0.5 },
+    { name: 'teal with alpha', r: 0, g: 128, b: 128, a: 0.75 },
+  ];
+
+  const rgbEpsilon = 1;
+  const normalizedEpsilon = 0.01;
+
+  const closeTo = (actual: number, expected: number, epsilon: number) => {
+    expect(Math.abs(actual - expected)).toBeLessThanOrEqual(epsilon);
+  };
+
+  describe('RGB -> HSL -> RGB', () => {
+    testColors.forEach(({ name, r, g, b, a }) => {
+      test(name, () => {
+        const original = a !== undefined ? Color.fromRGB(r, g, b, a) : Color.fromRGB(r, g, b);
+        const roundTripped = Color.fromHSL(original.asHSL(), original.alpha);
+        const [rr, rg, rb] = roundTripped.asRGB();
+        closeTo(rr, r, rgbEpsilon);
+        closeTo(rg, g, rgbEpsilon);
+        closeTo(rb, b, rgbEpsilon);
+        if (a !== undefined) {
+          expect(roundTripped.alpha).toBe(a);
+        }
+      });
+    });
+  });
+
+  describe('RGB -> XYZ -> RGB', () => {
+    testColors.forEach(({ name, r, g, b, a }) => {
+      test(name, () => {
+        const original = a !== undefined ? Color.fromRGB(r, g, b, a) : Color.fromRGB(r, g, b);
+        const roundTripped = Color.fromXYZ(original.asXYZ(), original.alpha);
+        const [rr, rg, rb] = roundTripped.asRGB();
+        closeTo(rr, r, rgbEpsilon);
+        closeTo(rg, g, rgbEpsilon);
+        closeTo(rb, b, rgbEpsilon);
+        if (a !== undefined) {
+          expect(roundTripped.alpha).toBe(a);
+        }
+      });
+    });
+  });
+
+  describe('RGB -> LAB -> RGB', () => {
+    testColors.forEach(({ name, r, g, b, a }) => {
+      test(name, () => {
+        const original = a !== undefined ? Color.fromRGB(r, g, b, a) : Color.fromRGB(r, g, b);
+        const roundTripped = Color.fromLAB(original.asLAB(), original.alpha);
+        const [rr, rg, rb] = roundTripped.asRGB();
+        closeTo(rr, r, rgbEpsilon);
+        closeTo(rg, g, rgbEpsilon);
+        closeTo(rb, b, rgbEpsilon);
+        if (a !== undefined) {
+          expect(roundTripped.alpha).toBe(a);
+        }
+      });
+    });
+  });
+
+  describe('RGB -> LCH -> RGB', () => {
+    testColors.forEach(({ name, r, g, b, a }) => {
+      test(name, () => {
+        const original = a !== undefined ? Color.fromRGB(r, g, b, a) : Color.fromRGB(r, g, b);
+        const roundTripped = Color.fromLCH(original.asLCH(), original.alpha);
+        const [rr, rg, rb] = roundTripped.asRGB();
+        closeTo(rr, r, rgbEpsilon);
+        closeTo(rg, g, rgbEpsilon);
+        closeTo(rb, b, rgbEpsilon);
+        if (a !== undefined) {
+          expect(roundTripped.alpha).toBe(a);
+        }
+      });
+    });
+  });
+
+  describe('HSL -> RGB -> HSL', () => {
+    // Skip achromatic colors (black, white, gray) since hue is undefined for them
+    const chromaticColors = testColors.filter(
+      ({ r, g, b }) => !(r === g && g === b),
+    );
+
+    chromaticColors.forEach(({ name, r, g, b, a }) => {
+      test(name, () => {
+        const original = a !== undefined ? Color.fromRGB(r, g, b, a) : Color.fromRGB(r, g, b);
+        const hsl = original.asHSL();
+        const roundTripped = Color.fromRGB(
+          Color.fromHSL(hsl, original.alpha).asRGB(),
+          original.alpha,
+        );
+        const [rh, rs, rl] = roundTripped.asHSL();
+        closeTo(rh, hsl[0], 1);
+        closeTo(rs, hsl[1], normalizedEpsilon);
+        closeTo(rl, hsl[2], normalizedEpsilon);
+        if (a !== undefined) {
+          expect(roundTripped.alpha).toBe(a);
+        }
+      });
+    });
+  });
+
+  describe('XYZ -> LAB -> XYZ', () => {
+    testColors.forEach(({ name, r, g, b, a }) => {
+      test(name, () => {
+        const original = a !== undefined ? Color.fromRGB(r, g, b, a) : Color.fromRGB(r, g, b);
+        const xyz = original.asXYZ();
+        const viaLab = Color.fromXYZ(xyz, original.alpha);
+        const lab = viaLab.asLAB();
+        const roundTripped = Color.fromLAB(lab, original.alpha);
+        const [rx, ry, rz] = roundTripped.asXYZ();
+        closeTo(rx, xyz[0], normalizedEpsilon);
+        closeTo(ry, xyz[1], normalizedEpsilon);
+        closeTo(rz, xyz[2], normalizedEpsilon);
+        if (a !== undefined) {
+          expect(roundTripped.alpha).toBe(a);
+        }
+      });
+    });
+  });
+
+  describe('LAB -> LCH -> LAB', () => {
+    testColors.forEach(({ name, r, g, b, a }) => {
+      test(name, () => {
+        const original = a !== undefined ? Color.fromRGB(r, g, b, a) : Color.fromRGB(r, g, b);
+        const lab = original.asLAB();
+        const viaLch = Color.fromLAB(lab, original.alpha);
+        const lch = viaLch.asLCH();
+        const roundTripped = Color.fromLCH(lch, original.alpha);
+        const [rl, ra, rb2] = roundTripped.asLAB();
+        closeTo(rl, lab[0], normalizedEpsilon);
+        closeTo(ra, lab[1], normalizedEpsilon);
+        closeTo(rb2, lab[2], normalizedEpsilon);
+        if (a !== undefined) {
+          expect(roundTripped.alpha).toBe(a);
+        }
+      });
+    });
   });
 });
 

@@ -1,11 +1,11 @@
 import { describe, expect, test } from 'bun:test';
 
-import tokenSet1 from '../fixtures/tokenSet1';
+import { tokenSet1 } from '../fixtures/tokenSet1';
 import { ColorTransformPlugin } from '../Plugins/ColorTransformPlugin';
 import { PrefixTypePlugin } from '../Plugins/PrefixTypePlugin';
 import { SCSSQuoteValuePlugin } from '../Plugins/SCSSQuoteValuePlugin';
 import type { Token } from '../Token';
-import Generator from './Scss';
+import { Scss as Generator } from './Scss';
 
 describe('SCSSGenerator tests', () => {
   test('It has the correct filename', () => {

@@ -84,53 +84,62 @@ describe('BoxShadow', () => {
     expect(b.spread).toBe(a.spread);
   });
 
-  // ─── Setters ─────────────────────────────────────────────────
+  // ─── .with() ───────────────────────────────────────────────
 
-  it('setOffsetX returns new instance', () => {
+  it('with({ offsetX }) returns new instance', () => {
     const a = new BoxShadow(0, 2, 4);
-    const b = a.setOffsetX(5);
+    const b = a.with({ offsetX: 5 });
     expect(b.offsetX).toBe(5);
     expect(a.offsetX).toBe(0);
   });
 
-  it('setOffsetY returns new instance', () => {
+  it('with({ offsetY }) returns new instance', () => {
     const a = new BoxShadow(0, 2, 4);
-    const b = a.setOffsetY(10);
+    const b = a.with({ offsetY: 10 });
     expect(b.offsetY).toBe(10);
     expect(a.offsetY).toBe(2);
   });
 
-  it('setBlur returns new instance', () => {
+  it('with({ blur }) returns new instance', () => {
     const a = new BoxShadow(0, 2, 4);
-    const b = a.setBlur(16);
+    const b = a.with({ blur: 16 });
     expect(b.blur).toBe(16);
     expect(a.blur).toBe(4);
   });
 
-  it('setSpread returns new instance', () => {
+  it('with({ spread }) returns new instance', () => {
     const a = new BoxShadow(0, 2, 4);
-    const b = a.setSpread(8);
+    const b = a.with({ spread: 8 });
     expect(b.spread).toBe(8);
     expect(a.spread).toBe(0);
   });
 
-  it('setColor accepts a string', () => {
+  it('with({ color }) accepts a string', () => {
     const a = new BoxShadow(0, 2, 4, 0, '#000');
-    const b = a.setColor('red');
+    const b = a.with({ color: 'red' });
     expect(b.color.red).toBe(255);
   });
 
-  it('setColor accepts a Color', () => {
+  it('with({ color }) accepts a Color', () => {
     const a = new BoxShadow(0, 2, 4, 0, '#000');
-    const b = a.setColor(new Color(0, 255, 0));
+    const b = a.with({ color: new Color(0, 255, 0) });
     expect(b.color.green).toBe(255);
   });
 
-  it('setInset returns new instance', () => {
+  it('with({ inset }) returns new instance', () => {
     const a = new BoxShadow(0, 2, 4);
-    const b = a.setInset(true);
+    const b = a.with({ inset: true });
     expect(b.inset).toBe(true);
     expect(a.inset).toBe(false);
+  });
+
+  it('with() supports multiple fields at once', () => {
+    const a = new BoxShadow(0, 2, 4, 0, '#000');
+    const b = a.with({ offsetX: 3, blur: 12, inset: true });
+    expect(b.offsetX).toBe(3);
+    expect(b.offsetY).toBe(2);
+    expect(b.blur).toBe(12);
+    expect(b.inset).toBe(true);
   });
 
   // ─── Manipulation ────────────────────────────────────────────

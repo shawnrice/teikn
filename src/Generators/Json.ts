@@ -1,7 +1,7 @@
 import { camelCase } from '../string-utils';
 import type { Token } from '../Token';
 import type { GeneratorOptions } from './Generator';
-import Generator from './Generator';
+import { Generator } from './Generator';
 
 const defaultOptions = {
   ext: 'json',
@@ -42,5 +42,3 @@ export class Json extends Generator<JsonOpts> {
     return JSON.stringify(combined, null, 2);
   }
 }
-
-export default Json;

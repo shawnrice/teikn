@@ -28,10 +28,36 @@ export const camelCase = (str: string): string =>
       .join(''),
   );
 
+/**
+ * Splits a string on a delimiter while respecting parenthesis depth.
+ * Defaults to splitting on commas.
+ */
+export const splitTopLevel = (str: string, delimiter = ','): string[] => {
+  const parts: string[] = [];
+  let depth = 0;
+  let start = 0;
+  for (let i = 0; i < str.length; i++) {
+    const ch = str[i]!;
+    if (ch === '(') {
+      depth++;
+    } else if (ch === ')') {
+      depth--;
+    } else if (ch === delimiter && depth === 0) {
+      parts.push(str.slice(start, i).trim());
+      start = i + 1;
+    }
+  }
+  const last = str.slice(start).trim();
+  if (last.length > 0) {
+    parts.push(last);
+  }
+  return parts;
+};
+
 export const deriveShortName = (tokenName: string, type: string): string => {
   const prefix = camelCase(type);
   if (tokenName.length > prefix.length && tokenName.startsWith(prefix)) {
-    return tokenName[prefix.length].toLowerCase() + tokenName.slice(prefix.length + 1);
+    return tokenName[prefix.length]!.toLowerCase() + tokenName.slice(prefix.length + 1);
   }
   return tokenName;
 };

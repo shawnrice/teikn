@@ -4,13 +4,7 @@ import { version } from '../../package.json';
 import type { Plugin } from '../Plugins';
 import { camelCase, deriveShortName } from '../string-utils';
 import type { Token } from '../Token';
-import { BoxShadow, BoxShadowList } from '../TokenTypes/BoxShadow';
-import { Color } from '../TokenTypes/Color';
-import { CubicBezier } from '../TokenTypes/CubicBezier';
-import { Dimension } from '../TokenTypes/Dimension';
-import { Duration } from '../TokenTypes/Duration';
-import { GradientList, LinearGradient, RadialGradient } from '../TokenTypes/Gradient';
-import { Transition, TransitionList } from '../TokenTypes/Transition';
+import { isFirstClassValue } from '../type-classifiers';
 import { matches } from '../utils';
 
 export type GeneratorOptions = {
@@ -73,27 +67,8 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
 
   convertColorToString(token: Token): Token {
     const { value } = token;
-    if (value instanceof Color) {
-      return { ...token, value: value.toString() };
-    }
-    if (value instanceof CubicBezier) {
-      return { ...token, value: value.toString() };
-    }
-    if (value instanceof BoxShadow || value instanceof BoxShadowList) {
-      return { ...token, value: value.toString() };
-    }
-    if (
-      value instanceof LinearGradient ||
-      value instanceof RadialGradient ||
-      value instanceof GradientList
-    ) {
-      return { ...token, value: value.toString() };
-    }
-    if (value instanceof Transition || value instanceof TransitionList) {
-      return { ...token, value: value.toString() };
-    }
-    if (value instanceof Dimension || value instanceof Duration) {
-      return { ...token, value: value.toString() };
+    if (isFirstClassValue(value)) {
+      return { ...token, value: (value as { toString(): string }).toString() };
     }
     return token;
   }
@@ -182,5 +157,3 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
       .trim();
   }
 }
-
-export default Generator;

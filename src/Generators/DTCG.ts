@@ -3,7 +3,7 @@ import type { Plugin } from '../Plugins';
 import type { Token } from '../Token';
 import { matches } from '../utils';
 import type { GeneratorOptions } from './Generator';
-import Generator from './Generator';
+import { Generator } from './Generator';
 
 const defaultOptions = {
   ext: 'tokens.json',
@@ -60,5 +60,3 @@ export class DTCGGenerator extends Generator<DTCGOpts> {
     return JSON.stringify(doc, null, 2);
   }
 }
-
-export default DTCGGenerator;

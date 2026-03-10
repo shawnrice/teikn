@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import Generator from './Generator';
+import { Generator } from './Generator';
 
 describe('Generator base class tests', () => {
   test('It throws when the extension is not set in options', () => {

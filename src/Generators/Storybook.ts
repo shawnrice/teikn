@@ -2,10 +2,33 @@ import { EOL } from 'os';
 
 import { camelCase } from '../string-utils';
 import type { Token } from '../Token';
+import {
+  groupTokens,
+  isAspectRatioType,
+  isBorderRadiusType,
+  isBorderType,
+  isBreakpointType,
+  isColorType,
+  isDurationType,
+  isFontFamilyType,
+  isFontSizeType,
+  isFontWeightType,
+  isGradientType,
+  isLetterSpacingType,
+  isLineHeightType,
+  isOpacityType,
+  isShadowType,
+  isSizeType,
+  isSpacingType,
+  isTimingType,
+  isTransitionType,
+  isTypographyType,
+  isZLayerType,
+} from '../type-classifiers';
 import { getDate } from '../utils';
 import { ESModule } from './ESModule';
 import type { GeneratorOptions } from './Generator';
-import Generator from './Generator';
+import { Generator } from './Generator';
 import { JavaScript } from './JavaScript';
 
 // ─── Options ─────────────────────────────────────────────────
@@ -24,39 +47,7 @@ export type StorybookOpts = {
   dateFn?: () => string | null;
 } & GeneratorOptions
 
-// ─── Type classifiers ───────────────────────────────────────
-
-const isColorType = (type: string): boolean => type === 'color';
-const isFontSizeType = (type: string): boolean => /font[-_]?size/i.test(type);
-const isFontFamilyType = (type: string): boolean => /font[-_]?family/i.test(type);
-const isFontWeightType = (type: string): boolean => /font[-_]?weight/i.test(type);
-const isTypographyType = (type: string): boolean => /^typography$/i.test(type);
-const isBorderRadiusType = (type: string): boolean => /border[-_]?radius/i.test(type);
-const isBorderType = (type: string): boolean => /^border$/i.test(type);
-const isShadowType = (type: string): boolean => /shadow/i.test(type);
-const isDurationType = (type: string): boolean => /duration/i.test(type);
-const isTimingType = (type: string): boolean => /timing|easing/i.test(type);
-const isSpacingType = (type: string): boolean => /spacing|gap/i.test(type);
-const isGradientType = (type: string): boolean => /gradient/i.test(type);
-const isOpacityType = (type: string): boolean => /^opacity$/i.test(type);
-const isLineHeightType = (type: string): boolean => /line[-_]?height/i.test(type);
-const isLetterSpacingType = (type: string): boolean => /letter[-_]?spacing/i.test(type);
-const isBreakpointType = (type: string): boolean => /breakpoint/i.test(type);
-const isSizeType = (type: string): boolean => /^size$/i.test(type);
-const isAspectRatioType = (type: string): boolean => /aspect[-_]?ratio/i.test(type);
-const isZLayerType = (type: string): boolean => /z[-_]?(layer|index)/i.test(type);
-const isTransitionType = (type: string): boolean => /^transition$/i.test(type);
-
 // ─── Helpers ─────────────────────────────────────────────────
-
-const groupTokens = (tokens: Token[]): Map<string, Token[]> =>
-  tokens.reduce((groups, token) => {
-    const existing = groups.get(token.type) ?? [];
-    return groups.set(token.type, [...existing, token]);
-  }, new Map<string, Token[]>());
-
-const upperFirst = (str: string): string =>
-  str.charAt(0).toUpperCase() + str.slice(1);
 
 const toStoryName = (type: string): string =>
   camelCase(type).replace(/^./, c => c.toUpperCase());
@@ -578,8 +569,6 @@ export class Storybook extends Generator<StorybookOpts> {
       neededComponents.add('modeTable');
     }
 
-    const needsState = [...neededComponents].some(key => componentRegistry[key]?.needsState);
-
     // Build import statements
     const importSource = this.detectImportSource();
     const lines: string[] = [];
@@ -656,5 +645,3 @@ export class Storybook extends Generator<StorybookOpts> {
     return lines.join(EOL).trimEnd();
   }
 }
-
-export default Storybook;

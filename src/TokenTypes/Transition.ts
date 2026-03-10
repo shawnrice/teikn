@@ -1,3 +1,4 @@
+import { splitTopLevel } from '../string-utils';
 import { CubicBezier } from './CubicBezier';
 
 const timeRe = /^(\d+(?:\.\d+)?)(ms|s)$/;
@@ -155,26 +156,6 @@ export class Transition {
 
 // ─── TransitionList ───────────────────────────────────────────
 
-const splitTransitionCommas = (str: string): string[] => {
-  const parts: string[] = [];
-  let depth = 0;
-  let start = 0;
-  for (let i = 0; i < str.length; i++) {
-    const ch = str[i]!;
-    if (ch === '(') { depth++; }
-    if (ch === ')') { depth--; }
-    if (ch === ',' && depth === 0) {
-      parts.push(str.slice(start, i).trim());
-      start = i + 1;
-    }
-  }
-  const last = str.slice(start).trim();
-  if (last.length > 0) {
-    parts.push(last);
-  }
-  return parts;
-};
-
 export class TransitionList {
   readonly #layers: readonly Transition[];
 
@@ -188,7 +169,7 @@ export class TransitionList {
     }
 
     if (typeof first === 'string') {
-      this.#layers = splitTransitionCommas(first).map(s => new Transition(s));
+      this.#layers = splitTopLevel(first).map(s => new Transition(s));
       return;
     }
 

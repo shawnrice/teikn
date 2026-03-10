@@ -32,17 +32,28 @@ const fmtTriplet = (
 };
 
 const fmt = {
-  rgb: (r: number, g: number, b: number, a?: number): string => {
+  rgb: (values: RGB | RGBA): string => {
+    const [r, g, b] = values;
     const core = `${r}, ${g}, ${b}`;
-    return a !== undefined ? `rgba(${core}, ${a})` : `rgb(${core})`;
+    return values.length === 4 ? `rgba(${core}, ${values[3]})` : `rgb(${core})`;
   },
-  hsl: (h: number, s: number, l: number, a?: number): string => {
+  hsl: (values: HSL | HSLA): string => {
+    const [h, s, l] = values;
     const core = `${h}, ${toPercent(s)}, ${toPercent(l)}`;
-    return a !== undefined ? `hsla(${core}, ${a})` : `hsl(${core})`;
+    return values.length === 4 ? `hsla(${core}, ${values[3]})` : `hsl(${core})`;
   },
-  lab: (L: number, a: number, b: number, alpha?: number) => fmtTriplet('lab', 2, L, a, b, alpha),
-  lch: (L: number, c: number, h: number, alpha?: number) => fmtTriplet('lch', 2, L, c, h, alpha),
-  xyz: (x: number, y: number, z: number, alpha?: number) => fmtTriplet('xyz', 5, x, y, z, alpha),
+  lab: (values: LAB | LABA): string => {
+    const [L, a, b] = values;
+    return values.length === 4 ? fmtTriplet('lab', 2, L, a, b, values[3]) : fmtTriplet('lab', 2, L, a, b);
+  },
+  lch: (values: LCH | LCHA): string => {
+    const [L, c, h] = values;
+    return values.length === 4 ? fmtTriplet('lch', 2, L, c, h, values[3]) : fmtTriplet('lch', 2, L, c, h);
+  },
+  xyz: (values: XYZ | XYZA): string => {
+    const [x, y, z] = values;
+    return values.length === 4 ? fmtTriplet('xyz', 5, x, y, z, values[3]) : fmtTriplet('xyz', 5, x, y, z);
+  },
 };
 
 /**
@@ -376,16 +387,32 @@ export class Color {
   mix(color: Color | string, amount = 0.5): Color {
     const c = color instanceof Color ? color : new Color(color);
     const amt = percentRange(amount);
-    const thisRGBA = this.asRGBA();
-    const otherRGBA = c.asRGBA();
+    const [r1, g1, b1] = this.asRGB();
+    const a1 = this.#alpha;
+    const [r2, g2, b2] = c.asRGB();
+    const a2 = c.#alpha;
 
-    const result = thisRGBA.map((val, index) => {
-      const otherVal = otherRGBA[index] ?? 0;
-      const computed = Math.round(round(2, otherVal * amt + val * (1 - amt)));
-      return index < 3 ? hexRange(computed) : percentRange(computed);
-    });
+    // Premultiplied alpha interpolation (CSS color-mix spec)
+    const resultAlpha = a1 * (1 - amt) + a2 * amt;
 
-    return Color.#new('rgb', [result[0], result[1], result[2]] as RGB, result[3] as number);
+    if (resultAlpha === 0) {
+      return Color.#new('rgb', [0, 0, 0] as RGB, 0);
+    }
+
+    const premulR1 = r1 * a1;
+    const premulG1 = g1 * a1;
+    const premulB1 = b1 * a1;
+    const premulR2 = r2 * a2;
+    const premulG2 = g2 * a2;
+    const premulB2 = b2 * a2;
+
+    const unmul = (p1: number, p2: number) =>
+      Math.round(hexRange(round(2, (p1 * (1 - amt) + p2 * amt) / resultAlpha)));
+    const resultR = unmul(premulR1, premulR2);
+    const resultG = unmul(premulG1, premulG2);
+    const resultB = unmul(premulB1, premulB2);
+
+    return Color.#new('rgb', [resultR, resultG, resultB] as RGB, resultAlpha);
   }
 
   // ─── Luminance & contrast ─────────────────────────────────
@@ -516,9 +543,6 @@ export class Color {
 
   /** Convert to a string in the specified format */
   toString(type?: ColorFormat): string {
-    const isOpaque = this.#alpha === 1;
-    const whenOpaque = (a: string, b: string) => (isOpaque ? a : b);
-
     switch (type) {
       case 'named':
         if (this.toString('rgba') === 'rgba(0, 0, 0, 0)') {
@@ -530,31 +554,31 @@ export class Color {
         return match ? match.name : this.toString('hex');
       }
       case 'rgb':
-        return whenOpaque(fmt.rgb(...this.asRGB()), fmt.rgb(...this.asRGBA()));
+        return fmt.rgb(this.asRGB());
       case 'rgba':
-        return fmt.rgb(...this.asRGBA());
+        return fmt.rgb(this.asRGBA());
       case 'hex':
         return this.hex;
       case 'hex3':
         return this.hex3;
       case 'hsl':
-        return whenOpaque(fmt.hsl(...this.asHSL()), fmt.hsl(...this.asHSLA()));
+        return fmt.hsl(this.asHSL());
       case 'hsla':
-        return fmt.hsl(...this.asHSLA());
+        return fmt.hsl(this.asHSLA());
       case 'lab':
-        return whenOpaque(fmt.lab(...this.asLAB()), fmt.lab(...this.asLABA()));
+        return fmt.lab(this.asLAB());
       case 'laba':
-        return fmt.lab(...this.asLABA());
+        return fmt.lab(this.asLABA());
       case 'lch':
-        return whenOpaque(fmt.lch(...this.asLCH()), fmt.lch(...this.asLCHA()));
+        return fmt.lch(this.asLCH());
       case 'lcha':
-        return fmt.lch(...this.asLCHA());
+        return fmt.lch(this.asLCHA());
       case 'xyz':
-        return whenOpaque(fmt.xyz(...this.asXYZ()), fmt.xyz(...this.asXYZA()));
+        return fmt.xyz(this.asXYZ());
       case 'xyza':
-        return fmt.xyz(...this.asXYZA());
+        return fmt.xyz(this.asXYZA());
       default:
-        return whenOpaque(fmt.rgb(...this.asRGB()), fmt.rgb(...this.asRGBA()));
+        return this.#alpha === 1 ? fmt.rgb(this.asRGB()) : fmt.rgb(this.asRGBA());
     }
   }
 }

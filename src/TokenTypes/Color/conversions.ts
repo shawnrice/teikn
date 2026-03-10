@@ -1,6 +1,11 @@
 import type { HSL, LAB, LCH, RGB, XYZ } from './types';
 import { byteToUnit, pad0, parseInt16, pipe } from './util';
 
+// Color space conversion references:
+// - W3C CSS Color 4 conversions: https://github.com/w3c/csswg-drafts/blob/main/css-color-4/conversions.js
+// - Bruce Lindbloom color math: http://www.brucelindbloom.com/index.html?Math.html
+// - sRGB ↔ LAB/LCH conversions: https://mina86.com/2021/srgb-lab-lchab-conversions/
+
 // ─── RGB ↔ HSL ──────────────────────────────────────────────
 
 const getRawHue = (r: number, g: number, b: number): number => {
@@ -120,7 +125,6 @@ const labEpsilon = (6 / 29) ** 3; // 0.008856
 const labKappa = (1 / 3) * (29 / 6) ** 2; // 7.787
 
 export const XYZToLAB = ([x, y, z]: XYZ): LAB => {
-  // const f = (t: number): number => (t > 0.008856 ? Math.pow(t, 1 / 3) : 7.787 * t + 16 / 116);
   const f = (t: number): number => (t > labEpsilon ? Math.pow(t, 1 / 3) : labKappa * t + 16 / 116);
   const fx = f(x / D65[0]);
   const fy = f(y / D65[1]);
@@ -181,27 +185,55 @@ export const RGBToHex = (rgb: RGB, preferShort = false): string => {
   return initial.join('');
 };
 
-export const hexToRGB = (c: string): RGB => {
+export type HexResult = { rgb: RGB; alpha: number };
+
+export const hexToRGBWithAlpha = (c: string): HexResult => {
   // Possibly remove the hash
   const color = c.slice(0, 1) === '#' ? c.slice(1) : c;
 
-  // If it's a 6-character hex, then just parse it
+  // 6-character hex: #RRGGBB
   if (color.length === 6) {
-    return [color.slice(0, 2), color.slice(2, 4), color.slice(4, 6)].map(
+    const rgb = [color.slice(0, 2), color.slice(2, 4), color.slice(4, 6)].map(
       parseInt16,
     ) as unknown as RGB;
+    return { rgb, alpha: 1 };
   }
 
-  // If it's an abbreviated hex, then double each value and parse it as a 6 color hex
+  // 3-character hex: #RGB → expand each to double
   if (color.length === 3) {
-    return color
+    const rgb = color
       .split('')
       .map(x => `${x}${x}`)
       .map(parseInt16) as unknown as RGB;
+    return { rgb, alpha: 1 };
+  }
+
+  // 8-character hex: #RRGGBBAA
+  if (color.length === 8) {
+    const rgb = [color.slice(0, 2), color.slice(2, 4), color.slice(4, 6)].map(
+      parseInt16,
+    ) as unknown as RGB;
+    const alpha = parseInt16(color.slice(6, 8)) / 255;
+    return { rgb, alpha };
+  }
+
+  // 4-character hex: #RGBA → expand each to double
+  if (color.length === 4) {
+    const rgb = color
+      .slice(0, 3)
+      .split('')
+      .map(x => `${x}${x}`)
+      .map(parseInt16) as unknown as RGB;
+    const alphaChar = color[3]!;
+    const alpha = parseInt16(`${alphaChar}${alphaChar}`) / 255;
+    return { rgb, alpha };
   }
 
   throw new Error(`Cannot parse color ${c} as hex.`);
 };
+
+/** Backward-compatible wrapper — ignores alpha channel */
+export const hexToRGB = (c: string): RGB => hexToRGBWithAlpha(c).rgb;
 
 // ─── Compound ────────────────────────────────────────────────
 

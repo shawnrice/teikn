@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'bun:test';
 
-import tokenSet1 from '../fixtures/tokenSet1';
+import { tokenSet1 } from '../fixtures/tokenSet1';
 import type { Token } from '../Token';
-import Generator from './ESModule';
+import { ESModule as Generator } from './ESModule';
 
 describe('ESModule tests', () => {
   test('it generates tokens as an esmodule', () => {

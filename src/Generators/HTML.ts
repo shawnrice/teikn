@@ -6,11 +6,8 @@ import type {
   Token,
   TokenValue,
 } from '../Token';
-import { BoxShadow } from '../TokenTypes/BoxShadow';
 import { Color } from '../TokenTypes/Color';
 import { CubicBezier } from '../TokenTypes/CubicBezier';
-import { Dimension } from '../TokenTypes/Dimension';
-import { Duration } from '../TokenTypes/Duration';
 import {
   GradientList,
   LinearGradient,
@@ -18,11 +15,34 @@ import {
 } from '../TokenTypes/Gradient';
 import {
   Transition,
-  TransitionList,
 } from '../TokenTypes/Transition';
+import {
+  groupTokens,
+  isAspectRatioType,
+  isBorderRadiusType,
+  isBorderType,
+  isBreakpointType,
+  isColorType,
+  isDurationType,
+  isFirstClassValue,
+  isFontFamilyType,
+  isFontSizeType,
+  isFontWeightType,
+  isGradientType,
+  isLetterSpacingType,
+  isLineHeightType,
+  isOpacityType,
+  isShadowType,
+  isSizeType,
+  isSpacingType,
+  isTimingType,
+  isTransitionType,
+  isTypographyType,
+  isZLayerType,
+} from '../type-classifiers';
 import { getDate } from '../utils';
 import type { GeneratorOptions } from './Generator';
-import Generator from './Generator';
+import { Generator } from './Generator';
 
 const defaultOptions = {
   ext: 'html',
@@ -55,19 +75,8 @@ const toColor = (value: TokenValue | CompositeValue): Color | null => {
 };
 
 const valueToString = (value: TokenValue | CompositeValue): string => {
-  if (
-    value instanceof Color ||
-    value instanceof CubicBezier ||
-    value instanceof BoxShadow ||
-    value instanceof LinearGradient ||
-    value instanceof RadialGradient ||
-    value instanceof GradientList ||
-    value instanceof Transition ||
-    value instanceof TransitionList ||
-    value instanceof Dimension ||
-    value instanceof Duration
-  ) {
-    return value.toString();
+  if (isFirstClassValue(value)) {
+    return (value as { toString(): string }).toString();
   }
   if (typeof value === 'object') {
     return JSON.stringify(value);
@@ -98,12 +107,6 @@ const wcagBadge = (ratio: number, level: string, threshold: number): string => {
     `</span>`,
   ].join('');
 };
-
-const groupTokens = (tokens: Token[]): Map<string, Token[]> =>
-  tokens.reduce((groups, token) => {
-    const existing = groups.get(token.type) ?? [];
-    return groups.set(token.type, [...existing, token]);
-  }, new Map<string, Token[]>());
 
 // ─── Cubic bezier ───────────────────────────────────────────
 
@@ -170,34 +173,11 @@ const buildBezierSvg = (x1: number, y1: number, x2: number, y2: number): string 
   ].join('');
 };
 
-// ─── Type classifiers ───────────────────────────────────────
-
 const slugify = (str: string): string =>
   str
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '');
-
-const isColorType = (type: string): boolean => type === 'color';
-const isFontSizeType = (type: string): boolean => /font[-_]?size/i.test(type);
-const isFontFamilyType = (type: string): boolean => /font[-_]?family/i.test(type);
-const isFontWeightType = (type: string): boolean => /font[-_]?weight/i.test(type);
-const isTypographyType = (type: string): boolean => /^typography$/i.test(type);
-const isBorderRadiusType = (type: string): boolean => /border[-_]?radius/i.test(type);
-const isBorderType = (type: string): boolean => /^border$/i.test(type);
-const isShadowType = (type: string): boolean => /shadow/i.test(type);
-const isDurationType = (type: string): boolean => /duration/i.test(type);
-const isTimingType = (type: string): boolean => /timing|easing/i.test(type);
-const isSpacingType = (type: string): boolean => /spacing|gap/i.test(type);
-const isGradientType = (type: string): boolean => /gradient/i.test(type);
-const isOpacityType = (type: string): boolean => /^opacity$/i.test(type);
-const isLineHeightType = (type: string): boolean => /line[-_]?height/i.test(type);
-const isLetterSpacingType = (type: string): boolean => /letter[-_]?spacing/i.test(type);
-const isBreakpointType = (type: string): boolean => /breakpoint/i.test(type);
-const isSizeType = (type: string): boolean => /^size$/i.test(type);
-const isAspectRatioType = (type: string): boolean => /aspect[-_]?ratio/i.test(type);
-const isZLayerType = (type: string): boolean => /z[-_]?(layer|index)/i.test(type);
-const isTransitionType = (type: string): boolean => /^transition$/i.test(type);
 
 // ─── CSS ─────────────────────────────────────────────────────
 
@@ -454,18 +434,7 @@ export class HTML extends Generator<HTMLOpts> {
     const usage = token.usage ? escapeHtml(token.usage) : '';
 
     // Composite values get a formatted pre block instead of inline JSON
-    const isFirstClass =
-      token.value instanceof Color ||
-      token.value instanceof CubicBezier ||
-      token.value instanceof BoxShadow ||
-      token.value instanceof LinearGradient ||
-      token.value instanceof RadialGradient ||
-      token.value instanceof GradientList ||
-      token.value instanceof Transition ||
-      token.value instanceof TransitionList ||
-      token.value instanceof Dimension ||
-      token.value instanceof Duration;
-    if (typeof token.value === 'object' && !isFirstClass) {
+    if (typeof token.value === 'object' && !isFirstClassValue(token.value)) {
       const formatted = compositeToFormatted(token.value as Record<string, unknown>);
       return [
         `<tr>`,
@@ -551,41 +520,13 @@ export class HTML extends Generator<HTMLOpts> {
 
   // ── Font tokens ────────────────────────────────────────────
 
-  private renderFontSizeToken(token: Token): string {
+  private renderFontToken(token: Token, cssProp: string): string {
     const name = this.options.nameTransformer!(token.name);
     const val = valueToString(token.value);
     return [
       `<div class="font-sample">`,
       `<div class="font-sample-label">${escapeHtml(name)} <code>${escapeHtml(val)}</code></div>`,
-      `<div class="font-sample-text" style="font-size:${escapeHtml(val)}">The quick brown fox jumps over the lazy dog</div>`,
-      token.usage ? `<div class="token-usage">${escapeHtml(token.usage)}</div>` : '',
-      `</div>`,
-    ]
-      .filter(Boolean)
-      .join(EOL);
-  }
-
-  private renderFontFamilyToken(token: Token): string {
-    const name = this.options.nameTransformer!(token.name);
-    const val = valueToString(token.value);
-    return [
-      `<div class="font-sample">`,
-      `<div class="font-sample-label">${escapeHtml(name)} <code>${escapeHtml(val)}</code></div>`,
-      `<div class="font-sample-text" style="font-family:${escapeHtml(val)}">The quick brown fox jumps over the lazy dog</div>`,
-      token.usage ? `<div class="token-usage">${escapeHtml(token.usage)}</div>` : '',
-      `</div>`,
-    ]
-      .filter(Boolean)
-      .join(EOL);
-  }
-
-  private renderFontWeightToken(token: Token): string {
-    const name = this.options.nameTransformer!(token.name);
-    const val = valueToString(token.value);
-    return [
-      `<div class="font-sample">`,
-      `<div class="font-sample-label">${escapeHtml(name)} <code>${escapeHtml(val)}</code></div>`,
-      `<div class="font-sample-text" style="font-weight:${escapeHtml(val)}">The quick brown fox jumps over the lazy dog</div>`,
+      `<div class="font-sample-text" style="${cssProp}:${escapeHtml(val)}">The quick brown fox jumps over the lazy dog</div>`,
       token.usage ? `<div class="token-usage">${escapeHtml(token.usage)}</div>` : '',
       `</div>`,
     ]
@@ -1115,13 +1056,13 @@ export class HTML extends Generator<HTMLOpts> {
       return this.renderBorderToken(token);
     }
     if (isFontSizeType(type)) {
-      return this.renderFontSizeToken(token);
+      return this.renderFontToken(token, 'font-size');
     }
     if (isFontFamilyType(type)) {
-      return this.renderFontFamilyToken(token);
+      return this.renderFontToken(token, 'font-family');
     }
     if (isFontWeightType(type)) {
-      return this.renderFontWeightToken(token);
+      return this.renderFontToken(token, 'font-weight');
     }
     if (isLetterSpacingType(type)) {
       return this.renderLetterSpacingToken(token);
@@ -1157,17 +1098,7 @@ export class HTML extends Generator<HTMLOpts> {
     }
 
     // Generic composite fallback
-    if (
-      typeof value === 'object' &&
-      !(value instanceof Color) &&
-      !(value instanceof CubicBezier) &&
-      !(value instanceof BoxShadow) &&
-      !(value instanceof Transition) &&
-      !(value instanceof TransitionList) &&
-      !(value instanceof GradientList) &&
-      !(value instanceof Dimension) &&
-      !(value instanceof Duration)
-    ) {
+    if (typeof value === 'object' && !isFirstClassValue(value)) {
       return this.renderCompositeToken(token);
     }
 
@@ -1375,5 +1306,3 @@ export class HTML extends Generator<HTMLOpts> {
     return [`</div>`, `<script>${script}</script>`, `</body>`, `</html>`].join(EOL);
   }
 }
-
-export default HTML;

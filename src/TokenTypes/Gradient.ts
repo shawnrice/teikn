@@ -1,3 +1,4 @@
+import { splitTopLevel } from '../string-utils';
 import { Color } from './Color';
 
 // ─── Shared types ─────────────────────────────────────────────
@@ -14,25 +15,6 @@ export type StopInput =
   | [color: Color | string, position: string];
 
 // ─── Helpers ──────────────────────────────────────────────────
-
-const splitCommas = (str: string): string[] => {
-  const parts: string[] = [];
-  let depth = 0;
-  let start = 0;
-  for (let i = 0; i < str.length; i++) {
-    const ch = str[i];
-    if (ch === '(') {
-      depth++;
-    } else if (ch === ')') {
-      depth--;
-    } else if (ch === ',' && depth === 0) {
-      parts.push(str.slice(start, i).trim());
-      start = i + 1;
-    }
-  }
-  parts.push(str.slice(start).trim());
-  return parts;
-};
 
 const normalizeStop = (input: StopInput): GradientStop => {
   if (typeof input === 'string') {
@@ -150,7 +132,7 @@ export class LinearGradient {
       if (!m) {
         throw new Error(`Invalid linear-gradient: "${first}"`);
       }
-      const parts = splitCommas(m[1]!);
+      const parts = splitTopLevel(m[1]!);
       const firstPart = parts[0]!.trim();
 
       // Check for keyword direction
@@ -253,7 +235,7 @@ export class RadialGradient {
       if (!m) {
         throw new Error(`Invalid radial-gradient: "${first}"`);
       }
-      const parts = splitCommas(m[1]!);
+      const parts = splitTopLevel(m[1]!);
       const firstPart = parts[0]!.trim();
 
       if (isShapeSpec(firstPart)) {
@@ -371,26 +353,6 @@ export class RadialGradient {
 
 type AnyGradient = LinearGradient | RadialGradient;
 
-const splitTopLevelCommas = (str: string): string[] => {
-  const parts: string[] = [];
-  let depth = 0;
-  let start = 0;
-  for (let i = 0; i < str.length; i++) {
-    const ch = str[i]!;
-    if (ch === '(') { depth++; }
-    if (ch === ')') { depth--; }
-    if (ch === ',' && depth === 0) {
-      parts.push(str.slice(start, i).trim());
-      start = i + 1;
-    }
-  }
-  const last = str.slice(start).trim();
-  if (last.length > 0) {
-    parts.push(last);
-  }
-  return parts;
-};
-
 const parseGradient = (str: string): AnyGradient => {
   const s = str.trim();
   if (/^linear-gradient\(/i.test(s)) {
@@ -415,7 +377,7 @@ export class GradientList {
     }
 
     if (typeof first === 'string') {
-      this.#layers = splitTopLevelCommas(first).map(parseGradient);
+      this.#layers = splitTopLevel(first).map(parseGradient);
       return;
     }
 

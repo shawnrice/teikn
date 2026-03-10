@@ -1,3 +1,4 @@
+import type { Token } from './Token';
 import {
   BoxShadow,
   BoxShadowList,
@@ -57,3 +58,11 @@ export const isSizeType = (type: string): boolean => /^size$/i.test(type);
 export const isAspectRatioType = (type: string): boolean => /aspect[-_]?ratio/i.test(type);
 export const isZLayerType = (type: string): boolean => /z[-_]?(layer|index)/i.test(type);
 export const isTransitionType = (type: string): boolean => /^transition$/i.test(type);
+
+// ─── Shared helpers ──────────────────────────────────────────
+
+export const groupTokens = (tokens: Token[]): Map<string, Token[]> =>
+  tokens.reduce((groups, token) => {
+    const existing = groups.get(token.type) ?? [];
+    return groups.set(token.type, [...existing, token]);
+  }, new Map<string, Token[]>());

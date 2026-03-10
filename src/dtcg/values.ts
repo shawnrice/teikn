@@ -134,20 +134,33 @@ const gradientToTeikn = (stops: DTCGGradientStop[]): LinearGradient => {
 const fontFamilyToTeikn = (value: string | string[]): string =>
   Array.isArray(value) ? value.join(', ') : value;
 
+// ─── DTCG value type guards ──────────────────────────────────
+
+const isDTCGDimension = (val: unknown): val is DTCGDimensionValue =>
+  val != null && typeof val === 'object' && 'value' in val && 'unit' in val;
+
+const isDTCGColor = (val: unknown): val is DTCGColorValue =>
+  val != null && typeof val === 'object' && 'colorSpace' in val;
+
+const isDTCGCubicBezier = (val: unknown): val is DTCGCubicBezierValue =>
+  Array.isArray(val) && val.length === 4 && val.every(v => typeof v === 'number');
+
+// ─── Composite field converter ───────────────────────────────
+
 const convertCompositeFields = (obj: Record<string, unknown>): Record<string, unknown> => {
   const result: Record<string, unknown> = {};
   for (const [key, val] of Object.entries(obj)) {
     if (isAlias(val)) {
       result[key] = val;
-    } else if (val && typeof val === 'object' && 'value' in val && 'unit' in val) {
+    } else if (isDTCGDimension(val)) {
       const typed = val as { value: number; unit: string };
       result[key] = isDurationUnit(typed.unit)
         ? durationToTeikn(typed as DTCGDurationValue)
         : dimensionToTeikn(typed as DTCGDimensionValue);
-    } else if (val && typeof val === 'object' && 'colorSpace' in val) {
-      result[key] = colorToTeikn(val as DTCGColorValue);
-    } else if (Array.isArray(val) && val.length === 4 && val.every(v => typeof v === 'number')) {
-      result[key] = cubicBezierToTeikn(val as DTCGCubicBezierValue);
+    } else if (isDTCGColor(val)) {
+      result[key] = colorToTeikn(val);
+    } else if (isDTCGCubicBezier(val)) {
+      result[key] = cubicBezierToTeikn(val);
     } else {
       result[key] = val;
     }
@@ -239,71 +252,66 @@ const gradientStopToDTCG = (stop: { color: Color; position?: string }): DTCGGrad
 const gradientToDTCG = (gradient: LinearGradient | RadialGradient): DTCGGradientValue =>
   [...gradient.stops].map(gradientStopToDTCG);
 
+// Convert a single teikn value (instanceof-based) to its DTCG representation.
+// Returns null when the value is not a recognized first-class type.
+const convertSingleValue = (value: unknown): DTCGValue | null => {
+  if (value instanceof Color) {
+    return colorToDTCG(value);
+  }
+  if (value instanceof CubicBezier) {
+    return cubicBezierToDTCG(value);
+  }
+  if (value instanceof BoxShadow) {
+    return shadowToDTCG(value);
+  }
+  if (value instanceof BoxShadowList) {
+    return value.layers.map(shadowToDTCG) as unknown as DTCGValue;
+  }
+  if (value instanceof LinearGradient || value instanceof RadialGradient) {
+    return gradientToDTCG(value);
+  }
+  if (value instanceof GradientList) {
+    return value.layers.map(g => gradientToDTCG(g)) as unknown as DTCGValue;
+  }
+  if (value instanceof Dimension) {
+    return { value: value.value, unit: value.unit } as DTCGDimensionValue;
+  }
+  if (value instanceof Duration) {
+    return { value: value.value, unit: value.unit } as DTCGDurationValue;
+  }
+  return null;
+};
+
+const transitionToDTCG = (t: Transition): Record<string, unknown> => {
+  const result: Record<string, unknown> = {
+    duration: stringDurationToDTCG(t.duration),
+    timingFunction: cubicBezierToDTCG(t.timingFunction),
+  };
+  if (t.delay && t.delay !== '0s') {
+    result.delay = stringDurationToDTCG(t.delay);
+  }
+  if (t.property && t.property !== 'all') {
+    result.property = t.property;
+  }
+  return result;
+};
+
 export const teiknValueToDTCG = (value: any, type: string): DTCGValue => {
   if (isAlias(value)) {
     return value;
   }
 
-  if (value instanceof Color) {
-    return colorToDTCG(value);
-  }
-
-  if (value instanceof CubicBezier) {
-    return cubicBezierToDTCG(value);
-  }
-
-  if (value instanceof BoxShadow) {
-    return shadowToDTCG(value);
-  }
-
-  if (value instanceof BoxShadowList) {
-    return value.layers.map(shadowToDTCG) as unknown as DTCGValue;
-  }
-
-  if (value instanceof LinearGradient || value instanceof RadialGradient) {
-    return gradientToDTCG(value);
-  }
-
-  if (value instanceof GradientList) {
-    return value.layers.map(g => gradientToDTCG(g)) as unknown as DTCGValue;
+  const single = convertSingleValue(value);
+  if (single !== null) {
+    return single;
   }
 
   if (value instanceof TransitionList) {
-    return value.layers.map(t => {
-      const result: Record<string, unknown> = {
-        duration: stringDurationToDTCG(t.duration),
-        timingFunction: cubicBezierToDTCG(t.timingFunction),
-      };
-      if (t.delay && t.delay !== '0s') {
-        result.delay = stringDurationToDTCG(t.delay);
-      }
-      if (t.property && t.property !== 'all') {
-        result.property = t.property;
-      }
-      return result;
-    }) as unknown as DTCGValue;
+    return value.layers.map(transitionToDTCG) as unknown as DTCGValue;
   }
 
   if (value instanceof Transition) {
-    const result: Record<string, unknown> = {
-      duration: stringDurationToDTCG(value.duration),
-      timingFunction: cubicBezierToDTCG(value.timingFunction),
-    };
-    if (value.delay && value.delay !== '0s') {
-      result.delay = stringDurationToDTCG(value.delay);
-    }
-    if (value.property && value.property !== 'all') {
-      result.property = value.property;
-    }
-    return result as DTCGValue;
-  }
-
-  if (value instanceof Dimension) {
-    return { value: value.value, unit: value.unit } as DTCGDimensionValue;
-  }
-
-  if (value instanceof Duration) {
-    return { value: value.value, unit: value.unit } as DTCGDurationValue;
+    return transitionToDTCG(value) as DTCGValue;
   }
 
   if (typeof value === 'number') {
@@ -333,16 +341,9 @@ export const teiknValueToDTCG = (value: any, type: string): DTCGValue => {
   if (value && typeof value === 'object' && !Array.isArray(value)) {
     const result: Record<string, unknown> = {};
     for (const [key, val] of Object.entries(value)) {
-      if (val instanceof Color) {
-        result[key] = colorToDTCG(val);
-      } else if (val instanceof CubicBezier) {
-        result[key] = cubicBezierToDTCG(val);
-      } else if (val instanceof BoxShadow) {
-        result[key] = shadowToDTCG(val);
-      } else if (val instanceof Dimension) {
-        result[key] = { value: val.value, unit: val.unit } as DTCGDimensionValue;
-      } else if (val instanceof Duration) {
-        result[key] = { value: val.value, unit: val.unit } as DTCGDurationValue;
+      const converted = convertSingleValue(val);
+      if (converted !== null) {
+        result[key] = converted;
       } else if (typeof val === 'string') {
         const dim = parseDimension(val);
         if (dim) {
