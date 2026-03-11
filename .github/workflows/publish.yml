@@ -6,9 +6,72 @@ on:
       - 'v*'
 
 jobs:
+  test-node:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: ['20', '22', '24', '25']
+    name: Test (Node ${{ matrix.node }})
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build
+        run: bun run build
+
+      - name: Test
+        run: npx vitest run
+
+  test-bun:
+    runs-on: ubuntu-latest
+    name: Test (Bun)
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build
+        run: bun run build
+
+      - name: Test
+        run: bun test
+
+  lint:
+    runs-on: ubuntu-latest
+    name: Lint
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Lint
+        run: bun run lint
+
+      - name: Format check
+        run: bunx oxfmt --check src/
+
   npm:
     runs-on: ubuntu-latest
     name: Publish to npm
+    needs: [test-node, test-bun, lint]
     permissions:
       contents: read
       id-token: write
@@ -30,12 +93,23 @@ jobs:
       - name: Build
         run: bun run build
 
+      - name: Determine dist tag
+        id: tag
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if [[ "$VERSION" == *-* ]]; then
+            echo "dist_tag=${VERSION#*-}" | sed 's/\.[0-9]*$//' >> "$GITHUB_OUTPUT"
+          else
+            echo "dist_tag=latest" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Publish
-        run: npm publish --provenance --access public
+        run: npm publish --provenance --access public --tag ${{ steps.tag.outputs.dist_tag }}
 
   github:
     runs-on: ubuntu-latest
     name: Publish to GitHub Packages
+    needs: [test-node, test-bun, lint]
     permissions:
       contents: read
       packages: write
@@ -57,14 +131,25 @@ jobs:
       - name: Build
         run: bun run build
 
+      - name: Determine dist tag
+        id: tag
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if [[ "$VERSION" == *-* ]]; then
+            echo "dist_tag=${VERSION#*-}" | sed 's/\.[0-9]*$//' >> "$GITHUB_OUTPUT"
+          else
+            echo "dist_tag=latest" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Publish
-        run: npm publish
+        run: npm publish --tag ${{ steps.tag.outputs.dist_tag }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   jsr:
     runs-on: ubuntu-latest
     name: Publish to JSR
+    needs: [test-node, test-bun, lint]
     permissions:
       contents: read
       id-token: write

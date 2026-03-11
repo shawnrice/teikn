@@ -17,7 +17,9 @@
     "type": "git",
     "url": "https://github.com/shawnrice/teikn.git"
   },
-  "bin": "./lib/src/cli.js",
+  "bin": {
+    "teikn": "./lib/src/cli.js"
+  },
   "files": [
     "lib"
   ],
