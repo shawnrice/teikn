@@ -1,0 +1,352 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`HTMLGenerator tests > It generates the token set 1`] = `
+"<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design Tokens — Teikn v2.0.0-alpha.1</title>
+<style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:#fafafa;color:#333;line-height:1.5}
+.page-header{padding:2rem 2.5rem;border-bottom:1px solid #e0e0e0;background:#fff}
+.page-header h1{font-size:1.5rem;font-weight:600}
+.page-header .meta{color:#666;font-size:0.875rem;margin-top:0.25rem}
+.layout{display:flex;min-height:calc(100vh - 5rem)}
+.sidebar{width:220px;padding:1.5rem;border-right:1px solid #e0e0e0;background:#fff;position:sticky;top:0;height:100vh;overflow-y:auto;flex-shrink:0}
+.sidebar h3{font-size:0.75rem;text-transform:uppercase;letter-spacing:0.05em;color:#666;margin-bottom:0.75rem}
+.sidebar ul{list-style:none}
+.sidebar li{margin-bottom:0.25rem}
+.sidebar a{color:#0066cc;text-decoration:none;font-size:0.875rem;display:block;padding:0.25rem 0.5rem;border-radius:4px}
+.sidebar a:hover{background:#f0f0f0}
+.content{flex:1;padding:2rem;max-width:960px}
+section{margin-bottom:3rem}
+section h2{font-size:1.25rem;font-weight:600;margin-bottom:1rem;padding-bottom:0.5rem;border-bottom:2px solid #e0e0e0}
+.color-grid{display:flex;flex-wrap:wrap;gap:1.25rem;margin-bottom:1.5rem}
+.color-card{background:#fff;border:1px solid #e0e0e0;border-radius:10px;width:224px;transition:box-shadow .15s ease}
+.color-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.08)}
+.color-swatch{width:100%;height:96px;display:flex;align-items:flex-end;padding:0.625rem;border-radius:10px 10px 0 0}
+.swatch-label{font-size:0.75rem;font-family:monospace}
+.color-info{padding:0.875rem}
+.color-name{font-weight:600;font-size:0.9rem;margin-bottom:0.25rem}
+.color-values{display:flex;flex-direction:column;gap:0.125rem}
+.color-value{font-size:0.75rem;color:#666;font-family:monospace}
+.color-meta{margin-top:0.5rem;font-size:0.6875rem;color:#888;font-family:monospace;display:flex;gap:0.75rem}
+.color-previews{display:flex;gap:0.375rem;margin-top:0.625rem}
+.color-preview-text{font-size:0.8125rem;font-weight:700;padding:0.125rem 0.5rem;border-radius:4px;border:1px solid #e0e0e0;line-height:1.4;font-family:system-ui,sans-serif}
+.color-contrast{margin-top:0.625rem;padding-top:0.625rem;border-top:1px solid #f0f0f0}
+.contrast-row{display:flex;align-items:center;gap:0.3rem;flex-wrap:wrap;margin-bottom:0.375rem}
+.contrast-label{font-size:0.6875rem;color:#888;width:100%;font-family:monospace}
+.tooltip-wrap{position:relative;display:inline-block}
+.tooltip{display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:#1a1a2e;color:#e0e0e0;font-size:0.6875rem;line-height:1.45;padding:0.5rem 0.75rem;border-radius:6px;width:220px;z-index:10;font-weight:400;box-shadow:0 4px 16px rgba(0,0,0,.2);pointer-events:none;text-align:left}
+.tooltip::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:5px solid transparent;border-top-color:#1a1a2e}
+.tooltip strong{color:#fff}
+.tooltip-wrap:hover .tooltip{display:block}
+.badge{font-size:0.625rem;padding:0.15rem 0.4rem;border-radius:4px;font-weight:600;letter-spacing:0.02em}
+.badge-pass{background:#dcfce7;color:#15803d;border:1px solid #bbf7d0}
+.badge-fail{background:#fee2e2;color:#b91c1c;border:1px solid #fecaca}
+.token-usage{font-size:0.75rem;color:#666;margin-top:0.5rem;font-style:italic}
+.card{background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:1rem;margin-bottom:0.75rem}
+.card-name{font-weight:600;font-size:0.875rem;margin-bottom:0.25rem}
+.card-value{font-size:0.75rem;color:#666;font-family:monospace;margin-bottom:0.5rem}
+.font-sample{background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:1rem;margin-bottom:0.75rem}
+.font-sample-label{font-size:0.875rem;color:#666;margin-bottom:0.5rem}
+.font-sample-label code{background:#f5f5f5;padding:0.125rem 0.375rem;border-radius:3px;font-size:0.8125rem}
+.font-sample-text{overflow:hidden;text-overflow:ellipsis}
+.spacing-sample{background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:1rem;margin-bottom:0.75rem}
+.spacing-label{font-size:0.875rem;color:#666;margin-bottom:0.5rem}
+.spacing-label code{background:#f5f5f5;padding:0.125rem 0.375rem;border-radius:3px;font-size:0.8125rem}
+.spacing-bar{height:12px;background:#0066cc;border-radius:3px}
+.typography-sample{background:#fff;border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;margin-bottom:0.75rem}
+.typography-preview{padding:1.5rem;background:#fff;border-bottom:1px solid #f0f0f0}
+.typography-props{padding:1rem}
+.typography-props dl{display:grid;grid-template-columns:auto 1fr;gap:0.2rem 0.75rem}
+.typography-props dt{font-size:0.75rem;color:#999;font-family:monospace}
+.typography-props dd{font-size:0.8125rem;font-family:monospace}
+.shadow-grid{display:flex;flex-wrap:wrap;gap:1rem;margin-bottom:1.5rem}
+.shadow-card{background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:1rem;width:200px;text-align:center}
+.shadow-box{width:88px;height:88px;background:#fff;border-radius:8px;margin:0.75rem auto}
+.shadow-name{font-weight:600;font-size:0.875rem}
+.shadow-value{font-size:0.7rem;color:#666;font-family:monospace;margin-top:0.25rem;word-break:break-all}
+.timing-card{background:#fff;border:1px solid #e0e0e0;border-radius:12px;overflow:hidden;margin-bottom:1rem}
+.timing-layout{display:flex;gap:0;align-items:stretch}
+.timing-viz{background:#1a1b2e;padding:1.25rem;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.timing-info{flex:1;padding:1.25rem;display:flex;flex-direction:column;gap:0.75rem}
+.timing-name{font-weight:700;font-size:1rem}
+.timing-value{font-size:0.8125rem;color:#555;font-family:ui-monospace,SFMono-Regular,monospace;background:#f5f5f5;padding:0.375rem 0.625rem;border-radius:6px;display:inline-block}
+.timing-points{display:grid;grid-template-columns:1fr 1fr;gap:0.5rem}
+.timing-point{background:#f8f8fc;border:1px solid #e8e8f0;border-radius:6px;padding:0.4rem 0.625rem}
+.timing-point-label{font-size:0.625rem;color:#999;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.125rem}
+.timing-point-val{font-size:0.875rem;font-weight:600;font-family:ui-monospace,SFMono-Regular,monospace;color:#4338ca}
+.timing-demo-area{margin-top:auto}
+.timing-track{height:6px;background:#e8e8f0;border-radius:3px;position:relative;margin-bottom:0.5rem}
+.timing-ball{width:20px;height:20px;background:linear-gradient(135deg,#818cf8,#6366f1);border-radius:50%;position:absolute;top:50%;left:0;transform:translateY(-50%);box-shadow:0 2px 8px rgba(99,102,241,0.4)}
+.duration-card{background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:1.25rem;margin-bottom:1rem}
+.duration-header{display:flex;align-items:baseline;gap:0.75rem;margin-bottom:0.75rem}
+.duration-name{font-weight:700;font-size:1rem}
+.duration-val{font-size:1.5rem;font-weight:700;font-family:ui-monospace,SFMono-Regular,monospace;color:#0066cc}
+.duration-bar{height:8px;background:#e8e8f0;border-radius:4px;position:relative;overflow:hidden;margin-bottom:0.625rem}
+.duration-fill{height:100%;width:0;background:linear-gradient(90deg,#0066cc,#38bdf8);border-radius:4px}
+.border-sample{background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:1rem;margin-bottom:0.75rem}
+.border-demo{width:100%;height:48px;border-radius:4px;background:#fafafa;margin:0.75rem 0}
+.border-props dl{display:grid;grid-template-columns:auto 1fr;gap:0.2rem 0.75rem}
+.border-props dt{font-size:0.75rem;color:#999;font-family:monospace}
+.border-props dd{font-size:0.8125rem;font-family:monospace}
+.radius-grid{display:flex;flex-wrap:wrap;gap:1rem;margin-bottom:1.5rem}
+.radius-card{background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:1rem;width:140px;text-align:center}
+.radius-box{width:64px;height:64px;background:#0066cc;margin:0.5rem auto}
+.radius-name{font-weight:600;font-size:0.8rem}
+.radius-value{font-size:0.75rem;color:#666;font-family:monospace}
+.composite-token{background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:1rem;margin-bottom:0.75rem}
+.composite-name{font-weight:600;font-size:0.875rem;margin-bottom:0.5rem}
+.composite-values{display:grid;grid-template-columns:auto 1fr;gap:0.25rem 0.75rem}
+.composite-values dt{font-size:0.8125rem;color:#666}
+.composite-values dd{font-size:0.8125rem}
+.play-btn{background:none;border:1px solid #ccc;border-radius:4px;padding:0.2rem 0.75rem;font-size:0.75rem;color:#666;cursor:pointer}
+.play-btn:hover{background:#f5f5f5;border-color:#999;color:#333}
+.token-table{width:100%;border-collapse:collapse;font-size:0.875rem;margin-top:1rem}
+.token-table th{text-align:left;padding:0.5rem 0.75rem;background:#f5f5f5;border-bottom:2px solid #e0e0e0;font-weight:600;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.03em;color:#666}
+.token-table td{padding:0.5rem 0.75rem;border-bottom:1px solid #e0e0e0;vertical-align:top}
+.token-table .token-name{font-weight:500}
+.token-table code{background:#f5f5f5;padding:0.125rem 0.375rem;border-radius:3px;font-size:0.8125rem}
+.token-table pre.composite-pre{margin:0;background:#f5f5f5;padding:0.5rem 0.625rem;border-radius:4px;font-size:0.75rem;line-height:1.5;white-space:pre-wrap;font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace}
+.gradient-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.25rem;margin-bottom:1.5rem}
+.gradient-card{background:#fff;border:1px solid #e0e0e0;border-radius:10px;overflow:hidden}
+.gradient-swatch{width:100%;height:180px;border-radius:10px 10px 0 0;position:relative}
+.gradient-type-badge{position:absolute;top:0.75rem;right:0.75rem;background:rgba(0,0,0,.55);color:#fff;font-size:0.6875rem;font-family:monospace;padding:0.25rem 0.625rem;border-radius:4px;backdrop-filter:blur(4px);letter-spacing:0.03em;text-transform:uppercase}
+.gradient-info{padding:1rem 1.25rem}
+.gradient-header{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:0.75rem}
+.gradient-name{font-weight:600;font-size:1rem}
+.gradient-meta{font-size:0.75rem;color:#888;font-family:monospace}
+.gradient-stops-row{display:flex;gap:0.625rem;margin-bottom:0.75rem;flex-wrap:wrap}
+.gradient-stop-item{display:flex;flex-direction:column;align-items:center;gap:0.2rem}
+.gradient-stop-swatch{width:36px;height:36px;border-radius:6px;border:1px solid rgba(0,0,0,.08);box-shadow:0 1px 3px rgba(0,0,0,.07)}
+.gradient-stop-label{font-size:0.625rem;color:#888;font-family:monospace}
+.gradient-stop-hex{font-size:0.625rem;color:#666;font-family:monospace}
+.gradient-css{font-size:0.75rem;color:#555;font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace;background:#f7f7f8;padding:0.5rem 0.75rem;border-radius:6px;word-break:break-all;line-height:1.5}
+@keyframes slide-right{0%{left:0}100%{left:calc(100% - 20px)}}
+.timing-ball.playing{animation-name:slide-right;animation-fill-mode:forwards}
+@keyframes fill-bar{0%{width:0}100%{width:100%}}
+.duration-fill.playing{animation-name:fill-bar;animation-fill-mode:forwards}
+.opacity-grid{display:flex;flex-wrap:wrap;gap:1rem;margin-bottom:1.5rem}
+.opacity-card{background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:1rem;width:160px;text-align:center}
+.opacity-swatch{width:80px;height:80px;border-radius:8px;margin:0.5rem auto;border:1px solid #e0e0e0;background-image:linear-gradient(45deg,#ccc 25%,transparent 25%),linear-gradient(-45deg,#ccc 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#ccc 75%),linear-gradient(-45deg,transparent 75%,#ccc 75%);background-size:12px 12px;background-position:0 0,0 6px,6px -6px,-6px 0;position:relative}
+.opacity-fill{position:absolute;inset:0;border-radius:8px;background:#0066cc}
+.opacity-name{font-weight:600;font-size:0.875rem}
+.opacity-value{font-size:0.75rem;color:#666;font-family:monospace}
+.lineheight-sample{background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:1rem;margin-bottom:0.75rem}
+.lineheight-label{font-size:0.875rem;color:#666;margin-bottom:0.5rem}
+.lineheight-label code{background:#f5f5f5;padding:0.125rem 0.375rem;border-radius:3px;font-size:0.8125rem}
+.lineheight-text{font-size:0.875rem;max-width:420px;background:#f8f8fc;padding:0.75rem;border-radius:4px;border-left:3px solid #0066cc}
+.letterspacing-sample{background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:1rem;margin-bottom:0.75rem}
+.letterspacing-label{font-size:0.875rem;color:#666;margin-bottom:0.5rem}
+.letterspacing-label code{background:#f5f5f5;padding:0.125rem 0.375rem;border-radius:3px;font-size:0.8125rem}
+.letterspacing-text{font-size:1rem;text-transform:uppercase;background:#f8f8fc;padding:0.75rem;border-radius:4px;border-left:3px solid #6366f1}
+.breakpoint-sample{background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:1rem;margin-bottom:0.75rem}
+.breakpoint-label{font-size:0.875rem;color:#666;margin-bottom:0.5rem}
+.breakpoint-label code{background:#f5f5f5;padding:0.125rem 0.375rem;border-radius:3px;font-size:0.8125rem}
+.breakpoint-bar{height:12px;background:linear-gradient(90deg,#0066cc,#38bdf8);border-radius:3px;position:relative}
+.breakpoint-marker{font-size:0.625rem;color:#888;font-family:monospace;margin-top:0.25rem}
+.size-grid{display:flex;flex-wrap:wrap;gap:1rem;margin-bottom:1.5rem;align-items:flex-end}
+.size-card{background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:1rem;text-align:center;width:140px}
+.size-box{background:#0066cc;border-radius:4px;margin:0.5rem auto}
+.size-name{font-weight:600;font-size:0.8rem}
+.size-value{font-size:0.75rem;color:#666;font-family:monospace}
+.ratio-grid{display:flex;flex-wrap:wrap;gap:1.25rem;margin-bottom:1.5rem;align-items:flex-start}
+.ratio-card{background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:1rem;width:180px;text-align:center}
+.ratio-box{background:linear-gradient(135deg,#0066cc,#38bdf8);border-radius:4px;margin:0.5rem auto;max-width:100%;max-height:160px}
+.ratio-name{font-weight:600;font-size:0.875rem}
+.ratio-value{font-size:0.75rem;color:#666;font-family:monospace}
+.zlayer-stack{display:flex;flex-direction:column;gap:0;margin-bottom:1.5rem;position:relative;padding-left:5rem}
+.zlayer-item{display:flex;align-items:center;gap:1rem}
+.zlayer-bar{height:44px;border-radius:8px;display:flex;align-items:center;padding:0 1rem;font-weight:600;font-size:0.8125rem;color:#fff;position:relative;transition:transform .15s ease,box-shadow .15s ease;min-width:120px}
+.zlayer-bar:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.15)}
+.zlayer-index{position:absolute;left:0;width:4.5rem;text-align:right;font-size:0.75rem;font-family:ui-monospace,SFMono-Regular,monospace;color:#888;font-weight:600}
+.zlayer-label{font-size:0.75rem;color:#666;margin-left:0.5rem;white-space:nowrap}
+.transition-card{background:#fff;border:1px solid #e0e0e0;border-radius:12px;padding:1.25rem;margin-bottom:1rem}
+.transition-header{display:flex;align-items:baseline;gap:0.75rem;margin-bottom:0.75rem}
+.transition-name{font-weight:700;font-size:1rem}
+.transition-value{font-size:0.8125rem;color:#555;font-family:ui-monospace,SFMono-Regular,monospace;background:#f5f5f5;padding:0.375rem 0.625rem;border-radius:6px;display:inline-block}
+.transition-props{display:grid;grid-template-columns:auto 1fr;gap:0.2rem 0.75rem;margin-bottom:0.75rem}
+.transition-props dt{font-size:0.75rem;color:#999;font-family:monospace}
+.transition-props dd{font-size:0.8125rem;font-family:monospace}
+.transition-demo{display:flex;align-items:center;gap:1rem}
+.transition-demo-box{width:60px;height:60px;background:#0066cc;border-radius:8px}
+.transition-demo-box:hover{transform:scale(1.15);background:#38bdf8}
+.getting-started{margin-bottom:3rem}
+.getting-started h2{font-size:1.25rem;font-weight:600;margin-bottom:1rem;padding-bottom:0.5rem;border-bottom:2px solid #e0e0e0}
+.getting-started p{font-size:0.875rem;color:#666;margin-bottom:1.25rem;line-height:1.6}
+.format-card{background:#fff;border:1px solid #e0e0e0;border-radius:8px;overflow:hidden;margin-bottom:1rem}
+.format-card-header{display:flex;align-items:center;gap:0.75rem;padding:0.875rem 1rem;border-bottom:1px solid #f0f0f0;background:#fafafa}
+.format-card-name{font-weight:600;font-size:0.9rem}
+.format-card-file{font-size:0.75rem;color:#666;font-family:ui-monospace,SFMono-Regular,monospace;background:#f0f0f0;padding:0.15rem 0.5rem;border-radius:3px}
+.format-card-code{margin:0;padding:1rem;background:#1e1f36;color:#e0e0e0;font-size:0.8125rem;font-family:ui-monospace,SFMono-Regular,'SF Mono',Menlo,monospace;line-height:1.6;overflow-x:auto;white-space:pre}
+.mode-variants{display:flex;flex-wrap:wrap;gap:0.375rem;margin-top:0.625rem;padding-top:0.625rem;border-top:1px solid #f0f0f0}
+.mode-badge{font-size:0.6875rem;font-family:monospace;padding:0.2rem 0.5rem;background:#f5f5f5;border:1px solid #e0e0e0;border-radius:4px;display:inline-flex;align-items:center;gap:0.375rem}
+.mode-swatch{width:14px;height:14px;border-radius:3px;border:1px solid rgba(0,0,0,.1);flex-shrink:0}
+@media(max-width:768px){.layout{flex-direction:column}.sidebar{width:100%;height:auto;position:static;border-right:none;border-bottom:1px solid #e0e0e0}.sidebar ul{display:flex;flex-wrap:wrap;gap:0.25rem}.content{padding:1rem}.color-grid,.shadow-grid,.radius-grid{justify-content:center}.gradient-grid{grid-template-columns:1fr}.color-card{width:100%;max-width:320px}.timing-layout{flex-direction:column}.timing-viz{border-radius:12px 12px 0 0}}
+.flip-card{perspective:1000px}
+.flip-inner{position:relative;transition:transform .5s;transform-style:preserve-3d}
+.flip-inner.flipped{transform:rotateY(180deg)}
+.flip-front,.flip-back{backface-visibility:hidden}
+.flip-front{position:relative}
+.flip-back{transform:rotateY(180deg);position:absolute;top:0;left:0;width:100%;height:100%;overflow-y:auto;background:#fff;border:1px solid #e0e0e0;border-radius:10px;padding:1rem;box-sizing:border-box}
+.flip-btn{position:absolute;top:0.5rem;right:0.5rem;z-index:2;background:rgba(255,255,255,.85);border:1px solid #ddd;border-radius:4px;padding:0.15rem 0.4rem;font-size:0.75rem;font-family:monospace;cursor:pointer;color:#666;line-height:1}
+.flip-btn:hover{background:#fff;border-color:#999;color:#333}
+.flip-close{position:absolute;top:0.5rem;right:0.5rem;z-index:2;background:none;border:1px solid #ddd;border-radius:4px;padding:0.15rem 0.4rem;font-size:1rem;cursor:pointer;color:#666;line-height:1}
+.flip-close:hover{background:#f5f5f5;border-color:#999;color:#333}
+.flip-back-title{font-weight:600;font-size:0.875rem;margin-bottom:0.75rem}
+.usage-snippet{margin-bottom:0.625rem}
+.usage-format{font-size:0.6875rem;color:#888;text-transform:uppercase;letter-spacing:0.03em;margin-bottom:0.2rem}
+.usage-code-row{display:flex;align-items:center;gap:0.5rem}
+.usage-code{flex:1;font-size:0.8125rem;background:#f5f5f5;padding:0.3rem 0.5rem;border-radius:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.copy-btn{background:none;border:1px solid #ddd;border-radius:4px;padding:0.2rem 0.5rem;font-size:0.6875rem;cursor:pointer;color:#666;white-space:nowrap}
+.copy-btn:hover{background:#f5f5f5;border-color:#999;color:#333}</style>
+</head>
+<body>
+<header class="page-header">
+<h1>Design Tokens</h1>
+<p class="meta">Teikn v2.0.0-alpha.1 · Generated Mon Jan 01 2024 12:00:00</p>
+</header>
+<div class="layout">
+<nav class="sidebar">
+<h3>Token Types</h3>
+<ul>
+<li><a href="#section-font-family">font-family</a></li>
+<li><a href="#section-color">color</a></li>
+</ul>
+</nav>
+<main class="content">
+<section id="section-font-family">
+<h2>font-family</h2>
+<div class="token-visualizations ">
+<div class="font-sample">
+<div class="font-sample-label">body <code>&quot;Roboto Condensed&quot;, Arial, sans</code></div>
+<div class="font-sample-text" style="font-family:&quot;Roboto Condensed&quot;, Arial, sans">The quick brown fox jumps over the lazy dog</div>
+<div class="token-usage">Use for body fonts</div>
+</div>
+</div>
+<table class="token-table">
+<thead><tr><th>Name</th><th>Value</th><th>Type</th><th>Usage</th></tr></thead>
+<tbody>
+<tr><td class="token-name">body</td><td><code>&quot;Roboto Condensed&quot;, Arial, sans</code></td><td>font-family</td><td>Use for body fonts</td></tr>
+</tbody>
+</table>
+</section>
+<section id="section-color">
+<h2>color</h2>
+<div class="token-visualizations color-grid">
+<div class="color-card">
+<div class="color-swatch" style="background-color:#f0f8ff">
+<span class="swatch-label" style="color:#000">#f0f8ff</span>
+</div>
+<div class="color-info">
+<div class="color-name">primary</div>
+<div class="color-values">
+<div class="color-value">#f0f8ff</div>
+<div class="color-value">rgb(240, 248, 255)</div>
+<div class="color-value">hsl(208, 100%, 97%)</div>
+</div>
+<div class="color-meta">
+<span>Lum 0.929</span>
+</div>
+<div class="color-previews">
+<span class="color-preview-text" style="color:#f0f8ff;background:#fff" title="Color on white">Aa</span>
+<span class="color-preview-text" style="color:#f0f8ff;background:#000" title="Color on black">Aa</span>
+<span class="color-preview-text" style="background:#f0f8ff;color:#fff" title="White on color">Aa</span>
+<span class="color-preview-text" style="background:#f0f8ff;color:#000" title="Black on color">Aa</span>
+</div>
+<div class="color-contrast">
+<div class="contrast-row">
+<span class="contrast-label">vs white 1.07:1</span>
+<span class="tooltip-wrap"><span class="badge badge-fail">✗ AA</span><span class="tooltip"><strong>AA</strong>: WCAG AA requires 4.5:1 for normal text, 3:1 for large text (18pt+ or 14pt bold).<br><br>Fails — 1.07:1 is below the 4.5:1 threshold.</span></span>
+<span class="tooltip-wrap"><span class="badge badge-fail">✗ AAA</span><span class="tooltip"><strong>AAA</strong>: WCAG AAA requires 7:1 for normal text, 4.5:1 for large text (18pt+ or 14pt bold).<br><br>Fails — 1.07:1 is below the 7:1 threshold.</span></span>
+</div>
+<div class="contrast-row">
+<span class="contrast-label">vs black 19.58:1</span>
+<span class="tooltip-wrap"><span class="badge badge-pass">✓ AA</span><span class="tooltip"><strong>AA</strong>: WCAG AA requires 4.5:1 for normal text, 3:1 for large text (18pt+ or 14pt bold).<br><br>Passes — 19.58:1 meets the 4.5:1 threshold.</span></span>
+<span class="tooltip-wrap"><span class="badge badge-pass">✓ AAA</span><span class="tooltip"><strong>AAA</strong>: WCAG AAA requires 7:1 for normal text, 4.5:1 for large text (18pt+ or 14pt bold).<br><br>Passes — 19.58:1 meets the 7:1 threshold.</span></span>
+</div>
+</div>
+<div class="token-usage">the primary branding color</div>
+</div>
+</div>
+<div class="color-card">
+<div class="color-swatch" style="background-color:#66cdaa">
+<span class="swatch-label" style="color:#000">#66cdaa</span>
+</div>
+<div class="color-info">
+<div class="color-name">secondary</div>
+<div class="color-values">
+<div class="color-value">#66cdaa</div>
+<div class="color-value">rgb(102, 205, 170)</div>
+<div class="color-value">hsl(159.6, 51%, 60%)</div>
+</div>
+<div class="color-meta">
+<span>Lum 0.494</span>
+</div>
+<div class="color-previews">
+<span class="color-preview-text" style="color:#66cdaa;background:#fff" title="Color on white">Aa</span>
+<span class="color-preview-text" style="color:#66cdaa;background:#000" title="Color on black">Aa</span>
+<span class="color-preview-text" style="background:#66cdaa;color:#fff" title="White on color">Aa</span>
+<span class="color-preview-text" style="background:#66cdaa;color:#000" title="Black on color">Aa</span>
+</div>
+<div class="color-contrast">
+<div class="contrast-row">
+<span class="contrast-label">vs white 1.93:1</span>
+<span class="tooltip-wrap"><span class="badge badge-fail">✗ AA</span><span class="tooltip"><strong>AA</strong>: WCAG AA requires 4.5:1 for normal text, 3:1 for large text (18pt+ or 14pt bold).<br><br>Fails — 1.93:1 is below the 4.5:1 threshold.</span></span>
+<span class="tooltip-wrap"><span class="badge badge-fail">✗ AAA</span><span class="tooltip"><strong>AAA</strong>: WCAG AAA requires 7:1 for normal text, 4.5:1 for large text (18pt+ or 14pt bold).<br><br>Fails — 1.93:1 is below the 7:1 threshold.</span></span>
+</div>
+<div class="contrast-row">
+<span class="contrast-label">vs black 10.88:1</span>
+<span class="tooltip-wrap"><span class="badge badge-pass">✓ AA</span><span class="tooltip"><strong>AA</strong>: WCAG AA requires 4.5:1 for normal text, 3:1 for large text (18pt+ or 14pt bold).<br><br>Passes — 10.88:1 meets the 4.5:1 threshold.</span></span>
+<span class="tooltip-wrap"><span class="badge badge-pass">✓ AAA</span><span class="tooltip"><strong>AAA</strong>: WCAG AAA requires 7:1 for normal text, 4.5:1 for large text (18pt+ or 14pt bold).<br><br>Passes — 10.88:1 meets the 7:1 threshold.</span></span>
+</div>
+</div>
+<div class="token-usage">the secondary branding color</div>
+</div>
+</div>
+</div>
+<table class="token-table">
+<thead><tr><th>Name</th><th>Value</th><th>Type</th><th>Usage</th></tr></thead>
+<tbody>
+<tr><td class="token-name">primary</td><td><code>aliceblue</code></td><td>color</td><td>the primary branding color</td></tr>
+<tr><td class="token-name">secondary</td><td><code>rgb(102, 205, 170)</code></td><td>color</td><td>the secondary branding color</td></tr>
+</tbody>
+</table>
+</section>
+</main>
+</div>
+<script>document.addEventListener('click', function(e) {
+  var btn = e.target.closest('.play-btn');
+  if (btn) {
+    var container = btn.closest('.anim-container');
+    if (container) {
+      var el = container.querySelector('.timing-ball') || container.querySelector('.duration-fill');
+      if (el) {
+        el.classList.remove('playing');
+        void el.offsetWidth;
+        el.classList.add('playing');
+        el.addEventListener('animationend', function() {
+          el.classList.remove('playing');
+        }, { once: true });
+      }
+    }
+    return;
+  }
+  var flipBtn = e.target.closest('.flip-btn') || e.target.closest('.flip-close');
+  if (flipBtn) {
+    var inner = flipBtn.closest('.flip-inner');
+    if (inner) inner.classList.toggle('flipped');
+    return;
+  }
+  var copyBtn = e.target.closest('.copy-btn');
+  if (copyBtn) {
+    navigator.clipboard.writeText(copyBtn.dataset.copy);
+    copyBtn.textContent = 'Copied!';
+    setTimeout(function() { copyBtn.textContent = 'Copy'; }, 1500);
+  }
+});</script>
+</body>
+</html>"
+`;

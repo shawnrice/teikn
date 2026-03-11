@@ -1,0 +1,67 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`TypeScript generator tests > It matches the TypeScript snapshot 1`] = `
+"/**
+ * Teikn v2.0.0-alpha.1
+ * Generated null
+ *
+ * This file is generated and should be commited to source control
+ *
+ */
+
+
+/**
+ * Design tokens
+ */
+export const tokens: {
+  /**
+   *  Use for body fonts
+   *  Type: font-family
+   */
+  body: string,
+  /**
+   *  the primary branding color
+   *  Type: color
+   */
+  primary: string,
+  /**
+   *  the secondary branding color
+   *  Type: color
+   */
+  secondary: string
+}
+export default tokens;"
+`;
+
+exports[`TypeScript generator tests > it generates group type declarations when groups: true 1`] = `
+"/**
+ * Teikn v2.0.0-alpha.1
+ * Generated null
+ *
+ * This file is generated and should be commited to source control
+ *
+ */
+
+
+/**
+ * Design tokens
+ */
+export const tokens: {
+  /**
+   *  Type: color
+   */
+  colorPrimary: string,
+  /**
+   *  Type: color
+   */
+  colorSecondary: string,
+  /**
+   *  Type: spacing
+   */
+  spacingSm: string
+}
+
+export const color: (name: 'primary' | 'secondary') => string;
+export const spacing: (name: 'sm') => string;
+export default tokens;"
+`;

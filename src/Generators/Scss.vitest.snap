@@ -1,0 +1,128 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`SCSSGenerator tests > It generates the token set 1`] = `
+"///
+/// Teikn v2.0.0-alpha.1
+/// Generated null
+///
+/// This file is generated and should be commited to source control
+///
+
+
+// prettier-ignore
+$token-values: (
+  /// Use for body fonts
+  font-family-body: unquote('#{"Roboto Condensed", Arial, sans}'),
+  /// the primary branding color
+  color-primary: rgba(240, 248, 255, 1),
+  /// the secondary branding color
+  color-secondary: rgba(102, 205, 170, 1),
+);
+
+/// Use "get-token" to access tokens by name
+@function get-token($name) {
+  @if (not map-has-key($token-values, $name)) {
+    @error "Token '#{$name}' does not exist.";
+  }
+  @return map-get($token-values, $name);
+}"
+`;
+
+exports[`SCSSGenerator tests > it generates group maps and functions when groups: true 1`] = `
+"///
+/// Teikn v2.0.0-alpha.1
+/// Generated null
+///
+/// This file is generated and should be commited to source control
+///
+
+
+// prettier-ignore
+$token-values: (
+  color-primary: aliceblue,
+  color-secondary: rgb(102, 205, 170),
+  spacing-sm: 4px,
+);
+
+/// Use "get-token" to access tokens by name
+@function get-token($name) {
+  @if (not map-has-key($token-values, $name)) {
+    @error "Token '#{$name}' does not exist.";
+  }
+  @return map-get($token-values, $name);
+}
+
+$color-values: (
+  primary: map-get($token-values, color-primary),
+  secondary: map-get($token-values, color-secondary),
+);
+
+@function color($name) {
+  @if not map-has-key($color-values, $name) {
+    @error "Unknown color token '#{$name}'. Available: #{map-keys($color-values)}";
+  }
+  @return map-get($color-values, $name);
+}
+
+$spacing-values: (
+  sm: map-get($token-values, spacing-sm),
+);
+
+@function spacing($name) {
+  @if not map-has-key($spacing-values, $name) {
+    @error "Unknown spacing token '#{$name}'. Available: #{map-keys($spacing-values)}";
+  }
+  @return map-get($spacing-values, $name);
+}"
+`;
+
+exports[`SCSSGenerator tests > it generates groups with PrefixTypePlugin 1`] = `
+"///
+/// Teikn v2.0.0-alpha.1
+/// Generated null
+///
+/// This file is generated and should be commited to source control
+///
+
+
+// prettier-ignore
+$token-values: (
+  /// Use for body fonts
+  font-family-body: unquote('#{"Roboto Condensed", Arial, sans}'),
+  /// the primary branding color
+  color-primary: rgba(240, 248, 255, 1),
+  /// the secondary branding color
+  color-secondary: rgba(102, 205, 170, 1),
+);
+
+/// Use "get-token" to access tokens by name
+@function get-token($name) {
+  @if (not map-has-key($token-values, $name)) {
+    @error "Token '#{$name}' does not exist.";
+  }
+  @return map-get($token-values, $name);
+}
+
+$font-family-values: (
+  body: map-get($token-values, font-family-body),
+);
+
+@function font-family($name) {
+  @if not map-has-key($font-family-values, $name) {
+    @error "Unknown font-family token '#{$name}'. Available: #{map-keys($font-family-values)}";
+  }
+  @return map-get($font-family-values, $name);
+}
+
+$color-values: (
+  primary: map-get($token-values, color-primary),
+  secondary: map-get($token-values, color-secondary),
+);
+
+@function color($name) {
+  @if not map-has-key($color-values, $name) {
+    @error "Unknown color token '#{$name}'. Available: #{map-keys($color-values)}";
+  }
+  @return map-get($color-values, $name);
+}"
+`;

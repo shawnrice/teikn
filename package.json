@@ -26,9 +26,9 @@
   "types": "lib/index.d.ts",
   "exports": {
     ".": {
+      "types": "./lib/index.d.ts",
       "import": "./lib/index.js",
-      "require": "./lib/index.js",
-      "types": "./lib/index.d.ts"
+      "require": "./lib/index.js"
     },
     "./builders": {
       "import": "./lib/src/builders.js",
@@ -45,6 +45,7 @@
     "lint": "oxlint src/",
     "prepublishOnly": "tsc",
     "test": "bun test",
+    "test:node": "vitest run",
     "storybook": "storybook dev -p 6006",
     "generate-example": "bun example/example-usage.ts"
   },
@@ -61,7 +62,8 @@
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "storybook": "^10.2.8",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
   },
   "engines": {
     "node": ">=20.0.0"
