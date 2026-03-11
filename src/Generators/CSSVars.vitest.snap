@@ -2,7 +2,7 @@
 
 exports[`CSSVars Generator tests > It generates the token set 1`] = `
 "/**
- * Teikn v2.0.0-alpha.2
+ * Teikn v2.0.0-alpha.3
  * Generated null
  *
  * This file is generated and should be committed to source control
@@ -19,7 +19,7 @@ exports[`CSSVars Generator tests > It generates the token set 1`] = `
 
 exports[`CSSVars Generator tests > It generates themed tokens with modes 1`] = `
 "/**
- * Teikn v2.0.0-alpha.2
+ * Teikn v2.0.0-alpha.3
  * Generated null
  *
  * This file is generated and should be committed to source control

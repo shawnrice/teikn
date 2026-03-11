@@ -3,7 +3,7 @@ import { EOL } from "node:os";
 import { kebabCase } from "../string-utils";
 import type { Token } from "../Token";
 import { getDate } from "../utils";
-import type { GeneratorOptions } from "./Generator";
+import type { GeneratorInfo, GeneratorOptions } from "./Generator";
 import { Generator } from "./Generator";
 
 const cssValue = (value: unknown): string => {
@@ -36,7 +36,7 @@ export class CSSVars extends Generator<CSSVarsOpts> {
     super(opts);
   }
 
-  override describe() {
+  override describe(): GeneratorInfo {
     return {
       format: "CSS Custom Properties",
       usage: `<link rel="stylesheet" href="./${this.file}">\n\n/* Then use variables anywhere in your CSS */\nvar(--token-name)`,

@@ -27,7 +27,7 @@ import {
 } from "../type-classifiers";
 import { getDate } from "../utils";
 import { ESModule } from "./ESModule";
-import type { GeneratorOptions } from "./Generator";
+import type { GeneratorInfo, GeneratorOptions } from "./Generator";
 import { Generator } from "./Generator";
 import { JavaScript } from "./JavaScript";
 
@@ -563,7 +563,7 @@ export class Storybook extends Generator<StorybookOpts> {
     super(Object.assign({}, defaultOptions, options));
   }
 
-  override describe() {
+  override describe(): GeneratorInfo {
     return {
       format: "Storybook",
       usage: "// View in Storybook\nnpx storybook dev",

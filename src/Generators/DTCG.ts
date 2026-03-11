@@ -2,7 +2,7 @@ import { serializeDTCG } from "../dtcg";
 import type { Plugin } from "../Plugins";
 import type { Token } from "../Token";
 import { matches } from "../utils";
-import type { GeneratorOptions } from "./Generator";
+import type { GeneratorInfo, GeneratorOptions } from "./Generator";
 import { Generator } from "./Generator";
 
 const defaultOptions = {
@@ -21,7 +21,7 @@ export class DTCGGenerator extends Generator<DTCGOpts> {
     super(Object.assign({}, defaultOptions, options));
   }
 
-  override describe() {
+  override describe(): GeneratorInfo {
     return {
       format: "DTCG",
       usage: `// W3C Design Token Community Group format\n// Import into Style Dictionary, Tokens Studio, or other DTCG-compatible tools`,

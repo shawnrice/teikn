@@ -140,15 +140,14 @@ jobs:
             echo "dist_tag=latest" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Configure GitHub Packages auth
+      - name: Publish
         run: |
           echo "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" > .npmrc
-          echo "registry=https://npm.pkg.github.com" >> .npmrc
+          echo "@shawnrice:registry=https://npm.pkg.github.com" >> .npmrc
+          node -e "const p=require('./package.json'); p.name='@shawnrice/teikn'; require('fs').writeFileSync('package.json', JSON.stringify(p, null, 2))"
+          npm publish --tag ${{ steps.tag.outputs.dist_tag }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Publish
-        run: npm publish --tag ${{ steps.tag.outputs.dist_tag }}
 
   jsr:
     runs-on: ubuntu-latest

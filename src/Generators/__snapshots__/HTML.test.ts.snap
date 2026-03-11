@@ -6,7 +6,7 @@ exports[`HTMLGenerator tests It generates the token set 1`] = `
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Design Tokens — Teikn v2.0.0-alpha.2</title>
+<title>Design Tokens — Teikn v2.0.0-alpha.3</title>
 <style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:#fafafa;color:#333;line-height:1.5}
 .page-header{padding:2rem 2.5rem;border-bottom:1px solid #e0e0e0;background:#fff}
@@ -206,7 +206,7 @@ section h2{font-size:1.25rem;font-weight:600;margin-bottom:1rem;padding-bottom:0
 <body>
 <header class="page-header">
 <h1>Design Tokens</h1>
-<p class="meta">Teikn v2.0.0-alpha.2 · Generated Mon Jan 01 2024 12:00:00</p>
+<p class="meta">Teikn v2.0.0-alpha.3 · Generated Mon Jan 01 2024 12:00:00</p>
 </header>
 <div class="layout">
 <nav class="sidebar">

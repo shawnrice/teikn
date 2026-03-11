@@ -1,6 +1,6 @@
 import { camelCase } from "../string-utils";
 import type { Token } from "../Token";
-import type { GeneratorOptions } from "./Generator";
+import type { GeneratorInfo, GeneratorOptions } from "./Generator";
 import { Generator } from "./Generator";
 
 const defaultOptions = {
@@ -18,7 +18,7 @@ export class Json extends Generator<JsonOpts> {
     super(opts);
   }
 
-  override describe() {
+  override describe(): GeneratorInfo {
     return {
       format: "JSON",
       usage: `// Import as a module\nimport tokens from './${this.file}';\n\n// Or fetch at runtime\nfetch('./${this.file}').then(r => r.json())`,

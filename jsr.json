@@ -1,12 +1,13 @@
 {
   "name": "@shawnrice/teikn",
-  "version": "2.0.0-alpha.2",
+  "version": "2.0.0-alpha.3",
   "exports": {
     ".": "./index.ts",
     "./builders": "./src/builders.ts",
     "./generators": "./src/Generators/index.ts"
   },
   "publish": {
-    "include": ["index.ts", "src/", "LICENSE", "README.md"]
+    "include": ["index.ts", "src/", "LICENSE", "README.md"],
+    "exclude": ["src/cli.ts", "src/**/*.test.ts", "src/fixtures/"]
   }
 }
