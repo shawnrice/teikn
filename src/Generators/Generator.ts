@@ -1,6 +1,6 @@
 import { EOL } from "node:os";
 
-import { version } from "../../package.json";
+import { version } from "../version";
 import type { Plugin } from "../Plugins";
 import { camelCase, deriveShortName } from "../string-utils";
 import type { Token } from "../Token";

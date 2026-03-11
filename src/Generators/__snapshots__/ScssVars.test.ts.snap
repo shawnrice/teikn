@@ -2,7 +2,7 @@
 
 exports[`SCSS Vars Generator tests It generates the token set 1`] = `
 "///
-/// Teikn v2.0.0-alpha.1
+/// Teikn v2.0.0-alpha.2
 /// Generated null
 ///
 /// This file is generated and should be commited to source control
@@ -19,7 +19,7 @@ $secondary: rgb(102, 205, 170);"
 
 exports[`SCSS Vars Generator tests it generates group maps and functions when groups: true 1`] = `
 "///
-/// Teikn v2.0.0-alpha.1
+/// Teikn v2.0.0-alpha.2
 /// Generated null
 ///
 /// This file is generated and should be commited to source control

@@ -123,7 +123,6 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: '24'
-          registry-url: 'https://npm.pkg.github.com'
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
@@ -141,10 +140,15 @@ jobs:
             echo "dist_tag=latest" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Publish
-        run: npm publish --tag ${{ steps.tag.outputs.dist_tag }}
+      - name: Configure GitHub Packages auth
+        run: |
+          echo "//npm.pkg.github.com/:_authToken=${NODE_AUTH_TOKEN}" > .npmrc
+          echo "registry=https://npm.pkg.github.com" >> .npmrc
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish
+        run: npm publish --tag ${{ steps.tag.outputs.dist_tag }}
 
   jsr:
     runs-on: ubuntu-latest
