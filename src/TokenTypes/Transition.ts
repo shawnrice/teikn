@@ -3,13 +3,7 @@ import { CubicBezier } from './CubicBezier';
 
 const timeRe = /^(\d+(?:\.\d+)?)(ms|s)$/;
 
-const timingKeywords = new Set([
-  'ease',
-  'ease-in',
-  'ease-out',
-  'ease-in-out',
-  'linear',
-]);
+const timingKeywords = new Set(['ease', 'ease-in', 'ease-out', 'ease-in-out', 'linear']);
 
 const splitRespectingParens = (s: string): string[] => {
   const parts: string[] = [];
@@ -39,7 +33,9 @@ const splitRespectingParens = (s: string): string[] => {
 
 const isTimeValue = (s: string): boolean => timeRe.test(s);
 
-const parse = (css: string): {
+const parse = (
+  css: string,
+): {
   duration: string;
   timingFunction: CubicBezier;
   delay: string;
@@ -53,7 +49,10 @@ const parse = (css: string): {
   for (const part of parts) {
     if (isTimeValue(part)) {
       times.push(part);
-    } else if (timingKeywords.has(part.toLowerCase()) || part.toLowerCase().startsWith('cubic-bezier(')) {
+    } else if (
+      timingKeywords.has(part.toLowerCase()) ||
+      part.toLowerCase().startsWith('cubic-bezier(')
+    ) {
       timing = part;
     } else {
       property = part;
@@ -74,9 +73,13 @@ export class Transition {
   readonly #delay: string;
   readonly #property: string;
 
-  constructor(duration: string, timingFunction: CubicBezier | string, delay?: string, property?: string);
-  constructor(css: string);
-  constructor(value: Transition);
+  constructor(
+    duration: string,
+    timingFunction: CubicBezier | string,
+    delay?: string,
+    property?: string,
+  );
+  constructor(css: Transition | string);
   constructor(
     first: string | Transition,
     timingFunction?: CubicBezier | string,
@@ -101,17 +104,26 @@ export class Transition {
     }
 
     this.#duration = first as string;
-    this.#timingFunction = timingFunction instanceof CubicBezier
-      ? timingFunction
-      : new CubicBezier(timingFunction ?? 'ease');
+    this.#timingFunction =
+      timingFunction instanceof CubicBezier
+        ? timingFunction
+        : new CubicBezier(timingFunction ?? 'ease');
     this.#delay = delay ?? '0s';
     this.#property = property ?? 'all';
   }
 
-  get duration(): string { return this.#duration; }
-  get timingFunction(): CubicBezier { return this.#timingFunction; }
-  get delay(): string { return this.#delay; }
-  get property(): string { return this.#property; }
+  get duration(): string {
+    return this.#duration;
+  }
+  get timingFunction(): CubicBezier {
+    return this.#timingFunction;
+  }
+  get delay(): string {
+    return this.#delay;
+  }
+  get property(): string {
+    return this.#property;
+  }
 
   setDuration(duration: string): Transition {
     return new Transition(duration, this.#timingFunction, this.#delay, this.#property);
@@ -159,9 +171,7 @@ export class Transition {
 export class TransitionList {
   readonly #layers: readonly Transition[];
 
-  constructor(layers: Transition[]);
-  constructor(css: string);
-  constructor(value: TransitionList);
+  constructor(value: TransitionList | string | Transition[]);
   constructor(first: Transition[] | string | TransitionList) {
     if (first instanceof TransitionList) {
       this.#layers = first.#layers;
@@ -176,16 +186,24 @@ export class TransitionList {
     this.#layers = [...first];
   }
 
-  get layers(): readonly Transition[] { return this.#layers; }
-  get length(): number { return this.#layers.length; }
+  get layers(): readonly Transition[] {
+    return this.#layers;
+  }
+  get length(): number {
+    return this.#layers.length;
+  }
 
-  at(index: number): Transition | undefined { return this.#layers[index]; }
+  at(index: number): Transition | undefined {
+    return this.#layers[index];
+  }
 
   map(fn: (transition: Transition, index: number) => Transition): TransitionList {
     return new TransitionList(this.#layers.map(fn));
   }
 
-  toJSON(): string { return this.toString(); }
+  toJSON(): string {
+    return this.toString();
+  }
 
   toString(): string {
     return this.#layers.map(t => t.toString()).join(', ');

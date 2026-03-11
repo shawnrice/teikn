@@ -27,10 +27,7 @@ describe('ContrastValidatorPlugin', () => {
     const plugin = new ContrastValidatorPlugin({
       pairs: [{ foreground: 'fg', background: 'bg' }],
     });
-    const tokens = [
-      makeToken('fg', '#000000'),
-      makeToken('bg', '#ffffff'),
-    ];
+    const tokens = [makeToken('fg', '#000000'), makeToken('bg', '#ffffff')];
     const issues = plugin.audit!(tokens);
     expect(issues).toHaveLength(0);
   });
@@ -39,10 +36,7 @@ describe('ContrastValidatorPlugin', () => {
     const plugin = new ContrastValidatorPlugin({
       pairs: [{ foreground: 'fg', background: 'bg' }],
     });
-    const tokens = [
-      makeToken('fg', '#777777'),
-      makeToken('bg', '#888888'),
-    ];
+    const tokens = [makeToken('fg', '#777777'), makeToken('bg', '#888888')];
     const issues = plugin.audit!(tokens);
     expect(issues).toHaveLength(1);
     expect(issues[0]!.severity).toBe('error');
@@ -55,10 +49,7 @@ describe('ContrastValidatorPlugin', () => {
       pairs: [{ foreground: 'fg', background: 'bg', level: 'AAA' }],
     });
     // Black on medium gray — passes AA (4.5:1) but fails AAA (7:1)
-    const tokens = [
-      makeToken('fg', '#000000'),
-      makeToken('bg', '#767676'),
-    ];
+    const tokens = [makeToken('fg', '#000000'), makeToken('bg', '#767676')];
     const issues = plugin.audit!(tokens);
     expect(issues).toHaveLength(1);
     expect(issues[0]!.message).toContain('WCAG AAA');
@@ -71,10 +62,7 @@ describe('ContrastValidatorPlugin', () => {
       minRatio: 3,
     });
     // A pair that meets 3:1 but not 4.5:1
-    const tokens = [
-      makeToken('fg', '#767676'),
-      makeToken('bg', '#ffffff'),
-    ];
+    const tokens = [makeToken('fg', '#767676'), makeToken('bg', '#ffffff')];
     const issues = plugin.audit!(tokens);
     expect(issues).toHaveLength(0);
   });
@@ -104,10 +92,7 @@ describe('ContrastValidatorPlugin', () => {
     const plugin = new ContrastValidatorPlugin({
       pairs: [{ foreground: 'fg', background: 'bg' }],
     });
-    const tokens = [
-      makeToken('fg', new Color('#000000')),
-      makeToken('bg', new Color('#ffffff')),
-    ];
+    const tokens = [makeToken('fg', new Color('#000000')), makeToken('bg', new Color('#ffffff'))];
     const issues = plugin.audit!(tokens);
     expect(issues).toHaveLength(0);
   });

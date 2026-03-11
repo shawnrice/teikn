@@ -975,7 +975,7 @@ export type XKCDColorSearchResult = {
   name: XKCDColor;
   hex: (typeof xkcdColors)[XKCDColor];
   d2: number;
-}
+};
 
 /** Find the closest xkcd color by Euclidean distance in RGB space */
 export function closest(color: Color | string): XKCDColorSearchResult | null {

@@ -1,25 +1,13 @@
-import {
-  describe,
-  expect,
-  test,
-} from 'bun:test';
+import { describe, expect, test } from 'bun:test';
 
 import { BoxShadow } from '../TokenTypes/BoxShadow';
 import { Color } from '../TokenTypes/Color';
 import { CubicBezier } from '../TokenTypes/CubicBezier';
 import { Dimension } from '../TokenTypes/Dimension';
 import { Duration } from '../TokenTypes/Duration';
-import {
-  LinearGradient,
-  RadialGradient,
-} from '../TokenTypes/Gradient';
+import { LinearGradient, RadialGradient } from '../TokenTypes/Gradient';
 import { Transition } from '../TokenTypes/Transition';
-import {
-  dtcgTypeToTeikn,
-  dtcgValueToTeikn,
-  teiknTypeToDTCG,
-  teiknValueToDTCG,
-} from './values';
+import { dtcgTypeToTeikn, dtcgValueToTeikn, teiknTypeToDTCG, teiknValueToDTCG } from './values';
 
 describe('teiknValueToDTCG', () => {
   test('Color instance converts to structured DTCG color', () => {

@@ -8,11 +8,7 @@ export type GradientStop = {
   position?: string;
 };
 
-export type StopInput =
-  | GradientStop
-  | Color
-  | string
-  | [color: Color | string, position: string];
+export type StopInput = GradientStop | Color | string | [color: Color | string, position: string];
 
 // ─── Helpers ──────────────────────────────────────────────────
 
@@ -97,10 +93,14 @@ const parseDegrees = (str: string): number | null => {
   const val = parseFloat(m[1]!);
   const unit = m[2] || 'deg';
   switch (unit) {
-    case 'turn': return val * 360;
-    case 'rad': return val * (180 / Math.PI);
-    case 'grad': return val * 0.9;
-    default: return val;
+    case 'turn':
+      return val * 360;
+    case 'rad':
+      return val * (180 / Math.PI);
+    case 'grad':
+      return val * 0.9;
+    default:
+      return val;
   }
 };
 
@@ -115,12 +115,8 @@ export class LinearGradient {
   readonly #stops: readonly GradientStop[];
 
   constructor(angle: number, stops: StopInput[]);
-  constructor(css: string);
-  constructor(value: LinearGradient);
-  constructor(
-    first: number | string | LinearGradient,
-    stops?: StopInput[],
-  ) {
+  constructor(value: LinearGradient | string);
+  constructor(first: number | string | LinearGradient, stops?: StopInput[]) {
     if (first instanceof LinearGradient) {
       this.#angle = first.#angle;
       this.#stops = first.#stops;
@@ -161,17 +157,21 @@ export class LinearGradient {
     this.#stops = (stops ?? []).map(normalizeStop);
   }
 
-  get angle(): number { return this.#angle; }
-  get stops(): readonly GradientStop[] { return this.#stops; }
+  get angle(): number {
+    return this.#angle;
+  }
+  get stops(): readonly GradientStop[] {
+    return this.#stops;
+  }
 
   rotate(degrees: number): LinearGradient {
     return new LinearGradient(this.#angle + degrees, [...this.#stops]);
   }
 
   reverse(): LinearGradient {
-    const reversed = [...this.#stops].reverse().map(stop =>
-      stop.position ? { ...stop, position: flipPosition(stop.position) } : stop,
-    );
+    const reversed = [...this.#stops]
+      .reverse()
+      .map(stop => (stop.position ? { ...stop, position: flipPosition(stop.position) } : stop));
     return new LinearGradient(normalizeAngle(this.#angle + 180), reversed);
   }
 
@@ -216,12 +216,8 @@ export class RadialGradient {
   readonly #stops: readonly GradientStop[];
 
   constructor(options: RadialGradientOptions, stops: StopInput[]);
-  constructor(css: string);
-  constructor(value: RadialGradient);
-  constructor(
-    first: RadialGradientOptions | string | RadialGradient,
-    stops?: StopInput[],
-  ) {
+  constructor(value: RadialGradient | string);
+  constructor(first: RadialGradientOptions | string | RadialGradient, stops?: StopInput[]) {
     if (first instanceof RadialGradient) {
       this.#shape = first.#shape;
       this.#size = first.#size;
@@ -281,38 +277,42 @@ export class RadialGradient {
     this.#stops = (stops ?? []).map(normalizeStop);
   }
 
-  get shape(): RadialShape { return this.#shape; }
-  get size(): RadialSize { return this.#size; }
-  get position(): string { return this.#position; }
-  get stops(): readonly GradientStop[] { return this.#stops; }
+  get shape(): RadialShape {
+    return this.#shape;
+  }
+  get size(): RadialSize {
+    return this.#size;
+  }
+  get position(): string {
+    return this.#position;
+  }
+  get stops(): readonly GradientStop[] {
+    return this.#stops;
+  }
 
   setShape(shape: RadialShape): RadialGradient {
-    return new RadialGradient(
-      { shape, size: this.#size, position: this.#position },
-      [...this.#stops],
-    );
+    return new RadialGradient({ shape, size: this.#size, position: this.#position }, [
+      ...this.#stops,
+    ]);
   }
 
   setPosition(position: string): RadialGradient {
-    return new RadialGradient(
-      { shape: this.#shape, size: this.#size, position },
-      [...this.#stops],
-    );
+    return new RadialGradient({ shape: this.#shape, size: this.#size, position }, [...this.#stops]);
   }
 
   addStop(color: Color | string, position?: string): RadialGradient {
     const c = color instanceof Color ? color : new Color(color);
     const stop: GradientStop = position ? { color: c, position } : { color: c };
-    return new RadialGradient(
-      { shape: this.#shape, size: this.#size, position: this.#position },
-      [...this.#stops, stop],
-    );
+    return new RadialGradient({ shape: this.#shape, size: this.#size, position: this.#position }, [
+      ...this.#stops,
+      stop,
+    ]);
   }
 
   reverse(): RadialGradient {
-    const reversed = [...this.#stops].reverse().map(stop =>
-      stop.position ? { ...stop, position: flipPosition(stop.position) } : stop,
-    );
+    const reversed = [...this.#stops]
+      .reverse()
+      .map(stop => (stop.position ? { ...stop, position: flipPosition(stop.position) } : stop));
     return new RadialGradient(
       { shape: this.#shape, size: this.#size, position: this.#position },
       reversed,
@@ -331,7 +331,9 @@ export class RadialGradient {
       const spec = [
         this.#shape !== 'ellipse' ? this.#shape : '',
         this.#size !== 'farthest-corner' ? this.#size : '',
-      ].filter(Boolean).join(' ');
+      ]
+        .filter(Boolean)
+        .join(' ');
       if (spec) {
         shapeParts.push(spec);
       }
@@ -367,9 +369,7 @@ const parseGradient = (str: string): AnyGradient => {
 export class GradientList {
   readonly #layers: readonly AnyGradient[];
 
-  constructor(layers: AnyGradient[]);
-  constructor(css: string);
-  constructor(value: GradientList);
+  constructor(value: GradientList | string | AnyGradient[]);
   constructor(first: AnyGradient[] | string | GradientList) {
     if (first instanceof GradientList) {
       this.#layers = first.#layers;
@@ -384,16 +384,24 @@ export class GradientList {
     this.#layers = [...first];
   }
 
-  get layers(): readonly AnyGradient[] { return this.#layers; }
-  get length(): number { return this.#layers.length; }
+  get layers(): readonly AnyGradient[] {
+    return this.#layers;
+  }
+  get length(): number {
+    return this.#layers.length;
+  }
 
-  at(index: number): AnyGradient | undefined { return this.#layers[index]; }
+  at(index: number): AnyGradient | undefined {
+    return this.#layers[index];
+  }
 
   map(fn: (gradient: AnyGradient, index: number) => AnyGradient): GradientList {
     return new GradientList(this.#layers.map(fn));
   }
 
-  toJSON(): string { return this.toString(); }
+  toJSON(): string {
+    return this.toString();
+  }
 
   toString(): string {
     return this.#layers.map(g => g.toString()).join(', ');

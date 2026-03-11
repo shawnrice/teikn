@@ -23,9 +23,15 @@ type OctreeNode<T> = {
   children: (OctreeNode<T> | null)[];
   leaves: Leaf<T>[];
   // axis-aligned bounding box for this node
-  minX: number; minY: number; minZ: number;
-  maxX: number; maxY: number; maxZ: number;
-  midX: number; midY: number; midZ: number;
+  minX: number;
+  minY: number;
+  minZ: number;
+  maxX: number;
+  maxY: number;
+  maxZ: number;
+  midX: number;
+  midY: number;
+  midZ: number;
 };
 
 const dist2 = (a: Point3, b: Point3): number =>
@@ -40,24 +46,33 @@ const boxDist2 = (p: Point3, node: OctreeNode<unknown>): number => {
 };
 
 const octantIndex = (p: Point3, node: OctreeNode<unknown>): number =>
-  (p[0] >= node.midX ? 4 : 0) |
-  (p[1] >= node.midY ? 2 : 0) |
-  (p[2] >= node.midZ ? 1 : 0);
+  (p[0] >= node.midX ? 4 : 0) | (p[1] >= node.midY ? 2 : 0) | (p[2] >= node.midZ ? 1 : 0);
 
 const createNode = <T>(
-  minX: number, minY: number, minZ: number,
-  maxX: number, maxY: number, maxZ: number,
+  minX: number,
+  minY: number,
+  minZ: number,
+  maxX: number,
+  maxY: number,
+  maxZ: number,
 ): OctreeNode<T> => ({
   children: Array.from({ length: 8 }, () => null),
   leaves: [],
-  minX, minY, minZ,
-  maxX, maxY, maxZ,
+  minX,
+  minY,
+  minZ,
+  maxX,
+  maxY,
+  maxZ,
   midX: (minX + maxX) / 2,
   midY: (minY + maxY) / 2,
   midZ: (minZ + maxZ) / 2,
 });
 
-const childBounds = (parent: OctreeNode<unknown>, idx: number): [number, number, number, number, number, number] => {
+const childBounds = (
+  parent: OctreeNode<unknown>,
+  idx: number,
+): [number, number, number, number, number, number] => {
   const xLo = idx & 4 ? parent.midX : parent.minX;
   const xHi = idx & 4 ? parent.maxX : parent.midX;
   const yLo = idx & 2 ? parent.midY : parent.minY;
@@ -71,7 +86,10 @@ const MAX_LEAF_CAPACITY = 4;
 
 const insert = <T>(node: OctreeNode<T>, leaf: Leaf<T>, depthRemaining: number): void => {
   // At max depth or under capacity with no children yet: store as leaf
-  if (depthRemaining <= 0 || (node.leaves.length < MAX_LEAF_CAPACITY && node.children.every(c => c === null))) {
+  if (
+    depthRemaining <= 0 ||
+    (node.leaves.length < MAX_LEAF_CAPACITY && node.children.every(c => c === null))
+  ) {
     node.leaves.push(leaf);
     return;
   }

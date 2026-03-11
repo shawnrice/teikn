@@ -22,7 +22,7 @@ describe('ColorBlindnessPlugin', () => {
     const red = new Color(255, 0, 0);
     const tokens = plugin.expand([colorToken('red', red)]);
 
-    const simulated = tokens.find((t) => t.name === 'red-protanopia');
+    const simulated = tokens.find(t => t.name === 'red-protanopia');
     expect(simulated).toBeDefined();
 
     const simColor = simulated!.value as Color;
@@ -37,7 +37,7 @@ describe('ColorBlindnessPlugin', () => {
     const gray = new Color(128, 128, 128);
     const tokens = plugin.expand([colorToken('gray', gray)]);
 
-    const simulated = tokens.filter((t) => t.name !== 'gray');
+    const simulated = tokens.filter(t => t.name !== 'gray');
     for (const token of simulated) {
       const simColor = token.value as Color;
       // Each channel should be close to the original 128
@@ -66,7 +66,7 @@ describe('ColorBlindnessPlugin', () => {
     });
     const tokens = plugin.expand([colorToken('primary', new Color(255, 0, 0))]);
 
-    const names = tokens.map((t) => t.name);
+    const names = tokens.map(t => t.name);
     expect(names).toContain('primary');
     expect(names).toContain('primary-protanopia');
     expect(names).toContain('primary-deuteranopia');
@@ -79,7 +79,7 @@ describe('ColorBlindnessPlugin', () => {
     });
     const tokens = plugin.expand([colorToken('brand', new Color(0, 128, 255))]);
 
-    expect(tokens.map((t) => t.name)).toContain('brand--tritanopia');
+    expect(tokens.map(t => t.name)).toContain('brand--tritanopia');
   });
 
   test('expand returns original tokens plus generated ones', () => {
@@ -99,7 +99,7 @@ describe('ColorBlindnessPlugin', () => {
     const plugin = new ColorBlindnessPlugin({ types: ['deuteranopia'] });
     const tokens = plugin.expand([colorToken('link', new Color(0, 0, 255))]);
 
-    const simulated = tokens.find((t) => t.name === 'link-deuteranopia');
+    const simulated = tokens.find(t => t.name === 'link-deuteranopia');
     expect(simulated?.usage).toBe('Deuteranopia simulation of link');
   });
 

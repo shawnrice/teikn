@@ -1,8 +1,4 @@
-import {
-  describe,
-  expect,
-  test,
-} from 'bun:test';
+import { describe, expect, test } from 'bun:test';
 
 import { BoxShadow } from '../TokenTypes/BoxShadow';
 import { Color } from '../TokenTypes/Color';

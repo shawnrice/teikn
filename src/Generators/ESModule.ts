@@ -13,19 +13,23 @@ const defaultOptions = {
 };
 
 const maybeQuote = (val: any): string => {
-  if (typeof val === 'string') { return `'${val}'`; }
-  if (typeof val === 'object' && val !== null) { return JSON.stringify(val); }
+  if (typeof val === 'string') {
+    return `'${val}'`;
+  }
+  if (typeof val === 'object' && val !== null) {
+    return JSON.stringify(val);
+  }
   return String(val);
 };
 
 const isValidIdentifier = (name: string): boolean => /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(name);
 
-const quoteKey = (name: string): string => isValidIdentifier(name) ? name : `'${name}'`;
+const quoteKey = (name: string): string => (isValidIdentifier(name) ? name : `'${name}'`);
 
 export type ESModuleOpts = {
   dateFn?: () => string | null;
   nameTransformer?: (name: string) => string;
-} & GeneratorOptions
+} & GeneratorOptions;
 
 /**
  * Generates tokens as an ES Module
@@ -92,7 +96,10 @@ export class ESModule extends Generator<ESModuleOpts> {
     if (groups) {
       const groupBlocks = this.tokenGroups(tokens).map(({ groupName, entries }) => {
         const mapEntries = entries
-          .map(({ shortName, token }) => `  ${quoteKey(shortName)}: tokens.${nameTransformer!(token.name)},`)
+          .map(
+            ({ shortName, token }) =>
+              `  ${quoteKey(shortName)}: tokens.${nameTransformer!(token.name)},`,
+          )
           .join(EOL);
         return [
           `const _${groupName} = {`,
@@ -109,9 +116,13 @@ export class ESModule extends Generator<ESModuleOpts> {
 
     const modeMap = new Map<string, string[]>();
     for (const token of tokens) {
-      if (!token.modes) { continue; }
+      if (!token.modes) {
+        continue;
+      }
       for (const [mode, val] of Object.entries(token.modes)) {
-        if (!modeMap.has(mode)) { modeMap.set(mode, []); }
+        if (!modeMap.has(mode)) {
+          modeMap.set(mode, []);
+        }
         modeMap.get(mode)!.push(`    ${nameTransformer!(token.name)}: ${maybeQuote(val)},`);
       }
     }

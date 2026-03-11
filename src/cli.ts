@@ -193,7 +193,7 @@ const loadModuleFromPath = async (tokenPath: string) => {
 
 const extractTokens = (mod: any) => {
   const input = mod.default || mod;
-  return Array.isArray(input) ? input : input.tokens ?? input.default;
+  return Array.isArray(input) ? input : (input.tokens ?? input.default);
 };
 
 const extractThemes = (mod: any) => mod.themes ?? mod.default?.themes ?? [];
@@ -271,7 +271,7 @@ const startWatch = (inputPath: string) => {
       const child = spawnProcess(process.execPath, [process.argv[1]!, ...rerunArgs], {
         stdio: 'inherit',
       });
-      child.on('close', (code) => {
+      child.on('close', code => {
         if (code === 0) {
           console.log(`[teikn] Regenerated (${Math.round(performance.now() - start)}ms)`);
         } else {
@@ -330,8 +330,9 @@ const resolveFromConfig = (configGenerators: unknown[], configPlugins: unknown[]
   const generators = configGenerators.length
     ? configGenerators.map(g => {
         if (typeof g === 'string') {
-          const entry = Object.entries(Teikn.generators)
-            .find(([k]) => k.toLowerCase() === g.toLowerCase());
+          const entry = Object.entries(Teikn.generators).find(
+            ([k]) => k.toLowerCase() === g.toLowerCase(),
+          );
           if (!entry) {
             console.error(`Unknown generator: ${g}`);
             process.exit(1);
@@ -345,8 +346,9 @@ const resolveFromConfig = (configGenerators: unknown[], configPlugins: unknown[]
   const plugins = configPlugins.length
     ? configPlugins.map(p => {
         if (typeof p === 'string') {
-          const entry = Object.entries(Teikn.plugins)
-            .find(([k]) => k.toLowerCase() === p.toLowerCase());
+          const entry = Object.entries(Teikn.plugins).find(
+            ([k]) => k.toLowerCase() === p.toLowerCase(),
+          );
           if (!entry) {
             console.error(`Unknown plugin: ${p}`);
             process.exit(1);

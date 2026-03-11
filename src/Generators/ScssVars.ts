@@ -6,7 +6,9 @@ import type { GeneratorInfo } from './Generator';
 import { Scss } from './Scss';
 
 const scssValue = (value: unknown): string => {
-  if (typeof value !== 'object' || value === null) { return String(value); }
+  if (typeof value !== 'object' || value === null) {
+    return String(value);
+  }
   const obj = value as Record<string, unknown>;
   if ('width' in obj && 'style' in obj && 'color' in obj) {
     return [obj.width, obj.style, obj.color].filter(Boolean).join(' ');
@@ -48,9 +50,13 @@ export class ScssVars extends Scss {
 
     const modeMap = new Map<string, { name: string; value: unknown }[]>();
     for (const token of tokens) {
-      if (!token.modes) { continue; }
+      if (!token.modes) {
+        continue;
+      }
       for (const [mode, val] of Object.entries(token.modes)) {
-        if (!modeMap.has(mode)) { modeMap.set(mode, []); }
+        if (!modeMap.has(mode)) {
+          modeMap.set(mode, []);
+        }
         modeMap.get(mode)!.push({ name: token.name, value: val });
       }
     }

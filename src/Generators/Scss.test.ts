@@ -59,9 +59,7 @@ describe('SCSSGenerator tests', () => {
   });
 
   test('it does not emit $modes when no tokens have modes', () => {
-    const tokens: Token[] = [
-      { name: 'colorPrimary', type: 'color', value: '#ff0000' },
-    ];
+    const tokens: Token[] = [{ name: 'colorPrimary', type: 'color', value: '#ff0000' }];
     const output = new Generator({ dateFn: () => 'null' }).generate(tokens);
 
     expect(output).not.toContain('$modes');

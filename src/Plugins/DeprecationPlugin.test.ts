@@ -40,7 +40,12 @@ describe('DeprecationPlugin', () => {
   });
 
   test('prepends deprecation notice to existing usage', () => {
-    const token: Token = { name: 'oldColor', type: 'color', value: '#f00', usage: 'Use for headings' };
+    const token: Token = {
+      name: 'oldColor',
+      type: 'color',
+      value: '#f00',
+      usage: 'Use for headings',
+    };
     const result = plugin.toJSON(token);
     expect(result.usage).toBe('DEPRECATED: use "newColor" instead. Use for headings');
   });

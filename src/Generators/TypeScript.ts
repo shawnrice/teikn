@@ -8,7 +8,7 @@ import { Generator } from './Generator';
 
 const isValidIdentifier = (name: string): boolean => /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(name);
 
-const quoteKey = (name: string): string => isValidIdentifier(name) ? name : `'${name}'`;
+const quoteKey = (name: string): string => (isValidIdentifier(name) ? name : `'${name}'`);
 
 const defaultOptions = {
   ext: 'd.ts',
@@ -27,7 +27,7 @@ export type TypeScriptOpts = {
    * default: `camelCase`
    */
   nameTransformer?: (name: string) => string;
-} & GeneratorOptions
+} & GeneratorOptions;
 
 export class TypeScript extends Generator<TypeScriptOpts> {
   constructor(options = {}) {
@@ -41,7 +41,9 @@ export class TypeScript extends Generator<TypeScriptOpts> {
       : '';
     return {
       format: 'TypeScript Declarations',
-      usage: `import { tokens } from './${base}';\n\n// Pair with ES Module or CommonJS output for runtime values` + groupUsage,
+      usage:
+        `import { tokens } from './${base}';\n\n// Pair with ES Module or CommonJS output for runtime values` +
+        groupUsage,
     };
   }
 
@@ -115,7 +117,9 @@ export class TypeScript extends Generator<TypeScriptOpts> {
     }
 
     if (modeNames.size > 0) {
-      const modeEntries = [...modeNames].map(mode => `  ${quoteKey(mode)}: Partial<typeof tokens>;`);
+      const modeEntries = [...modeNames].map(
+        mode => `  ${quoteKey(mode)}: Partial<typeof tokens>;`,
+      );
       parts.push('', `export const modes: {`, ...modeEntries, `}`);
     }
 

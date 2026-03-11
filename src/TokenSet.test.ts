@@ -88,9 +88,7 @@ describe('TokenSet', () => {
         makeToken('secondary', 'color', '#cc6600'),
         makeToken('sm', 'spacing', '8px'),
       ]);
-      const brand = tokenSet('brand', [
-        makeToken('primary', 'color', '#ff0000'),
-      ]);
+      const brand = tokenSet('brand', [makeToken('primary', 'color', '#ff0000')]);
       const theme = tokenSet('dark', [
         makeToken('primary', 'color', '#ff6666'),
         makeToken('secondary', 'color', '#ffaa00'),
@@ -99,9 +97,9 @@ describe('TokenSet', () => {
       const result = composeTokenSets(core, brand, theme);
 
       expect(result).toHaveLength(3);
-      expect(result[0]!.value).toBe('#ff6666');  // overridden by theme (last wins)
-      expect(result[1]!.value).toBe('#ffaa00');  // overridden by theme
-      expect(result[2]!.value).toBe('8px');       // untouched from core
+      expect(result[0]!.value).toBe('#ff6666'); // overridden by theme (last wins)
+      expect(result[1]!.value).toBe('#ffaa00'); // overridden by theme
+      expect(result[2]!.value).toBe('8px'); // untouched from core
     });
 
     test('overridden token preserves the new type and value', () => {

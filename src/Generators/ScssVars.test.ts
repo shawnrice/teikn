@@ -104,9 +104,7 @@ describe('SCSS Vars Generator tests', () => {
   });
 
   test('it does not emit mode variables when no tokens have modes', () => {
-    const tokens: Token[] = [
-      { name: 'colorPrimary', type: 'color', value: '#ff0000' },
-    ];
+    const tokens: Token[] = [{ name: 'colorPrimary', type: 'color', value: '#ff0000' }];
     const output = new Generator({ dateFn: () => 'null' }).generate(tokens);
 
     expect(output).not.toContain('// Mode:');

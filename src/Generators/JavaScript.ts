@@ -13,19 +13,23 @@ const defaultOptions = {
 };
 
 const maybeQuote = (val: any): string => {
-  if (typeof val === 'string') { return `'${val}'`; }
-  if (typeof val === 'object' && val !== null) { return JSON.stringify(val); }
+  if (typeof val === 'string') {
+    return `'${val}'`;
+  }
+  if (typeof val === 'object' && val !== null) {
+    return JSON.stringify(val);
+  }
   return String(val);
 };
 
 const isValidIdentifier = (name: string): boolean => /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(name);
 
-const quoteKey = (name: string): string => isValidIdentifier(name) ? name : `'${name}'`;
+const quoteKey = (name: string): string => (isValidIdentifier(name) ? name : `'${name}'`);
 
 export type JavaScriptOpts = {
   dateFn?: () => string | null;
   nameTransformer?: (name: string) => string;
-} & GeneratorOptions
+} & GeneratorOptions;
 
 export class JavaScript extends Generator<JavaScriptOpts> {
   constructor(options = {}) {
@@ -99,7 +103,10 @@ export class JavaScript extends Generator<JavaScriptOpts> {
       const groupBlocks = this.tokenGroups(tokens).map(({ groupName, entries }) => {
         exportNames.push(groupName);
         const mapEntries = entries
-          .map(({ shortName, token }) => `  ${quoteKey(shortName)}: tokens.${nameTransformer!(token.name)},`)
+          .map(
+            ({ shortName, token }) =>
+              `  ${quoteKey(shortName)}: tokens.${nameTransformer!(token.name)},`,
+          )
           .join(EOL);
         return [
           `const _${groupName} = {`,
@@ -116,9 +123,13 @@ export class JavaScript extends Generator<JavaScriptOpts> {
 
     const modeMap = new Map<string, string[]>();
     for (const token of tokens) {
-      if (!token.modes) { continue; }
+      if (!token.modes) {
+        continue;
+      }
       for (const [mode, val] of Object.entries(token.modes)) {
-        if (!modeMap.has(mode)) { modeMap.set(mode, []); }
+        if (!modeMap.has(mode)) {
+          modeMap.set(mode, []);
+        }
         modeMap.get(mode)!.push(`    ${nameTransformer!(token.name)}: ${maybeQuote(val)},`);
       }
     }

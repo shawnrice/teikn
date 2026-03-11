@@ -16,24 +16,25 @@ const toWords = (str: string): string[] =>
     .filter(Boolean)
     .map(w => w.toLowerCase());
 
-const upperFirst = (str: string): string =>
-  str.slice(0, 1).toUpperCase() + str.slice(1);
+const upperFirst = (str: string): string => str.slice(0, 1).toUpperCase() + str.slice(1);
 
 const converters: Record<NameConvention, (name: string) => string> = {
-  'camelCase': (name) => camelCase(name),
-  'kebab-case': (name) => kebabCase(name),
-  'snake_case': (name) => toWords(name).join('_'),
-  'PascalCase': (name) => toWords(name).map(w => upperFirst(w)).join(''),
-  'SCREAMING_SNAKE': (name) => toWords(name).map(w => w.toUpperCase()).join('_'),
+  camelCase: s => camelCase(s),
+  'kebab-case': s => kebabCase(s),
+  snake_case: s => toWords(s).join('_'),
+  PascalCase: s =>
+    toWords(s)
+      .map(w => upperFirst(w))
+      .join(''),
+  SCREAMING_SNAKE: s =>
+    toWords(s)
+      .map(w => w.toUpperCase())
+      .join('_'),
 };
 
 export class NameConventionPlugin extends Plugin<NameConventionPluginOptions> {
   tokenType: RegExp = /.*/;
   outputType: RegExp = /.*/;
-
-  constructor(options: NameConventionPluginOptions) {
-    super(options);
-  }
 
   toJSON(token: Token): Token {
     const { convention } = this.options;

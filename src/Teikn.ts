@@ -2,7 +2,19 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 import { ensureDirectory } from './ensure-directory';
-import { CSSVars, DTCGGenerator, ESModule, Generator, HTML, JavaScript, Json, Scss, ScssVars, Storybook, TypeScript } from './Generators';
+import {
+  CSSVars,
+  DTCGGenerator,
+  ESModule,
+  Generator,
+  HTML,
+  JavaScript,
+  Json,
+  Scss,
+  ScssVars,
+  Storybook,
+  TypeScript,
+} from './Generators';
 import {
   AlphaMultiplyPlugin,
   ClampPlugin,
@@ -102,7 +114,18 @@ const generators: {
   ScssVars: typeof ScssVars;
   Storybook: typeof Storybook;
   TypeScript: typeof TypeScript;
-} = { CSSVars, DTCG: DTCGGenerator, ESModule, HTML, JavaScript, Json, Scss, ScssVars, Storybook, TypeScript };
+} = {
+  CSSVars,
+  DTCG: DTCGGenerator,
+  ESModule,
+  HTML,
+  JavaScript,
+  Json,
+  Scss,
+  ScssVars,
+  Storybook,
+  TypeScript,
+};
 
 export type TeiknOptions = {
   generators?: Generator[];
@@ -171,7 +194,9 @@ export class Teikn {
     const withThemes = applyThemes(this.themes, expanded);
     const resolved = resolveReferences(withThemes);
 
-    this.generators.forEach(g => { g.siblings = this.generators; });
+    this.generators.forEach(g => {
+      g.siblings = this.generators;
+    });
 
     const results = new Map<string, string>();
     for (const generator of this.generators) {
@@ -184,7 +209,8 @@ export class Teikn {
     const auditIssues = this.audit(tokens);
     if (auditIssues.length > 0) {
       for (const issue of auditIssues) {
-        const prefix = issue.severity === 'error' ? 'ERROR' : issue.severity === 'warning' ? 'WARN' : 'INFO';
+        const prefix =
+          issue.severity === 'error' ? 'ERROR' : issue.severity === 'warning' ? 'WARN' : 'INFO';
         console.warn(`[${prefix}] ${issue.token}: ${issue.message}`);
       }
     }

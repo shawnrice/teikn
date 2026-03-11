@@ -4,7 +4,7 @@ import type { AuditIssue } from './Plugin';
 import { Plugin } from './Plugin';
 
 type ContrastValidatorPluginOptions = {
-  pairs: Array<{ foreground: string; background: string; level?: 'AA' | 'AAA' }>;
+  pairs: { foreground: string; background: string; level?: 'AA' | 'AAA' }[];
   minRatio?: number;
 } & Record<string, unknown>;
 
@@ -30,10 +30,22 @@ export class ContrastValidatorPlugin extends Plugin<ContrastValidatorPluginOptio
       const bgToken = tokenMap.get(background);
 
       if (!fgToken) {
-        return [{ severity: 'error' as const, token: foreground, message: `Foreground token "${foreground}" not found` }];
+        return [
+          {
+            severity: 'error' as const,
+            token: foreground,
+            message: `Foreground token "${foreground}" not found`,
+          },
+        ];
       }
       if (!bgToken) {
-        return [{ severity: 'error' as const, token: background, message: `Background token "${background}" not found` }];
+        return [
+          {
+            severity: 'error' as const,
+            token: background,
+            message: `Background token "${background}" not found`,
+          },
+        ];
       }
 
       try {
@@ -44,20 +56,24 @@ export class ContrastValidatorPlugin extends Plugin<ContrastValidatorPluginOptio
         const rounded = Math.round(ratio * 100) / 100;
 
         if (ratio < threshold) {
-          return [{
-            severity: 'error' as const,
-            token: foreground,
-            message: `Contrast ratio ${rounded}:1 between "${foreground}" and "${background}" is below WCAG ${level} threshold of ${threshold}:1`,
-          }];
+          return [
+            {
+              severity: 'error' as const,
+              token: foreground,
+              message: `Contrast ratio ${rounded}:1 between "${foreground}" and "${background}" is below WCAG ${level} threshold of ${threshold}:1`,
+            },
+          ];
         }
 
         return [];
       } catch {
-        return [{
-          severity: 'error' as const,
-          token: foreground,
-          message: `Could not compute contrast between "${foreground}" and "${background}" — invalid color value`,
-        }];
+        return [
+          {
+            severity: 'error' as const,
+            token: foreground,
+            message: `Could not compute contrast between "${foreground}" and "${background}" — invalid color value`,
+          },
+        ];
       }
     });
   }

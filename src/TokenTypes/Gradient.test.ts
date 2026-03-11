@@ -311,7 +311,8 @@ describe('GradientList', () => {
   });
 
   it('handles CSS with nested parentheses correctly', () => {
-    const css = 'linear-gradient(90deg, rgba(255, 0, 0, 0.5), blue), radial-gradient(circle, green, yellow)';
+    const css =
+      'linear-gradient(90deg, rgba(255, 0, 0, 0.5), blue), radial-gradient(circle, green, yellow)';
     const list = new GradientList(css);
     expect(list.length).toBe(2);
   });

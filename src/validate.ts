@@ -1,7 +1,4 @@
-import type {
-  CompositeValue,
-  Token,
-} from './Token';
+import type { CompositeValue, Token } from './Token';
 import { Color } from './TokenTypes/Color';
 import { isFirstClassValue } from './type-classifiers';
 

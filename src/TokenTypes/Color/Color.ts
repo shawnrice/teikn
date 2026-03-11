@@ -9,7 +9,20 @@ import { LCHOperations } from './operations/LCHOperations';
 import { RGBOperations } from './operations/RGBOperations';
 import { XYZOperations } from './operations/XYZOperations';
 import { parseColorString } from './parseColorString';
-import type { ColorBlindnessType, ColorFormat, HSL, HSLA, LAB, LABA, LCH, LCHA, RGB, RGBA, XYZ, XYZA } from './types';
+import type {
+  ColorBlindnessType,
+  ColorFormat,
+  HSL,
+  HSLA,
+  LAB,
+  LABA,
+  LCH,
+  LCHA,
+  RGB,
+  RGBA,
+  XYZ,
+  XYZA,
+} from './types';
 import { degreeRange, hexRange, percentRange, round, toPercent } from './util';
 import { closest } from './xkcdNamedColors';
 
@@ -44,15 +57,21 @@ const fmt = {
   },
   lab: (values: LAB | LABA): string => {
     const [L, a, b] = values;
-    return values.length === 4 ? fmtTriplet('lab', 2, L, a, b, values[3]) : fmtTriplet('lab', 2, L, a, b);
+    return values.length === 4
+      ? fmtTriplet('lab', 2, L, a, b, values[3])
+      : fmtTriplet('lab', 2, L, a, b);
   },
   lch: (values: LCH | LCHA): string => {
     const [L, c, h] = values;
-    return values.length === 4 ? fmtTriplet('lch', 2, L, c, h, values[3]) : fmtTriplet('lch', 2, L, c, h);
+    return values.length === 4
+      ? fmtTriplet('lch', 2, L, c, h, values[3])
+      : fmtTriplet('lch', 2, L, c, h);
   },
   xyz: (values: XYZ | XYZA): string => {
     const [x, y, z] = values;
-    return values.length === 4 ? fmtTriplet('xyz', 5, x, y, z, values[3]) : fmtTriplet('xyz', 5, x, y, z);
+    return values.length === 4
+      ? fmtTriplet('xyz', 5, x, y, z, values[3])
+      : fmtTriplet('xyz', 5, x, y, z);
   },
 };
 
@@ -402,8 +421,10 @@ export class Color {
     const C1p = Math.sqrt(a1p * a1p + b1 * b1);
     const C2p = Math.sqrt(a2p * a2p + b2 * b2);
 
-    const h1p = Math.abs(a1p) < 1e-10 && Math.abs(b1) < 1e-10 ? 0 : (Math.atan2(b1, a1p) * DEG + 360) % 360;
-    const h2p = Math.abs(a2p) < 1e-10 && Math.abs(b2) < 1e-10 ? 0 : (Math.atan2(b2, a2p) * DEG + 360) % 360;
+    const h1p =
+      Math.abs(a1p) < 1e-10 && Math.abs(b1) < 1e-10 ? 0 : (Math.atan2(b1, a1p) * DEG + 360) % 360;
+    const h2p =
+      Math.abs(a2p) < 1e-10 && Math.abs(b2) < 1e-10 ? 0 : (Math.atan2(b2, a2p) * DEG + 360) % 360;
 
     const dLp = L2 - L1;
     const dCp = C2p - C1p;
@@ -431,9 +452,7 @@ export class Color {
       if (Math.abs(h1p - h2p) <= 180) {
         return (h1p + h2p) / 2;
       }
-      return h1p + h2p < 360
-        ? (h1p + h2p + 360) / 2
-        : (h1p + h2p - 360) / 2;
+      return h1p + h2p < 360 ? (h1p + h2p + 360) / 2 : (h1p + h2p - 360) / 2;
     })();
 
     const T =
@@ -441,7 +460,7 @@ export class Color {
       0.17 * Math.cos((hbp - 30) * RAD) +
       0.24 * Math.cos(2 * hbp * RAD) +
       0.32 * Math.cos((3 * hbp + 6) * RAD) -
-      0.20 * Math.cos((4 * hbp - 63) * RAD);
+      0.2 * Math.cos((4 * hbp - 63) * RAD);
 
     const Lbp50sq = (Lbp - 50) ** 2;
     const SL = 1 + (0.015 * Lbp50sq) / Math.sqrt(20 + Lbp50sq);
@@ -458,9 +477,7 @@ export class Color {
     const termC = dCp / SC;
     const termH = dHp / SH;
 
-    return Math.sqrt(
-      termL * termL + termC * termC + termH * termH + RT * termC * termH,
-    );
+    return Math.sqrt(termL * termL + termC * termC + termH * termH + RT * termC * termH);
   }
 
   /**
@@ -468,7 +485,10 @@ export class Color {
    * Uses Brettel/Vienot simulation matrices on linearized sRGB
    */
   simulateColorBlindness(type: ColorBlindnessType): Color {
-    const matrices: Record<'protanopia' | 'deuteranopia' | 'tritanopia', readonly (readonly [number, number, number])[]> = {
+    const matrices: Record<
+      'protanopia' | 'deuteranopia' | 'tritanopia',
+      readonly (readonly [number, number, number])[]
+    > = {
       protanopia: [
         [0.56667, 0.43333, 0],
         [0.55833, 0.44167, 0],
@@ -476,8 +496,8 @@ export class Color {
       ],
       deuteranopia: [
         [0.625, 0.375, 0],
-        [0.70, 0.30, 0],
-        [0, 0.30, 0.70],
+        [0.7, 0.3, 0],
+        [0, 0.3, 0.7],
       ],
       tritanopia: [
         [0.95, 0.05, 0],
@@ -506,8 +526,14 @@ export class Color {
     };
 
     const isAnomaly = type in anomalyTypes;
-    const baseType = isAnomaly ? anomalyTypes[type]! : type as 'protanopia' | 'deuteranopia' | 'tritanopia';
-    const [row0, row1, row2] = matrices[baseType] as unknown as [readonly number[], readonly number[], readonly number[]];
+    const baseType = isAnomaly
+      ? anomalyTypes[type]!
+      : (type as 'protanopia' | 'deuteranopia' | 'tritanopia');
+    const [row0, row1, row2] = matrices[baseType] as unknown as [
+      readonly number[],
+      readonly number[],
+      readonly number[],
+    ];
 
     const sr = row0[0]! * lr + row0[1]! * lg + row0[2]! * lb;
     const sg = row1[0]! * lr + row1[1]! * lg + row1[2]! * lb;

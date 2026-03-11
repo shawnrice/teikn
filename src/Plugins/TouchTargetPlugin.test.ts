@@ -57,10 +57,7 @@ describe('TouchTargetPlugin', () => {
 
   test('respects custom types option', () => {
     const plugin = new TouchTargetPlugin({ types: ['button-size'] });
-    const tokens = [
-      makeToken('btn', '32px', 'button-size'),
-      makeToken('icon', '16px', 'icon'),
-    ];
+    const tokens = [makeToken('btn', '32px', 'button-size'), makeToken('icon', '16px', 'icon')];
     const issues = plugin.audit!(tokens);
     expect(issues).toHaveLength(1);
     expect(issues[0]!.token).toBe('btn');

@@ -1,21 +1,11 @@
-import {
-  describe,
-  expect,
-  test,
-} from 'bun:test';
+import { describe, expect, test } from 'bun:test';
 
 import { resolveReferences } from './resolve';
 import type { Token } from './Token';
-import {
-  BoxShadow,
-  BoxShadowList,
-} from './TokenTypes/BoxShadow';
+import { BoxShadow, BoxShadowList } from './TokenTypes/BoxShadow';
 import { Color } from './TokenTypes/Color';
 import { CubicBezier } from './TokenTypes/CubicBezier';
-import {
-  LinearGradient,
-  RadialGradient,
-} from './TokenTypes/Gradient';
+import { LinearGradient, RadialGradient } from './TokenTypes/Gradient';
 import { Transition } from './TokenTypes/Transition';
 
 describe('resolveReferences', () => {

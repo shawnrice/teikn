@@ -18,7 +18,7 @@ export type SpaceData = {
   lch: LCH;
   rgb: RGB;
   xyz: XYZ;
-}
+};
 
 type DirectConversion = {
   [From in Space]?: {

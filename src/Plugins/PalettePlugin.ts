@@ -12,8 +12,7 @@ const DEFAULT_STEPS = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
 const DEFAULT_LIGHT_END = 95;
 const DEFAULT_DARK_END = 10;
 
-const interpolate = (a: number, b: number, t: number): number =>
-  a + (b - a) * t;
+const interpolate = (a: number, b: number, t: number): number => a + (b - a) * t;
 
 const generatePaletteTokens = (
   token: Token,
@@ -26,7 +25,7 @@ const generatePaletteTokens = (
   const minStep = Math.min(...steps);
   const maxStep = Math.max(...steps);
 
-  return steps.map((step) => {
+  return steps.map(step => {
     if (step === midStep) {
       return {
         ...token,
@@ -79,7 +78,7 @@ export class PalettePlugin extends Plugin<PalettePluginOptions> {
     const lightEnd = this.options.lightEnd ?? DEFAULT_LIGHT_END;
     const darkEnd = this.options.darkEnd ?? DEFAULT_DARK_END;
 
-    return tokens.flatMap((token) => {
+    return tokens.flatMap(token => {
       if (token.type !== 'color') {
         return [token];
       }

@@ -131,7 +131,11 @@ describe('validate', () => {
     ];
 
     const result = validate(tokens);
-    expect(result.issues.some(i => i.message.includes('mode "dark"') && i.message.includes('could not be parsed'))).toBe(true);
+    expect(
+      result.issues.some(
+        i => i.message.includes('mode "dark"') && i.message.includes('could not be parsed'),
+      ),
+    ).toBe(true);
   });
 
   test('detects unresolved references in mode values', () => {
@@ -146,7 +150,11 @@ describe('validate', () => {
 
     const result = validate(tokens);
     expect(result.valid).toBe(false);
-    expect(result.issues.some(i => i.message.includes('mode "dark"') && i.message.includes('Unresolved reference'))).toBe(true);
+    expect(
+      result.issues.some(
+        i => i.message.includes('mode "dark"') && i.message.includes('Unresolved reference'),
+      ),
+    ).toBe(true);
   });
 
   test('accepts valid mode values', () => {

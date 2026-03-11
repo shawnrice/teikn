@@ -120,7 +120,16 @@ export class BoxShadow {
     return this.#inset;
   }
 
-  with(updates: Partial<{ offsetX: number; offsetY: number; blur: number; spread: number; color: Color | string; inset: boolean }>): BoxShadow {
+  with(
+    updates: Partial<{
+      offsetX: number;
+      offsetY: number;
+      blur: number;
+      spread: number;
+      color: Color | string;
+      inset: boolean;
+    }>,
+  ): BoxShadow {
     return new BoxShadow(
       updates.offsetX ?? this.#offsetX,
       updates.offsetY ?? this.#offsetY,
@@ -173,9 +182,7 @@ export class BoxShadow {
 export class BoxShadowList {
   readonly #layers: readonly BoxShadow[];
 
-  constructor(layers: BoxShadow[]);
-  constructor(value: string);
-  constructor(value: BoxShadowList);
+  constructor(value: BoxShadow[] | string | BoxShadowList);
   constructor(first: BoxShadow[] | string | BoxShadowList) {
     if (first instanceof BoxShadowList) {
       this.#layers = first.#layers;
@@ -213,4 +220,3 @@ export class BoxShadowList {
     return this.#layers.map(s => s.toString()).join(', ');
   }
 }
-

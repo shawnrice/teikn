@@ -22,7 +22,9 @@ const makeReducedToken = (token: Token, prefix: string, zeroDuration: boolean): 
       name: `${prefix}${token.name}`,
       value: zeroDuration
         ? new Duration(0, 's')
-        : (value instanceof Duration ? new Duration(0.01, 's') : '0.01s'),
+        : value instanceof Duration
+          ? new Duration(0.01, 's')
+          : '0.01s',
     };
   }
 
@@ -69,7 +71,7 @@ export class ReducedMotionPlugin extends Plugin<ReducedMotionPluginOptions> {
     const prefix = this.options.prefix ?? DEFAULT_PREFIX;
     const zeroDuration = this.options.zeroDuration ?? true;
 
-    return tokens.flatMap((token) => {
+    return tokens.flatMap(token => {
       if (!TOKEN_TYPE_RE.test(token.type)) {
         return [token];
       }

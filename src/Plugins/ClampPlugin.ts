@@ -17,8 +17,7 @@ type ClampPluginOptions = {
 const DEFAULT_VIEWPORT_MIN = 320;
 const DEFAULT_VIEWPORT_MAX = 1280;
 
-const round = (n: number, decimals = 4): number =>
-  Math.round(n * 10 ** decimals) / 10 ** decimals;
+const round = (n: number, decimals = 4): number => Math.round(n * 10 ** decimals) / 10 ** decimals;
 
 const toRem = (value: number, unit: string, remBase = 16): number => {
   if (unit === 'rem') {
@@ -76,9 +75,7 @@ const buildClampValue = (
   const slopeVw = round(slope * 100);
   const interceptRem = round(intercept);
 
-  const preferred = interceptRem === 0
-    ? `${slopeVw}vw`
-    : `${interceptRem}rem + ${slopeVw}vw`;
+  const preferred = interceptRem === 0 ? `${slopeVw}vw` : `${interceptRem}rem + ${slopeVw}vw`;
 
   return `clamp(${minRem}rem, ${preferred}, ${maxRem}rem)`;
 };
@@ -104,7 +101,7 @@ export class ClampPlugin extends Plugin<ClampPluginOptions> {
       return tokens;
     }
 
-    const tokenMap = new Map(tokens.map((t) => [t.name, t]));
+    const tokenMap = new Map(tokens.map(t => [t.name, t]));
     const generated: Token[] = [];
 
     for (const pair of pairs) {

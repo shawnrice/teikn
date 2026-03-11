@@ -1,6 +1,18 @@
 import { describe, expect, test } from 'bun:test';
 
-import { composite, dim, dp, dur, group, onColor, onColors, ref, scale, theme, tokens } from './builders';
+import {
+  composite,
+  dim,
+  dp,
+  dur,
+  group,
+  onColor,
+  onColors,
+  ref,
+  scale,
+  theme,
+  tokens,
+} from './builders';
 import { Color } from './TokenTypes/Color';
 import { Dimension } from './TokenTypes/Dimension';
 import { Duration } from './TokenTypes/Duration';
@@ -276,10 +288,12 @@ describe('builders', () => {
         text: '#333',
       });
 
-      expect(() => theme('dark', colors, {
-        background: '#1a1a1a',
-        typo: '#red',
-      } as any)).toThrow('unknown token "typo"');
+      expect(() =>
+        theme('dark', colors, {
+          background: '#1a1a1a',
+          typo: '#red',
+        } as any),
+      ).toThrow('unknown token "typo"');
     });
 
     test('derives from another theme layer', () => {
@@ -334,9 +348,11 @@ describe('builders', () => {
       const colors = group('color', { primary: '#0066cc' });
       const dark = theme('dark', colors, { primary: '#3399ff' });
 
-      expect(() => theme('bad', dark, {
-        nonexistent: '#red',
-      } as any)).toThrow('unknown token "nonexistent"');
+      expect(() =>
+        theme('bad', dark, {
+          nonexistent: '#red',
+        } as any),
+      ).toThrow('unknown token "nonexistent"');
     });
   });
 

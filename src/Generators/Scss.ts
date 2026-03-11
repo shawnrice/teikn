@@ -1,11 +1,7 @@
 import { EOL } from 'os';
 
 import type { Plugin } from '../Plugins';
-import {
-  camelCase,
-  deriveShortName,
-  kebabCase,
-} from '../string-utils';
+import { camelCase, deriveShortName, kebabCase } from '../string-utils';
 import type { Token } from '../Token';
 import { getDate } from '../utils';
 import type { GeneratorInfo, GeneratorOptions } from './Generator';

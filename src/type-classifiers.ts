@@ -1,21 +1,11 @@
 import type { Token } from './Token';
-import {
-  BoxShadow,
-  BoxShadowList,
-} from './TokenTypes/BoxShadow';
+import { BoxShadow, BoxShadowList } from './TokenTypes/BoxShadow';
 import { Color } from './TokenTypes/Color';
 import { CubicBezier } from './TokenTypes/CubicBezier';
 import { Dimension } from './TokenTypes/Dimension';
 import { Duration } from './TokenTypes/Duration';
-import {
-  GradientList,
-  LinearGradient,
-  RadialGradient,
-} from './TokenTypes/Gradient';
-import {
-  Transition,
-  TransitionList,
-} from './TokenTypes/Transition';
+import { GradientList, LinearGradient, RadialGradient } from './TokenTypes/Gradient';
+import { Transition, TransitionList } from './TokenTypes/Transition';
 
 // ─── First-class value check ─────────────────────────────────────
 // Shared by resolve.ts and validate.ts to prevent composite

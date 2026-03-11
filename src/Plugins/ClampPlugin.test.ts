@@ -6,9 +6,7 @@ import { ClampPlugin } from './ClampPlugin';
 
 describe('ClampPlugin', () => {
   const plugin = new ClampPlugin({
-    pairs: [
-      { min: 'fontSize-100', max: 'fontSize-400', output: 'fontSize-fluid' },
-    ],
+    pairs: [{ min: 'fontSize-100', max: 'fontSize-400', output: 'fontSize-fluid' }],
   });
 
   test('tokenType matches anything', () => {
@@ -29,9 +27,7 @@ describe('ClampPlugin', () => {
 
   test('expand with no pairs returns tokens unchanged', () => {
     const emptyPlugin = new ClampPlugin();
-    const tokens: Token[] = [
-      { name: 'fontSize-100', type: 'dimension', value: '1rem' },
-    ];
+    const tokens: Token[] = [{ name: 'fontSize-100', type: 'dimension', value: '1rem' }];
     const result = emptyPlugin.expand(tokens);
     expect(result).toHaveLength(1);
     expect(result[0]).toBe(tokens[0]);
@@ -84,13 +80,9 @@ describe('ClampPlugin', () => {
 
   test('expand skips pairs where tokens are missing', () => {
     const pluginWithMissing = new ClampPlugin({
-      pairs: [
-        { min: 'missing-min', max: 'missing-max', output: 'missing-fluid' },
-      ],
+      pairs: [{ min: 'missing-min', max: 'missing-max', output: 'missing-fluid' }],
     });
-    const tokens: Token[] = [
-      { name: 'fontSize-100', type: 'dimension', value: '1rem' },
-    ];
+    const tokens: Token[] = [{ name: 'fontSize-100', type: 'dimension', value: '1rem' }];
     const result = pluginWithMissing.expand(tokens);
     expect(result).toHaveLength(1);
   });
@@ -99,9 +91,7 @@ describe('ClampPlugin', () => {
     const customPlugin = new ClampPlugin({
       viewportMin: 375,
       viewportMax: 1440,
-      pairs: [
-        { min: 'size-sm', max: 'size-lg', output: 'size-fluid' },
-      ],
+      pairs: [{ min: 'size-sm', max: 'size-lg', output: 'size-fluid' }],
     });
     const tokens: Token[] = [
       { name: 'size-sm', type: 'dimension', value: new Dimension(1, 'rem') },

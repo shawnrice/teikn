@@ -12,13 +12,13 @@ export default tseslint.config(
     files: ['**/*.ts'],
     rules: {
       // Core ESLint rules
-      'no-plusplus': ['error', { allowForLoopAfterthoughts: true }],
+      'no-plusplus': 'off',
       'no-unused-vars': 'off',
       'no-undef': 'off',
       'no-useless-constructor': 'off',
       'no-dupe-class-members': 'off',
       yoda: ['error', 'never', { exceptRange: true }],
-      eqeqeq: ['error', 'always'],
+      eqeqeq: ['error', 'always', { null: 'ignore' }],
       'no-var': 'error',
       'prefer-const': 'error',
       'no-throw-literal': 'error',

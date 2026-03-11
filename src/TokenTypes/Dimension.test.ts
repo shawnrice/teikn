@@ -133,7 +133,9 @@ describe('Dimension', () => {
     });
 
     test('subtract throws on different units', () => {
-      expect(() => new Dimension(8, 'rem').subtract(new Dimension(1, 'em'))).toThrow('Cannot subtract');
+      expect(() => new Dimension(8, 'rem').subtract(new Dimension(1, 'em'))).toThrow(
+        'Cannot subtract',
+      );
     });
 
     test('negate', () => {
@@ -281,9 +283,33 @@ describe('Dimension', () => {
 
   describe('all supported units parse', () => {
     const units = [
-      'px', 'rem', 'em', '%', 'cm', 'mm', 'in', 'pt', 'pc', 'Q',
-      'vw', 'vh', 'vmin', 'vmax', 'ch', 'ex', 'fr',
-      'svw', 'svh', 'lvw', 'lvh', 'dvw', 'dvh', 'lh', 'rlh', 'cqi', 'cqb',
+      'px',
+      'rem',
+      'em',
+      '%',
+      'cm',
+      'mm',
+      'in',
+      'pt',
+      'pc',
+      'Q',
+      'vw',
+      'vh',
+      'vmin',
+      'vmax',
+      'ch',
+      'ex',
+      'fr',
+      'svw',
+      'svh',
+      'lvw',
+      'lvh',
+      'dvw',
+      'dvh',
+      'lh',
+      'rlh',
+      'cqi',
+      'cqb',
     ] as const;
     for (const unit of units) {
       test(`parses 1${unit}`, () => {

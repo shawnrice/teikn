@@ -23,7 +23,11 @@ describe('ReducedMotionPlugin', () => {
   });
 
   test('toJSON returns token unchanged', () => {
-    const token: Token = { name: 'fade-duration', type: 'duration', value: new Duration(200, 'ms') };
+    const token: Token = {
+      name: 'fade-duration',
+      type: 'duration',
+      value: new Duration(200, 'ms'),
+    };
     const result = plugin.toJSON(token);
     expect(result).toBe(token);
   });
@@ -36,7 +40,11 @@ describe('ReducedMotionPlugin', () => {
   });
 
   test('expand generates reduced duration token with 0s', () => {
-    const token: Token = { name: 'fade-duration', type: 'duration', value: new Duration(200, 'ms') };
+    const token: Token = {
+      name: 'fade-duration',
+      type: 'duration',
+      value: new Duration(200, 'ms'),
+    };
     const result = plugin.expand([token]);
 
     expect(result).toHaveLength(2);
@@ -102,7 +110,7 @@ describe('ReducedMotionPlugin', () => {
     const result = plugin.expand(tokens);
 
     expect(result).toHaveLength(6);
-    expect(result.filter((t) => t.name.startsWith('reduced-'))).toHaveLength(3);
+    expect(result.filter(t => t.name.startsWith('reduced-'))).toHaveLength(3);
   });
 
   test('generated tokens preserve group and usage', () => {

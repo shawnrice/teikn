@@ -70,9 +70,7 @@ describe('es5 tests', () => {
   });
 
   test('omits modes when no tokens have modes', () => {
-    const tokens: Token[] = [
-      { name: 'colorSurface', type: 'color', value: '#ffffff' },
-    ];
+    const tokens: Token[] = [{ name: 'colorSurface', type: 'color', value: '#ffffff' }];
     const output = new Generator({ dateFn: fixedDate }).generate(tokens);
     expect(output).not.toContain('modes');
     expect(output).toContain('module.exports = { tokens: tokens, default: tokens };');

@@ -1,7 +1,19 @@
 // ─── Unit Types ─────────────────────────────────────────────
 
 export type AbsoluteUnit = 'px' | 'cm' | 'mm' | 'in' | 'pt' | 'pc' | 'Q';
-export type ViewportUnit = 'vw' | 'vh' | 'vmin' | 'vmax' | 'svw' | 'svh' | 'lvw' | 'lvh' | 'dvw' | 'dvh';
+
+export type ViewportUnit =
+  | 'vw'
+  | 'vh'
+  | 'vmin'
+  | 'vmax'
+  | 'svw'
+  | 'svh'
+  | 'lvw'
+  | 'lvh'
+  | 'dvw'
+  | 'dvh';
+
 export type FontRelativeUnit = 'em' | 'rem' | 'ch' | 'ex' | 'lh' | 'rlh';
 export type ContainerUnit = 'cqi' | 'cqb';
 export type FlexUnit = 'fr';
@@ -17,12 +29,47 @@ export type DimensionUnit =
 
 // ─── Unit Sets (runtime) ────────────────────────────────────
 
-export const absoluteUnits: ReadonlySet<string> = new Set<AbsoluteUnit>(['px', 'cm', 'mm', 'in', 'pt', 'pc', 'Q']);
-export const viewportUnits: ReadonlySet<string> = new Set<ViewportUnit>(['vw', 'vh', 'vmin', 'vmax', 'svw', 'svh', 'lvw', 'lvh', 'dvw', 'dvh']);
-export const fontRelativeUnits: ReadonlySet<string> = new Set<FontRelativeUnit>(['em', 'rem', 'ch', 'ex', 'lh', 'rlh']);
+export const absoluteUnits: ReadonlySet<string> = new Set<AbsoluteUnit>([
+  'px',
+  'cm',
+  'mm',
+  'in',
+  'pt',
+  'pc',
+  'Q',
+]);
+
+export const viewportUnits: ReadonlySet<string> = new Set<ViewportUnit>([
+  'vw',
+  'vh',
+  'vmin',
+  'vmax',
+  'svw',
+  'svh',
+  'lvw',
+  'lvh',
+  'dvw',
+  'dvh',
+]);
+
+export const fontRelativeUnits: ReadonlySet<string> = new Set<FontRelativeUnit>([
+  'em',
+  'rem',
+  'ch',
+  'ex',
+  'lh',
+  'rlh',
+]);
+
 export const containerUnits: ReadonlySet<string> = new Set<ContainerUnit>(['cqi', 'cqb']);
+
 export const allUnits: ReadonlySet<string> = new Set([
-  ...absoluteUnits, ...viewportUnits, ...fontRelativeUnits, ...containerUnits, 'fr', '%',
+  ...absoluteUnits,
+  ...viewportUnits,
+  ...fontRelativeUnits,
+  ...containerUnits,
+  'fr',
+  '%',
 ] as const);
 
 // ─── Conversion Factors ─────────────────────────────────────
@@ -42,9 +89,14 @@ export const absoluteConversions: Readonly<Record<AbsoluteUnit, number>> = {
 // ─── Unit Predicates ────────────────────────────────────────
 
 export const isAbsoluteUnit = (unit: string): unit is AbsoluteUnit => absoluteUnits.has(unit);
+
 export const isViewportUnit = (unit: string): unit is ViewportUnit => viewportUnits.has(unit);
-export const isFontRelativeUnit = (unit: string): unit is FontRelativeUnit => fontRelativeUnits.has(unit);
+
+export const isFontRelativeUnit = (unit: string): unit is FontRelativeUnit =>
+  fontRelativeUnits.has(unit);
+
 export const isContainerUnit = (unit: string): unit is ContainerUnit => containerUnits.has(unit);
+
 export const isDimensionUnit = (unit: string): unit is DimensionUnit => allUnits.has(unit);
 
 export const isConvertible = (from: string, to: string): boolean => {
@@ -94,7 +146,8 @@ export const convertDimension = (
 
 // ─── Parsing ────────────────────────────────────────────────
 
-const PARSE_RE = /^(-?\d+(?:\.\d+)?)(px|rem|em|%|cm|mm|in|pt|pc|Q|vw|vh|vmin|vmax|ch|ex|fr|svw|svh|lvw|lvh|dvw|dvh|lh|rlh|cqi|cqb)$/;
+const PARSE_RE =
+  /^(-?\d+(?:\.\d+)?)(px|rem|em|%|cm|mm|in|pt|pc|Q|vw|vh|vmin|vmax|ch|ex|fr|svw|svh|lvw|lvh|dvw|dvh|lh|rlh|cqi|cqb)$/;
 
 const parseCss = (css: string): { value: number; unit: DimensionUnit } => {
   const m = css.trim().match(PARSE_RE);
@@ -111,8 +164,7 @@ export class Dimension {
   readonly #unit: DimensionUnit;
 
   constructor(value: number, unit: DimensionUnit);
-  constructor(css: string);
-  constructor(copy: Dimension);
+  constructor(css: Dimension | string);
   constructor(first: number | string | Dimension, unit?: DimensionUnit) {
     if (first instanceof Dimension) {
       this.#value = first.#value;
@@ -131,16 +183,30 @@ export class Dimension {
     this.#unit = unit!;
   }
 
-  get value(): number { return this.#value; }
-  get unit(): DimensionUnit { return this.#unit; }
+  get value(): number {
+    return this.#value;
+  }
+  get unit(): DimensionUnit {
+    return this.#unit;
+  }
 
   // ─── Unit classification ────────────────────────────────────
 
-  get isAbsolute(): boolean { return isAbsoluteUnit(this.#unit); }
-  get isRelative(): boolean { return !isAbsoluteUnit(this.#unit); }
-  get isViewport(): boolean { return isViewportUnit(this.#unit); }
-  get isFontRelative(): boolean { return isFontRelativeUnit(this.#unit); }
-  get isContainer(): boolean { return isContainerUnit(this.#unit); }
+  get isAbsolute(): boolean {
+    return isAbsoluteUnit(this.#unit);
+  }
+  get isRelative(): boolean {
+    return !isAbsoluteUnit(this.#unit);
+  }
+  get isViewport(): boolean {
+    return isViewportUnit(this.#unit);
+  }
+  get isFontRelative(): boolean {
+    return isFontRelativeUnit(this.#unit);
+  }
+  get isContainer(): boolean {
+    return isContainerUnit(this.#unit);
+  }
 
   isConvertibleTo(target: DimensionUnit): boolean {
     return isConvertible(this.#unit, target);
@@ -213,7 +279,12 @@ export class Dimension {
     return new Dimension(css);
   }
 
-  static convert(value: number, from: DimensionUnit, to: DimensionUnit, opts?: { remBase?: number }): number {
+  static convert(
+    value: number,
+    from: DimensionUnit,
+    to: DimensionUnit,
+    opts?: { remBase?: number },
+  ): number {
     return convertDimension(value, from, to, opts);
   }
 }

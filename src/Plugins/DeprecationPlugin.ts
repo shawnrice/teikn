@@ -9,10 +9,6 @@ export class DeprecationPlugin extends Plugin<DeprecationPluginOptions> {
   tokenType: RegExp = /.*/;
   outputType: RegExp = /.*/;
 
-  constructor(options: DeprecationPluginOptions) {
-    super(options);
-  }
-
   toJSON(token: Token): Token {
     const { tokens } = this.options;
     const entry = tokens[token.name];
@@ -22,13 +18,9 @@ export class DeprecationPlugin extends Plugin<DeprecationPluginOptions> {
     }
 
     const replacement = typeof entry === 'string' ? entry : undefined;
-    const notice = replacement
-      ? `DEPRECATED: use "${replacement}" instead.`
-      : 'DEPRECATED.';
+    const notice = replacement ? `DEPRECATED: use "${replacement}" instead.` : 'DEPRECATED.';
 
-    const usage = token.usage
-      ? `${notice} ${token.usage}`
-      : notice;
+    const usage = token.usage ? `${notice} ${token.usage}` : notice;
 
     return {
       ...token,

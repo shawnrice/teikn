@@ -6,11 +6,7 @@ const lower = (str: string) => str.toLowerCase();
  * Converts camelCase => kebab-case
  */
 export const camelToKebabCase = (str: string): string => {
-  const ret = lower(
-    str
-      .replace(/[A-Z]/g, '-$&')
-      .replace(/([a-zA-Z])(\d)/g, '$1-$2'),
-  );
+  const ret = lower(str.replace(/[A-Z]/g, '-$&').replace(/([a-zA-Z])(\d)/g, '$1-$2'));
   return ret.startsWith('-') ? ret.slice(1) : ret;
 };
 

@@ -33,9 +33,7 @@ describe('ESModule tests', () => {
   });
 
   test('omits modes export when no tokens have modes', () => {
-    const tokens: Token[] = [
-      { name: 'colorSurface', type: 'color', value: '#ffffff' },
-    ];
+    const tokens: Token[] = [{ name: 'colorSurface', type: 'color', value: '#ffffff' }];
     const output = new Generator({ dateFn: () => 'null' }).generate(tokens);
     expect(output).not.toContain('modes');
   });

@@ -42,7 +42,7 @@ const inRange = (lower: number, upper: number, number: number) =>
 
 const inHex = (x: number) => inRange(0, 255, x); // 0-255
 const inUnit = (x: number) => inRange(0, 1, x); // 0-1
-const inAnyDegrees = (_x: number) => true; // any hue is valid (will be normalized)
+const inAnyDegrees = () => true; // any hue is valid (will be normalized)
 const inPercent = (x: number) => inRange(0, 100, x); // 0-100
 
 const formats = {

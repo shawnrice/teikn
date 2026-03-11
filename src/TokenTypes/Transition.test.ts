@@ -216,7 +216,9 @@ describe('Transition', () => {
     const original = new Transition('200ms', CubicBezier.standard, '50ms', 'transform');
     const roundTripped = new Transition(original.toString());
     expect(roundTripped.duration).toBe(original.duration);
-    expect(roundTripped.timingFunction.controlPoints).toEqual(original.timingFunction.controlPoints);
+    expect(roundTripped.timingFunction.controlPoints).toEqual(
+      original.timingFunction.controlPoints,
+    );
     expect(roundTripped.delay).toBe(original.delay);
     expect(roundTripped.property).toBe(original.property);
   });

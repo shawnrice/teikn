@@ -37,11 +37,16 @@ const toPx = (value: unknown, basePx: number): number | null => {
   const unit = m[2]!;
 
   switch (unit) {
-    case 'px': return num;
-    case 'rem': return num * basePx;
-    case 'em': return num * basePx;
-    case 'pt': return num * (96 / 72);
-    default: return null;
+    case 'px':
+      return num;
+    case 'rem':
+      return num * basePx;
+    case 'em':
+      return num * basePx;
+    case 'pt':
+      return num * (96 / 72);
+    default:
+      return null;
   }
 };
 
@@ -65,11 +70,13 @@ export class MinFontSizePlugin extends Plugin<MinFontSizePluginOptions> {
         }
 
         if (px < minPx) {
-          return [{
-            severity: 'warning' as const,
-            token: t.name,
-            message: `Font size ${t.value} (${px}px) is below minimum of ${minPx}px`,
-          }];
+          return [
+            {
+              severity: 'warning' as const,
+              token: t.name,
+              message: `Font size ${t.value} (${px}px) is below minimum of ${minPx}px`,
+            },
+          ];
         }
 
         return [];

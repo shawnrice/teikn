@@ -11,9 +11,7 @@ const PX_RE = /^(-?\d+(?:\.\d+)?)px$/;
 
 const convertValue = (value: unknown, base: number, targetUnit: string): unknown => {
   if (value instanceof Dimension) {
-    return value.unit === 'px'
-      ? new Dimension(value.value / base, targetUnit as 'rem')
-      : value;
+    return value.unit === 'px' ? new Dimension(value.value / base, targetUnit as 'rem') : value;
   }
 
   if (typeof value === 'string') {

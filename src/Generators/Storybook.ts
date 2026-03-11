@@ -45,12 +45,11 @@ export type StorybookOpts = {
   importPath?: string;
   storyTitle?: string;
   dateFn?: () => string | null;
-} & GeneratorOptions
+} & GeneratorOptions;
 
 // ─── Helpers ─────────────────────────────────────────────────
 
-const toStoryName = (type: string): string =>
-  camelCase(type).replace(/^./, c => c.toUpperCase());
+const toStoryName = (type: string): string => camelCase(type).replace(/^./, c => c.toUpperCase());
 
 // ─── Inline component templates ─────────────────────────────
 
@@ -403,8 +402,16 @@ const componentRegistry: Record<string, ComponentDef> = {
   borderDemo: { name: 'BorderDemo', source: borderDemoComponent, needsState: false },
   gradientSwatch: { name: 'GradientSwatch', source: gradientSwatchComponent, needsState: false },
   opacityDemo: { name: 'OpacityDemo', source: opacityDemoComponent, needsState: false },
-  lineHeightSample: { name: 'LineHeightSample', source: lineHeightSampleComponent, needsState: false },
-  letterSpacingSample: { name: 'LetterSpacingSample', source: letterSpacingSampleComponent, needsState: false },
+  lineHeightSample: {
+    name: 'LineHeightSample',
+    source: lineHeightSampleComponent,
+    needsState: false,
+  },
+  letterSpacingSample: {
+    name: 'LetterSpacingSample',
+    source: letterSpacingSampleComponent,
+    needsState: false,
+  },
   breakpointBar: { name: 'BreakpointBar', source: breakpointBarComponent, needsState: false },
   sizeBox: { name: 'SizeBox', source: sizeBoxComponent, needsState: false },
   ratioBox: { name: 'RatioBox', source: ratioBoxComponent, needsState: false },
@@ -417,35 +424,81 @@ const componentRegistry: Record<string, ComponentDef> = {
 // ─── Type → component mapping ───────────────────────────────
 
 const classifyType = (type: string): string => {
-  if (isColorType(type)) { return 'swatch'; }
-  if (isTypographyType(type)) { return 'typographyBlock'; }
-  if (isFontSizeType(type)) { return 'fontSample'; }
-  if (isFontFamilyType(type)) { return 'fontSample'; }
-  if (isFontWeightType(type)) { return 'fontSample'; }
-  if (isShadowType(type)) { return 'shadowBox'; }
-  if (isDurationType(type)) { return 'durationBar'; }
-  if (isTimingType(type)) { return 'timingDemo'; }
-  if (isBorderRadiusType(type)) { return 'radiusBox'; }
-  if (isBorderType(type)) { return 'borderDemo'; }
-  if (isLetterSpacingType(type)) { return 'letterSpacingSample'; }
-  if (isSpacingType(type)) { return 'spacingBar'; }
-  if (isGradientType(type)) { return 'gradientSwatch'; }
-  if (isOpacityType(type)) { return 'opacityDemo'; }
-  if (isLineHeightType(type)) { return 'lineHeightSample'; }
-  if (isBreakpointType(type)) { return 'breakpointBar'; }
-  if (isSizeType(type)) { return 'sizeBox'; }
-  if (isAspectRatioType(type)) { return 'ratioBox'; }
-  if (isZLayerType(type)) { return 'zLayerStack'; }
-  if (isTransitionType(type)) { return 'transitionDemo'; }
+  if (isColorType(type)) {
+    return 'swatch';
+  }
+  if (isTypographyType(type)) {
+    return 'typographyBlock';
+  }
+  if (isFontSizeType(type)) {
+    return 'fontSample';
+  }
+  if (isFontFamilyType(type)) {
+    return 'fontSample';
+  }
+  if (isFontWeightType(type)) {
+    return 'fontSample';
+  }
+  if (isShadowType(type)) {
+    return 'shadowBox';
+  }
+  if (isDurationType(type)) {
+    return 'durationBar';
+  }
+  if (isTimingType(type)) {
+    return 'timingDemo';
+  }
+  if (isBorderRadiusType(type)) {
+    return 'radiusBox';
+  }
+  if (isBorderType(type)) {
+    return 'borderDemo';
+  }
+  if (isLetterSpacingType(type)) {
+    return 'letterSpacingSample';
+  }
+  if (isSpacingType(type)) {
+    return 'spacingBar';
+  }
+  if (isGradientType(type)) {
+    return 'gradientSwatch';
+  }
+  if (isOpacityType(type)) {
+    return 'opacityDemo';
+  }
+  if (isLineHeightType(type)) {
+    return 'lineHeightSample';
+  }
+  if (isBreakpointType(type)) {
+    return 'breakpointBar';
+  }
+  if (isSizeType(type)) {
+    return 'sizeBox';
+  }
+  if (isAspectRatioType(type)) {
+    return 'ratioBox';
+  }
+  if (isZLayerType(type)) {
+    return 'zLayerStack';
+  }
+  if (isTransitionType(type)) {
+    return 'transitionDemo';
+  }
   return 'tokenTable';
 };
 
 // ─── Font type → CSS property mapping ───────────────────────
 
 const fontStyleProp = (type: string): string => {
-  if (isFontSizeType(type)) { return 'fontSize'; }
-  if (isFontFamilyType(type)) { return 'fontFamily'; }
-  if (isFontWeightType(type)) { return 'fontWeight'; }
+  if (isFontSizeType(type)) {
+    return 'fontSize';
+  }
+  if (isFontFamilyType(type)) {
+    return 'fontFamily';
+  }
+  if (isFontWeightType(type)) {
+    return 'fontWeight';
+  }
   return 'fontSize';
 };
 
@@ -453,7 +506,11 @@ const fontStyleProp = (type: string): string => {
 
 const wrapLayout = (type: string): { open: string; close: string } => {
   const componentKey = classifyType(type);
-  if (['swatch', 'shadowBox', 'radiusBox', 'opacityDemo', 'sizeBox', 'ratioBox'].includes(componentKey)) {
+  if (
+    ['swatch', 'shadowBox', 'radiusBox', 'opacityDemo', 'sizeBox', 'ratioBox'].includes(
+      componentKey,
+    )
+  ) {
     return {
       open: `      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.25rem' }}>`,
       close: `      </div>`,
@@ -478,9 +535,7 @@ const buildStoryRender = (type: string, keysVarName: string): string => {
   if (componentKey === 'fontSample') {
     const prop = fontStyleProp(type);
     const inner = `        {${keysVarName}.map(key => <FontSample key={key} name={key} value={String(tokens[key])} styleProp="${prop}" />)}`;
-    return hasWrapper
-      ? [layout.open, inner, layout.close].join(EOL)
-      : inner;
+    return hasWrapper ? [layout.open, inner, layout.close].join(EOL) : inner;
   }
 
   if (componentKey === 'typographyBlock' || componentKey === 'borderDemo') {
@@ -498,9 +553,7 @@ const buildStoryRender = (type: string, keysVarName: string): string => {
 
   const comp = componentRegistry[componentKey]!.name;
   const inner = `        {${keysVarName}.map(key => <${comp} key={key} name={key} value={String(tokens[key])} />)}`;
-  return hasWrapper
-    ? [layout.open, inner, layout.close].join(EOL)
-    : inner;
+  return hasWrapper ? [layout.open, inner, layout.close].join(EOL) : inner;
 };
 
 // ─── Generator ───────────────────────────────────────────────
@@ -540,7 +593,7 @@ export class Storybook extends Generator<StorybookOpts> {
     return null;
   }
 
-  generateToken(_token: Token): string {
+  generateToken(_: Token): string {
     return '';
   }
 
@@ -590,7 +643,9 @@ export class Storybook extends Generator<StorybookOpts> {
     if (hasModes) {
       lines.push(`const modesData: Record<string, Record<string, string>> = {`);
       for (const token of tokens) {
-        if (!token.modes || Object.keys(token.modes).length === 0) { continue; }
+        if (!token.modes || Object.keys(token.modes).length === 0) {
+          continue;
+        }
         const key = nameTransformer!(token.name);
         const modeEntries = Object.entries(token.modes)
           .map(([mode, val]) => `    '${mode}': ${JSON.stringify(String(val))}`)
@@ -627,7 +682,8 @@ export class Storybook extends Generator<StorybookOpts> {
       const storyName = toStoryName(type);
       const keysVarName = `${camelCase(type)}Keys`;
       const renderBody = buildStoryRender(type, keysVarName);
-      const typeModes = hasModes && typeTokens.some(t => t.modes && Object.keys(t.modes).length > 0);
+      const typeModes =
+        hasModes && typeTokens.some(t => t.modes && Object.keys(t.modes).length > 0);
 
       lines.push(`export const ${storyName}: Story = {`);
       lines.push(`  render: () => (`);

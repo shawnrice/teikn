@@ -1,21 +1,11 @@
 import { EOL } from 'os';
 
 import { kebabCase } from '../string-utils';
-import type {
-  CompositeValue,
-  Token,
-  TokenValue,
-} from '../Token';
+import type { CompositeValue, Token, TokenValue } from '../Token';
 import { Color } from '../TokenTypes/Color';
 import { CubicBezier } from '../TokenTypes/CubicBezier';
-import {
-  GradientList,
-  LinearGradient,
-  RadialGradient,
-} from '../TokenTypes/Gradient';
-import {
-  Transition,
-} from '../TokenTypes/Transition';
+import { GradientList, LinearGradient, RadialGradient } from '../TokenTypes/Gradient';
+import { Transition } from '../TokenTypes/Transition';
 import {
   groupTokens,
   isAspectRatioType,

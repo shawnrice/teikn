@@ -15,10 +15,12 @@ export type DTCGDurationValue = {
   unit: 'ms' | 's';
 };
 
-export type DTCGStrokeStyleValue = string | {
-  dashArray: number[];
-  lineCap: 'butt' | 'round' | 'square';
-};
+export type DTCGStrokeStyleValue =
+  | string
+  | {
+      dashArray: number[];
+      lineCap: 'butt' | 'round' | 'square';
+    };
 
 export type DTCGCubicBezierValue = [number, number, number, number];
 
@@ -91,7 +93,10 @@ export type DTCGGroup = {
   [key: string]: DTCGGroup | DTCGToken | string | boolean | Record<string, unknown> | undefined;
 };
 
-export type DTCGDocument = Record<string, DTCGGroup | DTCGToken | string | boolean | Record<string, unknown> | undefined>;
+export type DTCGDocument = Record<
+  string,
+  DTCGGroup | DTCGToken | string | boolean | Record<string, unknown> | undefined
+>;
 
 // Type name constants matching the DTCG spec
 export const DTCG_TYPES = {
@@ -111,4 +116,4 @@ export const DTCG_TYPES = {
   fontStyle: 'fontStyle',
 } as const;
 
-export type DTCGTypeName = typeof DTCG_TYPES[keyof typeof DTCG_TYPES];
+export type DTCGTypeName = (typeof DTCG_TYPES)[keyof typeof DTCG_TYPES];

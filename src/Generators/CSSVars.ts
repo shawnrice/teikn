@@ -7,7 +7,9 @@ import type { GeneratorOptions } from './Generator';
 import { Generator } from './Generator';
 
 const cssValue = (value: unknown): string => {
-  if (typeof value !== 'object' || value === null) { return String(value); }
+  if (typeof value !== 'object' || value === null) {
+    return String(value);
+  }
   const obj = value as Record<string, unknown>;
   if ('width' in obj && 'style' in obj && 'color' in obj) {
     return [obj.width, obj.style, obj.color].filter(Boolean).join(' ');
@@ -26,7 +28,7 @@ export type CSSVarsOpts = {
   dateFn?: () => string | null;
   useMediaQuery?: boolean;
   modeSelectors?: Record<string, string>;
-} & GeneratorOptions
+} & GeneratorOptions;
 
 export class CSSVars extends Generator<CSSVarsOpts> {
   constructor(options = {}) {
@@ -64,9 +66,7 @@ export class CSSVars extends Generator<CSSVarsOpts> {
     const { usage, value } = token;
     const key = `--${nameTransformer!(token.name)}`;
 
-    return [usage && `  /* ${usage} */`, `  ${key}: ${cssValue(value)};`]
-      .filter(Boolean)
-      .join(EOL);
+    return [usage && `  /* ${usage} */`, `  ${key}: ${cssValue(value)};`].filter(Boolean).join(EOL);
   }
 
   combinator(tokens: Token[]): string {
@@ -101,7 +101,14 @@ export class CSSVars extends Generator<CSSVarsOpts> {
 
       if (useMediaQuery && mode === 'dark') {
         const indented = vars.map(v => `  ${v}`);
-        blocks.push('', `@media (prefers-color-scheme: dark) {`, `  :root {`, indented.join(EOL), `  }`, `}`);
+        blocks.push(
+          '',
+          `@media (prefers-color-scheme: dark) {`,
+          `  :root {`,
+          indented.join(EOL),
+          `  }`,
+          `}`,
+        );
       }
     }
 

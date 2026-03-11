@@ -57,7 +57,12 @@ describe('AlphaMultiplyPlugin', () => {
   });
 
   test('preserves other token fields', () => {
-    const token: Token = { name: 'bg', type: 'color', value: 'rgba(0, 0, 0, 0.5)', usage: 'Background overlay' };
+    const token: Token = {
+      name: 'bg',
+      type: 'color',
+      value: 'rgba(0, 0, 0, 0.5)',
+      usage: 'Background overlay',
+    };
     const result = plugin.toJSON(token);
     expect(result.usage).toBe('Background overlay');
     expect(result.name).toBe('bg');

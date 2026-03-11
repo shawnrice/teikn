@@ -75,7 +75,10 @@ describe('Octree', () => {
   test('nearest neighbor matches brute force on random data', () => {
     const rng = (seed: number) => {
       let s = seed;
-      return () => { s = (s * 1103515245 + 12345) & 0x7fffffff; return s % 256; };
+      return () => {
+        s = (s * 1103515245 + 12345) & 0x7fffffff;
+        return s % 256;
+      };
     };
     const r = rng(42);
     const pts = Array.from({ length: 200 }, (_, i) => ({
@@ -107,10 +110,7 @@ describe('Octree', () => {
   });
 
   test('respects custom depth parameter', () => {
-    const pts = [
-      { v: [0, 0, 0] as const },
-      { v: [255, 255, 255] as const },
-    ];
+    const pts = [{ v: [0, 0, 0] as const }, { v: [255, 255, 255] as const }];
     // depth=1 means just one subdivision (2 octants)
     const shallow = new Octree(pts, p => p.v, 1);
     const result = shallow.closest([1, 1, 1]);

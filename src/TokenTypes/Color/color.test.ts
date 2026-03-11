@@ -844,9 +844,7 @@ describe('Round-trip conversion symmetry', () => {
 
   describe('HSL -> RGB -> HSL', () => {
     // Skip achromatic colors (black, white, gray) since hue is undefined for them
-    const chromaticColors = testColors.filter(
-      ({ r, g, b }) => !(r === g && g === b),
-    );
+    const chromaticColors = testColors.filter(({ r, g, b }) => !(r === g && g === b));
 
     chromaticColors.forEach(({ name, r, g, b, a }) => {
       test(name, () => {
@@ -1016,7 +1014,14 @@ describe('simulateColorBlindness', () => {
   test('white and black are unaffected by all types', () => {
     const white = new Color('white');
     const black = new Color('black');
-    const types = ['protanopia', 'deuteranopia', 'tritanopia', 'protanomaly', 'deuteranomaly', 'tritanomaly'] as const;
+    const types = [
+      'protanopia',
+      'deuteranopia',
+      'tritanopia',
+      'protanomaly',
+      'deuteranomaly',
+      'tritanomaly',
+    ] as const;
     types.forEach(type => {
       const simW = white.simulateColorBlindness(type);
       expect(simW.red).toBe(255);

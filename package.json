@@ -1,6 +1,6 @@
 {
   "name": "teikn",
-  "version": "1.0.0-alpha.6",
+  "version": "2.0.0-alpha.1",
   "description": "Generate design tokens",
   "keywords": [
     "design",
@@ -62,7 +62,10 @@
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.55.0"
   },
+  "files": [
+    "lib"
+  ],
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   }
 }

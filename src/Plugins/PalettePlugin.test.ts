@@ -43,7 +43,7 @@ describe('PalettePlugin', () => {
     const token: Token = { name: 'brand', type: 'color', value: new Color('#ff5500') };
     const result = plugin.expand([token]);
 
-    const names = result.map((t) => t.name);
+    const names = result.map(t => t.name);
     expect(names).toContain('brand');
     expect(names).toContain('brand-50');
     expect(names).toContain('brand-500');
@@ -55,7 +55,7 @@ describe('PalettePlugin', () => {
     const token: Token = { name: 'primary', type: 'color', value: baseColor };
     const result = plugin.expand([token]);
 
-    const step500 = result.find((t) => t.name === 'primary-500');
+    const step500 = result.find(t => t.name === 'primary-500');
     expect(step500).toBeDefined();
     expect(step500!.value.toString()).toBe(baseColor.toString());
   });
@@ -65,7 +65,7 @@ describe('PalettePlugin', () => {
     const token: Token = { name: 'primary', type: 'color', value: baseColor };
     const result = plugin.expand([token]);
 
-    const step50 = result.find((t) => t.name === 'primary-50');
+    const step50 = result.find(t => t.name === 'primary-50');
     expect(step50).toBeDefined();
     const lightColor = new Color(step50!.value);
     expect(lightColor.lightness).toBeGreaterThan(baseColor.lightness);
@@ -76,7 +76,7 @@ describe('PalettePlugin', () => {
     const token: Token = { name: 'primary', type: 'color', value: baseColor };
     const result = plugin.expand([token]);
 
-    const step900 = result.find((t) => t.name === 'primary-900');
+    const step900 = result.find(t => t.name === 'primary-900');
     expect(step900).toBeDefined();
     const darkColor = new Color(step900!.value);
     expect(darkColor.lightness).toBeLessThan(baseColor.lightness);
@@ -89,7 +89,7 @@ describe('PalettePlugin', () => {
 
     // Original + 3 steps
     expect(result).toHaveLength(4);
-    const names = result.map((t) => t.name);
+    const names = result.map(t => t.name);
     expect(names).toContain('accent-100');
     expect(names).toContain('accent-500');
     expect(names).toContain('accent-900');
@@ -104,15 +104,20 @@ describe('PalettePlugin', () => {
 
     // 2 originals + 2 * 11 steps
     expect(result).toHaveLength(24);
-    expect(result.filter((t) => t.name.startsWith('primary'))).toHaveLength(12);
-    expect(result.filter((t) => t.name.startsWith('secondary'))).toHaveLength(12);
+    expect(result.filter(t => t.name.startsWith('primary'))).toHaveLength(12);
+    expect(result.filter(t => t.name.startsWith('secondary'))).toHaveLength(12);
   });
 
   test('generated tokens preserve type and group', () => {
-    const token: Token = { name: 'brand', type: 'color', value: new Color('#ff0000'), group: 'colors' };
+    const token: Token = {
+      name: 'brand',
+      type: 'color',
+      value: new Color('#ff0000'),
+      group: 'colors',
+    };
     const result = plugin.expand([token]);
 
-    const step200 = result.find((t) => t.name === 'brand-200');
+    const step200 = result.find(t => t.name === 'brand-200');
     expect(step200!.type).toBe('color');
     expect(step200!.group).toBe('colors');
   });

@@ -10,7 +10,7 @@ const defaultOptions = {
 
 export type JsonOpts = {
   nameTransformer?: (name: string) => string;
-} & GeneratorOptions
+} & GeneratorOptions;
 
 export class Json extends Generator<JsonOpts> {
   constructor(options = {}) {

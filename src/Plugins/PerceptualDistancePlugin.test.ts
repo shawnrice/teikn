@@ -25,20 +25,14 @@ describe('PerceptualDistancePlugin', () => {
 
   test('passes when colors are sufficiently distinct', () => {
     const plugin = new PerceptualDistancePlugin({});
-    const tokens = [
-      makeToken('red', '#ff0000'),
-      makeToken('blue', '#0000ff'),
-    ];
+    const tokens = [makeToken('red', '#ff0000'), makeToken('blue', '#0000ff')];
     const issues = plugin.audit!(tokens);
     expect(issues).toHaveLength(0);
   });
 
   test('warns when colors are too similar', () => {
     const plugin = new PerceptualDistancePlugin({});
-    const tokens = [
-      makeToken('gray-a', '#808080'),
-      makeToken('gray-b', '#828282'),
-    ];
+    const tokens = [makeToken('gray-a', '#808080'), makeToken('gray-b', '#828282')];
     const issues = plugin.audit!(tokens);
     expect(issues).toHaveLength(1);
     expect(issues[0]!.severity).toBe('warning');
@@ -49,10 +43,7 @@ describe('PerceptualDistancePlugin', () => {
 
   test('respects custom minDeltaE', () => {
     const plugin = new PerceptualDistancePlugin({ minDeltaE: 50 });
-    const tokens = [
-      makeToken('red', '#ff0000'),
-      makeToken('orange', '#ff8800'),
-    ];
+    const tokens = [makeToken('red', '#ff0000'), makeToken('orange', '#ff8800')];
     const issues = plugin.audit!(tokens);
     expect(issues).toHaveLength(1);
   });
@@ -85,10 +76,7 @@ describe('PerceptualDistancePlugin', () => {
 
   test('handles Color instances as values', () => {
     const plugin = new PerceptualDistancePlugin({});
-    const tokens = [
-      makeToken('a', new Color('#808080')),
-      makeToken('b', new Color('#818181')),
-    ];
+    const tokens = [makeToken('a', new Color('#808080')), makeToken('b', new Color('#818181'))];
     const issues = plugin.audit!(tokens);
     expect(issues).toHaveLength(1);
   });
@@ -106,10 +94,7 @@ describe('PerceptualDistancePlugin', () => {
 
   test('includes actual deltaE value in the message', () => {
     const plugin = new PerceptualDistancePlugin({});
-    const tokens = [
-      makeToken('a', '#808080'),
-      makeToken('b', '#808081'),
-    ];
+    const tokens = [makeToken('a', '#808080'), makeToken('b', '#808081')];
     const issues = plugin.audit!(tokens);
     expect(issues).toHaveLength(1);
     // The message should contain a numeric ΔE value

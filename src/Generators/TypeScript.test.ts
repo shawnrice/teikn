@@ -66,9 +66,7 @@ describe('TypeScript generator tests', () => {
   });
 
   test('omits modes type when no tokens have modes', () => {
-    const tokens: Token[] = [
-      { name: 'colorSurface', type: 'color', value: '#ffffff' },
-    ];
+    const tokens: Token[] = [{ name: 'colorSurface', type: 'color', value: '#ffffff' }];
     const output = new Generator({ dateFn: fixedDate }).generate(tokens);
     expect(output).not.toContain('modes');
   });
