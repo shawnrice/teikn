@@ -1,5 +1,5 @@
-import { Token } from '../Token';
-import { Plugin } from './Plugin';
+import type { Token } from "../Token";
+import { Plugin } from "./Plugin";
 
 /**
  * Quotes some SCSS values
@@ -7,9 +7,9 @@ import { Plugin } from './Plugin';
  * This is needed for things like font-families to get the right values
  */
 export class SCSSQuoteValuePlugin extends Plugin {
-  outputType = /s(a|c)ss/;
+  outputType: RegExp = /s(a|c)ss/;
 
-  tokenType = /^(font|font-family)$/;
+  tokenType: RegExp = /^(font|font-family)$/;
 
   toJSON(token: Token): Token {
     const { value } = token;

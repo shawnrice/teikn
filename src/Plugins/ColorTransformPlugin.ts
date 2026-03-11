@@ -1,17 +1,22 @@
+import type { Token } from "../Token";
 /* eslint-disable @typescript-eslint/no-useless-constructor */
-import { Color } from '../Color';
-import { Token } from '../Token';
-import { Plugin } from './Plugin';
+import { Color } from "../TokenTypes/Color";
+import type { ColorFormat } from "../TokenTypes/Color/types";
+import { Plugin } from "./Plugin";
+
+type ColorTransformPluginOptions = {
+  type?: ColorFormat;
+} & Record<string, unknown>;
 
 /**
  * Normalizes colors
  */
-export class ColorTransformPlugin extends Plugin {
-  outputType = /.*/;
+export class ColorTransformPlugin extends Plugin<ColorTransformPluginOptions> {
+  outputType: RegExp = /.*/;
 
-  tokenType = 'color';
+  tokenType: string = "color";
 
-  constructor(options: { type?: 'rgb' | 'rgba' | 'hex' | 'hex3' | 'hsl' | 'hsla' | 'named' }) {
+  constructor(options: ColorTransformPluginOptions) {
     super(options);
   }
 

@@ -1,80 +1,244 @@
-import fs from 'fs';
-import path from 'path';
+import fs from "node:fs";
+import path from "node:path";
 
-import { ensureDirectory } from './ensure-directory';
-import { ESModule, Generator, JavaScript, Json, Scss, ScssVars, TypeScript } from './Generators';
-import { ColorTransformPlugin, Plugin, PrefixTypePlugin, SCSSQuoteValuePlugin } from './Plugins';
-import { Token } from './Token';
+import { ensureDirectory } from "./ensure-directory";
+import {
+  CSSVars,
+  DTCGGenerator,
+  ESModule,
+  Generator,
+  HTML,
+  JavaScript,
+  Json,
+  Scss,
+  ScssVars,
+  Storybook,
+  TypeScript,
+} from "./Generators";
+import type { AuditIssue } from "./Plugins";
+import {
+  AlphaMultiplyPlugin,
+  ClampPlugin,
+  ColorBlindnessPlugin,
+  ColorTransformPlugin,
+  ContrastValidatorPlugin,
+  DeprecationPlugin,
+  MinFontSizePlugin,
+  NameConventionPlugin,
+  PalettePlugin,
+  PerceptualDistancePlugin,
+  Plugin,
+  PrefixTypePlugin,
+  ReducedMotionPlugin,
+  RemUnitPlugin,
+  SCSSQuoteValuePlugin,
+  TouchTargetPlugin,
+} from "./Plugins";
+import { resolveReferences } from "./resolve";
+import type { ThemeLayer, Token, TokenValue } from "./Token";
+import type { ValidationResult } from "./validate";
+import { validate } from "./validate";
 
-const plugins = { ColorTransformPlugin, PrefixTypePlugin, SCSSQuoteValuePlugin };
-const generators = { ESModule, JavaScript, Json, Scss, ScssVars, TypeScript };
+/**
+ * Apply theme layers to tokens, merging each layer's overrides into token.modes.
+ */
+const applyThemes = (themes: ThemeLayer[], tokens: Token[]): Token[] => {
+  if (themes.length === 0) {
+    return tokens;
+  }
 
-export interface TeiknOptions {
-  /**
-   * The generators that you want to use
-   *
-   * default: `[new Teikn.generators.Json()]`
-   */
+  const modeUpdates = new Map<string, Record<string, TokenValue>>();
+  for (const layer of themes) {
+    for (const [name, value] of Object.entries(layer.overrides)) {
+      if (!modeUpdates.has(name)) {
+        modeUpdates.set(name, {});
+      }
+      modeUpdates.get(name)![layer.name] = value;
+    }
+  }
+
+  return tokens.map((token) => {
+    const updates = modeUpdates.get(token.name);
+    if (!updates) {
+      return token;
+    }
+    return {
+      ...token,
+      modes: { ...token.modes, ...updates },
+    };
+  });
+};
+
+const BuiltInPlugins: {
+  AlphaMultiplyPlugin: typeof AlphaMultiplyPlugin;
+  ClampPlugin: typeof ClampPlugin;
+  ColorBlindnessPlugin: typeof ColorBlindnessPlugin;
+  ColorTransformPlugin: typeof ColorTransformPlugin;
+  ContrastValidatorPlugin: typeof ContrastValidatorPlugin;
+  DeprecationPlugin: typeof DeprecationPlugin;
+  MinFontSizePlugin: typeof MinFontSizePlugin;
+  NameConventionPlugin: typeof NameConventionPlugin;
+  PalettePlugin: typeof PalettePlugin;
+  PerceptualDistancePlugin: typeof PerceptualDistancePlugin;
+  PrefixTypePlugin: typeof PrefixTypePlugin;
+  ReducedMotionPlugin: typeof ReducedMotionPlugin;
+  RemUnitPlugin: typeof RemUnitPlugin;
+  SCSSQuoteValuePlugin: typeof SCSSQuoteValuePlugin;
+  TouchTargetPlugin: typeof TouchTargetPlugin;
+} = {
+  AlphaMultiplyPlugin,
+  ClampPlugin,
+  ColorBlindnessPlugin,
+  ColorTransformPlugin,
+  ContrastValidatorPlugin,
+  DeprecationPlugin,
+  MinFontSizePlugin,
+  NameConventionPlugin,
+  PalettePlugin,
+  PerceptualDistancePlugin,
+  PrefixTypePlugin,
+  ReducedMotionPlugin,
+  RemUnitPlugin,
+  SCSSQuoteValuePlugin,
+  TouchTargetPlugin,
+};
+
+const BuiltInGenerators: {
+  CSSVars: typeof CSSVars;
+  DTCG: typeof DTCGGenerator;
+  ESModule: typeof ESModule;
+  HTML: typeof HTML;
+  JavaScript: typeof JavaScript;
+  Json: typeof Json;
+  Scss: typeof Scss;
+  ScssVars: typeof ScssVars;
+  Storybook: typeof Storybook;
+  TypeScript: typeof TypeScript;
+} = {
+  CSSVars,
+  DTCG: DTCGGenerator,
+  ESModule,
+  HTML,
+  JavaScript,
+  Json,
+  Scss,
+  ScssVars,
+  Storybook,
+  TypeScript,
+};
+
+export type TeiknOptions = {
   generators?: Generator[];
-  /**
-   * The plugins that you want to use
-   *
-   * default: `[]`
-   */
   plugins?: Plugin[];
-  /**
-   * The directory to output the files
-   *
-   * defaults to `process.cwd()`
-   */
+  themes?: ThemeLayer[];
   outDir?: string;
-}
+};
+
+const severityMap = {
+  info: "INFO",
+  warning: "WARN",
+  error: "ERROR",
+};
+
+const getLogLevel = (severity: "error" | "info" | "warning") => severityMap[severity];
 
 export class Teikn {
   generators: Generator[];
 
   plugins: Plugin[];
 
+  themes: ThemeLayer[];
+
   outDir: string;
 
-  static generators = generators;
+  static generators: typeof BuiltInGenerators = BuiltInGenerators;
 
-  static plugins = plugins;
+  static plugins: typeof BuiltInPlugins = BuiltInPlugins;
 
-  static Plugin = Plugin;
+  static Plugin: typeof Plugin = Plugin;
 
-  static Generator = Generator;
+  static Generator: typeof Generator = Generator;
+
+  static validate: typeof validate = validate;
+
+  static resolveReferences: typeof resolveReferences = resolveReferences;
 
   constructor(options: TeiknOptions) {
-    const { generators, outDir, plugins } = options;
-    this.generators = generators || [new Teikn.generators.Json()];
-    this.plugins = plugins || [];
-    this.outDir = outDir || process.cwd();
+    const { generators, outDir, plugins, themes } = options;
+    this.generators = generators ?? [new Teikn.generators.Json()];
+    this.plugins = plugins ?? [];
+    this.themes = themes ?? [];
+    this.outDir = outDir ?? process.cwd();
+  }
+
+  validate(tokens: Token[]): ValidationResult {
+    return validate(tokens);
+  }
+
+  /** Run expand() on all plugins that support it, returning the expanded token set. */
+  expand(tokens: Token[]): Token[] {
+    let result = tokens;
+    for (const plugin of this.plugins) {
+      if ("expand" in plugin && typeof plugin.expand === "function") {
+        result = plugin.expand(result);
+      }
+    }
+    return result;
+  }
+
+  /** Run audit() on all plugins that support it, returning all issues. */
+  audit(tokens: Token[]): AuditIssue[] {
+    const issues: AuditIssue[] = [];
+    for (const plugin of this.plugins) {
+      if (plugin.audit) {
+        issues.push(...plugin.audit(tokens));
+      }
+    }
+    return issues;
+  }
+
+  generateToStrings(tokens: Token[]): Map<string, string> {
+    const expanded = this.expand(tokens);
+    const withThemes = applyThemes(this.themes, expanded);
+    const resolved = resolveReferences(withThemes);
+
+    this.generators.forEach((g) => {
+      g.siblings = this.generators;
+    });
+
+    const results = new Map<string, string>();
+    for (const generator of this.generators) {
+      results.set(generator.file, generator.generate(resolved, this.plugins));
+    }
+    return results;
   }
 
   async transform(tokens: Token[]): Promise<void> {
-    const map = new Map<Generator, string>();
+    const auditIssues = this.audit(tokens);
+    if (auditIssues.length > 0) {
+      for (const issue of auditIssues) {
+        const prefix = getLogLevel(issue.severity);
+        console.warn(`[${prefix}] ${issue.token}: ${issue.message}`);
+      }
+    }
 
-    // Go ahead and generate the file contents before trying to write anything
-    this.generators.forEach(generator => {
-      map.set(generator, generator.generate(tokens, this.plugins));
-    });
+    const files = this.generateToStrings(tokens);
 
     try {
       await ensureDirectory(this.outDir);
-      this.generators.forEach(async generator => {
-        const filename = path.resolve(this.outDir, generator.file);
-        try {
-          await fs.promises.writeFile(filename, map.get(generator)!);
-          console.log(`Wrote ${filename}`);
-        } catch (err) {
-          console.error(`Error writing ${filename}`);
-        }
-      });
+      await Promise.all(
+        [...files.entries()].map(async ([file, content]) => {
+          const filename = path.resolve(this.outDir, file);
+          try {
+            await fs.promises.writeFile(filename, content);
+            console.log(`Wrote ${filename}`);
+          } catch (_) {
+            console.error(`Error writing ${filename}`);
+          }
+        }),
+      );
     } catch (error) {
       console.error(error);
     }
   }
 }
-
-export default Teikn;

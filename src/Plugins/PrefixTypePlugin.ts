@@ -1,7 +1,6 @@
-import camelCase from 'lodash/camelCase';
-
-import { Token } from '../Token';
-import { Plugin } from './Plugin';
+import { camelCase } from "../string-utils";
+import type { Token } from "../Token";
+import { Plugin } from "./Plugin";
 
 /**
  * Prefixes the token type to the token name
@@ -25,16 +24,20 @@ import { Plugin } from './Plugin';
  * ```
  */
 export class PrefixTypePlugin extends Plugin {
-  outputType = /.*/;
+  outputType: RegExp = /.*/;
 
-  tokenType = /.*/;
+  tokenType: RegExp = /.*/;
 
   toJSON(token: Token): Token {
     const { type, name } = token;
 
+    if (!type || !name) {
+      throw new Error("Token is missing type or name");
+    }
+
     return {
       ...token,
-      name: [camelCase(type), name[0].toUpperCase(), name.slice(1)].join(''),
+      name: [camelCase(type), name.at(0)?.toUpperCase(), name.slice(1)].join(""),
     };
   }
 }

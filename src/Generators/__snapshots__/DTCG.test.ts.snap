@@ -1,0 +1,68 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`DTCGGenerator snapshot test with standard token set 1`] = `
+"{
+  "color": {
+    "primary": {
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          1,
+          0,
+          0
+        ]
+      },
+      "$description": "Primary brand color"
+    },
+    "secondary": {
+      "$value": {
+        "colorSpace": "srgb",
+        "components": [
+          0,
+          0,
+          1
+        ]
+      }
+    },
+    "$type": "color"
+  },
+  "spacing": {
+    "sm": {
+      "$value": {
+        "value": 8,
+        "unit": "px"
+      }
+    },
+    "md": {
+      "$value": {
+        "value": 16,
+        "unit": "px"
+      }
+    },
+    "$type": "dimension"
+  },
+  "timing": {
+    "ease": {
+      "$value": [
+        0.42,
+        0,
+        0.58,
+        1
+      ]
+    },
+    "$type": "cubicBezier"
+  },
+  "font": {
+    "body": {
+      "$value": "Arial, sans-serif"
+    },
+    "$type": "fontFamily"
+  },
+  "opacity": {
+    "muted": {
+      "$value": 0.5
+    },
+    "$type": "number"
+  }
+}"
+`;

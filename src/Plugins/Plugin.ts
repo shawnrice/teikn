@@ -1,14 +1,22 @@
-import { Token } from '../Token';
+import type { Token } from "../Token";
 
-export abstract class Plugin {
+export type AuditIssue = {
+  severity: "error" | "warning" | "info";
+  token: string;
+  message: string;
+};
+
+export abstract class Plugin<Options extends Record<string, unknown> = Record<string, unknown>> {
   abstract tokenType: string | RegExp;
   abstract outputType: string | RegExp;
 
-  options: { [key: string]: any };
+  options: Options;
 
-  constructor(options: { [key: string]: any } = {}) {
+  constructor(options: Options = {} as Options) {
     this.options = options;
   }
 
   abstract toJSON(token: Token): Token;
+
+  audit?(tokens: Token[]): AuditIssue[];
 }

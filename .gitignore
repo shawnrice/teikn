@@ -7,3 +7,5 @@ lib
 .cache
 .DS_Store
 yarn-error.log
+example/dist
+.playwright-mcp

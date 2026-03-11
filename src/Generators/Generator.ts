@@ -1,10 +1,11 @@
-import { EOL } from 'os';
+import { EOL } from "node:os";
 
-import { version } from '../../package.json';
-import { Color } from '../Color';
-import { Plugin } from '../Plugins';
-import { Token } from '../Token';
-import { matches } from '../utils';
+import { version } from "../../package.json";
+import type { Plugin } from "../Plugins";
+import { camelCase, deriveShortName } from "../string-utils";
+import type { Token } from "../Token";
+import { isFirstClassValue } from "../type-classifiers";
+import { matches } from "../utils";
 
 export type GeneratorOptions = {
   /**
@@ -19,6 +20,10 @@ export type GeneratorOptions = {
    * default: `tokens`
    */
   filename?: string;
+  /**
+   * When true, emit typed getter functions grouped by token type
+   */
+  groups?: boolean;
 };
 
 export type RequiredGeneratorOptions = {
@@ -27,8 +32,15 @@ export type RequiredGeneratorOptions = {
 
 export type RequiredGeneratorOptionNames = keyof RequiredGeneratorOptions;
 
+export type GeneratorInfo = {
+  format: string;
+  usage: string;
+};
+
 export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions> {
   options: Opts;
+
+  #siblings: Generator[] = [];
 
   constructor(opts: Opts) {
     this.options = opts;
@@ -37,16 +49,36 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
     this.signature = this.signature.bind(this);
   }
 
+  get siblings(): Generator[] {
+    return this.#siblings;
+  }
+
+  set siblings(generators: Generator[]) {
+    this.#siblings = generators;
+  }
+
+  describe(): GeneratorInfo | null {
+    return null;
+  }
+
   signature(): string {
     return `Teikn v${version}`;
   }
 
   convertColorToString(token: Token): Token {
-    return token.value instanceof Color ? { ...token, value: token.value.toString() } : token;
+    const { value } = token;
+    if (isFirstClassValue(value)) {
+      return { ...token, value: (value as { toString(): string }).toString() };
+    }
+    return token;
+  }
+
+  stringifyValue(token: Token): Token {
+    return this.convertColorToString(token);
   }
 
   validateOptions(): void {
-    const required: RequiredGeneratorOptions = { ext: 'string' };
+    const required: RequiredGeneratorOptions = { ext: "string" };
 
     const errors: string[] = [];
 
@@ -65,9 +97,9 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
   }
 
   get file(): string {
-    const { ext, filename = 'tokens' } = this.options;
+    const { ext, filename = "tokens" } = this.options;
 
-    return [filename, ext].join('.');
+    return [filename, ext].join(".");
   }
 
   header(): string | null {
@@ -79,19 +111,39 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
   }
 
   protected prepareTokens(tokens: Token[], plugins: Plugin[]): Token[] {
-    return tokens.map(this.convertColorToString).map(token =>
-      plugins.reduce((acc, plugin) => {
-        if (!matches(plugin.tokenType, token.type)) {
-          return acc;
-        }
+    return tokens
+      .map((t) => this.convertColorToString(t))
+      .map((token) =>
+        plugins.reduce((acc, plugin) => {
+          if (!matches(plugin.tokenType, token.type)) {
+            return acc;
+          }
 
-        if (!matches(plugin.outputType, this.options.ext)) {
-          return acc;
-        }
+          if (!matches(plugin.outputType, this.options.ext)) {
+            return acc;
+          }
 
-        return plugin.toJSON(acc);
-      }, token),
-    );
+          return plugin.toJSON(acc);
+        }, token),
+      );
+  }
+
+  protected tokenGroups(
+    tokens: Token[],
+  ): { groupName: string; entries: { shortName: string; token: Token }[] }[] {
+    const map = new Map<string, { shortName: string; token: Token }[]>();
+    for (const token of tokens) {
+      const existing = map.get(token.type) ?? [];
+      map.set(token.type, [
+        ...existing,
+        { shortName: deriveShortName(token.name, token.type), token },
+      ]);
+    }
+    return [...map.entries()].map(([type, entries]) => ({ groupName: camelCase(type), entries }));
+  }
+
+  tokenUsage(_: Token): string | null {
+    return null;
   }
 
   abstract generateToken(_: Token): any;
@@ -105,5 +157,3 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
       .trim();
   }
 }
-
-export default Generator;
