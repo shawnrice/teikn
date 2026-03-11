@@ -64,3 +64,6 @@ jobs:
 
       - name: Lint
         run: bun run lint
+
+      - name: Format check
+        run: bunx oxfmt --check src/

@@ -1,9 +1,21 @@
-import { splitTopLevel } from '../string-utils';
-import { Color } from './Color';
+import { splitTopLevel } from "../string-utils";
+import { Color } from "./Color";
 
 const lengthRe = /^(-?\d+(?:\.\d+)?)(px|rem|em)?/;
 
-const fmtLength = (v: number): string => (v === 0 ? '0' : `${v}px`);
+const fmtLength = (v: number): string => (v === 0 ? "0" : `${v}px`);
+
+const stripKeyword = (str: string, keyword: string): string => {
+  if (str.startsWith(`${keyword} `)) {
+    return str.slice(keyword.length + 1).trim();
+  }
+
+  if (str.endsWith(` ${keyword}`)) {
+    return str.slice(0, -keyword.length - 1).trim();
+  }
+
+  return str;
+};
 
 const parse = (
   str: string,
@@ -17,12 +29,8 @@ const parse = (
 } => {
   const trimmed = str.trim();
 
-  const inset = trimmed.startsWith('inset ') || trimmed.endsWith(' inset');
-  const withoutInset = trimmed.startsWith('inset ')
-    ? trimmed.slice(6).trim()
-    : trimmed.endsWith(' inset')
-      ? trimmed.slice(0, -6).trim()
-      : trimmed;
+  const withoutInset = stripKeyword(trimmed, "inset");
+  const inset = withoutInset !== trimmed;
 
   const nums: number[] = [];
   let s = withoutInset;
@@ -82,7 +90,7 @@ export class BoxShadow {
       return;
     }
 
-    if (typeof first === 'string') {
+    if (typeof first === "string") {
       const parsed = parse(first);
       this.#offsetX = parsed.offsetX;
       this.#offsetY = parsed.offsetY;
@@ -97,7 +105,7 @@ export class BoxShadow {
     this.#offsetY = offsetY ?? 0;
     this.#blur = blur ?? 0;
     this.#spread = spread ?? 0;
-    this.#color = typeof color === 'string' ? new Color(color) : (color ?? new Color(0, 0, 0));
+    this.#color = typeof color === "string" ? new Color(color) : (color ?? new Color(0, 0, 0));
     this.#inset = inset ?? false;
   }
 
@@ -159,7 +167,7 @@ export class BoxShadow {
   toString(): string {
     const parts: string[] = [];
     if (this.#inset) {
-      parts.push('inset');
+      parts.push("inset");
     }
     parts.push(fmtLength(this.#offsetX));
     parts.push(fmtLength(this.#offsetY));
@@ -170,12 +178,12 @@ export class BoxShadow {
       parts.push(fmtLength(this.#spread));
     }
     parts.push(this.#color.toString());
-    return parts.join(' ');
+    return parts.join(" ");
   }
 
   /** Combine multiple shadows into a single CSS value */
   static combine(...shadows: BoxShadow[]): string {
-    return shadows.map(s => s.toString()).join(', ');
+    return shadows.map((s) => s.toString()).join(", ");
   }
 }
 
@@ -189,8 +197,8 @@ export class BoxShadowList {
       return;
     }
 
-    if (typeof first === 'string') {
-      this.#layers = splitTopLevel(first).map(s => new BoxShadow(s));
+    if (typeof first === "string") {
+      this.#layers = splitTopLevel(first).map((s) => new BoxShadow(s));
       return;
     }
 
@@ -217,6 +225,6 @@ export class BoxShadowList {
   }
 
   toString(): string {
-    return this.#layers.map(s => s.toString()).join(', ');
+    return this.#layers.map((s) => s.toString()).join(", ");
   }
 }

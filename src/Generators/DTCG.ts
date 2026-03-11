@@ -1,12 +1,12 @@
-import { serializeDTCG } from '../dtcg';
-import type { Plugin } from '../Plugins';
-import type { Token } from '../Token';
-import { matches } from '../utils';
-import type { GeneratorOptions } from './Generator';
-import { Generator } from './Generator';
+import { serializeDTCG } from "../dtcg";
+import type { Plugin } from "../Plugins";
+import type { Token } from "../Token";
+import { matches } from "../utils";
+import type { GeneratorOptions } from "./Generator";
+import { Generator } from "./Generator";
 
 const defaultOptions = {
-  ext: 'tokens.json',
+  ext: "tokens.json",
 };
 
 export type DTCGOpts = {
@@ -23,7 +23,7 @@ export class DTCGGenerator extends Generator<DTCGOpts> {
 
   override describe() {
     return {
-      format: 'DTCG',
+      format: "DTCG",
       usage: `// W3C Design Token Community Group format\n// Import into Style Dictionary, Tokens Studio, or other DTCG-compatible tools`,
     };
   }
@@ -33,7 +33,7 @@ export class DTCGGenerator extends Generator<DTCGOpts> {
   }
 
   protected override prepareTokens(tokens: Token[], plugins: Plugin[]): Token[] {
-    return tokens.map(token =>
+    return tokens.map((token) =>
       plugins.reduce((acc, plugin) => {
         if (!matches(plugin.tokenType, token.type)) {
           return acc;
@@ -49,13 +49,13 @@ export class DTCGGenerator extends Generator<DTCGOpts> {
   }
 
   generateToken(_: Token): string {
-    return '';
+    return "";
   }
 
   combinator(tokens: Token[]): string {
     const doc = serializeDTCG(tokens, {
       hierarchical: this.options.hierarchical ?? true,
-      separator: this.options.separator ?? '.',
+      separator: this.options.separator ?? ".",
     });
     return JSON.stringify(doc, null, 2);
   }

@@ -1,8 +1,8 @@
-import { Color } from './TokenTypes/Color';
-import { Dimension } from './TokenTypes/Dimension';
-import type { DimensionUnit } from './TokenTypes/Dimension';
-import { Duration } from './TokenTypes/Duration';
-import type { DurationUnit } from './TokenTypes/Duration';
+import { Color } from "./TokenTypes/Color";
+import { Dimension } from "./TokenTypes/Dimension";
+import type { DimensionUnit } from "./TokenTypes/Dimension";
+import { Duration } from "./TokenTypes/Duration";
+import type { DurationUnit } from "./TokenTypes/Duration";
 import type {
   CompositeInput,
   CompositeTokenInput,
@@ -11,19 +11,19 @@ import type {
   TokenInput,
   TokenInputObject,
   TokenValue,
-} from './Token';
+} from "./Token";
 
 const isTokenInputObject = (v: unknown): v is TokenInputObject =>
-  typeof v === 'object' && v !== null && !Color.isColor(v) && !Array.isArray(v) && 'value' in v;
+  typeof v === "object" && v !== null && !Color.isColor(v) && !Array.isArray(v) && "value" in v;
 
-const resolveTokenInput = (name: string, input: TokenInput): Omit<Token, 'type'> => {
+const resolveTokenInput = (name: string, input: TokenInput): Omit<Token, "type"> => {
   if (Array.isArray(input)) {
     return { name, value: input[0], usage: input[1] };
   }
 
   if (isTokenInputObject(input)) {
     const { value, usage, modes } = input;
-    const token: Omit<Token, 'type'> = { name, value };
+    const token: Omit<Token, "type"> = { name, value };
     if (usage) {
       token.usage = usage;
     }
@@ -37,14 +37,14 @@ const resolveTokenInput = (name: string, input: TokenInput): Omit<Token, 'type'>
   return { name, value: input };
 };
 
-const resolveCompositeInput = (name: string, input: CompositeTokenInput): Omit<Token, 'type'> => {
+const resolveCompositeInput = (name: string, input: CompositeTokenInput): Omit<Token, "type"> => {
   if (Array.isArray(input)) {
     return { name, value: input[0], usage: input[1] };
   }
 
-  if (typeof input === 'object' && 'value' in input && typeof input.value === 'object') {
+  if (typeof input === "object" && "value" in input && typeof input.value === "object") {
     const obj = input as { value: CompositeInput; usage?: string; modes?: Record<string, any> };
-    const token: Omit<Token, 'type'> = { name, value: obj.value };
+    const token: Omit<Token, "type"> = { name, value: obj.value };
 
     if (obj.usage) {
       token.usage = obj.usage;
@@ -202,7 +202,7 @@ export const onColors = (
  * dp(8)   // => Dimension(0.5, 'rem')
  * ```
  */
-export const dp = (px: number): Dimension => new Dimension(px / 16, 'rem');
+export const dp = (px: number): Dimension => new Dimension(px / 16, "rem");
 
 /**
  * Create a Dimension value.
@@ -251,13 +251,13 @@ export const theme = (
   overrides: Record<string, TokenValue>,
 ): ThemeLayer => {
   const isTokenArray = Array.isArray(source);
-  const tokenNames = isTokenArray ? source.map(t => t.name) : source.tokenNames;
+  const tokenNames = isTokenArray ? source.map((t) => t.name) : source.tokenNames;
   const validNames = new Set(tokenNames);
 
   for (const key of Object.keys(overrides)) {
     if (!validNames.has(key)) {
       throw new Error(
-        `Theme "${name}": unknown token "${key}". Available: ${tokenNames.join(', ')}`,
+        `Theme "${name}": unknown token "${key}". Available: ${tokenNames.join(", ")}`,
       );
     }
   }

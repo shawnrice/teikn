@@ -1,78 +1,78 @@
-import { describe, expect, test } from 'bun:test';
+import { describe, expect, test } from "bun:test";
 
-import { tokenSet1 } from '../fixtures/tokenSet1';
-import type { Token } from '../Token';
-import { CSSVars as Generator } from './CSSVars';
+import { tokenSet1 } from "../fixtures/tokenSet1";
+import type { Token } from "../Token";
+import { CSSVars as Generator } from "./CSSVars";
 
-describe('CSSVars Generator tests', () => {
-  test('It has the correct filename', () => {
-    expect(new Generator().file).toBe('tokens.css');
+describe("CSSVars Generator tests", () => {
+  test("It has the correct filename", () => {
+    expect(new Generator().file).toBe("tokens.css");
   });
 
-  test('It generates the token set', () => {
-    expect(new Generator({ dateFn: () => 'null' }).generate(tokenSet1)).toMatchSnapshot();
+  test("It generates the token set", () => {
+    expect(new Generator({ dateFn: () => "null" }).generate(tokenSet1)).toMatchSnapshot();
   });
 
-  test('It generates a basic token without usage', () => {
-    const gen = new Generator({ dateFn: () => 'null' });
-    const token: Token = { name: 'primary', type: 'color', value: '#0066cc' };
-    expect(gen.generateToken(token)).toBe('  --primary: #0066cc;');
+  test("It generates a basic token without usage", () => {
+    const gen = new Generator({ dateFn: () => "null" });
+    const token: Token = { name: "primary", type: "color", value: "#0066cc" };
+    expect(gen.generateToken(token)).toBe("  --primary: #0066cc;");
   });
 
-  test('It includes usage as a CSS comment', () => {
-    const gen = new Generator({ dateFn: () => 'null' });
+  test("It includes usage as a CSS comment", () => {
+    const gen = new Generator({ dateFn: () => "null" });
     const token: Token = {
-      name: 'primary',
-      type: 'color',
-      usage: 'Primary brand color',
-      value: '#0066cc',
+      name: "primary",
+      type: "color",
+      usage: "Primary brand color",
+      value: "#0066cc",
     };
     const output = gen.generateToken(token);
-    expect(output).toContain('/* Primary brand color */');
-    expect(output).toContain('--primary: #0066cc;');
+    expect(output).toContain("/* Primary brand color */");
+    expect(output).toContain("--primary: #0066cc;");
   });
 
-  test('It generates themed tokens with modes', () => {
-    const gen = new Generator({ dateFn: () => 'null' });
+  test("It generates themed tokens with modes", () => {
+    const gen = new Generator({ dateFn: () => "null" });
     const tokens: Token[] = [
-      { name: 'bg', type: 'color', value: '#ffffff', modes: { dark: '#1a1a1a' } },
-      { name: 'text', type: 'color', value: '#000000', modes: { dark: '#eeeeee' } },
+      { name: "bg", type: "color", value: "#ffffff", modes: { dark: "#1a1a1a" } },
+      { name: "text", type: "color", value: "#000000", modes: { dark: "#eeeeee" } },
     ];
     const output = gen.generate(tokens);
-    expect(output).toContain(':root {');
+    expect(output).toContain(":root {");
     expect(output).toContain('[data-theme="dark"]');
-    expect(output).toContain('--bg: #1a1a1a;');
-    expect(output).toContain('--text: #eeeeee;');
+    expect(output).toContain("--bg: #1a1a1a;");
+    expect(output).toContain("--text: #eeeeee;");
     expect(output).toMatchSnapshot();
   });
 
-  test('It applies a custom name transformer', () => {
+  test("It applies a custom name transformer", () => {
     const gen = new Generator({
-      dateFn: () => 'null',
+      dateFn: () => "null",
       nameTransformer: (n: string) => n.toUpperCase(),
     });
-    const token: Token = { name: 'primary', type: 'color', value: '#0066cc' };
-    expect(gen.generateToken(token)).toContain('--PRIMARY:');
+    const token: Token = { name: "primary", type: "color", value: "#0066cc" };
+    expect(gen.generateToken(token)).toContain("--PRIMARY:");
   });
 
-  test('useMediaQuery emits @media block for dark mode', () => {
-    const gen = new Generator({ dateFn: () => 'null', useMediaQuery: true });
+  test("useMediaQuery emits @media block for dark mode", () => {
+    const gen = new Generator({ dateFn: () => "null", useMediaQuery: true });
     const tokens: Token[] = [
-      { name: 'bg', type: 'color', value: '#ffffff', modes: { dark: '#1a1a1a' } },
+      { name: "bg", type: "color", value: "#ffffff", modes: { dark: "#1a1a1a" } },
     ];
     const output = gen.generate(tokens);
     expect(output).toContain('[data-theme="dark"]');
-    expect(output).toContain('@media (prefers-color-scheme: dark)');
-    expect(output).toContain('--bg: #1a1a1a;');
+    expect(output).toContain("@media (prefers-color-scheme: dark)");
+    expect(output).toContain("--bg: #1a1a1a;");
   });
 
-  test('modeSelectors overrides default data-theme selector', () => {
-    const gen = new Generator({ dateFn: () => 'null', modeSelectors: { dark: '.dark' } });
+  test("modeSelectors overrides default data-theme selector", () => {
+    const gen = new Generator({ dateFn: () => "null", modeSelectors: { dark: ".dark" } });
     const tokens: Token[] = [
-      { name: 'bg', type: 'color', value: '#ffffff', modes: { dark: '#1a1a1a' } },
+      { name: "bg", type: "color", value: "#ffffff", modes: { dark: "#1a1a1a" } },
     ];
     const output = gen.generate(tokens);
-    expect(output).toContain('.dark {');
+    expect(output).toContain(".dark {");
     expect(output).not.toContain('[data-theme="dark"]');
   });
 });

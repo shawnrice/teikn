@@ -1,10 +1,10 @@
-import { camelCase } from '../string-utils';
-import type { Token } from '../Token';
-import type { GeneratorOptions } from './Generator';
-import { Generator } from './Generator';
+import { camelCase } from "../string-utils";
+import type { Token } from "../Token";
+import type { GeneratorOptions } from "./Generator";
+import { Generator } from "./Generator";
 
 const defaultOptions = {
-  ext: 'json',
+  ext: "json",
   nameTransformer: camelCase,
 };
 
@@ -20,12 +20,12 @@ export class Json extends Generator<JsonOpts> {
 
   override describe() {
     return {
-      format: 'JSON',
+      format: "JSON",
       usage: `// Import as a module\nimport tokens from './${this.file}';\n\n// Or fetch at runtime\nfetch('./${this.file}').then(r => r.json())`,
     };
   }
 
-  generateToken(token: Token): Record<string, Omit<Token, 'name'>> {
+  generateToken(token: Token): Record<string, Omit<Token, "name">> {
     const { nameTransformer } = this.options;
     const { name, ...values } = token;
     const key = nameTransformer!(name);

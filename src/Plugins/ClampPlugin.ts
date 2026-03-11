@@ -1,6 +1,6 @@
-import type { Token } from '../Token';
-import { Dimension } from '../TokenTypes/Dimension';
-import { Plugin } from './Plugin';
+import type { Token } from "../Token";
+import { Dimension } from "../TokenTypes/Dimension";
+import { Plugin } from "./Plugin";
 
 type ClampPair = {
   min: string;
@@ -20,15 +20,15 @@ const DEFAULT_VIEWPORT_MAX = 1280;
 const round = (n: number, decimals = 4): number => Math.round(n * 10 ** decimals) / 10 ** decimals;
 
 const toRem = (value: number, unit: string, remBase = 16): number => {
-  if (unit === 'rem') {
+  if (unit === "rem") {
     return value;
   }
-  if (unit === 'px') {
+  if (unit === "px") {
     return value / remBase;
   }
   // For other absolute units, convert to px first then to rem
   const dim = new Dimension(value, unit as any);
-  return dim.to('px').value / remBase;
+  return dim.to("px").value / remBase;
 };
 
 const extractNumericValue = (token: Token): { value: number; unit: string } | null => {
@@ -38,15 +38,15 @@ const extractNumericValue = (token: Token): { value: number; unit: string } | nu
     return { value: value.value, unit: value.unit };
   }
 
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     const match = value.match(/^(-?\d+(?:\.\d+)?)(px|rem|em|%|cm|mm|in|pt|pc)$/);
     if (match) {
       return { value: parseFloat(match[1]!), unit: match[2]! };
     }
   }
 
-  if (typeof value === 'number') {
-    return { value, unit: 'px' };
+  if (typeof value === "number") {
+    return { value, unit: "px" };
   }
 
   return null;
@@ -101,7 +101,7 @@ export class ClampPlugin extends Plugin<ClampPluginOptions> {
       return tokens;
     }
 
-    const tokenMap = new Map(tokens.map(t => [t.name, t]));
+    const tokenMap = new Map(tokens.map((t) => [t.name, t]));
     const generated: Token[] = [];
 
     for (const pair of pairs) {

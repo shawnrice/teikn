@@ -7,19 +7,19 @@ export type DTCGColorValue = {
 
 export type DTCGDimensionValue = {
   value: number;
-  unit: 'px' | 'rem';
+  unit: "px" | "rem";
 };
 
 export type DTCGDurationValue = {
   value: number;
-  unit: 'ms' | 's';
+  unit: "ms" | "s";
 };
 
 export type DTCGStrokeStyleValue =
   | string
   | {
       dashArray: number[];
-      lineCap: 'butt' | 'round' | 'square';
+      lineCap: "butt" | "round" | "square";
     };
 
 export type DTCGCubicBezierValue = [number, number, number, number];
@@ -100,20 +100,20 @@ export type DTCGDocument = Record<
 
 // Type name constants matching the DTCG spec
 export const DTCG_TYPES = {
-  color: 'color',
-  dimension: 'dimension',
-  fontFamily: 'fontFamily',
-  fontWeight: 'fontWeight',
-  duration: 'duration',
-  cubicBezier: 'cubicBezier',
-  number: 'number',
-  strokeStyle: 'strokeStyle',
-  border: 'border',
-  transition: 'transition',
-  shadow: 'shadow',
-  gradient: 'gradient',
-  typography: 'typography',
-  fontStyle: 'fontStyle',
+  color: "color",
+  dimension: "dimension",
+  fontFamily: "fontFamily",
+  fontWeight: "fontWeight",
+  duration: "duration",
+  cubicBezier: "cubicBezier",
+  number: "number",
+  strokeStyle: "strokeStyle",
+  border: "border",
+  transition: "transition",
+  shadow: "shadow",
+  gradient: "gradient",
+  typography: "typography",
+  fontStyle: "fontStyle",
 } as const;
 
 export type DTCGTypeName = (typeof DTCG_TYPES)[keyof typeof DTCG_TYPES];

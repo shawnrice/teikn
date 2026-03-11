@@ -1,7 +1,7 @@
-import fs from 'node:fs';
-import path from 'node:path';
+import fs from "node:fs";
+import path from "node:path";
 
-import { ensureDirectory } from './ensure-directory';
+import { ensureDirectory } from "./ensure-directory";
 import {
   CSSVars,
   DTCGGenerator,
@@ -14,7 +14,8 @@ import {
   ScssVars,
   Storybook,
   TypeScript,
-} from './Generators';
+} from "./Generators";
+import type { AuditIssue } from "./Plugins";
 import {
   AlphaMultiplyPlugin,
   ClampPlugin,
@@ -32,12 +33,11 @@ import {
   RemUnitPlugin,
   SCSSQuoteValuePlugin,
   TouchTargetPlugin,
-} from './Plugins';
-import type { AuditIssue } from './Plugins';
-import { resolveReferences } from './resolve';
-import type { ThemeLayer, Token, TokenValue } from './Token';
-import { validate } from './validate';
-import type { ValidationResult } from './validate';
+} from "./Plugins";
+import { resolveReferences } from "./resolve";
+import type { ThemeLayer, Token, TokenValue } from "./Token";
+import type { ValidationResult } from "./validate";
+import { validate } from "./validate";
 
 /**
  * Apply theme layers to tokens, merging each layer's overrides into token.modes.
@@ -57,7 +57,7 @@ const applyThemes = (themes: ThemeLayer[], tokens: Token[]): Token[] => {
     }
   }
 
-  return tokens.map(token => {
+  return tokens.map((token) => {
     const updates = modeUpdates.get(token.name);
     if (!updates) {
       return token;
@@ -69,7 +69,7 @@ const applyThemes = (themes: ThemeLayer[], tokens: Token[]): Token[] => {
   });
 };
 
-const plugins: {
+const BuiltInPlugins: {
   AlphaMultiplyPlugin: typeof AlphaMultiplyPlugin;
   ClampPlugin: typeof ClampPlugin;
   ColorBlindnessPlugin: typeof ColorBlindnessPlugin;
@@ -103,7 +103,7 @@ const plugins: {
   TouchTargetPlugin,
 };
 
-const generators: {
+const BuiltInGenerators: {
   CSSVars: typeof CSSVars;
   DTCG: typeof DTCGGenerator;
   ESModule: typeof ESModule;
@@ -134,6 +134,14 @@ export type TeiknOptions = {
   outDir?: string;
 };
 
+const severityMap = {
+  info: "INFO",
+  warning: "WARN",
+  error: "ERROR",
+};
+
+const getLogLevel = (severity: "error" | "info" | "warning") => severityMap[severity];
+
 export class Teikn {
   generators: Generator[];
 
@@ -143,9 +151,9 @@ export class Teikn {
 
   outDir: string;
 
-  static generators: typeof generators = generators;
+  static generators: typeof BuiltInGenerators = BuiltInGenerators;
 
-  static plugins: typeof plugins = plugins;
+  static plugins: typeof BuiltInPlugins = BuiltInPlugins;
 
   static Plugin: typeof Plugin = Plugin;
 
@@ -171,7 +179,7 @@ export class Teikn {
   expand(tokens: Token[]): Token[] {
     let result = tokens;
     for (const plugin of this.plugins) {
-      if ('expand' in plugin && typeof plugin.expand === 'function') {
+      if ("expand" in plugin && typeof plugin.expand === "function") {
         result = plugin.expand(result);
       }
     }
@@ -194,7 +202,7 @@ export class Teikn {
     const withThemes = applyThemes(this.themes, expanded);
     const resolved = resolveReferences(withThemes);
 
-    this.generators.forEach(g => {
+    this.generators.forEach((g) => {
       g.siblings = this.generators;
     });
 
@@ -209,8 +217,7 @@ export class Teikn {
     const auditIssues = this.audit(tokens);
     if (auditIssues.length > 0) {
       for (const issue of auditIssues) {
-        const prefix =
-          issue.severity === 'error' ? 'ERROR' : issue.severity === 'warning' ? 'WARN' : 'INFO';
+        const prefix = getLogLevel(issue.severity);
         console.warn(`[${prefix}] ${issue.token}: ${issue.message}`);
       }
     }

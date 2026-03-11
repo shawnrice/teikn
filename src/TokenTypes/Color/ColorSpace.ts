@@ -7,10 +7,10 @@ import {
   RGBToXYZ,
   XYZToLAB,
   XYZToRGB,
-} from './conversions';
-import type { HSL, LAB, LCH, RGB, XYZ } from './types';
+} from "./conversions";
+import type { HSL, LAB, LCH, RGB, XYZ } from "./types";
 
-export type Space = 'rgb' | 'hsl' | 'xyz' | 'lab' | 'lch';
+export type Space = "rgb" | "hsl" | "xyz" | "lab" | "lch";
 
 export type SpaceData = {
   hsl: HSL;
@@ -39,38 +39,38 @@ const direct: DirectConversion = {
 const paths: Record<Space, Record<Space, Space[]>> = {
   hsl: {
     hsl: [],
-    lab: ['rgb', 'xyz', 'lab'],
-    lch: ['rgb', 'xyz', 'lab', 'lch'],
-    rgb: ['rgb'],
-    xyz: ['rgb', 'xyz'],
+    lab: ["rgb", "xyz", "lab"],
+    lch: ["rgb", "xyz", "lab", "lch"],
+    rgb: ["rgb"],
+    xyz: ["rgb", "xyz"],
   },
   lab: {
-    hsl: ['xyz', 'rgb', 'hsl'],
+    hsl: ["xyz", "rgb", "hsl"],
     lab: [],
-    lch: ['lch'],
-    rgb: ['xyz', 'rgb'],
-    xyz: ['xyz'],
+    lch: ["lch"],
+    rgb: ["xyz", "rgb"],
+    xyz: ["xyz"],
   },
   lch: {
-    hsl: ['lab', 'xyz', 'rgb', 'hsl'],
-    lab: ['lab'],
+    hsl: ["lab", "xyz", "rgb", "hsl"],
+    lab: ["lab"],
     lch: [],
-    rgb: ['lab', 'xyz', 'rgb'],
-    xyz: ['lab', 'xyz'],
+    rgb: ["lab", "xyz", "rgb"],
+    xyz: ["lab", "xyz"],
   },
   rgb: {
-    hsl: ['hsl'],
-    lab: ['xyz', 'lab'],
-    lch: ['xyz', 'lab', 'lch'],
+    hsl: ["hsl"],
+    lab: ["xyz", "lab"],
+    lch: ["xyz", "lab", "lch"],
     rgb: [],
-    xyz: ['xyz'],
+    xyz: ["xyz"],
   },
 
   xyz: {
-    hsl: ['rgb', 'hsl'],
-    lab: ['lab'],
-    lch: ['lab', 'lch'],
-    rgb: ['rgb'],
+    hsl: ["rgb", "hsl"],
+    lab: ["lab"],
+    lch: ["lab", "lch"],
+    rgb: ["rgb"],
     xyz: [],
   },
 };
@@ -93,7 +93,7 @@ export const convert = <To extends Space>(
   }
 
   const [d] = paths[from][to].reduce<ConvertAcc>(
-    ([data, prev], next) => [(direct[prev]![next]! as Conversion)(data), next],
+    ([acc, prev], next) => [(direct[prev]![next]! as Conversion)(acc), next],
     [data, from],
   );
 
@@ -110,8 +110,8 @@ export const convertWithIntermediates = (
   }
 
   const [, , res] = paths[from][to].reduce<ConvertWithIntermediatesAcc>(
-    ([data, prev, history], next) => {
-      const converted = (direct[prev]![next]! as Conversion)(data);
+    ([acc, prev, history], next) => {
+      const converted = (direct[prev]![next]! as Conversion)(acc);
       return [converted, next, { ...history, [next]: converted }];
     },
     [data, from, { [from]: data }],

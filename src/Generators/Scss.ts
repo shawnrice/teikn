@@ -1,25 +1,25 @@
-import { EOL } from 'os';
+import { EOL } from "node:os";
 
-import type { Plugin } from '../Plugins';
-import { camelCase, deriveShortName, kebabCase } from '../string-utils';
-import type { Token } from '../Token';
-import { getDate } from '../utils';
-import type { GeneratorInfo, GeneratorOptions } from './Generator';
-import { Generator } from './Generator';
+import type { Plugin } from "../Plugins";
+import { camelCase, deriveShortName, kebabCase } from "../string-utils";
+import type { Token } from "../Token";
+import { getDate } from "../utils";
+import type { GeneratorInfo, GeneratorOptions } from "./Generator";
+import { Generator } from "./Generator";
 
 const scssValue = (value: unknown): string => {
-  if (typeof value !== 'object' || value === null) {
+  if (typeof value !== "object" || value === null) {
     return String(value);
   }
   const obj = value as Record<string, unknown>;
-  if ('width' in obj && 'style' in obj && 'color' in obj) {
-    return [obj.width, obj.style, obj.color].filter(Boolean).join(' ');
+  if ("width" in obj && "style" in obj && "color" in obj) {
+    return [obj.width, obj.style, obj.color].filter(Boolean).join(" ");
   }
-  return Object.values(obj).join(' ');
+  return Object.values(obj).join(" ");
 };
 
 const defaultOptions = {
-  ext: 'scss',
+  ext: "scss",
   nameTransformer: kebabCase,
   dateFn: getDate,
 };
@@ -36,12 +36,12 @@ export class Scss extends Generator<ScssOpts> {
   }
 
   override describe(): GeneratorInfo | null {
-    const base = `@use '${this.options.filename ?? 'tokens'}' as *;\n\n// Access tokens by name\nget-token('token-name')`;
+    const base = `@use '${this.options.filename ?? "tokens"}' as *;\n\n// Access tokens by name\nget-token('token-name')`;
     const groupUsage = this.options.groups
       ? `\n\n// Or use typed group accessors\ncolor('primary')`
-      : '';
+      : "";
     return {
-      format: 'SCSS Map',
+      format: "SCSS Map",
       usage: base + groupUsage,
     };
   }
@@ -74,7 +74,7 @@ export class Scss extends Generator<ScssOpts> {
 
   combinator(tokens: Token[]): string {
     const { nameTransformer } = this.options;
-    const values = tokens.map(token => this.generateToken(token));
+    const values = tokens.map((token) => this.generateToken(token));
     const lines = [`// prettier-ignore`, `$token-values: (`, values.join(EOL), `);`];
 
     const modeMap = new Map<string, string[]>();
@@ -92,18 +92,18 @@ export class Scss extends Generator<ScssOpts> {
     }
 
     if (modeMap.size > 0) {
-      lines.push('');
-      lines.push('// prettier-ignore');
-      lines.push('$modes: (');
+      lines.push("");
+      lines.push("// prettier-ignore");
+      lines.push("$modes: (");
       for (const [mode, entries] of modeMap) {
         lines.push(`  ${mode}: (`);
         lines.push(...entries);
         lines.push(`  ),`);
       }
-      lines.push(') !default;');
+      lines.push(") !default;");
     }
 
-    lines.push('');
+    lines.push("");
     return lines.join(EOL);
   }
 
@@ -154,7 +154,7 @@ export class Scss extends Generator<ScssOpts> {
           `$${groupKebab}-values: (`,
           mapEntries,
           `);`,
-          '',
+          "",
           `@function ${groupKebab}($name) {`,
           `  @if not map-has-key($${groupKebab}-values, $name) {`,
           `    @error "Unknown ${groupKebab} token '#{$name}'. Available: #{map-keys($${groupKebab}-values)}";`,
@@ -173,6 +173,6 @@ export class Scss extends Generator<ScssOpts> {
     if (!groupBlocks) {
       return base;
     }
-    return [base, '', groupBlocks].join(EOL).trim();
+    return [base, "", groupBlocks].join(EOL).trim();
   }
 }

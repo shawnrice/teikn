@@ -1,7 +1,7 @@
-import type { Token } from '../Token';
+import type { Token } from "../Token";
 
 export type AuditIssue = {
-  severity: 'error' | 'warning' | 'info';
+  severity: "error" | "warning" | "info";
   token: string;
   message: string;
 };

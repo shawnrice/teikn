@@ -1,5 +1,5 @@
-import type { Token } from '../Token';
-import { Plugin } from './Plugin';
+import type { Token } from "../Token";
+import { Plugin } from "./Plugin";
 
 /**
  * Quotes some SCSS values

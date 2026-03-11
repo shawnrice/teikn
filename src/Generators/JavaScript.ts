@@ -1,22 +1,22 @@
-import { EOL } from 'os';
+import { EOL } from "node:os";
 
-import { camelCase, deriveShortName } from '../string-utils';
-import type { Token } from '../Token';
-import { getDate } from '../utils';
-import type { GeneratorInfo, GeneratorOptions } from './Generator';
-import { Generator } from './Generator';
+import { camelCase, deriveShortName } from "../string-utils";
+import type { Token } from "../Token";
+import { getDate } from "../utils";
+import type { GeneratorInfo, GeneratorOptions } from "./Generator";
+import { Generator } from "./Generator";
 
 const defaultOptions = {
-  ext: 'js',
+  ext: "js",
   nameTransformer: camelCase,
   dateFn: getDate,
 };
 
 const maybeQuote = (val: any): string => {
-  if (typeof val === 'string') {
+  if (typeof val === "string") {
     return `'${val}'`;
   }
-  if (typeof val === 'object' && val !== null) {
+  if (typeof val === "object" && val !== null) {
     return JSON.stringify(val);
   }
   return String(val);
@@ -41,9 +41,9 @@ export class JavaScript extends Generator<JavaScriptOpts> {
     const base = `const { tokens } = require('./${this.file}');\n\ntokens.tokenName`;
     const groupUsage = this.options.groups
       ? `\n\n// Or use typed group accessors\nconst { color } = require('./${this.file}');\ncolor('primary')`
-      : '';
+      : "";
     return {
-      format: 'CommonJS',
+      format: "CommonJS",
       usage: base + groupUsage,
     };
   }
@@ -88,16 +88,16 @@ export class JavaScript extends Generator<JavaScriptOpts> {
 
   combinator(tokens: Token[]): string {
     const { nameTransformer, groups } = this.options;
-    const values = tokens.map(t => this.generateToken(t));
+    const values = tokens.map((t) => this.generateToken(t));
     const parts = [
-      'const tokens = {',
+      "const tokens = {",
       values
         .map((token, index, arr) => (index === arr.length - 1 ? token.slice(0, -1) : token))
         .join(EOL),
-      '};',
+      "};",
     ];
 
-    const exportNames = ['tokens'];
+    const exportNames = ["tokens"];
 
     if (groups) {
       const groupBlocks = this.tokenGroups(tokens).map(({ groupName, entries }) => {
@@ -118,7 +118,7 @@ export class JavaScript extends Generator<JavaScriptOpts> {
           `};`,
         ].join(EOL);
       });
-      parts.push('', ...groupBlocks);
+      parts.push("", ...groupBlocks);
     }
 
     const modeMap = new Map<string, string[]>();
@@ -138,12 +138,12 @@ export class JavaScript extends Generator<JavaScriptOpts> {
       const modeEntries = [...modeMap.entries()].map(([mode, entries]) =>
         [`  ${quoteKey(mode)}: {`, ...entries, `  },`].join(EOL),
       );
-      parts.push('', `const modes = {`, ...modeEntries, `};`);
-      exportNames.push('modes');
+      parts.push("", `const modes = {`, ...modeEntries, `};`);
+      exportNames.push("modes");
     }
 
-    const exportsStr = exportNames.map(n => `${n}: ${n}`).join(', ');
-    parts.push('', `module.exports = { ${exportsStr}, default: tokens };`);
+    const exportsStr = exportNames.map((n) => `${n}: ${n}`).join(", ");
+    parts.push("", `module.exports = { ${exportsStr}, default: tokens };`);
     return parts.join(EOL);
   }
 }

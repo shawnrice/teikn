@@ -1,13 +1,13 @@
-import fs from 'fs';
-import path from 'path';
+import fs from "node:fs";
+import path from "node:path";
 
 export const ensureDirectory = async (dirPath: string): Promise<void> => {
   const dir = path.resolve(dirPath);
   try {
     await fs.promises.access(dir);
     return Promise.resolve();
-  } catch (err: unknown) {
-    if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
+  } catch (error: unknown) {
+    if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
       return Promise.reject();
     }
 
@@ -15,8 +15,8 @@ export const ensureDirectory = async (dirPath: string): Promise<void> => {
       await fs.promises.mkdir(dir, { mode: 0o755, recursive: true });
       console.log(`Created ${dir}.`);
       return Promise.resolve();
-    } catch (error) {
-      return Promise.reject(error);
+    } catch (e: unknown) {
+      return Promise.reject(e);
     }
   }
 };

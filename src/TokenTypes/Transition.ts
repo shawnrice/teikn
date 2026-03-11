@@ -1,25 +1,25 @@
-import { splitTopLevel } from '../string-utils';
-import { CubicBezier } from './CubicBezier';
+import { splitTopLevel } from "../string-utils";
+import { CubicBezier } from "./CubicBezier";
 
 const timeRe = /^(\d+(?:\.\d+)?)(ms|s)$/;
 
-const timingKeywords = new Set(['ease', 'ease-in', 'ease-out', 'ease-in-out', 'linear']);
+const timingKeywords = new Set(["ease", "ease-in", "ease-out", "ease-in-out", "linear"]);
 
 const splitRespectingParens = (s: string): string[] => {
   const parts: string[] = [];
-  let current = '';
+  let current = "";
   let depth = 0;
   for (const ch of s) {
-    if (ch === '(') {
+    if (ch === "(") {
       depth++;
       current += ch;
-    } else if (ch === ')') {
+    } else if (ch === ")") {
       depth--;
       current += ch;
-    } else if (ch === ' ' && depth === 0) {
+    } else if (ch === " " && depth === 0) {
       if (current.length > 0) {
         parts.push(current);
-        current = '';
+        current = "";
       }
     } else {
       current += ch;
@@ -51,7 +51,7 @@ const parse = (
       times.push(part);
     } else if (
       timingKeywords.has(part.toLowerCase()) ||
-      part.toLowerCase().startsWith('cubic-bezier(')
+      part.toLowerCase().startsWith("cubic-bezier(")
     ) {
       timing = part;
     } else {
@@ -60,10 +60,10 @@ const parse = (
   }
 
   return {
-    duration: times[0] ?? '0s',
-    timingFunction: new CubicBezier(timing ?? 'ease'),
-    delay: times[1] ?? '0s',
-    property: property ?? 'all',
+    duration: times[0] ?? "0s",
+    timingFunction: new CubicBezier(timing ?? "ease"),
+    delay: times[1] ?? "0s",
+    property: property ?? "all",
   };
 };
 
@@ -94,7 +94,7 @@ export class Transition {
       return;
     }
 
-    if (typeof first === 'string' && timingFunction === undefined) {
+    if (typeof first === "string" && timingFunction === undefined) {
       const parsed = parse(first);
       this.#duration = parsed.duration;
       this.#timingFunction = parsed.timingFunction;
@@ -107,9 +107,9 @@ export class Transition {
     this.#timingFunction =
       timingFunction instanceof CubicBezier
         ? timingFunction
-        : new CubicBezier(timingFunction ?? 'ease');
-    this.#delay = delay ?? '0s';
-    this.#property = property ?? 'all';
+        : new CubicBezier(timingFunction ?? "ease");
+    this.#delay = delay ?? "0s";
+    this.#property = property ?? "all";
   }
 
   get duration(): string {
@@ -147,23 +147,23 @@ export class Transition {
 
   toString(): string {
     const parts: string[] = [];
-    if (this.#property !== 'all') {
+    if (this.#property !== "all") {
       parts.push(this.#property);
     }
     parts.push(this.#duration);
-    const keyword = this.#timingFunction.keyword;
+    const { keyword } = this.#timingFunction;
     parts.push(keyword ?? this.#timingFunction.toString());
-    if (this.#delay !== '0s') {
+    if (this.#delay !== "0s") {
       parts.push(this.#delay);
     }
-    return parts.join(' ');
+    return parts.join(" ");
   }
 
   // ─── Static presets ──────────────────────────────────────────
 
-  static readonly fade: Transition = new Transition('0.2s', 'ease');
-  static readonly slide: Transition = new Transition('0.3s', CubicBezier.standard);
-  static readonly quick: Transition = new Transition('0.1s', 'ease');
+  static readonly fade: Transition = new Transition("0.2s", "ease");
+  static readonly slide: Transition = new Transition("0.3s", CubicBezier.standard);
+  static readonly quick: Transition = new Transition("0.1s", "ease");
 }
 
 // ─── TransitionList ───────────────────────────────────────────
@@ -178,8 +178,8 @@ export class TransitionList {
       return;
     }
 
-    if (typeof first === 'string') {
-      this.#layers = splitTopLevel(first).map(s => new Transition(s));
+    if (typeof first === "string") {
+      this.#layers = splitTopLevel(first).map((s) => new Transition(s));
       return;
     }
 
@@ -206,6 +206,6 @@ export class TransitionList {
   }
 
   toString(): string {
-    return this.#layers.map(t => t.toString()).join(', ');
+    return this.#layers.map((t) => t.toString()).join(", ");
   }
 }

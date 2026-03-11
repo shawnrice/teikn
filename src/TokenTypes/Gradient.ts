@@ -1,5 +1,5 @@
-import { splitTopLevel } from '../string-utils';
-import { Color } from './Color';
+import { splitTopLevel } from "../string-utils";
+import { Color } from "./Color";
 
 // ─── Shared types ─────────────────────────────────────────────
 
@@ -13,7 +13,7 @@ export type StopInput = GradientStop | Color | string | [color: Color | string, 
 // ─── Helpers ──────────────────────────────────────────────────
 
 const normalizeStop = (input: StopInput): GradientStop => {
-  if (typeof input === 'string') {
+  if (typeof input === "string") {
     return { color: new Color(input) };
   }
   if (input instanceof Color) {
@@ -34,11 +34,11 @@ const parseStop = (str: string): GradientStop => {
   let depth = 0;
   let lastSpace = -1;
   for (let i = 0; i < s.length; i++) {
-    if (s[i] === '(') {
+    if (s[i] === "(") {
       depth++;
-    } else if (s[i] === ')') {
+    } else if (s[i] === ")") {
       depth--;
-    } else if (s[i] === ' ' && depth === 0) {
+    } else if (s[i] === " " && depth === 0) {
       lastSpace = i;
     }
   }
@@ -59,7 +59,7 @@ const stopToCSS = (stop: GradientStop): string => {
 };
 
 const flipPosition = (pos: string): string => {
-  if (pos.endsWith('%')) {
+  if (pos.endsWith("%")) {
     const val = parseFloat(pos);
     return isNaN(val) ? pos : `${100 - val}%`;
   }
@@ -69,14 +69,14 @@ const flipPosition = (pos: string): string => {
 // ─── Direction mapping ────────────────────────────────────────
 
 const directionAngles: Record<string, number> = {
-  'to top': 0,
-  'to top right': 45,
-  'to right': 90,
-  'to bottom right': 135,
-  'to bottom': 180,
-  'to bottom left': 225,
-  'to left': 270,
-  'to top left': 315,
+  "to top": 0,
+  "to top right": 45,
+  "to right": 90,
+  "to bottom right": 135,
+  "to bottom": 180,
+  "to bottom left": 225,
+  "to left": 270,
+  "to top left": 315,
 };
 
 const angleKeywords: Record<number, string> = Object.fromEntries(
@@ -91,13 +91,13 @@ const parseDegrees = (str: string): number | null => {
     return null;
   }
   const val = parseFloat(m[1]!);
-  const unit = m[2] || 'deg';
+  const unit = m[2] || "deg";
   switch (unit) {
-    case 'turn':
+    case "turn":
       return val * 360;
-    case 'rad':
+    case "rad":
       return val * (180 / Math.PI);
-    case 'grad':
+    case "grad":
       return val * 0.9;
     default:
       return val;
@@ -123,7 +123,7 @@ export class LinearGradient {
       return;
     }
 
-    if (typeof first === 'string') {
+    if (typeof first === "string") {
       const m = first.match(linearRe);
       if (!m) {
         throw new Error(`Invalid linear-gradient: "${first}"`);
@@ -170,8 +170,8 @@ export class LinearGradient {
 
   reverse(): LinearGradient {
     const reversed = [...this.#stops]
-      .reverse()
-      .map(stop => (stop.position ? { ...stop, position: flipPosition(stop.position) } : stop));
+      .toReversed()
+      .map((stop) => (stop.position ? { ...stop, position: flipPosition(stop.position) } : stop));
     return new LinearGradient(normalizeAngle(this.#angle + 180), reversed);
   }
 
@@ -186,7 +186,7 @@ export class LinearGradient {
   }
 
   toString(): string {
-    const stopsStr = this.#stops.map(stopToCSS).join(', ');
+    const stopsStr = this.#stops.map(stopToCSS).join(", ");
     const kw = angleKeywords[this.#angle];
     const dir = kw ?? `${this.#angle}deg`;
     return `linear-gradient(${dir}, ${stopsStr})`;
@@ -195,8 +195,8 @@ export class LinearGradient {
 
 // ─── RadialGradient ───────────────────────────────────────────
 
-type RadialShape = 'circle' | 'ellipse';
-type RadialSize = 'closest-side' | 'closest-corner' | 'farthest-side' | 'farthest-corner' | string;
+type RadialShape = "circle" | "ellipse";
+type RadialSize = "closest-side" | "closest-corner" | "farthest-side" | "farthest-corner" | string;
 
 export type RadialGradientOptions = {
   shape?: RadialShape;
@@ -226,7 +226,7 @@ export class RadialGradient {
       return;
     }
 
-    if (typeof first === 'string') {
+    if (typeof first === "string") {
       const m = first.match(radialRe);
       if (!m) {
         throw new Error(`Invalid radial-gradient: "${first}"`);
@@ -235,20 +235,20 @@ export class RadialGradient {
       const firstPart = parts[0]!.trim();
 
       if (isShapeSpec(firstPart)) {
-        let shape: RadialShape = 'ellipse';
-        let size: RadialSize = 'farthest-corner';
-        let position = 'center';
+        let shape: RadialShape = "ellipse";
+        let size: RadialSize = "farthest-corner";
+        let position = "center";
 
-        const atIdx = firstPart.toLowerCase().indexOf(' at ');
+        const atIdx = firstPart.toLowerCase().indexOf(" at ");
         const shapePart = atIdx >= 0 ? firstPart.slice(0, atIdx).trim() : firstPart;
         if (atIdx >= 0) {
           position = firstPart.slice(atIdx + 4).trim();
         }
 
         if (/\bcircle\b/i.test(shapePart)) {
-          shape = 'circle';
+          shape = "circle";
         }
-        const sizeKeywords = ['closest-side', 'closest-corner', 'farthest-side', 'farthest-corner'];
+        const sizeKeywords = ["closest-side", "closest-corner", "farthest-side", "farthest-corner"];
         for (const kw of sizeKeywords) {
           if (shapePart.toLowerCase().includes(kw)) {
             size = kw;
@@ -264,16 +264,16 @@ export class RadialGradient {
       }
 
       // No shape spec — all parts are color stops
-      this.#shape = 'ellipse';
-      this.#size = 'farthest-corner';
-      this.#position = 'center';
+      this.#shape = "ellipse";
+      this.#size = "farthest-corner";
+      this.#position = "center";
       this.#stops = parts.map(parseStop);
       return;
     }
 
-    this.#shape = first.shape ?? 'ellipse';
-    this.#size = first.size ?? 'farthest-corner';
-    this.#position = first.position ?? 'center';
+    this.#shape = first.shape ?? "ellipse";
+    this.#size = first.size ?? "farthest-corner";
+    this.#position = first.position ?? "center";
     this.#stops = (stops ?? []).map(normalizeStop);
   }
 
@@ -311,8 +311,8 @@ export class RadialGradient {
 
   reverse(): RadialGradient {
     const reversed = [...this.#stops]
-      .reverse()
-      .map(stop => (stop.position ? { ...stop, position: flipPosition(stop.position) } : stop));
+      .toReversed()
+      .map((stop) => (stop.position ? { ...stop, position: flipPosition(stop.position) } : stop));
     return new RadialGradient(
       { shape: this.#shape, size: this.#size, position: this.#position },
       reversed,
@@ -324,28 +324,28 @@ export class RadialGradient {
   }
 
   toString(): string {
-    const stopsStr = this.#stops.map(stopToCSS).join(', ');
+    const stopsStr = this.#stops.map(stopToCSS).join(", ");
     const shapeParts: string[] = [];
 
-    if (this.#shape !== 'ellipse' || this.#size !== 'farthest-corner') {
+    if (this.#shape !== "ellipse" || this.#size !== "farthest-corner") {
       const spec = [
-        this.#shape !== 'ellipse' ? this.#shape : '',
-        this.#size !== 'farthest-corner' ? this.#size : '',
+        this.#shape !== "ellipse" ? this.#shape : "",
+        this.#size !== "farthest-corner" ? this.#size : "",
       ]
         .filter(Boolean)
-        .join(' ');
+        .join(" ");
       if (spec) {
         shapeParts.push(spec);
       }
     }
 
-    if (this.#position !== 'center') {
+    if (this.#position !== "center") {
       const last = shapeParts.pop();
       shapeParts.push(last ? `${last} at ${this.#position}` : `at ${this.#position}`);
     }
 
     if (shapeParts.length > 0) {
-      return `radial-gradient(${shapeParts.join(' ')}, ${stopsStr})`;
+      return `radial-gradient(${shapeParts.join(" ")}, ${stopsStr})`;
     }
     return `radial-gradient(${stopsStr})`;
   }
@@ -376,7 +376,7 @@ export class GradientList {
       return;
     }
 
-    if (typeof first === 'string') {
+    if (typeof first === "string") {
       this.#layers = splitTopLevel(first).map(parseGradient);
       return;
     }
@@ -404,6 +404,6 @@ export class GradientList {
   }
 
   toString(): string {
-    return this.#layers.map(g => g.toString()).join(', ');
+    return this.#layers.map((g) => g.toString()).join(", ");
   }
 }

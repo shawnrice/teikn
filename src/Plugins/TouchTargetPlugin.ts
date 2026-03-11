@@ -1,7 +1,7 @@
-import type { Token } from '../Token';
-import { Dimension } from '../TokenTypes/Dimension';
-import type { AuditIssue } from './Plugin';
-import { Plugin } from './Plugin';
+import type { Token } from "../Token";
+import { Dimension } from "../TokenTypes/Dimension";
+import type { AuditIssue } from "./Plugin";
+import { Plugin } from "./Plugin";
 
 type TouchTargetPluginOptions = {
   minPx?: number;
@@ -20,11 +20,11 @@ const toPx = (value: unknown, basePx: number): number | null => {
     }
   }
 
-  if (typeof value === 'number') {
+  if (typeof value === "number") {
     return value;
   }
 
-  if (typeof value !== 'string') {
+  if (typeof value !== "string") {
     return null;
   }
 
@@ -37,20 +37,20 @@ const toPx = (value: unknown, basePx: number): number | null => {
   const unit = m[2]!;
 
   switch (unit) {
-    case 'px':
+    case "px":
       return num;
-    case 'rem':
+    case "rem":
       return num * basePx;
-    case 'em':
+    case "em":
       return num * basePx;
-    case 'pt':
+    case "pt":
       return num * (96 / 72);
     default:
       return null;
   }
 };
 
-const DEFAULT_TYPES = ['size', 'touch-target', 'icon'];
+const DEFAULT_TYPES = ["size", "touch-target", "icon"];
 
 export class TouchTargetPlugin extends Plugin<TouchTargetPluginOptions> {
   tokenType: RegExp = /.*/;
@@ -65,8 +65,8 @@ export class TouchTargetPlugin extends Plugin<TouchTargetPluginOptions> {
     const typeSet = new Set(types);
 
     return tokens
-      .filter(t => typeSet.has(t.type))
-      .flatMap(t => {
+      .filter((t) => typeSet.has(t.type))
+      .flatMap((t) => {
         const px = toPx(t.value, basePx);
         if (px === null) {
           return [];
@@ -75,7 +75,7 @@ export class TouchTargetPlugin extends Plugin<TouchTargetPluginOptions> {
         if (px < minPx) {
           return [
             {
-              severity: 'warning' as const,
+              severity: "warning" as const,
               token: t.name,
               message: `Touch target size ${t.value} (${px}px) is below minimum of ${minPx}px`,
             },

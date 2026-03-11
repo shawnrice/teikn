@@ -1,11 +1,11 @@
-import type { Token } from './Token';
-import { BoxShadow, BoxShadowList } from './TokenTypes/BoxShadow';
-import { Color } from './TokenTypes/Color';
-import { CubicBezier } from './TokenTypes/CubicBezier';
-import { Dimension } from './TokenTypes/Dimension';
-import { Duration } from './TokenTypes/Duration';
-import { GradientList, LinearGradient, RadialGradient } from './TokenTypes/Gradient';
-import { Transition, TransitionList } from './TokenTypes/Transition';
+import type { Token } from "./Token";
+import { BoxShadow, BoxShadowList } from "./TokenTypes/BoxShadow";
+import { Color } from "./TokenTypes/Color";
+import { CubicBezier } from "./TokenTypes/CubicBezier";
+import { Dimension } from "./TokenTypes/Dimension";
+import { Duration } from "./TokenTypes/Duration";
+import { GradientList, LinearGradient, RadialGradient } from "./TokenTypes/Gradient";
+import { Transition, TransitionList } from "./TokenTypes/Transition";
 
 // ─── First-class value check ─────────────────────────────────────
 // Shared by resolve.ts and validate.ts to prevent composite
@@ -25,10 +25,10 @@ export const isFirstClassValue = (value: unknown): boolean =>
   value instanceof Duration;
 
 // ─── Token type classifiers ──────────────────────────────────────
-// Duplicated in HTML.ts and Storybook.ts — centralised here so
+// Duplicated in HTML.ts and Storybook.ts — centralized here so
 // those generators (and future ones) can import from one place.
 
-export const isColorType = (type: string): boolean => type === 'color';
+export const isColorType = (type: string): boolean => type === "color";
 export const isFontSizeType = (type: string): boolean => /font[-_]?size/i.test(type);
 export const isFontFamilyType = (type: string): boolean => /font[-_]?family/i.test(type);
 export const isFontWeightType = (type: string): boolean => /font[-_]?weight/i.test(type);

@@ -1,32 +1,32 @@
-import { describe, expect, test } from 'bun:test';
+import { describe, expect, test } from "bun:test";
 
-import { tokenSet1 } from '../fixtures/tokenSet1';
-import type { Token } from '../Token';
-import { Json as Generator } from './Json';
+import { tokenSet1 } from "../fixtures/tokenSet1";
+import type { Token } from "../Token";
+import { Json as Generator } from "./Json";
 
-describe('JSONGenerator tests', () => {
-  test('It generates the token set', () => {
+describe("JSONGenerator tests", () => {
+  test("It generates the token set", () => {
     expect(new Generator().generate(tokenSet1)).toMatchSnapshot();
   });
 
-  test('describe returns JSON format info', () => {
+  test("describe returns JSON format info", () => {
     const gen = new Generator();
     const info = gen.describe();
-    expect(info.format).toBe('JSON');
-    expect(info.usage).toContain('fetch');
+    expect(info.format).toBe("JSON");
+    expect(info.usage).toContain("fetch");
   });
 
-  test('includes mode values in output', () => {
+  test("includes mode values in output", () => {
     const tokens: Token[] = [
-      { name: 'colorSurface', type: 'color', value: '#ffffff', modes: { dark: '#1a1a1a' } },
+      { name: "colorSurface", type: "color", value: "#ffffff", modes: { dark: "#1a1a1a" } },
     ];
     const output = new Generator().generate(tokens);
     const parsed = JSON.parse(output);
-    expect(parsed.colorSurface.modes).toEqual({ dark: '#1a1a1a' });
+    expect(parsed.colorSurface.modes).toEqual({ dark: "#1a1a1a" });
   });
 
-  test('omits modes when not present', () => {
-    const tokens: Token[] = [{ name: 'colorSurface', type: 'color', value: '#ffffff' }];
+  test("omits modes when not present", () => {
+    const tokens: Token[] = [{ name: "colorSurface", type: "color", value: "#ffffff" }];
     const output = new Generator().generate(tokens);
     const parsed = JSON.parse(output);
     expect(parsed.colorSurface.modes).toBeUndefined();

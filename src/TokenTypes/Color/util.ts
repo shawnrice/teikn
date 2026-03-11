@@ -1,5 +1,5 @@
-import { clamp } from '../../utils';
-import type { RGB, RGBA } from './types';
+import { clamp } from "../../utils";
+import type { RGB, RGBA } from "./types";
 
 /** Compose two unary functions: `pipe(f, g)(x)` === `g(f(x))` */
 export const pipe =
@@ -146,14 +146,14 @@ const isValidColor = (format: keyof typeof formats): ((color: string) => boolean
   };
 };
 
-export const isHex: (color: string) => boolean = isValidColor('hex');
-export const isRGB: (color: string) => boolean = isValidColor('rgb');
-export const isRGBA: (color: string) => boolean = isValidColor('rgba');
-export const isHSL: (color: string) => boolean = isValidColor('hsl');
-export const isHSLA: (color: string) => boolean = isValidColor('hsla');
-export const isLAB: (color: string) => boolean = isValidColor('lab');
-export const isLCH: (color: string) => boolean = isValidColor('lch');
-export const isXYZ: (color: string) => boolean = isValidColor('xyz');
+export const isHex: (color: string) => boolean = isValidColor("hex");
+export const isRGB: (color: string) => boolean = isValidColor("rgb");
+export const isRGBA: (color: string) => boolean = isValidColor("rgba");
+export const isHSL: (color: string) => boolean = isValidColor("hsl");
+export const isHSLA: (color: string) => boolean = isValidColor("hsla");
+export const isLAB: (color: string) => boolean = isValidColor("lab");
+export const isLCH: (color: string) => boolean = isValidColor("lch");
+export const isXYZ: (color: string) => boolean = isValidColor("xyz");
 
 /**
  * Call only on a verified RGB string

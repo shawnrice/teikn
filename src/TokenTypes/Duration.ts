@@ -1,10 +1,10 @@
 // ─── Unit Type ──────────────────────────────────────────────
 
-export type DurationUnit = 'ms' | 's';
+export type DurationUnit = "ms" | "s";
 
-export const durationUnits: ReadonlySet<DurationUnit> = new Set<DurationUnit>(['ms', 's']);
+export const durationUnits: ReadonlySet<DurationUnit> = new Set<DurationUnit>(["ms", "s"]);
 
-export const isDurationUnit = (unit: string): unit is DurationUnit => unit === 'ms' || unit === 's';
+export const isDurationUnit = (unit: string): unit is DurationUnit => unit === "ms" || unit === "s";
 
 // ─── Conversion ─────────────────────────────────────────────
 // ms is canonical (like px for Dimension, RGB for Color).
@@ -13,7 +13,7 @@ export const convertDuration = (value: number, from: DurationUnit, to: DurationU
   if (from === to) {
     return value;
   }
-  return from === 'ms' ? value / 1000 : value * 1000;
+  return from === "ms" ? value / 1000 : value * 1000;
 };
 
 // ─── Parsing ────────────────────────────────────────────────
@@ -43,7 +43,7 @@ export class Duration {
       return;
     }
 
-    if (typeof first === 'string') {
+    if (typeof first === "string") {
       const parsed = parseCss(first);
       this.#value = parsed.value;
       this.#unit = parsed.unit;
@@ -68,15 +68,15 @@ export class Duration {
   }
 
   toMs(): Duration {
-    return this.to('ms');
+    return this.to("ms");
   }
 
   toS(): Duration {
-    return this.to('s');
+    return this.to("s");
   }
 
   ms(): number {
-    return this.#unit === 'ms' ? this.#value : this.#value * 1000;
+    return this.#unit === "ms" ? this.#value : this.#value * 1000;
   }
 
   // ─── Math ───────────────────────────────────────────────────
@@ -119,7 +119,7 @@ export class Duration {
 
   // ─── Static helpers ──────────────────────────────────────────
 
-  static zero(unit: DurationUnit = 'ms'): Duration {
+  static zero(unit: DurationUnit = "ms"): Duration {
     return new Duration(0, unit);
   }
 

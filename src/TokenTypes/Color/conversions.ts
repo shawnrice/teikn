@@ -1,5 +1,5 @@
-import type { HSL, LAB, LCH, RGB, XYZ } from './types';
-import { byteToUnit, pad0, parseInt16, pipe } from './util';
+import type { HSL, LAB, LCH, RGB, XYZ } from "./types";
+import { byteToUnit, pad0, parseInt16, pipe } from "./util";
 
 // Color space conversion references:
 // - W3C CSS Color 4 conversions: https://github.com/w3c/csswg-drafts/blob/main/css-color-4/conversions.js
@@ -23,7 +23,7 @@ const getRawHue = (r: number, g: number, b: number): number => {
     case b:
       return 4 + (r - g) / chroma;
     default:
-      throw new Error('An unexpected error occurred');
+      throw new Error("An unexpected error occurred");
   }
 };
 
@@ -61,7 +61,7 @@ export const HSLToRGB = ([hue, saturation, lightness]: HSL): RGB => {
 
   return [0, 8, 4]
     .map(f)
-    .map(x => x * 255)
+    .map((x) => x * 255)
     .map(Math.round) as unknown as RGB;
 };
 
@@ -111,7 +111,7 @@ export const XYZToRGB = (xyz: XYZ): RGB => {
   return xyz
     .map((_, i) => xyz[0] * m[i]![0] + xyz[1] * m[i]![1] + xyz[2] * m[i]![2])
     .map(applyGamma)
-    .map(x => x * 255)
+    .map((x) => x * 255)
     .map(Math.round) as unknown as RGB;
 };
 
@@ -125,7 +125,7 @@ const labEpsilon = (6 / 29) ** 3; // 0.008856
 const labKappa = (1 / 3) * (29 / 6) ** 2; // 7.787
 
 export const XYZToLAB = ([x, y, z]: XYZ): LAB => {
-  const f = (t: number): number => (t > labEpsilon ? Math.pow(t, 1 / 3) : labKappa * t + 16 / 116);
+  const f = (t: number): number => (t > labEpsilon ? t ** (1 / 3) : labKappa * t + 16 / 116);
   const fx = f(x / D65[0]);
   const fy = f(y / D65[1]);
   const fz = f(z / D65[2]);
@@ -178,18 +178,18 @@ export const LCHToLAB = ([l, c, h]: LCH): LAB => {
 // ─── Hex ─────────────────────────────────────────────────────
 
 export const RGBToHex = (rgb: RGB, preferShort = false): string => {
-  const initial = rgb.map(x => x.toString(16)).map(pad0);
-  if (preferShort && initial.every(x => x.length === 2 && x[0] === x[1])) {
-    return initial.map(x => x[0]).join('');
+  const initial = rgb.map((x) => x.toString(16)).map(pad0);
+  if (preferShort && initial.every((x) => x.length === 2 && x[0] === x[1])) {
+    return initial.map((x) => x[0]).join("");
   }
-  return initial.join('');
+  return initial.join("");
 };
 
 export type HexResult = { rgb: RGB; alpha: number };
 
 export const hexToRGBWithAlpha = (c: string): HexResult => {
   // Possibly remove the hash
-  const color = c.slice(0, 1) === '#' ? c.slice(1) : c;
+  const color = c.slice(0, 1) === "#" ? c.slice(1) : c;
 
   // 6-character hex: #RRGGBB
   if (color.length === 6) {
@@ -202,8 +202,8 @@ export const hexToRGBWithAlpha = (c: string): HexResult => {
   // 3-character hex: #RGB → expand each to double
   if (color.length === 3) {
     const rgb = color
-      .split('')
-      .map(x => `${x}${x}`)
+      .split("")
+      .map((x) => `${x}${x}`)
       .map(parseInt16) as unknown as RGB;
     return { rgb, alpha: 1 };
   }
@@ -221,8 +221,8 @@ export const hexToRGBWithAlpha = (c: string): HexResult => {
   if (color.length === 4) {
     const rgb = color
       .slice(0, 3)
-      .split('')
-      .map(x => `${x}${x}`)
+      .split("")
+      .map((x) => `${x}${x}`)
       .map(parseInt16) as unknown as RGB;
     const alphaChar = color[3]!;
     const alpha = parseInt16(`${alphaChar}${alphaChar}`) / 255;

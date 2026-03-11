@@ -1,23 +1,23 @@
 // ─── Unit Types ─────────────────────────────────────────────
 
-export type AbsoluteUnit = 'px' | 'cm' | 'mm' | 'in' | 'pt' | 'pc' | 'Q';
+export type AbsoluteUnit = "px" | "cm" | "mm" | "in" | "pt" | "pc" | "Q";
 
 export type ViewportUnit =
-  | 'vw'
-  | 'vh'
-  | 'vmin'
-  | 'vmax'
-  | 'svw'
-  | 'svh'
-  | 'lvw'
-  | 'lvh'
-  | 'dvw'
-  | 'dvh';
+  | "vw"
+  | "vh"
+  | "vmin"
+  | "vmax"
+  | "svw"
+  | "svh"
+  | "lvw"
+  | "lvh"
+  | "dvw"
+  | "dvh";
 
-export type FontRelativeUnit = 'em' | 'rem' | 'ch' | 'ex' | 'lh' | 'rlh';
-export type ContainerUnit = 'cqi' | 'cqb';
-export type FlexUnit = 'fr';
-export type PercentageUnit = '%';
+export type FontRelativeUnit = "em" | "rem" | "ch" | "ex" | "lh" | "rlh";
+export type ContainerUnit = "cqi" | "cqb";
+export type FlexUnit = "fr";
+export type PercentageUnit = "%";
 
 export type DimensionUnit =
   | AbsoluteUnit
@@ -30,46 +30,46 @@ export type DimensionUnit =
 // ─── Unit Sets (runtime) ────────────────────────────────────
 
 export const absoluteUnits: ReadonlySet<string> = new Set<AbsoluteUnit>([
-  'px',
-  'cm',
-  'mm',
-  'in',
-  'pt',
-  'pc',
-  'Q',
+  "px",
+  "cm",
+  "mm",
+  "in",
+  "pt",
+  "pc",
+  "Q",
 ]);
 
 export const viewportUnits: ReadonlySet<string> = new Set<ViewportUnit>([
-  'vw',
-  'vh',
-  'vmin',
-  'vmax',
-  'svw',
-  'svh',
-  'lvw',
-  'lvh',
-  'dvw',
-  'dvh',
+  "vw",
+  "vh",
+  "vmin",
+  "vmax",
+  "svw",
+  "svh",
+  "lvw",
+  "lvh",
+  "dvw",
+  "dvh",
 ]);
 
 export const fontRelativeUnits: ReadonlySet<string> = new Set<FontRelativeUnit>([
-  'em',
-  'rem',
-  'ch',
-  'ex',
-  'lh',
-  'rlh',
+  "em",
+  "rem",
+  "ch",
+  "ex",
+  "lh",
+  "rlh",
 ]);
 
-export const containerUnits: ReadonlySet<string> = new Set<ContainerUnit>(['cqi', 'cqb']);
+export const containerUnits: ReadonlySet<string> = new Set<ContainerUnit>(["cqi", "cqb"]);
 
 export const allUnits: ReadonlySet<string> = new Set([
   ...absoluteUnits,
   ...viewportUnits,
   ...fontRelativeUnits,
   ...containerUnits,
-  'fr',
-  '%',
+  "fr",
+  "%",
 ] as const);
 
 // ─── Conversion Factors ─────────────────────────────────────
@@ -108,7 +108,7 @@ export const isConvertible = (from: string, to: string): boolean => {
     return true;
   }
   // px ↔ rem (with configurable base)
-  if ((from === 'px' && to === 'rem') || (from === 'rem' && to === 'px')) {
+  if ((from === "px" && to === "rem") || (from === "rem" && to === "px")) {
     return true;
   }
   return false;
@@ -127,10 +127,10 @@ export const convertDimension = (
   }
 
   // px ↔ rem
-  if (from === 'px' && to === 'rem') {
+  if (from === "px" && to === "rem") {
     return value / remBase;
   }
-  if (from === 'rem' && to === 'px') {
+  if (from === "rem" && to === "px") {
     return value * remBase;
   }
 
@@ -172,7 +172,7 @@ export class Dimension {
       return;
     }
 
-    if (typeof first === 'string') {
+    if (typeof first === "string") {
       const parsed = parseCss(first);
       this.#value = parsed.value;
       this.#unit = parsed.unit;
@@ -222,11 +222,11 @@ export class Dimension {
   }
 
   toRem(base = 16): Dimension {
-    return this.to('rem', { remBase: base });
+    return this.to("rem", { remBase: base });
   }
 
   toPx(base = 16): Dimension {
-    return this.to('px', { remBase: base });
+    return this.to("px", { remBase: base });
   }
 
   // ─── Math ───────────────────────────────────────────────────
@@ -271,7 +271,7 @@ export class Dimension {
 
   // ─── Static helpers ──────────────────────────────────────────
 
-  static zero(unit: DimensionUnit = 'px'): Dimension {
+  static zero(unit: DimensionUnit = "px"): Dimension {
     return new Dimension(0, unit);
   }
 

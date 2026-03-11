@@ -1,7 +1,7 @@
-import type { Token } from '../Token';
-import { Color } from '../TokenTypes/Color';
-import type { AuditIssue } from './Plugin';
-import { Plugin } from './Plugin';
+import type { Token } from "../Token";
+import { Color } from "../TokenTypes/Color";
+import type { AuditIssue } from "./Plugin";
+import { Plugin } from "./Plugin";
 
 type PerceptualDistancePluginOptions = {
   minDeltaE?: number;
@@ -9,7 +9,7 @@ type PerceptualDistancePluginOptions = {
 } & Record<string, unknown>;
 
 export class PerceptualDistancePlugin extends Plugin<PerceptualDistancePluginOptions> {
-  tokenType: string = 'color';
+  tokenType: string = "color";
   outputType: RegExp = /.*/;
 
   toJSON(token: Token): Token {
@@ -19,8 +19,8 @@ export class PerceptualDistancePlugin extends Plugin<PerceptualDistancePluginOpt
   override audit(tokens: Token[]): AuditIssue[] {
     const { minDeltaE = 5.0, groups } = this.options;
 
-    const colorTokens = tokens.filter(t => t.type === 'color');
-    const tokenMap = new Map(colorTokens.map(t => [t.name, t]));
+    const colorTokens = tokens.filter((t) => t.type === "color");
+    const tokenMap = new Map(colorTokens.map((t) => [t.name, t]));
 
     const toColor = (t: Token): Color | null => {
       try {
@@ -52,7 +52,7 @@ export class PerceptualDistancePlugin extends Plugin<PerceptualDistancePluginOpt
 
           if (dE < minDeltaE) {
             issues.push({
-              severity: 'warning',
+              severity: "warning",
               token: tA.name,
               message: `Colors "${tA.name}" and "${tB.name}" are very similar (ΔE = ${rounded}), minimum is ${minDeltaE}`,
             });
@@ -64,9 +64,9 @@ export class PerceptualDistancePlugin extends Plugin<PerceptualDistancePluginOpt
     };
 
     if (groups) {
-      return groups.flatMap(group => comparePairs(group));
+      return groups.flatMap((group) => comparePairs(group));
     }
 
-    return comparePairs(colorTokens.map(t => t.name));
+    return comparePairs(colorTokens.map((t) => t.name));
   }
 }

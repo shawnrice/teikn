@@ -1,22 +1,22 @@
-import { EOL } from 'os';
+import { EOL } from "node:os";
 
-import { camelCase, deriveShortName } from '../string-utils';
-import type { Token } from '../Token';
-import { getDate } from '../utils';
-import type { GeneratorInfo, GeneratorOptions } from './Generator';
-import { Generator } from './Generator';
+import { camelCase, deriveShortName } from "../string-utils";
+import type { Token } from "../Token";
+import { getDate } from "../utils";
+import type { GeneratorInfo, GeneratorOptions } from "./Generator";
+import { Generator } from "./Generator";
 
 const defaultOptions = {
-  ext: 'mjs',
+  ext: "mjs",
   nameTransformer: camelCase,
   dateFn: getDate,
 };
 
 const maybeQuote = (val: any): string => {
-  if (typeof val === 'string') {
+  if (typeof val === "string") {
     return `'${val}'`;
   }
-  if (typeof val === 'object' && val !== null) {
+  if (typeof val === "object" && val !== null) {
     return JSON.stringify(val);
   }
   return String(val);
@@ -43,9 +43,9 @@ export class ESModule extends Generator<ESModuleOpts> {
     const base = `import { tokens } from './${this.file}';\n\ntokens.tokenName`;
     const groupUsage = this.options.groups
       ? `\n\n// Or use typed group accessors\nimport { color } from './${this.file}';\ncolor('primary')`
-      : '';
+      : "";
     return {
-      format: 'ES Module',
+      format: "ES Module",
       usage: base + groupUsage,
     };
   }
@@ -90,8 +90,8 @@ export class ESModule extends Generator<ESModuleOpts> {
 
   combinator(tokens: Token[]): string {
     const { nameTransformer, groups } = this.options;
-    const values = tokens.map(t => this.generateToken(t));
-    const parts = ['export const tokens = {', values.join(EOL), '};'];
+    const values = tokens.map((t) => this.generateToken(t));
+    const parts = ["export const tokens = {", values.join(EOL), "};"];
 
     if (groups) {
       const groupBlocks = this.tokenGroups(tokens).map(({ groupName, entries }) => {
@@ -111,7 +111,7 @@ export class ESModule extends Generator<ESModuleOpts> {
           `};`,
         ].join(EOL);
       });
-      parts.push('', ...groupBlocks);
+      parts.push("", ...groupBlocks);
     }
 
     const modeMap = new Map<string, string[]>();
@@ -131,10 +131,10 @@ export class ESModule extends Generator<ESModuleOpts> {
       const modeEntries = [...modeMap.entries()].map(([mode, entries]) =>
         [`  ${quoteKey(mode)}: {`, ...entries, `  },`].join(EOL),
       );
-      parts.push('', `export const modes = {`, ...modeEntries, `};`);
+      parts.push("", `export const modes = {`, ...modeEntries, `};`);
     }
 
-    parts.push('', `export default tokens;`);
+    parts.push("", `export default tokens;`);
     return parts.join(EOL);
   }
 }

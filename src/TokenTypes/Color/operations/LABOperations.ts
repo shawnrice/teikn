@@ -1,6 +1,6 @@
-import type { Color, InternalCreate } from '../Color';
-import type { LAB } from '../types';
-import { percentRange } from '../util';
+import type { Color, InternalCreate } from "../Color";
+import type { LAB } from "../types";
+import { percentRange } from "../util";
 
 export class LABOperations {
   #color: Color;
@@ -22,7 +22,7 @@ export class LABOperations {
       return this.#lab()[0];
     }
     const [, a, b] = this.#lab();
-    return this.#new('lab', [value, a, b], this.#color.alpha);
+    return this.#new("lab", [value, a, b], this.#color.alpha);
   }
 
   a(): number;
@@ -32,7 +32,7 @@ export class LABOperations {
       return this.#lab()[1];
     }
     const [L, , b] = this.#lab();
-    return this.#new('lab', [L, value, b], this.#color.alpha);
+    return this.#new("lab", [L, value, b], this.#color.alpha);
   }
 
   b(): number;
@@ -42,7 +42,7 @@ export class LABOperations {
       return this.#lab()[2];
     }
     const [L, a] = this.#lab();
-    return this.#new('lab', [L, a, value], this.#color.alpha);
+    return this.#new("lab", [L, a, value], this.#color.alpha);
   }
 
   mix(other: Color, amount = 0.5): Color {
@@ -55,12 +55,12 @@ export class LABOperations {
       thisLab[2] * (1 - amt) + otherLab[2] * amt,
     ];
     const alpha = this.#color.alpha * (1 - amt) + other.alpha * amt;
-    return this.#new('lab', mixed, alpha);
+    return this.#new("lab", mixed, alpha);
   }
 
   lighten(amount: number): Color {
     const [L, a, b] = this.#lab();
-    return this.#new('lab', [L + amount * L, a, b], this.#color.alpha);
+    return this.#new("lab", [L + amount * L, a, b], this.#color.alpha);
   }
 
   darken(amount: number): Color {
@@ -68,6 +68,6 @@ export class LABOperations {
   }
 
   toString(): string {
-    return this.#color.toString('lab');
+    return this.#color.toString("lab");
   }
 }

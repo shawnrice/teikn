@@ -1,29 +1,29 @@
-import { EOL } from 'os';
+import { EOL } from "node:os";
 
-import { camelCase, deriveShortName, kebabCase } from '../string-utils';
-import type { Token } from '../Token';
-import type { GeneratorInfo } from './Generator';
-import { Scss } from './Scss';
+import { camelCase, deriveShortName, kebabCase } from "../string-utils";
+import type { Token } from "../Token";
+import type { GeneratorInfo } from "./Generator";
+import { Scss } from "./Scss";
 
 const scssValue = (value: unknown): string => {
-  if (typeof value !== 'object' || value === null) {
+  if (typeof value !== "object" || value === null) {
     return String(value);
   }
   const obj = value as Record<string, unknown>;
-  if ('width' in obj && 'style' in obj && 'color' in obj) {
-    return [obj.width, obj.style, obj.color].filter(Boolean).join(' ');
+  if ("width" in obj && "style" in obj && "color" in obj) {
+    return [obj.width, obj.style, obj.color].filter(Boolean).join(" ");
   }
-  return Object.values(obj).join(' ');
+  return Object.values(obj).join(" ");
 };
 
 export class ScssVars extends Scss {
   override describe(): GeneratorInfo | null {
-    const base = `@use '${this.options.filename ?? 'tokens'}';\n\n// Access variables with namespace\ntokens.$tokenName`;
+    const base = `@use '${this.options.filename ?? "tokens"}';\n\n// Access variables with namespace\ntokens.$tokenName`;
     const groupUsage = this.options.groups
       ? `\n\n// Or use typed group accessors\ntokens.color('primary')`
-      : '';
+      : "";
     return {
-      format: 'SCSS Variables',
+      format: "SCSS Variables",
       usage: base + groupUsage,
     };
   }
@@ -45,7 +45,7 @@ export class ScssVars extends Scss {
   }
 
   override combinator(tokens: Token[]): string {
-    const values = tokens.map(token => this.generateToken(token));
+    const values = tokens.map((token) => this.generateToken(token));
     const lines = [values.join(EOL)];
 
     const modeMap = new Map<string, { name: string; value: unknown }[]>();
@@ -62,7 +62,7 @@ export class ScssVars extends Scss {
     }
 
     for (const [mode, entries] of modeMap) {
-      lines.push('');
+      lines.push("");
       lines.push(`// Mode: ${mode}`);
       for (const { name, value } of entries) {
         lines.push(`$${name}--${mode}: ${scssValue(value)};`);
@@ -93,7 +93,7 @@ export class ScssVars extends Scss {
           `$${groupKebab}-values: (`,
           mapEntries,
           `);`,
-          '',
+          "",
           `@function ${groupKebab}($name) {`,
           `  @if not map-has-key($${groupKebab}-values, $name) {`,
           `    @error "Unknown ${groupKebab} token '#{$name}'. Available: #{map-keys($${groupKebab}-values)}";`,

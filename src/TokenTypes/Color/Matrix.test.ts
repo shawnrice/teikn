@@ -1,9 +1,9 @@
-import { describe, expect, test } from 'bun:test';
+import { describe, expect, test } from "bun:test";
 
-import { Matrix } from './Matrix';
+import { Matrix } from "./Matrix";
 
-describe('Matrix', () => {
-  test('2x2 dot product', () => {
+describe("Matrix", () => {
+  test("2x2 dot product", () => {
     const a = new Matrix([
       [1, 2],
       [3, 4],
@@ -18,7 +18,7 @@ describe('Matrix', () => {
     ]);
   });
 
-  test('at() returns element by row and column', () => {
+  test("at() returns element by row and column", () => {
     const m = new Matrix([
       [1, 2],
       [3, 4],
@@ -29,7 +29,7 @@ describe('Matrix', () => {
     expect(m.at(1, 1)).toBe(4);
   });
 
-  test('rows and cols are correct', () => {
+  test("rows and cols are correct", () => {
     const m = new Matrix([
       [1, 2, 3],
       [4, 5, 6],
@@ -38,13 +38,13 @@ describe('Matrix', () => {
     expect(m.cols).toBe(3);
   });
 
-  test('incompatible dimensions throws', () => {
+  test("incompatible dimensions throws", () => {
     const a = new Matrix([[1, 2]]);
     const b = new Matrix([[1, 2]]);
     expect(() => a.dot(b)).toThrow();
   });
 
-  test('3x3 identity preserves matrix', () => {
+  test("3x3 identity preserves matrix", () => {
     const identity = new Matrix([
       [1, 0, 0],
       [0, 1, 0],
@@ -62,7 +62,7 @@ describe('Matrix', () => {
     ]);
   });
 
-  test('3x3 times 3x1 vector', () => {
+  test("3x3 times 3x1 vector", () => {
     const m = new Matrix([
       [2, 0, 0],
       [0, 3, 0],
@@ -72,7 +72,7 @@ describe('Matrix', () => {
     expect(m.dot(v).toArray()).toEqual([[20], [60], [120]]);
   });
 
-  test('non-square multiplication', () => {
+  test("non-square multiplication", () => {
     const a = new Matrix([
       [1, 2, 3],
       [4, 5, 6],

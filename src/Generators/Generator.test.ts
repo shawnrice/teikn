@@ -1,31 +1,31 @@
-import { describe, expect, test } from 'bun:test';
+import { describe, expect, test } from "bun:test";
 
-import { Generator } from './Generator';
+import { Generator } from "./Generator";
 
-describe('Generator base class tests', () => {
-  test('It throws when the extension is not set in options', () => {
+describe("Generator base class tests", () => {
+  test("It throws when the extension is not set in options", () => {
     expect(() => {
       // @ts-ignore: this is an error test
       new Generator();
     }).toThrow();
   });
 
-  test('It throws when the extension is the wrong type in options', () => {
+  test("It throws when the extension is the wrong type in options", () => {
     expect(() => {
       // @ts-ignore: this is an error test
       new Generator({ ext: true });
     }).toThrow();
   });
 
-  test('It throws when you do not extend it for generate', () => {
+  test("It throws when you do not extend it for generate", () => {
     expect(() => {
       // @ts-ignore: this is an error test
-      new Generator({ ext: 'test' }).generate([]);
+      new Generator({ ext: "test" }).generate([]);
     }).toThrow();
   });
 
-  test('It create the correct filename', () => {
+  test("It create the correct filename", () => {
     // @ts-ignore: this is an error test
-    expect(new Generator({ ext: 'test' }).file).toBe('tokens.test');
+    expect(new Generator({ ext: "test" }).file).toBe("tokens.test");
   });
 });

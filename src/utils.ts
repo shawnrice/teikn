@@ -2,18 +2,18 @@ export const clamp = (min: number, max: number, value: number): number =>
   Math.min(max, Math.max(min, value));
 
 export const pad0 = (num: number | string): string | number => {
-  if (typeof num === 'string') {
+  if (typeof num === "string") {
     return num.length < 2 ? `0${num}` : num;
   }
 
-  if (typeof num === 'number') {
+  if (typeof num === "number") {
     return num < 10 ? `0${num}` : num;
   }
 
-  throw new TypeError('pad0 can only work with numbers and strings');
+  throw new TypeError("pad0 can only work with numbers and strings");
 };
 
-const matchesString = (t1: any, t2: string): boolean => typeof t1 === 'string' && t1 === t2;
+const matchesString = (t1: any, t2: string): boolean => typeof t1 === "string" && t1 === t2;
 
 const matchesRegexp = (t1: any, t2: string): boolean => t1 instanceof RegExp && t1.test(t2);
 
@@ -28,6 +28,6 @@ export const matches = (t1: unknown, t2: string): boolean =>
 export const getDate = (): string => {
   const now = new Date();
   const date = now.toDateString();
-  const time = [now.getHours(), pad0(now.getMinutes()), pad0(now.getSeconds())].join(':');
+  const time = [now.getHours(), pad0(now.getMinutes()), pad0(now.getSeconds())].join(":");
   return `${date} ${time}`;
 };

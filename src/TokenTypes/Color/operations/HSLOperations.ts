@@ -1,6 +1,6 @@
-import type { Color, InternalCreate } from '../Color';
-import type { HSL } from '../types';
-import { degreeRange, percentRange } from '../util';
+import type { Color, InternalCreate } from "../Color";
+import type { HSL } from "../types";
+import { degreeRange, percentRange } from "../util";
 
 export class HSLOperations {
   #color: Color;
@@ -22,7 +22,7 @@ export class HSLOperations {
       return this.#hsl()[0];
     }
     const [, s, l] = this.#hsl();
-    return this.#new('hsl', [degreeRange(value), s, l], this.#color.alpha);
+    return this.#new("hsl", [degreeRange(value), s, l], this.#color.alpha);
   }
 
   saturation(): number;
@@ -32,7 +32,7 @@ export class HSLOperations {
       return this.#hsl()[1];
     }
     const [h, , l] = this.#hsl();
-    return this.#new('hsl', [h, percentRange(value), l], this.#color.alpha);
+    return this.#new("hsl", [h, percentRange(value), l], this.#color.alpha);
   }
 
   lightness(): number;
@@ -42,7 +42,7 @@ export class HSLOperations {
       return this.#hsl()[2];
     }
     const [h, s] = this.#hsl();
-    return this.#new('hsl', [h, s, percentRange(value)], this.#color.alpha);
+    return this.#new("hsl", [h, s, percentRange(value)], this.#color.alpha);
   }
 
   rotateHue(degrees: number): Color {
@@ -64,6 +64,6 @@ export class HSLOperations {
   }
 
   toString(): string {
-    return this.#color.toString('hsl');
+    return this.#color.toString("hsl");
   }
 }

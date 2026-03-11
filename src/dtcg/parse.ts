@@ -1,6 +1,6 @@
-import type { Token } from '../Token';
-import type { DTCGDocument, DTCGGroup, DTCGToken } from './types';
-import { dtcgTypeToTeikn, dtcgValueToTeikn } from './values';
+import type { Token } from "../Token";
+import type { DTCGDocument, DTCGGroup, DTCGToken } from "./types";
+import { dtcgTypeToTeikn, dtcgValueToTeikn } from "./values";
 
 export type ParseOptions = {
   /** Separator for flattening group paths into token names. Default: '.' */
@@ -10,13 +10,13 @@ export type ParseOptions = {
 };
 
 const isDTCGToken = (node: unknown): node is DTCGToken =>
-  node !== null && typeof node === 'object' && '$value' in node;
+  node !== null && typeof node === "object" && "$value" in node;
 
 const isDTCGGroup = (node: unknown): node is DTCGGroup =>
-  node !== null && typeof node === 'object' && !('$value' in node);
+  node !== null && typeof node === "object" && !("$value" in node);
 
 const isAlias = (value: unknown): value is string =>
-  typeof value === 'string' && value.startsWith('{') && value.endsWith('}');
+  typeof value === "string" && value.startsWith("{") && value.endsWith("}");
 
 const walk = (
   node: DTCGDocument | DTCGGroup,
@@ -27,11 +27,11 @@ const walk = (
   tokens: Token[],
 ): void => {
   for (const [key, child] of Object.entries(node)) {
-    if (key.startsWith('$')) {
+    if (key.startsWith("$")) {
       continue;
     }
 
-    if (child === undefined || child === null || typeof child !== 'object') {
+    if (child === undefined || child === null || typeof child !== "object") {
       continue;
     }
 
@@ -39,7 +39,7 @@ const walk = (
 
     if (isDTCGToken(child)) {
       const rawType = child.$type ?? inheritedType;
-      const dtcgType = rawType ?? 'unknown';
+      const dtcgType = rawType ?? "unknown";
       const teiknType = mapTypes ? dtcgTypeToTeikn(dtcgType) : dtcgType;
 
       const value = isAlias(child.$value)
@@ -57,10 +57,10 @@ const walk = (
       const description = child.$description;
 
       if (deprecated && description) {
-        const depMsg = typeof deprecated === 'string' ? deprecated : 'DEPRECATED';
+        const depMsg = typeof deprecated === "string" ? deprecated : "DEPRECATED";
         token.usage = `[${depMsg}] ${description}`;
       } else if (deprecated) {
-        const depMsg = typeof deprecated === 'string' ? deprecated : 'DEPRECATED';
+        const depMsg = typeof deprecated === "string" ? deprecated : "DEPRECATED";
         token.usage = `[${depMsg}]`;
       } else if (description) {
         token.usage = description;
@@ -78,7 +78,7 @@ const walk = (
 };
 
 export const parseDTCG = (document: DTCGDocument, options?: ParseOptions): Token[] => {
-  const separator = options?.separator ?? '.';
+  const separator = options?.separator ?? ".";
   const mapTypes = options?.mapTypes ?? true;
   const tokens: Token[] = [];
 

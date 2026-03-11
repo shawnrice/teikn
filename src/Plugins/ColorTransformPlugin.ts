@@ -1,8 +1,8 @@
-import type { Token } from '../Token';
+import type { Token } from "../Token";
 /* eslint-disable @typescript-eslint/no-useless-constructor */
-import { Color } from '../TokenTypes/Color';
-import type { ColorFormat } from '../TokenTypes/Color/types';
-import { Plugin } from './Plugin';
+import { Color } from "../TokenTypes/Color";
+import type { ColorFormat } from "../TokenTypes/Color/types";
+import { Plugin } from "./Plugin";
 
 type ColorTransformPluginOptions = {
   type?: ColorFormat;
@@ -14,7 +14,7 @@ type ColorTransformPluginOptions = {
 export class ColorTransformPlugin extends Plugin<ColorTransformPluginOptions> {
   outputType: RegExp = /.*/;
 
-  tokenType: string = 'color';
+  tokenType: string = "color";
 
   constructor(options: ColorTransformPluginOptions) {
     super(options);

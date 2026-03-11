@@ -1,24 +1,24 @@
-import { EOL } from 'os';
+import { EOL } from "node:os";
 
-import { kebabCase } from '../string-utils';
-import type { Token } from '../Token';
-import { getDate } from '../utils';
-import type { GeneratorOptions } from './Generator';
-import { Generator } from './Generator';
+import { kebabCase } from "../string-utils";
+import type { Token } from "../Token";
+import { getDate } from "../utils";
+import type { GeneratorOptions } from "./Generator";
+import { Generator } from "./Generator";
 
 const cssValue = (value: unknown): string => {
-  if (typeof value !== 'object' || value === null) {
+  if (typeof value !== "object" || value === null) {
     return String(value);
   }
   const obj = value as Record<string, unknown>;
-  if ('width' in obj && 'style' in obj && 'color' in obj) {
-    return [obj.width, obj.style, obj.color].filter(Boolean).join(' ');
+  if ("width" in obj && "style" in obj && "color" in obj) {
+    return [obj.width, obj.style, obj.color].filter(Boolean).join(" ");
   }
-  return Object.values(obj).join(' ');
+  return Object.values(obj).join(" ");
 };
 
 const defaultOptions = {
-  ext: 'css',
+  ext: "css",
   nameTransformer: kebabCase,
   dateFn: getDate,
 };
@@ -38,7 +38,7 @@ export class CSSVars extends Generator<CSSVarsOpts> {
 
   override describe() {
     return {
-      format: 'CSS Custom Properties',
+      format: "CSS Custom Properties",
       usage: `<link rel="stylesheet" href="./${this.file}">\n\n/* Then use variables anywhere in your CSS */\nvar(--token-name)`,
     };
   }
@@ -71,7 +71,7 @@ export class CSSVars extends Generator<CSSVarsOpts> {
 
   combinator(tokens: Token[]): string {
     const { nameTransformer } = this.options;
-    const rootVars = tokens.map(token => this.generateToken(token));
+    const rootVars = tokens.map((token) => this.generateToken(token));
 
     const modeMap = new Map<string, string[]>();
 
@@ -97,12 +97,12 @@ export class CSSVars extends Generator<CSSVarsOpts> {
     for (const [mode, vars] of modeMap) {
       const { useMediaQuery, modeSelectors } = this.options;
       const selector = modeSelectors?.[mode] ?? `[data-theme="${mode}"]`;
-      blocks.push('', `${selector} {`, vars.join(EOL), `}`);
+      blocks.push("", `${selector} {`, vars.join(EOL), `}`);
 
-      if (useMediaQuery && mode === 'dark') {
-        const indented = vars.map(v => `  ${v}`);
+      if (useMediaQuery && mode === "dark") {
+        const indented = vars.map((v) => `  ${v}`);
         blocks.push(
-          '',
+          "",
           `@media (prefers-color-scheme: dark) {`,
           `  :root {`,
           indented.join(EOL),

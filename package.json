@@ -11,9 +11,17 @@
   "bugs": {
     "url": "https://github.com/shawnrice/teikn/issues"
   },
-  "type": "module",
   "license": "MIT",
   "author": "Shawn Patrick Rice <rice@shawnrice.org>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/shawnrice/teikn.git"
+  },
+  "bin": "./lib/src/cli.js",
+  "files": [
+    "lib"
+  ],
+  "type": "module",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "exports": {
@@ -31,15 +39,10 @@
       "types": "./lib/src/Generators/index.d.ts"
     }
   },
-  "bin": "./lib/src/cli.js",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/shawnrice/teikn.git"
-  },
   "scripts": {
     "build": "tsc",
-    "format": "prettier --write 'src/**/*.{json,ts,md}' './*.{js,json}'",
-    "lint": "eslint './src/**/*.ts'",
+    "format": "oxfmt --write 'src/' './*.json'",
+    "lint": "oxlint src/",
     "prepublishOnly": "tsc",
     "test": "bun test",
     "storybook": "storybook dev -p 6006",
@@ -53,18 +56,13 @@
     "@types/node": "^22.19.11",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "eslint": "^9.39.2",
-    "eslint-config-prettier": "^10.1.8",
-    "prettier": "^3.8.1",
+    "oxfmt": "^0.38.0",
+    "oxlint": "^1.52.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "storybook": "^10.2.8",
-    "typescript": "^5.9.3",
-    "typescript-eslint": "^8.55.0"
+    "typescript": "^5.9.3"
   },
-  "files": [
-    "lib"
-  ],
   "engines": {
     "node": ">=20.0.0"
   }

@@ -1,4 +1,4 @@
-import { clamp } from '../utils';
+import { clamp } from "../utils";
 
 const EPSILON = 1e-6;
 const MAX_ITERATIONS = 8;
@@ -90,7 +90,7 @@ export class CubicBezier {
       return;
     }
 
-    if (typeof first === 'string') {
+    if (typeof first === "string") {
       const named = presets[first.trim().toLowerCase()];
       if (named) {
         [this.#x1, this.#y1, this.#x2, this.#y2] = named;
@@ -183,14 +183,14 @@ export class CubicBezier {
 
   // ─── Named presets ──────────────────────────────────────────
 
-  static readonly ease: CubicBezier = new CubicBezier(...presets['ease']!);
-  static readonly easeIn: CubicBezier = new CubicBezier(...presets['ease-in']!);
-  static readonly easeOut: CubicBezier = new CubicBezier(...presets['ease-out']!);
-  static readonly easeInOut: CubicBezier = new CubicBezier(...presets['ease-in-out']!);
-  static readonly linear: CubicBezier = new CubicBezier(...presets['linear']!);
+  static readonly ease: CubicBezier = new CubicBezier(...presets["ease"]!);
+  static readonly easeIn: CubicBezier = new CubicBezier(...presets["ease-in"]!);
+  static readonly easeOut: CubicBezier = new CubicBezier(...presets["ease-out"]!);
+  static readonly easeInOut: CubicBezier = new CubicBezier(...presets["ease-in-out"]!);
+  static readonly linear: CubicBezier = new CubicBezier(...presets["linear"]!);
 
   // Material Design standard curves
-  static readonly standard: CubicBezier = new CubicBezier(...presets['standard']!);
-  static readonly accelerate: CubicBezier = new CubicBezier(...presets['accelerate']!);
-  static readonly decelerate: CubicBezier = new CubicBezier(...presets['decelerate']!);
+  static readonly standard: CubicBezier = new CubicBezier(...presets["standard"]!);
+  static readonly accelerate: CubicBezier = new CubicBezier(...presets["accelerate"]!);
+  static readonly decelerate: CubicBezier = new CubicBezier(...presets["decelerate"]!);
 }

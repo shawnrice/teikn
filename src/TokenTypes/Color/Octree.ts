@@ -39,8 +39,11 @@ const dist2 = (a: Point3, b: Point3): number =>
 
 /** Squared distance from a point to an axis-aligned bounding box. */
 const boxDist2 = (p: Point3, node: OctreeNode<unknown>): number => {
+  // oxlint-disable-next-line no-nested-ternary
   const dx = p[0] < node.minX ? node.minX - p[0] : p[0] > node.maxX ? p[0] - node.maxX : 0;
+  // oxlint-disable-next-line no-nested-ternary
   const dy = p[1] < node.minY ? node.minY - p[1] : p[1] > node.maxY ? p[1] - node.maxY : 0;
+  // oxlint-disable-next-line no-nested-ternary
   const dz = p[2] < node.minZ ? node.minZ - p[2] : p[2] > node.maxZ ? p[2] - node.maxZ : 0;
   return dx * dx + dy * dy + dz * dz;
 };
@@ -88,7 +91,7 @@ const insert = <T>(node: OctreeNode<T>, leaf: Leaf<T>, depthRemaining: number): 
   // At max depth or under capacity with no children yet: store as leaf
   if (
     depthRemaining <= 0 ||
-    (node.leaves.length < MAX_LEAF_CAPACITY && node.children.every(c => c === null))
+    (node.leaves.length < MAX_LEAF_CAPACITY && node.children.every((c) => c === null))
   ) {
     node.leaves.push(leaf);
     return;

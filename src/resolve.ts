@@ -1,13 +1,13 @@
-import type { Token } from './Token';
-import { isFirstClassValue } from './type-classifiers';
+import type { Token } from "./Token";
+import { isFirstClassValue } from "./type-classifiers";
 
 const REF_PATTERN = /^\{([^}]+)\}$/;
 
 const isRef = (value: unknown): value is string =>
-  typeof value === 'string' && REF_PATTERN.test(value);
+  typeof value === "string" && REF_PATTERN.test(value);
 
 const isCompositeValue = (value: unknown): value is Record<string, any> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value) && !isFirstClassValue(value);
+  typeof value === "object" && value !== null && !Array.isArray(value) && !isFirstClassValue(value);
 
 const resolveValue = (
   value: any,
@@ -65,7 +65,7 @@ export const resolveReferences = (tokens: Token[]): Token[] => {
     tokenMap.set(token.name, token);
   }
 
-  return tokens.map(token => {
+  return tokens.map((token) => {
     const resolvedValue = resolveValue(token.value, tokenMap, new Set([token.name]), token.name);
     const resolvedModes = token.modes ? resolveModes(token.modes, tokenMap, token.name) : undefined;
 

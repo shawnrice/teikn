@@ -18,29 +18,29 @@ export type LCHA = WithAlpha<LCH>;
 export type CMYKA = WithAlpha<CMYK>;
 
 export type ColorBlindnessType =
-  | 'protanopia'
-  | 'deuteranopia'
-  | 'tritanopia'
-  | 'protanomaly'
-  | 'deuteranomaly'
-  | 'tritanomaly';
+  | "protanopia"
+  | "deuteranopia"
+  | "tritanopia"
+  | "protanomaly"
+  | "deuteranomaly"
+  | "tritanomaly";
 
 // Type definitions
 export type ColorFormat =
-  | 'rgb'
-  | 'rgba'
-  | 'hex3'
+  | "rgb"
+  | "rgba"
+  | "hex3"
   // | 'hex4' // hex3 + alpha
   // | 'hex6' // same as 'hex'
   // | 'hex8' // hex6 + alpha
-  | 'hex' // same as 'hex6'
-  | 'hsl'
-  | 'hsla'
-  | 'xyz'
-  | 'xyza'
-  | 'lab'
-  | 'laba'
-  | 'lch'
-  | 'lcha'
-  | 'named'
-  | 'xkcd';
+  | "hex" // same as 'hex6'
+  | "hsl"
+  | "hsla"
+  | "xyz"
+  | "xyza"
+  | "lab"
+  | "laba"
+  | "lch"
+  | "lcha"
+  | "named"
+  | "xkcd";

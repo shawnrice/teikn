@@ -1,13 +1,13 @@
-import type { Token } from '../Token';
-import { Color } from '../TokenTypes/Color';
-import { Plugin } from './Plugin';
+import type { Token } from "../Token";
+import { Color } from "../TokenTypes/Color";
+import { Plugin } from "./Plugin";
 
 type AlphaMultiplyPluginOptions = {
   background?: string;
 } & Record<string, unknown>;
 
 export class AlphaMultiplyPlugin extends Plugin<AlphaMultiplyPluginOptions> {
-  tokenType: string = 'color';
+  tokenType: string = "color";
   outputType: RegExp = /.*/;
 
   constructor(options: AlphaMultiplyPluginOptions = {}) {
@@ -15,7 +15,7 @@ export class AlphaMultiplyPlugin extends Plugin<AlphaMultiplyPluginOptions> {
   }
 
   toJSON(token: Token): Token {
-    const { background = '#ffffff' } = this.options;
+    const { background = "#ffffff" } = this.options;
 
     const fg = token.value instanceof Color ? token.value : new Color(token.value);
 

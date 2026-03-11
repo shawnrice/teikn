@@ -1,17 +1,17 @@
-import { EOL } from 'os';
+import { EOL } from "node:os";
 
-import { camelCase, deriveShortName } from '../string-utils';
-import type { Token } from '../Token';
-import { getDate } from '../utils';
-import type { GeneratorInfo, GeneratorOptions } from './Generator';
-import { Generator } from './Generator';
+import { camelCase, deriveShortName } from "../string-utils";
+import type { Token } from "../Token";
+import { getDate } from "../utils";
+import type { GeneratorInfo, GeneratorOptions } from "./Generator";
+import { Generator } from "./Generator";
 
 const isValidIdentifier = (name: string): boolean => /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(name);
 
 const quoteKey = (name: string): string => (isValidIdentifier(name) ? name : `'${name}'`);
 
 const defaultOptions = {
-  ext: 'd.ts',
+  ext: "d.ts",
   nameTransformer: camelCase,
   dateFn: getDate,
 };
@@ -35,15 +35,13 @@ export class TypeScript extends Generator<TypeScriptOpts> {
   }
 
   override describe(): GeneratorInfo | null {
-    const base = this.options.filename ?? 'tokens';
+    const base = this.options.filename ?? "tokens";
     const groupUsage = this.options.groups
       ? `\n\n// Or use typed group accessors\nimport { color } from './${base}';\ncolor('primary') // compile-time checked`
-      : '';
+      : "";
     return {
-      format: 'TypeScript Declarations',
-      usage:
-        `import { tokens } from './${base}';\n\n// Pair with ES Module or CommonJS output for runtime values` +
-        groupUsage,
+      format: "TypeScript Declarations",
+      usage: `import { tokens } from './${base}';\n\n// Pair with ES Module or CommonJS output for runtime values${groupUsage}`,
     };
   }
 
@@ -90,21 +88,21 @@ export class TypeScript extends Generator<TypeScriptOpts> {
   }
 
   combinator(tokens: Token[]): string {
-    const values = tokens.map(t => this.generateToken(t));
+    const values = tokens.map((t) => this.generateToken(t));
     const parts = [
-      'export const tokens: {',
+      "export const tokens: {",
       values
         .map((token, index, arr) => (index === arr.length - 1 ? token.slice(0, -1) : token))
         .join(EOL),
-      '}',
+      "}",
     ];
 
     if (this.options.groups) {
       const groupDecls = this.tokenGroups(tokens).map(({ groupName, entries }) => {
-        const union = entries.map(({ shortName }) => `'${shortName}'`).join(' | ');
+        const union = entries.map(({ shortName }) => `'${shortName}'`).join(" | ");
         return `export const ${groupName}: (name: ${union}) => string;`;
       });
-      parts.push('', ...groupDecls);
+      parts.push("", ...groupDecls);
     }
 
     const modeNames = new Set<string>();
@@ -118,9 +116,9 @@ export class TypeScript extends Generator<TypeScriptOpts> {
 
     if (modeNames.size > 0) {
       const modeEntries = [...modeNames].map(
-        mode => `  ${quoteKey(mode)}: Partial<typeof tokens>;`,
+        (mode) => `  ${quoteKey(mode)}: Partial<typeof tokens>;`,
       );
-      parts.push('', `export const modes: {`, ...modeEntries, `}`);
+      parts.push("", `export const modes: {`, ...modeEntries, `}`);
     }
 
     return parts.join(EOL);

@@ -1,6 +1,6 @@
-import type { Token } from '../Token';
-import { Color } from '../TokenTypes/Color';
-import { Plugin } from './Plugin';
+import type { Token } from "../Token";
+import { Color } from "../TokenTypes/Color";
+import { Plugin } from "./Plugin";
 
 type PalettePluginOptions = {
   steps?: number[];
@@ -25,7 +25,7 @@ const generatePaletteTokens = (
   const minStep = Math.min(...steps);
   const maxStep = Math.max(...steps);
 
-  return steps.map(step => {
+  return steps.map((step) => {
     if (step === midStep) {
       return {
         ...token,
@@ -62,7 +62,7 @@ const generatePaletteTokens = (
 };
 
 export class PalettePlugin extends Plugin<PalettePluginOptions> {
-  tokenType: string = 'color';
+  tokenType: string = "color";
   outputType: RegExp = /.*/;
 
   constructor(options: PalettePluginOptions = {}) {
@@ -78,8 +78,8 @@ export class PalettePlugin extends Plugin<PalettePluginOptions> {
     const lightEnd = this.options.lightEnd ?? DEFAULT_LIGHT_END;
     const darkEnd = this.options.darkEnd ?? DEFAULT_DARK_END;
 
-    return tokens.flatMap(token => {
-      if (token.type !== 'color') {
+    return tokens.flatMap((token) => {
+      if (token.type !== "color") {
         return [token];
       }
       return [token, ...generatePaletteTokens(token, steps, lightEnd, darkEnd)];

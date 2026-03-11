@@ -11,7 +11,7 @@ export class Matrix {
   /** @internal */
   constructor(rows: number, cols: number, data: number[]);
   constructor(first: number | number[][], second?: number, third?: number[]) {
-    if (typeof first === 'number') {
+    if (typeof first === "number") {
       this.rows = first;
       this.cols = second!;
       this.#data = third!;

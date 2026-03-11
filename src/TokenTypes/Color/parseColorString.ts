@@ -1,6 +1,6 @@
-import type { Space, SpaceData } from './ColorSpace';
-import { hexToRGBWithAlpha } from './conversions';
-import { namedColors } from './namedColors';
+import type { Space, SpaceData } from "./ColorSpace";
+import { hexToRGBWithAlpha } from "./conversions";
+import { namedColors } from "./namedColors";
 import {
   isHex,
   isHSL,
@@ -13,8 +13,8 @@ import {
   normalizeDegrees,
   stringToRgb,
   stringToRgba,
-} from './util';
-import { xkcdColors } from './xkcdNamedColors';
+} from "./util";
+import { xkcdColors } from "./xkcdNamedColors";
 
 export type ParsedColor = {
   space: Space;
@@ -40,7 +40,7 @@ const parseHSLString = (c: string): ParsedColor => {
   const s = parseFloat(m[2]!) / 100;
   const l = parseFloat(m[3]!) / 100;
   const a = m[4] !== undefined ? parseFloat(m[4]) : 1;
-  return { space: 'hsl', data: [h, s, l], alpha: a };
+  return { space: "hsl", data: [h, s, l], alpha: a };
 };
 
 const parseLABString = (c: string): ParsedColor => {
@@ -52,7 +52,7 @@ const parseLABString = (c: string): ParsedColor => {
   const a = parseFloat(m[2]!);
   const b = parseFloat(m[3]!);
   const alpha = m[4] !== undefined ? parseFloat(m[4]) : 1;
-  return { space: 'lab', data: [L, a, b], alpha };
+  return { space: "lab", data: [L, a, b], alpha };
 };
 
 const parseLCHString = (c: string): ParsedColor => {
@@ -64,7 +64,7 @@ const parseLCHString = (c: string): ParsedColor => {
   const C = parseFloat(m[2]!);
   const H = parseFloat(m[3]!);
   const alpha = m[4] !== undefined ? parseFloat(m[4]) : 1;
-  return { space: 'lch', data: [L, C, H], alpha };
+  return { space: "lch", data: [L, C, H], alpha };
 };
 
 const parseXYZString = (c: string): ParsedColor => {
@@ -76,14 +76,14 @@ const parseXYZString = (c: string): ParsedColor => {
   const y = parseFloat(m[2]!);
   const z = parseFloat(m[3]!);
   const alpha = m[4] !== undefined ? parseFloat(m[4]) : 1;
-  return { space: 'xyz', data: [x, y, z], alpha };
+  return { space: "xyz", data: [x, y, z], alpha };
 };
 
 export const parseColorString = (c: string): ParsedColor => {
   const trimmed = c.trim();
 
   // xkcd named colors (e.g. "xkcd:seafoam", "xkcd:electric purple")
-  if (trimmed.toLowerCase().startsWith('xkcd:')) {
+  if (trimmed.toLowerCase().startsWith("xkcd:")) {
     const name = trimmed.slice(5).toLowerCase();
     if (name in xkcdColors) {
       return parseColorString(xkcdColors[name as keyof typeof xkcdColors]);
@@ -100,16 +100,16 @@ export const parseColorString = (c: string): ParsedColor => {
   // Hex
   if (isHex(trimmed)) {
     const { rgb, alpha } = hexToRGBWithAlpha(trimmed);
-    return { space: 'rgb', data: rgb, alpha };
+    return { space: "rgb", data: rgb, alpha };
   }
 
   // RGB / RGBA
   if (isRGB(trimmed)) {
-    return { space: 'rgb', data: stringToRgb(trimmed), alpha: 1 };
+    return { space: "rgb", data: stringToRgb(trimmed), alpha: 1 };
   }
   if (isRGBA(trimmed)) {
     const rgba = stringToRgba(trimmed);
-    return { space: 'rgb', data: [rgba[0], rgba[1], rgba[2]], alpha: rgba[3] };
+    return { space: "rgb", data: [rgba[0], rgba[1], rgba[2]], alpha: rgba[3] };
   }
 
   // HSL / HSLA

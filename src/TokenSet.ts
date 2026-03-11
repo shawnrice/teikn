@@ -1,4 +1,4 @@
-import type { Token } from './Token';
+import type { Token } from "./Token";
 
 export type TokenSet = {
   name: string;

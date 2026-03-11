@@ -1,11 +1,11 @@
-import { EOL } from 'os';
+import { EOL } from "node:os";
 
-import { version } from '../../package.json';
-import type { Plugin } from '../Plugins';
-import { camelCase, deriveShortName } from '../string-utils';
-import type { Token } from '../Token';
-import { isFirstClassValue } from '../type-classifiers';
-import { matches } from '../utils';
+import { version } from "../../package.json";
+import type { Plugin } from "../Plugins";
+import { camelCase, deriveShortName } from "../string-utils";
+import type { Token } from "../Token";
+import { isFirstClassValue } from "../type-classifiers";
+import { matches } from "../utils";
 
 export type GeneratorOptions = {
   /**
@@ -78,7 +78,7 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
   }
 
   validateOptions(): void {
-    const required: RequiredGeneratorOptions = { ext: 'string' };
+    const required: RequiredGeneratorOptions = { ext: "string" };
 
     const errors: string[] = [];
 
@@ -97,9 +97,9 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
   }
 
   get file(): string {
-    const { ext, filename = 'tokens' } = this.options;
+    const { ext, filename = "tokens" } = this.options;
 
-    return [filename, ext].join('.');
+    return [filename, ext].join(".");
   }
 
   header(): string | null {
@@ -112,8 +112,8 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
 
   protected prepareTokens(tokens: Token[], plugins: Plugin[]): Token[] {
     return tokens
-      .map(t => this.convertColorToString(t))
-      .map(token =>
+      .map((t) => this.convertColorToString(t))
+      .map((token) =>
         plugins.reduce((acc, plugin) => {
           if (!matches(plugin.tokenType, token.type)) {
             return acc;

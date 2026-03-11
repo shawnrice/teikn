@@ -1,5 +1,5 @@
-import type { Color, InternalCreate } from '../Color';
-import type { LCH } from '../types';
+import type { Color, InternalCreate } from "../Color";
+import type { LCH } from "../types";
 
 export class LCHOperations {
   #color: Color;
@@ -21,7 +21,7 @@ export class LCHOperations {
       return this.#lch()[0];
     }
     const [, c, h] = this.#lch();
-    return this.#new('lch', [value, c, h], this.#color.alpha);
+    return this.#new("lch", [value, c, h], this.#color.alpha);
   }
 
   chroma(): number;
@@ -31,7 +31,7 @@ export class LCHOperations {
       return this.#lch()[1];
     }
     const [l, , h] = this.#lch();
-    return this.#new('lch', [l, value, h], this.#color.alpha);
+    return this.#new("lch", [l, value, h], this.#color.alpha);
   }
 
   hue(): number;
@@ -41,7 +41,7 @@ export class LCHOperations {
       return this.#lch()[2];
     }
     const [l, c] = this.#lch();
-    return this.#new('lch', [l, c, value], this.#color.alpha);
+    return this.#new("lch", [l, c, value], this.#color.alpha);
   }
 
   rotateHue(degrees: number): Color {
@@ -54,6 +54,6 @@ export class LCHOperations {
   }
 
   toString(): string {
-    return this.#color.toString('lch');
+    return this.#color.toString("lch");
   }
 }

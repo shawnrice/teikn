@@ -1,7 +1,7 @@
-import { EOL } from 'os';
+import { EOL } from "node:os";
 
-import { camelCase } from '../string-utils';
-import type { Token } from '../Token';
+import { camelCase } from "../string-utils";
+import type { Token } from "../Token";
 import {
   groupTokens,
   isAspectRatioType,
@@ -24,20 +24,20 @@ import {
   isTransitionType,
   isTypographyType,
   isZLayerType,
-} from '../type-classifiers';
-import { getDate } from '../utils';
-import { ESModule } from './ESModule';
-import type { GeneratorOptions } from './Generator';
-import { Generator } from './Generator';
-import { JavaScript } from './JavaScript';
+} from "../type-classifiers";
+import { getDate } from "../utils";
+import { ESModule } from "./ESModule";
+import type { GeneratorOptions } from "./Generator";
+import { Generator } from "./Generator";
+import { JavaScript } from "./JavaScript";
 
 // ─── Options ─────────────────────────────────────────────────
 
 const defaultOptions = {
-  ext: 'stories.tsx',
+  ext: "stories.tsx",
   nameTransformer: camelCase,
   dateFn: getDate,
-  storyTitle: 'Design Tokens',
+  storyTitle: "Design Tokens",
 };
 
 export type StorybookOpts = {
@@ -49,7 +49,7 @@ export type StorybookOpts = {
 
 // ─── Helpers ─────────────────────────────────────────────────
 
-const toStoryName = (type: string): string => camelCase(type).replace(/^./, c => c.toUpperCase());
+const toStoryName = (type: string): string => camelCase(type).replace(/^./, (c) => c.toUpperCase());
 
 // ─── Inline component templates ─────────────────────────────
 
@@ -391,115 +391,115 @@ const tokenTableComponent = `const TokenTable = ({ items }: { items: Array<{ nam
 type ComponentDef = { name: string; source: string; needsState: boolean };
 
 const componentRegistry: Record<string, ComponentDef> = {
-  swatch: { name: 'Swatch', source: swatchComponent, needsState: false },
-  spacingBar: { name: 'SpacingBar', source: spacingBarComponent, needsState: false },
-  fontSample: { name: 'FontSample', source: fontSampleComponent, needsState: false },
-  typographyBlock: { name: 'TypographyBlock', source: typographyBlockComponent, needsState: false },
-  shadowBox: { name: 'ShadowBox', source: shadowBoxComponent, needsState: false },
-  durationBar: { name: 'DurationBar', source: durationBarComponent, needsState: true },
-  timingDemo: { name: 'TimingDemo', source: timingDemoComponent, needsState: true },
-  radiusBox: { name: 'RadiusBox', source: radiusBoxComponent, needsState: false },
-  borderDemo: { name: 'BorderDemo', source: borderDemoComponent, needsState: false },
-  gradientSwatch: { name: 'GradientSwatch', source: gradientSwatchComponent, needsState: false },
-  opacityDemo: { name: 'OpacityDemo', source: opacityDemoComponent, needsState: false },
+  swatch: { name: "Swatch", source: swatchComponent, needsState: false },
+  spacingBar: { name: "SpacingBar", source: spacingBarComponent, needsState: false },
+  fontSample: { name: "FontSample", source: fontSampleComponent, needsState: false },
+  typographyBlock: { name: "TypographyBlock", source: typographyBlockComponent, needsState: false },
+  shadowBox: { name: "ShadowBox", source: shadowBoxComponent, needsState: false },
+  durationBar: { name: "DurationBar", source: durationBarComponent, needsState: true },
+  timingDemo: { name: "TimingDemo", source: timingDemoComponent, needsState: true },
+  radiusBox: { name: "RadiusBox", source: radiusBoxComponent, needsState: false },
+  borderDemo: { name: "BorderDemo", source: borderDemoComponent, needsState: false },
+  gradientSwatch: { name: "GradientSwatch", source: gradientSwatchComponent, needsState: false },
+  opacityDemo: { name: "OpacityDemo", source: opacityDemoComponent, needsState: false },
   lineHeightSample: {
-    name: 'LineHeightSample',
+    name: "LineHeightSample",
     source: lineHeightSampleComponent,
     needsState: false,
   },
   letterSpacingSample: {
-    name: 'LetterSpacingSample',
+    name: "LetterSpacingSample",
     source: letterSpacingSampleComponent,
     needsState: false,
   },
-  breakpointBar: { name: 'BreakpointBar', source: breakpointBarComponent, needsState: false },
-  sizeBox: { name: 'SizeBox', source: sizeBoxComponent, needsState: false },
-  ratioBox: { name: 'RatioBox', source: ratioBoxComponent, needsState: false },
-  zLayerStack: { name: 'ZLayerStack', source: zLayerStackComponent, needsState: false },
-  transitionDemo: { name: 'TransitionDemo', source: transitionDemoComponent, needsState: false },
-  tokenTable: { name: 'TokenTable', source: tokenTableComponent, needsState: false },
-  modeTable: { name: 'ModeTable', source: modeTableComponent, needsState: false },
+  breakpointBar: { name: "BreakpointBar", source: breakpointBarComponent, needsState: false },
+  sizeBox: { name: "SizeBox", source: sizeBoxComponent, needsState: false },
+  ratioBox: { name: "RatioBox", source: ratioBoxComponent, needsState: false },
+  zLayerStack: { name: "ZLayerStack", source: zLayerStackComponent, needsState: false },
+  transitionDemo: { name: "TransitionDemo", source: transitionDemoComponent, needsState: false },
+  tokenTable: { name: "TokenTable", source: tokenTableComponent, needsState: false },
+  modeTable: { name: "ModeTable", source: modeTableComponent, needsState: false },
 };
 
 // ─── Type → component mapping ───────────────────────────────
 
 const classifyType = (type: string): string => {
   if (isColorType(type)) {
-    return 'swatch';
+    return "swatch";
   }
   if (isTypographyType(type)) {
-    return 'typographyBlock';
+    return "typographyBlock";
   }
   if (isFontSizeType(type)) {
-    return 'fontSample';
+    return "fontSample";
   }
   if (isFontFamilyType(type)) {
-    return 'fontSample';
+    return "fontSample";
   }
   if (isFontWeightType(type)) {
-    return 'fontSample';
+    return "fontSample";
   }
   if (isShadowType(type)) {
-    return 'shadowBox';
+    return "shadowBox";
   }
   if (isDurationType(type)) {
-    return 'durationBar';
+    return "durationBar";
   }
   if (isTimingType(type)) {
-    return 'timingDemo';
+    return "timingDemo";
   }
   if (isBorderRadiusType(type)) {
-    return 'radiusBox';
+    return "radiusBox";
   }
   if (isBorderType(type)) {
-    return 'borderDemo';
+    return "borderDemo";
   }
   if (isLetterSpacingType(type)) {
-    return 'letterSpacingSample';
+    return "letterSpacingSample";
   }
   if (isSpacingType(type)) {
-    return 'spacingBar';
+    return "spacingBar";
   }
   if (isGradientType(type)) {
-    return 'gradientSwatch';
+    return "gradientSwatch";
   }
   if (isOpacityType(type)) {
-    return 'opacityDemo';
+    return "opacityDemo";
   }
   if (isLineHeightType(type)) {
-    return 'lineHeightSample';
+    return "lineHeightSample";
   }
   if (isBreakpointType(type)) {
-    return 'breakpointBar';
+    return "breakpointBar";
   }
   if (isSizeType(type)) {
-    return 'sizeBox';
+    return "sizeBox";
   }
   if (isAspectRatioType(type)) {
-    return 'ratioBox';
+    return "ratioBox";
   }
   if (isZLayerType(type)) {
-    return 'zLayerStack';
+    return "zLayerStack";
   }
   if (isTransitionType(type)) {
-    return 'transitionDemo';
+    return "transitionDemo";
   }
-  return 'tokenTable';
+  return "tokenTable";
 };
 
 // ─── Font type → CSS property mapping ───────────────────────
 
 const fontStyleProp = (type: string): string => {
   if (isFontSizeType(type)) {
-    return 'fontSize';
+    return "fontSize";
   }
   if (isFontFamilyType(type)) {
-    return 'fontFamily';
+    return "fontFamily";
   }
   if (isFontWeightType(type)) {
-    return 'fontWeight';
+    return "fontWeight";
   }
-  return 'fontSize';
+  return "fontSize";
 };
 
 // ─── Layout wrappers per component type ─────────────────────
@@ -507,7 +507,7 @@ const fontStyleProp = (type: string): string => {
 const wrapLayout = (type: string): { open: string; close: string } => {
   const componentKey = classifyType(type);
   if (
-    ['swatch', 'shadowBox', 'radiusBox', 'opacityDemo', 'sizeBox', 'ratioBox'].includes(
+    ["swatch", "shadowBox", "radiusBox", "opacityDemo", "sizeBox", "ratioBox"].includes(
       componentKey,
     )
   ) {
@@ -516,13 +516,13 @@ const wrapLayout = (type: string): { open: string; close: string } => {
       close: `      </div>`,
     };
   }
-  if (componentKey === 'gradientSwatch') {
+  if (componentKey === "gradientSwatch") {
     return {
       open: `      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1.25rem' }}>`,
       close: `      </div>`,
     };
   }
-  return { open: '', close: '' };
+  return { open: "", close: "" };
 };
 
 // ─── Story render body builders ─────────────────────────────
@@ -530,24 +530,24 @@ const wrapLayout = (type: string): { open: string; close: string } => {
 const buildStoryRender = (type: string, keysVarName: string): string => {
   const componentKey = classifyType(type);
   const layout = wrapLayout(type);
-  const hasWrapper = layout.open !== '';
+  const hasWrapper = layout.open !== "";
 
-  if (componentKey === 'fontSample') {
+  if (componentKey === "fontSample") {
     const prop = fontStyleProp(type);
     const inner = `        {${keysVarName}.map(key => <FontSample key={key} name={key} value={String(tokens[key])} styleProp="${prop}" />)}`;
     return hasWrapper ? [layout.open, inner, layout.close].join(EOL) : inner;
   }
 
-  if (componentKey === 'typographyBlock' || componentKey === 'borderDemo') {
+  if (componentKey === "typographyBlock" || componentKey === "borderDemo") {
     const comp = componentRegistry[componentKey]!.name;
     return `        {${keysVarName}.map(key => <${comp} key={key} name={key} value={tokens[key] as Record<string, unknown>} />)}`;
   }
 
-  if (componentKey === 'zLayerStack') {
+  if (componentKey === "zLayerStack") {
     return `        <ZLayerStack items={${keysVarName}.map(key => ({ name: key, value: String(tokens[key]) }))} />`;
   }
 
-  if (componentKey === 'tokenTable') {
+  if (componentKey === "tokenTable") {
     return `        <TokenTable items={${keysVarName}.map(key => ({ name: key, value: String(tokens[key]) }))} />`;
   }
 
@@ -565,8 +565,8 @@ export class Storybook extends Generator<StorybookOpts> {
 
   override describe() {
     return {
-      format: 'Storybook',
-      usage: '// View in Storybook\nnpx storybook dev',
+      format: "Storybook",
+      usage: "// View in Storybook\nnpx storybook dev",
     };
   }
 
@@ -594,15 +594,15 @@ export class Storybook extends Generator<StorybookOpts> {
   }
 
   generateToken(_: Token): string {
-    return '';
+    return "";
   }
 
   private detectImportSource(): string {
     if (this.options.importPath) {
       return this.options.importPath;
     }
-    const sibling = this.siblings.find(g => g instanceof ESModule || g instanceof JavaScript);
-    return sibling ? `./${sibling.file.replace(/\.[^.]+$/, '')}` : './tokens';
+    const sibling = this.siblings.find((g) => g instanceof ESModule || g instanceof JavaScript);
+    return sibling ? `./${sibling.file.replace(/\.[^.]+$/, "")}` : "./tokens";
   }
 
   combinator(tokens: Token[]): string {
@@ -617,9 +617,9 @@ export class Storybook extends Generator<StorybookOpts> {
     }
 
     // Check if any tokens have modes
-    const hasModes = tokens.some(t => t.modes && Object.keys(t.modes).length > 0);
+    const hasModes = tokens.some((t) => t.modes && Object.keys(t.modes).length > 0);
     if (hasModes) {
-      neededComponents.add('modeTable');
+      neededComponents.add("modeTable");
     }
 
     // Build import statements
@@ -629,15 +629,15 @@ export class Storybook extends Generator<StorybookOpts> {
     lines.push(`import React from 'react';`);
     lines.push(`import type { Meta, StoryObj } from '@storybook/react';`);
     lines.push(`import { tokens } from '${importSource}';`);
-    lines.push('');
+    lines.push("");
 
     // Key arrays per type
     for (const [type, typeTokens] of groups) {
       const varName = `${camelCase(type)}Keys`;
-      const keys = typeTokens.map(t => `'${nameTransformer!(t.name)}'`).join(', ');
+      const keys = typeTokens.map((t) => `'${nameTransformer!(t.name)}'`).join(", ");
       lines.push(`const ${varName} = [${keys}] as const;`);
     }
-    lines.push('');
+    lines.push("");
 
     // Modes data (if any tokens have modes)
     if (hasModes) {
@@ -655,7 +655,7 @@ export class Storybook extends Generator<StorybookOpts> {
         lines.push(`  },`);
       }
       lines.push(`};`);
-      lines.push('');
+      lines.push("");
     }
 
     // Helper components (only emit those needed)
@@ -663,7 +663,7 @@ export class Storybook extends Generator<StorybookOpts> {
       const def = componentRegistry[key];
       if (def) {
         lines.push(def.source);
-        lines.push('');
+        lines.push("");
       }
     }
 
@@ -675,7 +675,7 @@ export class Storybook extends Generator<StorybookOpts> {
     lines.push(`} satisfies Meta;`);
     lines.push(`export default meta;`);
     lines.push(`type Story = StoryObj<typeof meta>;`);
-    lines.push('');
+    lines.push("");
 
     // Stories
     for (const [type, typeTokens] of groups) {
@@ -683,7 +683,7 @@ export class Storybook extends Generator<StorybookOpts> {
       const keysVarName = `${camelCase(type)}Keys`;
       const renderBody = buildStoryRender(type, keysVarName);
       const typeModes =
-        hasModes && typeTokens.some(t => t.modes && Object.keys(t.modes).length > 0);
+        hasModes && typeTokens.some((t) => t.modes && Object.keys(t.modes).length > 0);
 
       lines.push(`export const ${storyName}: Story = {`);
       lines.push(`  render: () => (`);
@@ -695,7 +695,7 @@ export class Storybook extends Generator<StorybookOpts> {
       lines.push(`    </>`);
       lines.push(`  ),`);
       lines.push(`};`);
-      lines.push('');
+      lines.push("");
     }
 
     return lines.join(EOL).trimEnd();

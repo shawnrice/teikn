@@ -1,6 +1,6 @@
-import type { Token } from '../Token';
-import type { DTCGDocument, DTCGToken } from './types';
-import { teiknTypeToDTCG, teiknValueToDTCG } from './values';
+import type { Token } from "../Token";
+import type { DTCGDocument, DTCGToken } from "./types";
+import { teiknTypeToDTCG, teiknValueToDTCG } from "./values";
 
 export type SerializeOptions = {
   /** Separator used in token names to reconstruct groups. Default: '.' */
@@ -13,7 +13,7 @@ const setNestedValue = (obj: Record<string, any>, path: string[], token: DTCGTok
   let current = obj;
   for (let i = 0; i < path.length - 1; i++) {
     const segment = path[i]!;
-    if (!(segment in current) || typeof current[segment] !== 'object') {
+    if (!(segment in current) || typeof current[segment] !== "object") {
       current[segment] = {};
     }
     current = current[segment];
@@ -23,12 +23,12 @@ const setNestedValue = (obj: Record<string, any>, path: string[], token: DTCGTok
 
 const hoistGroupTypes = (obj: Record<string, any>): void => {
   for (const [key, value] of Object.entries(obj)) {
-    if (key.startsWith('$') || !value || typeof value !== 'object') {
+    if (key.startsWith("$") || !value || typeof value !== "object") {
       continue;
     }
 
     // If this node has $value, it's a token leaf — skip
-    if ('$value' in value) {
+    if ("$value" in value) {
       continue;
     }
 
@@ -38,7 +38,7 @@ const hoistGroupTypes = (obj: Record<string, any>): void => {
     // Collect $type from all direct children
     const childTypes = new Set<string>();
     for (const [childKey, childVal] of Object.entries(value)) {
-      if (childKey.startsWith('$') || !childVal || typeof childVal !== 'object') {
+      if (childKey.startsWith("$") || !childVal || typeof childVal !== "object") {
         continue;
       }
       const childType = (childVal as any).$type;
@@ -54,7 +54,7 @@ const hoistGroupTypes = (obj: Record<string, any>): void => {
 
       // Remove $type from children
       for (const [childKey, childVal] of Object.entries(value)) {
-        if (childKey.startsWith('$') || !childVal || typeof childVal !== 'object') {
+        if (childKey.startsWith("$") || !childVal || typeof childVal !== "object") {
           continue;
         }
         if ((childVal as any).$type === sharedType) {
@@ -90,7 +90,7 @@ const tokenToDTCG = (token: Token): DTCGToken => {
 };
 
 export const serializeDTCG = (tokens: Token[], options?: SerializeOptions): DTCGDocument => {
-  const separator = options?.separator ?? '.';
+  const separator = options?.separator ?? ".";
   const hierarchical = options?.hierarchical ?? true;
 
   const doc: DTCGDocument = {};
