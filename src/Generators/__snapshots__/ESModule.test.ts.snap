@@ -2,7 +2,7 @@
 
 exports[`ESModule tests it generates tokens as an esmodule 1`] = `
 "/**
- * Teikn v2.0.0-alpha.3
+ * Teikn v2.0.0-alpha.4
  * Generated null
  *
  * This file is generated and should be commited to source control
@@ -31,7 +31,7 @@ export default tokens;"
 
 exports[`ESModule tests it generates group accessors when groups: true 1`] = `
 "/**
- * Teikn v2.0.0-alpha.3
+ * Teikn v2.0.0-alpha.4
  * Generated null
  *
  * This file is generated and should be commited to source control

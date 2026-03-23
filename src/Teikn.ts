@@ -32,12 +32,23 @@ import {
   ReducedMotionPlugin,
   RemUnitPlugin,
   SCSSQuoteValuePlugin,
+  StripTypePrefixPlugin,
   TouchTargetPlugin,
 } from "./Plugins";
 import { resolveReferences } from "./resolve";
 import type { ThemeLayer, Token, TokenValue } from "./Token";
 import type { ValidationResult } from "./validate";
 import { validate } from "./validate";
+
+/**
+ * Prefix each token's name with its type, joined by a hyphen.
+ * Generators' nameTransformers (kebabCase, camelCase, etc.) handle final formatting.
+ */
+const prefixTokenNames = (tokens: Token[]): Token[] =>
+  tokens.map((token) => ({
+    ...token,
+    name: `${token.type}-${token.name}`,
+  }));
 
 /**
  * Apply theme layers to tokens, merging each layer's overrides into token.modes.
@@ -81,6 +92,7 @@ const BuiltInPlugins: {
   PalettePlugin: typeof PalettePlugin;
   PerceptualDistancePlugin: typeof PerceptualDistancePlugin;
   PrefixTypePlugin: typeof PrefixTypePlugin;
+  StripTypePrefixPlugin: typeof StripTypePrefixPlugin;
   ReducedMotionPlugin: typeof ReducedMotionPlugin;
   RemUnitPlugin: typeof RemUnitPlugin;
   SCSSQuoteValuePlugin: typeof SCSSQuoteValuePlugin;
@@ -97,6 +109,7 @@ const BuiltInPlugins: {
   PalettePlugin,
   PerceptualDistancePlugin,
   PrefixTypePlugin,
+  StripTypePrefixPlugin,
   ReducedMotionPlugin,
   RemUnitPlugin,
   SCSSQuoteValuePlugin,
@@ -164,9 +177,18 @@ export class Teikn {
   static resolveReferences: typeof resolveReferences = resolveReferences;
 
   constructor(options: TeiknOptions) {
-    const { generators, outDir, plugins, themes } = options;
+    const { generators, outDir, plugins = [], themes } = options;
     this.generators = generators ?? [new Teikn.generators.Json()];
-    this.plugins = plugins ?? [];
+    this.plugins = plugins.filter((p) => {
+      if (p instanceof PrefixTypePlugin) {
+        console.warn(
+          "[teikn] PrefixTypePlugin is no longer needed — type prefixing is now built in. " +
+            "Remove it from your plugins array to avoid double-prefixed names.",
+        );
+        return false;
+      }
+      return true;
+    });
     this.themes = themes ?? [];
     this.outDir = outDir ?? process.cwd();
   }
@@ -201,6 +223,7 @@ export class Teikn {
     const expanded = this.expand(tokens);
     const withThemes = applyThemes(this.themes, expanded);
     const resolved = resolveReferences(withThemes);
+    const named = prefixTokenNames(resolved);
 
     this.generators.forEach((g) => {
       g.siblings = this.generators;
@@ -208,7 +231,7 @@ export class Teikn {
 
     const results = new Map<string, string>();
     for (const generator of this.generators) {
-      results.set(generator.file, generator.generate(resolved, this.plugins));
+      results.set(generator.file, generator.generate(named, this.plugins));
     }
     return results;
   }

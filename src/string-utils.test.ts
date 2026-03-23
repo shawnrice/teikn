@@ -110,4 +110,16 @@ describe("deriveShortName", () => {
   test("handles multi-segment short name", () => {
     expect(deriveShortName("colorDarkMuted", "color")).toBe("darkMuted");
   });
+
+  test("strips hyphen-separated prefix", () => {
+    expect(deriveShortName("color-primary", "color")).toBe("primary");
+  });
+
+  test("strips hyphen-separated multi-word prefix", () => {
+    expect(deriveShortName("font-family-body", "font-family")).toBe("body");
+  });
+
+  test("does not false-positive on name extending type without uppercase boundary", () => {
+    expect(deriveShortName("colors", "color")).toBe("colors");
+  });
 });

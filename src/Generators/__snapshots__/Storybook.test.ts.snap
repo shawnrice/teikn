@@ -2,7 +2,7 @@
 
 exports[`Storybook generator It generates the full token set 1`] = `
 "/**
- * Teikn v2.0.0-alpha.3
+ * Teikn v2.0.0-alpha.4
  * Generated Mon Jan 01 2024 12:00:00
  *
  * Storybook stories for design tokens

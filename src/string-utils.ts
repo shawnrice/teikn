@@ -51,9 +51,24 @@ export const splitTopLevel = (str: string, delimiter = ","): string[] => {
 };
 
 export const deriveShortName = (tokenName: string, type: string): string => {
-  const prefix = camelCase(type);
-  if (tokenName.length > prefix.length && tokenName.startsWith(prefix)) {
-    return tokenName[prefix.length]!.toLowerCase() + tokenName.slice(prefix.length + 1);
+  // Hyphen-separated prefix (e.g., "color-primary" with type "color")
+  const hyphenPrefix = `${type}-`;
+  if (tokenName.startsWith(hyphenPrefix)) {
+    return tokenName.slice(hyphenPrefix.length);
   }
+
+  // camelCase prefix (e.g., "colorPrimary" with type "color")
+  const prefix = camelCase(type);
+  const next = tokenName[prefix.length];
+  if (
+    tokenName.length > prefix.length &&
+    tokenName.startsWith(prefix) &&
+    next !== undefined &&
+    next === next.toUpperCase() &&
+    next !== next.toLowerCase()
+  ) {
+    return next.toLowerCase() + tokenName.slice(prefix.length + 1);
+  }
+
   return tokenName;
 };

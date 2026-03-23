@@ -35,7 +35,6 @@ const writer = new Teikn({
   ],
   plugins: [
     new Teikn.plugins.ColorTransformPlugin({ type: 'rgba' }),
-    new Teikn.plugins.PrefixTypePlugin(),
     new Teikn.plugins.SCSSQuoteValuePlugin(),
   ],
   outDir: path.resolve(import.meta.dirname!, 'dist'),
