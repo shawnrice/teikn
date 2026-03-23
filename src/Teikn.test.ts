@@ -160,7 +160,11 @@ describe("Teikn", () => {
 
     test("overlapping keys across groups produce distinct tokens", () => {
       const spacing = group("spacing", { sm: "8px", md: "16px", lg: "24px" });
-      const shadows = group("shadow", { sm: "0 1px 2px rgba(0,0,0,.1)", md: "0 2px 8px rgba(0,0,0,.12)", lg: "0 4px 16px rgba(0,0,0,.15)" });
+      const shadows = group("shadow", {
+        sm: "0 1px 2px rgba(0,0,0,.1)",
+        md: "0 2px 8px rgba(0,0,0,.12)",
+        lg: "0 4px 16px rgba(0,0,0,.15)",
+      });
       const breakpoints = group("breakpoint", { sm: "640px", md: "768px", lg: "1024px" });
 
       const writer = new Teikn({ generators: [new Json()] });
