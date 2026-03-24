@@ -1,5 +1,38 @@
 # Changelog
 
+## 2.0.0-alpha.5
+
+### Breaking Changes
+
+- **`NameConventionPlugin` now transforms mode keys.** Mode keys like
+  `high-contrast` are renamed to match the convention (e.g. `highContrast`
+  with camelCase). Previously only the token name was transformed.
+
+### Added
+
+- **Plugin ordering via `runAfter` declarations.** Plugins can declare
+  dependencies on other plugins by class name. The pipeline topologically
+  sorts plugins before applying them, so input order no longer matters.
+  Official plugins declare their ordering constraints automatically.
+- **Injectable `version` on generators.** Pass `version: "test"` to any
+  generator to stabilize snapshot output across version bumps.
+
+### Fixed
+
+- **Mode values now go through the full plugin pipeline.** Previously,
+  plugins like `ColorTransformPlugin` and `RemUnitPlugin` only transformed
+  `token.value`, silently skipping mode values. All plugins now transform
+  mode values identically to base values.
+- **First-class values in modes are now stringified.** `convertColorToString()`
+  now processes mode values, preventing object instances from reaching
+  generator output.
+- **Circular references in modes are now detected by `validate()`.** A token
+  with `modes: { dark: '{self}' }` previously passed validation but threw
+  at resolve time. Now caught during validation.
+- **`applyPlugin` respects plugin-renamed mode keys.** Plugins that rename
+  mode keys (like `NameConventionPlugin`) no longer have their changes
+  overwritten by the pipeline.
+
 ## 2.0.0-alpha.4
 
 ### Breaking Changes
