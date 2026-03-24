@@ -186,6 +186,9 @@ export class LinearGradient {
   }
 
   toString(): string {
+    if (this.#stops.length === 0) {
+      throw new Error("LinearGradient requires at least one color stop");
+    }
     const stopsStr = this.#stops.map(stopToCSS).join(", ");
     const kw = angleKeywords[this.#angle];
     const dir = kw ?? `${this.#angle}deg`;
@@ -344,6 +347,9 @@ export class RadialGradient {
       shapeParts.push(last ? `${last} at ${this.#position}` : `at ${this.#position}`);
     }
 
+    if (this.#stops.length === 0) {
+      throw new Error("RadialGradient requires at least one color stop");
+    }
     if (shapeParts.length > 0) {
       return `radial-gradient(${shapeParts.join(" ")}, ${stopsStr})`;
     }
