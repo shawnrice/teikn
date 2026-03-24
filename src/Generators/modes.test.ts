@@ -16,7 +16,7 @@ import { Json } from "./Json";
 
 // ─── Helpers ─────────────────────────────────────────────────
 
-const opts = { dateFn: () => "null" };
+const opts = { dateFn: () => "null", version: "test" };
 
 const colorToken = (modes: Record<string, unknown>): Token[] => [
   { name: "surface", type: "color", value: "#ffffff", modes },

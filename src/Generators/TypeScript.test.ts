@@ -8,7 +8,9 @@ const fixedDate = () => "Mon Jan 01 2024 12:00:00";
 
 describe("TypeScript generator tests", () => {
   test("It matches the TypeScript snapshot", () => {
-    expect(new Generator({ dateFn: () => "null" }).generate(tokenSet1)).toMatchSnapshot();
+    expect(
+      new Generator({ dateFn: () => "null", version: "test" }).generate(tokenSet1),
+    ).toMatchSnapshot();
   });
 
   test("it generates group type declarations when groups: true", () => {
@@ -18,7 +20,7 @@ describe("TypeScript generator tests", () => {
       { name: "spacingSm", type: "spacing", value: "4px" },
     ];
     expect(
-      new Generator({ dateFn: () => "null", groups: true }).generate(tokens),
+      new Generator({ dateFn: () => "null", version: "test", groups: true }).generate(tokens),
     ).toMatchSnapshot();
   });
 

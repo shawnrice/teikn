@@ -16,7 +16,9 @@ const fixedDate = () => "Mon Jan 01 2024 12:00:00";
 
 describe("HTMLGenerator tests", () => {
   test("It generates the token set", () => {
-    expect(new Generator({ dateFn: fixedDate }).generate(tokenSet1)).toMatchSnapshot();
+    expect(
+      new Generator({ dateFn: fixedDate, version: "test" }).generate(tokenSet1),
+    ).toMatchSnapshot();
   });
 
   test("It renders color tokens with contrast info", () => {
@@ -24,7 +26,7 @@ describe("HTMLGenerator tests", () => {
       { name: "red", type: "color", value: new Color(255, 0, 0) },
       { name: "blue", type: "color", value: "#0000ff" },
     ];
-    const html = new Generator({ dateFn: fixedDate }).generate(tokens);
+    const html = new Generator({ dateFn: fixedDate, version: "test" }).generate(tokens);
 
     expect(html).toContain("color-swatch");
     expect(html).toContain("vs white");
@@ -44,7 +46,7 @@ describe("HTMLGenerator tests", () => {
       { name: "bold", type: "font-weight", value: "700" },
       { name: "gap", type: "spacing", value: "8px" },
     ];
-    const html = new Generator({ dateFn: fixedDate }).generate(tokens);
+    const html = new Generator({ dateFn: fixedDate, version: "test" }).generate(tokens);
 
     expect(html).toContain('id="section-color"');
     expect(html).toContain('id="section-font-size"');
@@ -65,7 +67,7 @@ describe("HTMLGenerator tests", () => {
       { name: "brand", type: "color", value: "#cc0000", usage: "Primary brand color" },
       { name: "base", type: "font-size", value: "1rem", usage: "Base body text size" },
     ];
-    const html = new Generator({ dateFn: fixedDate }).generate(tokens);
+    const html = new Generator({ dateFn: fixedDate, version: "test" }).generate(tokens);
 
     expect(html).toContain("Primary brand color");
     expect(html).toContain("Base body text size");
@@ -80,7 +82,7 @@ describe("HTMLGenerator tests", () => {
         value: { fontFamily: "Georgia", fontSize: "2rem", fontWeight: "700" },
       },
     ];
-    const html = new Generator({ dateFn: fixedDate }).generate(tokens);
+    const html = new Generator({ dateFn: fixedDate, version: "test" }).generate(tokens);
 
     expect(html).toContain("composite-token");
     expect(html).toContain("composite-values");
@@ -89,7 +91,7 @@ describe("HTMLGenerator tests", () => {
   });
 
   test("It produces a self-contained HTML document", () => {
-    const html = new Generator({ dateFn: fixedDate }).generate(tokenSet1);
+    const html = new Generator({ dateFn: fixedDate, version: "test" }).generate(tokenSet1);
 
     expect(html).toContain("<!DOCTYPE html>");
     expect(html).toContain('<html lang="en">');
@@ -104,7 +106,7 @@ describe("HTMLGenerator tests", () => {
   });
 
   test("It renders flip cards with sibling usage snippets", () => {
-    const htmlGen = new Generator({ dateFn: fixedDate });
+    const htmlGen = new Generator({ dateFn: fixedDate, version: "test" });
     const esGen = new ESModule({ groups: true });
     const scssGen = new Scss();
     const cssGen = new CSSVars();
@@ -144,7 +146,7 @@ describe("HTMLGenerator tests", () => {
 
   test("It does not render flip cards without siblings", () => {
     const tokens: Token[] = [{ name: "primary", type: "color", value: new Color(255, 0, 0) }];
-    const html = new Generator({ dateFn: fixedDate }).generate(tokens);
+    const html = new Generator({ dateFn: fixedDate, version: "test" }).generate(tokens);
 
     expect(html).not.toContain('class="flip-card"');
     expect(html).not.toContain('class="flip-inner"');
@@ -152,7 +154,7 @@ describe("HTMLGenerator tests", () => {
   });
 
   test("It does not wrap z-layer tokens in flip cards", () => {
-    const htmlGen = new Generator({ dateFn: fixedDate });
+    const htmlGen = new Generator({ dateFn: fixedDate, version: "test" });
     const cssGen = new CSSVars();
     const siblings = [htmlGen, cssGen];
     for (const g of siblings) {
@@ -179,7 +181,7 @@ describe("HTMLGenerator tests", () => {
         value: new BoxShadow(0, 2, 8, 0, new Color(0, 0, 0, 0.12)),
       },
     ];
-    const html = new Generator({ dateFn: fixedDate }).generate(tokens);
+    const html = new Generator({ dateFn: fixedDate, version: "test" }).generate(tokens);
 
     expect(html).toContain("shadow-grid");
     expect(html).toContain("shadow-box");
@@ -192,7 +194,7 @@ describe("HTMLGenerator tests", () => {
     const tokens: Token[] = [
       { name: "shadowLg", type: "shadow", value: "0 4px 16px rgba(0,0,0,0.2)" },
     ];
-    const html = new Generator({ dateFn: fixedDate }).generate(tokens);
+    const html = new Generator({ dateFn: fixedDate, version: "test" }).generate(tokens);
 
     expect(html).toContain("shadow-box");
     expect(html).toContain("shadow-lg");
@@ -203,7 +205,7 @@ describe("HTMLGenerator tests", () => {
 
   test("It renders duration tokens with animation bar", () => {
     const tokens: Token[] = [{ name: "durationFast", type: "duration", value: "0.2s" }];
-    const html = new Generator({ dateFn: fixedDate }).generate(tokens);
+    const html = new Generator({ dateFn: fixedDate, version: "test" }).generate(tokens);
 
     expect(html).toContain("duration-card");
     expect(html).toContain("duration-name");
@@ -218,7 +220,7 @@ describe("HTMLGenerator tests", () => {
     const tokens: Token[] = [
       { name: "durationSlow", type: "duration", value: "0.5s", usage: "For page transitions" },
     ];
-    const html = new Generator({ dateFn: fixedDate }).generate(tokens);
+    const html = new Generator({ dateFn: fixedDate, version: "test" }).generate(tokens);
 
     expect(html).toContain("For page transitions");
     expect(html).toContain("token-usage");
@@ -230,7 +232,7 @@ describe("HTMLGenerator tests", () => {
     const tokens: Token[] = [
       { name: "easeStandard", type: "timing", value: new CubicBezier(0.4, 0, 0.2, 1) },
     ];
-    const html = new Generator({ dateFn: fixedDate }).generate(tokens);
+    const html = new Generator({ dateFn: fixedDate, version: "test" }).generate(tokens);
 
     expect(html).toContain("timing-card");
     expect(html).toContain("timing-viz");
@@ -248,7 +250,7 @@ describe("HTMLGenerator tests", () => {
 
   test('It renders timing tokens with named string value like "ease"', () => {
     const tokens: Token[] = [{ name: "easeDefault", type: "easing", value: "ease" }];
-    const html = new Generator({ dateFn: fixedDate }).generate(tokens);
+    const html = new Generator({ dateFn: fixedDate, version: "test" }).generate(tokens);
 
     expect(html).toContain("timing-card");
     expect(html).toContain("<svg");
@@ -260,7 +262,7 @@ describe("HTMLGenerator tests", () => {
     const tokens: Token[] = [
       { name: "customEase", type: "timing", value: "cubic-bezier(0.42, 0, 0.58, 1)" },
     ];
-    const html = new Generator({ dateFn: fixedDate }).generate(tokens);
+    const html = new Generator({ dateFn: fixedDate, version: "test" }).generate(tokens);
 
     expect(html).toContain("timing-card");
     expect(html).toContain("cubic-bezier(0.42, 0, 0.58, 1)");
@@ -268,7 +270,7 @@ describe("HTMLGenerator tests", () => {
 
   test("It returns empty for timing tokens with non-parseable value", () => {
     const tokens: Token[] = [{ name: "badTiming", type: "timing", value: "not-a-timing" }];
-    const html = new Generator({ dateFn: fixedDate }).generate(tokens);
+    const html = new Generator({ dateFn: fixedDate, version: "test" }).generate(tokens);
 
     // The token should appear in the table but have no visualization card
     expect(html).not.toContain('class="timing-card');
@@ -285,7 +287,7 @@ describe("HTMLGenerator tests", () => {
         value: { width: "1px", style: "solid", color: "#000000" },
       },
     ];
-    const html = new Generator({ dateFn: fixedDate }).generate(tokens);
+    const html = new Generator({ dateFn: fixedDate, version: "test" }).generate(tokens);
 
     expect(html).toContain("border-sample");
     expect(html).toContain("border-demo");
@@ -300,7 +302,7 @@ describe("HTMLGenerator tests", () => {
 
   test("It renders border-radius tokens", () => {
     const tokens: Token[] = [{ name: "radiusMd", type: "border-radius", value: "0.5rem" }];
-    const html = new Generator({ dateFn: fixedDate }).generate(tokens);
+    const html = new Generator({ dateFn: fixedDate, version: "test" }).generate(tokens);
 
     expect(html).toContain("radius-grid");
     expect(html).toContain("radius-card");
@@ -324,7 +326,7 @@ describe("HTMLGenerator tests", () => {
         ]),
       },
     ];
-    const html = new Generator({ dateFn: fixedDate }).generate(tokens);
+    const html = new Generator({ dateFn: fixedDate, version: "test" }).generate(tokens);
 
     expect(html).toContain("gradient-grid");
     expect(html).toContain("gradient-card");
@@ -350,7 +352,7 @@ describe("HTMLGenerator tests", () => {
         ]),
       },
     ];
-    const html = new Generator({ dateFn: fixedDate }).generate(tokens);
+    const html = new Generator({ dateFn: fixedDate, version: "test" }).generate(tokens);
 
     expect(html).toContain("gradient-card");
     expect(html).toContain("Radial");
@@ -362,7 +364,7 @@ describe("HTMLGenerator tests", () => {
 
   test("It renders opacity tokens", () => {
     const tokens: Token[] = [{ name: "opacityHalf", type: "opacity", value: 0.5 }];
-    const html = new Generator({ dateFn: fixedDate }).generate(tokens);
+    const html = new Generator({ dateFn: fixedDate, version: "test" }).generate(tokens);
 
     expect(html).toContain("opacity-grid");
     expect(html).toContain("opacity-card");
@@ -377,7 +379,7 @@ describe("HTMLGenerator tests", () => {
 
   test("It renders line-height tokens", () => {
     const tokens: Token[] = [{ name: "lineHeightRelaxed", type: "line-height", value: 1.75 }];
-    const html = new Generator({ dateFn: fixedDate }).generate(tokens);
+    const html = new Generator({ dateFn: fixedDate, version: "test" }).generate(tokens);
 
     expect(html).toContain("lineheight-sample");
     expect(html).toContain("lineheight-label");
@@ -390,7 +392,7 @@ describe("HTMLGenerator tests", () => {
 
   test("It renders letter-spacing tokens", () => {
     const tokens: Token[] = [{ name: "trackingTight", type: "letter-spacing", value: "-0.02em" }];
-    const html = new Generator({ dateFn: fixedDate }).generate(tokens);
+    const html = new Generator({ dateFn: fixedDate, version: "test" }).generate(tokens);
 
     expect(html).toContain("letterspacing-sample");
     expect(html).toContain("letterspacing-label");
@@ -402,7 +404,7 @@ describe("HTMLGenerator tests", () => {
 
   test("It routes letter-spacing before generic spacing", () => {
     const tokens: Token[] = [{ name: "lsWide", type: "letter-spacing", value: "0.1em" }];
-    const html = new Generator({ dateFn: fixedDate }).generate(tokens);
+    const html = new Generator({ dateFn: fixedDate, version: "test" }).generate(tokens);
 
     // Should use letterspacing-sample, NOT spacing-bar (check HTML elements, not CSS defs)
     expect(html).toContain('class="letterspacing-sample"');
@@ -413,7 +415,7 @@ describe("HTMLGenerator tests", () => {
 
   test("It renders breakpoint tokens with proportional bar", () => {
     const tokens: Token[] = [{ name: "bpTablet", type: "breakpoint", value: "768px" }];
-    const html = new Generator({ dateFn: fixedDate }).generate(tokens);
+    const html = new Generator({ dateFn: fixedDate, version: "test" }).generate(tokens);
 
     expect(html).toContain("breakpoint-sample");
     expect(html).toContain("breakpoint-label");
@@ -429,7 +431,7 @@ describe("HTMLGenerator tests", () => {
 
   test("It renders size tokens", () => {
     const tokens: Token[] = [{ name: "sizeIcon", type: "size", value: "24px" }];
-    const html = new Generator({ dateFn: fixedDate }).generate(tokens);
+    const html = new Generator({ dateFn: fixedDate, version: "test" }).generate(tokens);
 
     expect(html).toContain("size-grid");
     expect(html).toContain("size-card");
@@ -443,7 +445,7 @@ describe("HTMLGenerator tests", () => {
 
   test("It renders aspect-ratio tokens", () => {
     const tokens: Token[] = [{ name: "ratioWide", type: "aspect-ratio", value: "16/9" }];
-    const html = new Generator({ dateFn: fixedDate }).generate(tokens);
+    const html = new Generator({ dateFn: fixedDate, version: "test" }).generate(tokens);
 
     expect(html).toContain("ratio-grid");
     expect(html).toContain("ratio-card");
@@ -466,7 +468,7 @@ describe("HTMLGenerator tests", () => {
         value: new Transition("0.3s", new CubicBezier(0.4, 0, 0.2, 1)),
       },
     ];
-    const html = new Generator({ dateFn: fixedDate }).generate(tokens);
+    const html = new Generator({ dateFn: fixedDate, version: "test" }).generate(tokens);
 
     expect(html).toContain("transition-card");
     expect(html).toContain("transition-header");
@@ -482,7 +484,7 @@ describe("HTMLGenerator tests", () => {
 
   test('It renders transition tokens with plain string value using "all" prefix', () => {
     const tokens: Token[] = [{ name: "transitionSimple", type: "transition", value: "0.2s ease" }];
-    const html = new Generator({ dateFn: fixedDate }).generate(tokens);
+    const html = new Generator({ dateFn: fixedDate, version: "test" }).generate(tokens);
 
     expect(html).toContain("transition-card");
     expect(html).toContain("transition-simple");
@@ -496,7 +498,7 @@ describe("HTMLGenerator tests", () => {
     const tokens: Token[] = [
       { name: "customComposite", type: "custom-thing", value: { foo: "bar", baz: 42 } },
     ];
-    const html = new Generator({ dateFn: fixedDate }).generate(tokens);
+    const html = new Generator({ dateFn: fixedDate, version: "test" }).generate(tokens);
 
     expect(html).toContain("composite-token");
     expect(html).toContain("composite-name");
@@ -519,7 +521,7 @@ describe("HTMLGenerator tests", () => {
         modes: { dark: "#1a1a1a" },
       },
     ];
-    const html = new Generator({ dateFn: fixedDate }).generate(tokens);
+    const html = new Generator({ dateFn: fixedDate, version: "test" }).generate(tokens);
 
     expect(html).toContain("mode-variants");
     expect(html).toContain("mode-badge");
@@ -532,7 +534,7 @@ describe("HTMLGenerator tests", () => {
     const tokens: Token[] = [
       { name: "spacingSm", type: "spacing", value: "4px", modes: { compact: "2px" } },
     ];
-    const html = new Generator({ dateFn: fixedDate }).generate(tokens);
+    const html = new Generator({ dateFn: fixedDate, version: "test" }).generate(tokens);
 
     expect(html).toContain('class="mode-variants"');
     expect(html).toContain('class="mode-badge"');
@@ -544,7 +546,7 @@ describe("HTMLGenerator tests", () => {
 
   test("It does not render mode variants when token has no modes", () => {
     const tokens: Token[] = [{ name: "primary", type: "color", value: new Color(255, 0, 0) }];
-    const html = new Generator({ dateFn: fixedDate }).generate(tokens);
+    const html = new Generator({ dateFn: fixedDate, version: "test" }).generate(tokens);
 
     // CSS definitions will contain .mode-variants, but no actual instances
     expect(html).not.toContain('class="mode-variants"');
@@ -555,7 +557,7 @@ describe("HTMLGenerator tests", () => {
     const tokens: Token[] = [
       { name: "colorSurface", type: "color", value: "#fff", modes: { dark: "#111", dim: "#333" } },
     ];
-    const html = new Generator({ dateFn: fixedDate }).generate(tokens);
+    const html = new Generator({ dateFn: fixedDate, version: "test" }).generate(tokens);
 
     expect(html).toContain("dark");
     expect(html).toContain("#111");
@@ -564,7 +566,7 @@ describe("HTMLGenerator tests", () => {
   });
 
   test("It includes mode-related CSS", () => {
-    const html = new Generator({ dateFn: fixedDate }).generate([
+    const html = new Generator({ dateFn: fixedDate, version: "test" }).generate([
       { name: "x", type: "color", value: "#fff" },
     ]);
 
@@ -577,7 +579,7 @@ describe("HTMLGenerator tests", () => {
 
   test("It returns empty visualization for invalid color string", () => {
     const tokens: Token[] = [{ name: "badColor", type: "color", value: "not-a-color" }];
-    const html = new Generator({ dateFn: fixedDate }).generate(tokens);
+    const html = new Generator({ dateFn: fixedDate, version: "test" }).generate(tokens);
 
     // No color-card visualization for invalid colors, but the token table should still have it
     expect(html).not.toContain('class="color-card"');
@@ -590,7 +592,7 @@ describe("HTMLGenerator tests", () => {
     const tokens: Token[] = [
       { name: "shadowSm", type: "shadow", value: "0 1px 2px rgba(0,0,0,0.1)" },
     ];
-    const html = new Generator({ dateFn: fixedDate }).generate(tokens);
+    const html = new Generator({ dateFn: fixedDate, version: "test" }).generate(tokens);
     expect(html).toContain("shadow-grid");
   });
 
@@ -605,31 +607,31 @@ describe("HTMLGenerator tests", () => {
         ]),
       },
     ];
-    const html = new Generator({ dateFn: fixedDate }).generate(tokens);
+    const html = new Generator({ dateFn: fixedDate, version: "test" }).generate(tokens);
     expect(html).toContain("gradient-grid");
   });
 
   test("It applies correct grid class for opacity type", () => {
     const tokens: Token[] = [{ name: "op", type: "opacity", value: 0.8 }];
-    const html = new Generator({ dateFn: fixedDate }).generate(tokens);
+    const html = new Generator({ dateFn: fixedDate, version: "test" }).generate(tokens);
     expect(html).toContain("opacity-grid");
   });
 
   test("It applies correct grid class for size type", () => {
     const tokens: Token[] = [{ name: "sz", type: "size", value: "16px" }];
-    const html = new Generator({ dateFn: fixedDate }).generate(tokens);
+    const html = new Generator({ dateFn: fixedDate, version: "test" }).generate(tokens);
     expect(html).toContain("size-grid");
   });
 
   test("It applies correct grid class for aspect-ratio type", () => {
     const tokens: Token[] = [{ name: "ar", type: "aspect-ratio", value: "4/3" }];
-    const html = new Generator({ dateFn: fixedDate }).generate(tokens);
+    const html = new Generator({ dateFn: fixedDate, version: "test" }).generate(tokens);
     expect(html).toContain("ratio-grid");
   });
 
   test("It applies correct grid class for border-radius type", () => {
     const tokens: Token[] = [{ name: "r", type: "border-radius", value: "4px" }];
-    const html = new Generator({ dateFn: fixedDate }).generate(tokens);
+    const html = new Generator({ dateFn: fixedDate, version: "test" }).generate(tokens);
     expect(html).toContain("radius-grid");
   });
 });

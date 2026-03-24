@@ -9,3 +9,4 @@ lib
 yarn-error.log
 example/dist
 .playwright-mcp
+.tsc_d

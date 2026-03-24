@@ -10,17 +10,19 @@ describe("CSSVars Generator tests", () => {
   });
 
   test("It generates the token set", () => {
-    expect(new Generator({ dateFn: () => "null" }).generate(tokenSet1)).toMatchSnapshot();
+    expect(
+      new Generator({ dateFn: () => "null", version: "test" }).generate(tokenSet1),
+    ).toMatchSnapshot();
   });
 
   test("It generates a basic token without usage", () => {
-    const gen = new Generator({ dateFn: () => "null" });
+    const gen = new Generator({ dateFn: () => "null", version: "test" });
     const token: Token = { name: "primary", type: "color", value: "#0066cc" };
     expect(gen.generateToken(token)).toBe("  --primary: #0066cc;");
   });
 
   test("It includes usage as a CSS comment", () => {
-    const gen = new Generator({ dateFn: () => "null" });
+    const gen = new Generator({ dateFn: () => "null", version: "test" });
     const token: Token = {
       name: "primary",
       type: "color",
@@ -33,7 +35,7 @@ describe("CSSVars Generator tests", () => {
   });
 
   test("It generates themed tokens with modes", () => {
-    const gen = new Generator({ dateFn: () => "null" });
+    const gen = new Generator({ dateFn: () => "null", version: "test" });
     const tokens: Token[] = [
       { name: "bg", type: "color", value: "#ffffff", modes: { dark: "#1a1a1a" } },
       { name: "text", type: "color", value: "#000000", modes: { dark: "#eeeeee" } },
@@ -49,6 +51,7 @@ describe("CSSVars Generator tests", () => {
   test("It applies a custom name transformer", () => {
     const gen = new Generator({
       dateFn: () => "null",
+      version: "test",
       nameTransformer: (n: string) => n.toUpperCase(),
     });
     const token: Token = { name: "primary", type: "color", value: "#0066cc" };
@@ -56,7 +59,7 @@ describe("CSSVars Generator tests", () => {
   });
 
   test("useMediaQuery emits @media block for dark mode", () => {
-    const gen = new Generator({ dateFn: () => "null", useMediaQuery: true });
+    const gen = new Generator({ dateFn: () => "null", version: "test", useMediaQuery: true });
     const tokens: Token[] = [
       { name: "bg", type: "color", value: "#ffffff", modes: { dark: "#1a1a1a" } },
     ];
@@ -67,7 +70,11 @@ describe("CSSVars Generator tests", () => {
   });
 
   test("modeSelectors overrides default data-theme selector", () => {
-    const gen = new Generator({ dateFn: () => "null", modeSelectors: { dark: ".dark" } });
+    const gen = new Generator({
+      dateFn: () => "null",
+      version: "test",
+      modeSelectors: { dark: ".dark" },
+    });
     const tokens: Token[] = [
       { name: "bg", type: "color", value: "#ffffff", modes: { dark: "#1a1a1a" } },
     ];

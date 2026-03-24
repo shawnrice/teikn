@@ -2,7 +2,7 @@
 
 exports[`SCSSGenerator tests It generates the token set 1`] = `
 "///
-/// Teikn v2.0.0-alpha.4
+/// Teikn vtest
 /// Generated null
 ///
 /// This file is generated and should be commited to source control
@@ -30,7 +30,7 @@ $token-values: (
 
 exports[`SCSSGenerator tests it generates group maps and functions when groups: true 1`] = `
 "///
-/// Teikn v2.0.0-alpha.4
+/// Teikn vtest
 /// Generated null
 ///
 /// This file is generated and should be commited to source control
@@ -78,7 +78,7 @@ $spacing-values: (
 
 exports[`SCSSGenerator tests it generates groups with PrefixTypePlugin 1`] = `
 "///
-/// Teikn v2.0.0-alpha.4
+/// Teikn vtest
 /// Generated null
 ///
 /// This file is generated and should be commited to source control

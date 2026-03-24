@@ -8,7 +8,9 @@ const fixedDate = () => "Mon Jan 01 2024 12:00:00";
 
 describe("es5 tests", () => {
   test("it generates things", () => {
-    expect(new Generator({ dateFn: () => "null" }).generate(tokenSet1)).toMatchSnapshot();
+    expect(
+      new Generator({ dateFn: () => "null", version: "test" }).generate(tokenSet1),
+    ).toMatchSnapshot();
   });
 
   test("it generates group accessors when groups: true", () => {
@@ -18,7 +20,7 @@ describe("es5 tests", () => {
       { name: "spacingSm", type: "spacing", value: "4px" },
     ];
     expect(
-      new Generator({ dateFn: () => "null", groups: true }).generate(tokens),
+      new Generator({ dateFn: () => "null", version: "test", groups: true }).generate(tokens),
     ).toMatchSnapshot();
   });
 

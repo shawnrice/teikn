@@ -41,6 +41,11 @@ export type GeneratorOptions = {
    * When true, emit typed getter functions grouped by token type
    */
   groups?: boolean;
+  /**
+   * Override the version string in the generated file header.
+   * Useful for tests to avoid snapshot churn on version bumps.
+   */
+  version?: string;
 };
 
 export type RequiredGeneratorOptions = {
@@ -79,7 +84,7 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
   }
 
   signature(): string {
-    return `Teikn v${version}`;
+    return `Teikn v${this.options.version ?? version}`;
   }
 
   convertColorToString(token: Token): Token {

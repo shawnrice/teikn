@@ -10,7 +10,9 @@ describe("SCSS Vars Generator tests", () => {
   });
 
   test("It generates the token set", () => {
-    expect(new Generator({ dateFn: () => "null" }).generate(tokenSet1)).toMatchSnapshot();
+    expect(
+      new Generator({ dateFn: () => "null", version: "test" }).generate(tokenSet1),
+    ).toMatchSnapshot();
   });
 
   test("it generates group maps and functions when groups: true", () => {
@@ -20,7 +22,7 @@ describe("SCSS Vars Generator tests", () => {
       { name: "spacingSm", type: "spacing", value: "4px" },
     ];
     expect(
-      new Generator({ dateFn: () => "null", groups: true }).generate(tokens),
+      new Generator({ dateFn: () => "null", version: "test", groups: true }).generate(tokens),
     ).toMatchSnapshot();
   });
 
@@ -96,7 +98,7 @@ describe("SCSS Vars Generator tests", () => {
       { name: "colorText", type: "color", value: "#000000", modes: { dark: "#e0e0e0" } },
       { name: "spacingSm", type: "spacing", value: "4px" },
     ];
-    const output = new Generator({ dateFn: () => "null" }).generate(tokens);
+    const output = new Generator({ dateFn: () => "null", version: "test" }).generate(tokens);
 
     expect(output).toContain("// Mode: dark");
     expect(output).toContain("$colorSurface--dark: #1a1a1a;");
@@ -105,7 +107,7 @@ describe("SCSS Vars Generator tests", () => {
 
   test("it does not emit mode variables when no tokens have modes", () => {
     const tokens: Token[] = [{ name: "colorPrimary", type: "color", value: "#ff0000" }];
-    const output = new Generator({ dateFn: () => "null" }).generate(tokens);
+    const output = new Generator({ dateFn: () => "null", version: "test" }).generate(tokens);
 
     expect(output).not.toContain("// Mode:");
     expect(output).not.toContain("--");
@@ -115,7 +117,7 @@ describe("SCSS Vars Generator tests", () => {
     const tokens: Token[] = [
       { name: "colorSurface", type: "color", value: "#fff", modes: { dark: "#111", dim: "#333" } },
     ];
-    const output = new Generator({ dateFn: () => "null" }).generate(tokens);
+    const output = new Generator({ dateFn: () => "null", version: "test" }).generate(tokens);
 
     expect(output).toContain("// Mode: dark");
     expect(output).toContain("$colorSurface--dark: #111;");
