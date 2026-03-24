@@ -1,4 +1,4 @@
-export { Plugin } from "./Plugin.js";
+export { Plugin, sortPlugins } from "./Plugin.js";
 export type { AuditIssue } from "./Plugin.js";
 export { ColorTransformPlugin } from "./ColorTransformPlugin.js";
 export { PrefixTypePlugin } from "./PrefixTypePlugin.js";

@@ -16,6 +16,8 @@ export class ColorTransformPlugin extends Plugin<ColorTransformPluginOptions> {
 
   tokenType: string = "color";
 
+  override readonly runAfter: string[] = ["AlphaMultiplyPlugin"];
+
   constructor(options: ColorTransformPluginOptions) {
     super(options);
   }

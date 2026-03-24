@@ -36,6 +36,8 @@ export class NameConventionPlugin extends Plugin<NameConventionPluginOptions> {
   tokenType: RegExp = /.*/;
   outputType: RegExp = /.*/;
 
+  override readonly runAfter: string[] = ["PrefixTypePlugin", "StripTypePrefixPlugin"];
+
   toJSON(token: Token): Token {
     const { convention } = this.options;
     const convert = converters[convention];

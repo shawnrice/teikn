@@ -1,6 +1,7 @@
 import { EOL } from "node:os";
 
 import { version } from "../version";
+import { sortPlugins } from "../Plugins/Plugin";
 import type { Plugin } from "../Plugins";
 import { camelCase, deriveShortName } from "../string-utils";
 import type { Token } from "../Token";
@@ -152,10 +153,11 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
   }
 
   protected prepareTokens(tokens: Token[], plugins: Plugin[]): Token[] {
+    const sorted = sortPlugins(plugins);
     return tokens
       .map((t) => this.convertColorToString(t))
       .map((token) =>
-        plugins.reduce((acc, plugin) => {
+        sorted.reduce((acc, plugin) => {
           if (!matches(plugin.tokenType, token.type)) {
             return acc;
           }

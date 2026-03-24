@@ -11,6 +11,8 @@ export class SCSSQuoteValuePlugin extends Plugin {
 
   tokenType: RegExp = /^(font|font-family)$/;
 
+  override readonly runAfter: string[] = ["ColorTransformPlugin", "RemUnitPlugin"];
+
   toJSON(token: Token): Token {
     const { value } = token;
 
