@@ -194,30 +194,59 @@ export const validate = (tokens: Token[]): ValidationResult => {
   }
 
   // Check for circular references
-  const checkCircular = (name: string, visited: Set<string>): boolean => {
-    const token = tokenMap.get(name);
-    if (!token) {
-      return false;
-    }
-
-    const { value } = token;
+  const checkCircularValue = (
+    value: unknown,
+    originName: string,
+    visited: Set<string>,
+  ): boolean => {
     if (!isRef(value)) {
       return false;
     }
 
     const refName = (value as string).match(REF_PATTERN)![1]!;
     if (visited.has(refName)) {
-      issue("error", name, `Circular reference: ${[...visited, refName].join(" -> ")}`);
+      issue("error", originName, `Circular reference: ${[...visited, refName].join(" -> ")}`);
       return true;
     }
 
-    visited.add(refName);
-    return checkCircular(refName, visited);
+    const referenced = tokenMap.get(refName);
+    if (!referenced) {
+      return false;
+    }
+
+    const next = new Set(visited);
+    next.add(refName);
+
+    if (checkCircularValue(referenced.value, originName, next)) {
+      return true;
+    }
+
+    // Check modes of the referenced token for cycles back
+    if (referenced.modes) {
+      for (const modeVal of Object.values(referenced.modes)) {
+        if (checkCircularValue(modeVal, originName, next)) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   };
 
   for (const token of tokens) {
-    if (token.name && isRef(token.value)) {
-      checkCircular(token.name, new Set([token.name]));
+    if (!token.name) {
+      continue;
+    }
+    const visited = new Set([token.name]);
+
+    if (isRef(token.value)) {
+      checkCircularValue(token.value, token.name, visited);
+    }
+
+    if (token.modes) {
+      for (const modeVal of Object.values(token.modes)) {
+        checkCircularValue(modeVal, token.name, visited);
+      }
     }
   }
 

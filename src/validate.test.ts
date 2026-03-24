@@ -187,4 +187,58 @@ describe("validate", () => {
     const modeIssues = result.issues.filter((i) => i.message.includes("mode"));
     expect(modeIssues).toHaveLength(0);
   });
+
+  // ─── Circular refs in modes ────────────────────────────────
+
+  test("detects circular self-reference in mode value", () => {
+    const tokens: Token[] = [
+      {
+        name: "surface",
+        type: "color",
+        value: "#ffffff",
+        modes: { dark: "{surface}" },
+      },
+    ];
+
+    const result = validate(tokens);
+    expect(result.issues.some((i) => i.message.includes("Circular"))).toBe(true);
+  });
+
+  test("detects circular reference chain through modes", () => {
+    const tokens: Token[] = [
+      { name: "a", type: "color", value: "#000", modes: { dark: "{b}" } },
+      { name: "b", type: "color", value: "{a}" },
+    ];
+
+    const result = validate(tokens);
+    expect(result.issues.some((i) => i.message.includes("Circular"))).toBe(true);
+  });
+
+  // ─── Composite shape validation in modes ───────────────────
+
+  test("warns on incomplete composite shape in mode value", () => {
+    const tokens: Token[] = [
+      {
+        name: "heading",
+        type: "typography",
+        value: {
+          fontFamily: "Rubik",
+          fontSize: "2rem",
+          fontWeight: 700,
+          lineHeight: 1.2,
+          letterSpacing: "0",
+        },
+        modes: {
+          mobile: { fontSize: "1.5rem" },
+        },
+      },
+    ];
+
+    const result = validate(tokens);
+    expect(
+      result.issues.some(
+        (i) => i.message.includes('mode "mobile"') && i.message.includes("missing fields"),
+      ),
+    ).toBe(true);
+  });
 });
