@@ -15,8 +15,11 @@ const applyPlugin = (plugin: Plugin, token: Token): Token => {
     return transformed;
   }
 
+  // Use transformed.modes for keys (plugin may have renamed them)
+  // but run each mode value through the plugin for value transforms
+  const sourceModes = transformed.modes ?? token.modes;
   const transformedModes: Record<string, unknown> = {};
-  for (const [mode, modeVal] of Object.entries(token.modes)) {
+  for (const [mode, modeVal] of Object.entries(sourceModes)) {
     const { modes: _, ...rest } = token;
     const syntheticToken = { ...rest, value: modeVal };
     transformedModes[mode] = plugin.toJSON(syntheticToken).value;

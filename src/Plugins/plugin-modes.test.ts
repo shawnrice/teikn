@@ -216,4 +216,37 @@ describe("NameConventionPlugin with modes", () => {
     expect(json.myColor).toBeDefined();
     expect(json.myColor.modes.dark).toBe("#fff");
   });
+
+  test("transforms mode keys to match convention", () => {
+    const plugin = new NameConventionPlugin({ convention: "camelCase" });
+    const tokens: Token[] = [
+      {
+        name: "surface",
+        type: "color",
+        value: "#fff",
+        modes: { "high-contrast": "#000", "color-blind": "#111" },
+      },
+    ];
+    const output = new Json().generate(tokens, [plugin]);
+    const json = JSON.parse(output);
+    expect(json.surface.modes.highContrast).toBe("#000");
+    expect(json.surface.modes.colorBlind).toBe("#111");
+    expect(json.surface.modes["high-contrast"]).toBeUndefined();
+  });
+
+  test("transforms mode keys to kebab-case", () => {
+    const plugin = new NameConventionPlugin({ convention: "kebab-case" });
+    const tokens: Token[] = [
+      {
+        name: "surface",
+        type: "color",
+        value: "#fff",
+        modes: { darkMode: "#000" },
+      },
+    ];
+    const output = new Json().generate(tokens, [plugin]);
+    const json = JSON.parse(output);
+    expect(json.surface.modes["dark-mode"]).toBe("#000");
+    expect(json.surface.modes.darkMode).toBeUndefined();
+  });
 });

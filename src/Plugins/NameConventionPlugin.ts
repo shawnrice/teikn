@@ -42,9 +42,19 @@ export class NameConventionPlugin extends Plugin<NameConventionPluginOptions> {
     const { convention } = this.options;
     const convert = converters[convention];
 
-    return {
+    const result: Token = {
       ...token,
       name: convert(token.name),
     };
+
+    if (token.modes) {
+      const convertedModes: Record<string, unknown> = {};
+      for (const [key, value] of Object.entries(token.modes)) {
+        convertedModes[convert(key)] = value;
+      }
+      result.modes = convertedModes;
+    }
+
+    return result;
   }
 }
