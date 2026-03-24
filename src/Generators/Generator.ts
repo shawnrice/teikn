@@ -7,6 +7,23 @@ import type { Token } from "../Token";
 import { isFirstClassValue } from "../type-classifiers";
 import { matches } from "../utils";
 
+const applyPlugin = (plugin: Plugin, token: Token): Token => {
+  const transformed = plugin.toJSON(token);
+
+  if (!token.modes) {
+    return transformed;
+  }
+
+  const transformedModes: Record<string, unknown> = {};
+  for (const [mode, modeVal] of Object.entries(token.modes)) {
+    const { modes: _, ...rest } = token;
+    const syntheticToken = { ...rest, value: modeVal };
+    transformedModes[mode] = plugin.toJSON(syntheticToken).value;
+  }
+
+  return { ...transformed, modes: transformedModes };
+};
+
 export type GeneratorOptions = {
   /**
    * The extension for the file
@@ -66,11 +83,30 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
   }
 
   convertColorToString(token: Token): Token {
-    const { value } = token;
-    if (isFirstClassValue(value)) {
-      return { ...token, value: (value as { toString(): string }).toString() };
+    const { value, modes } = token;
+    const convertedValue = isFirstClassValue(value)
+      ? (value as { toString(): string }).toString()
+      : value;
+
+    if (!modes) {
+      return convertedValue === value ? token : { ...token, value: convertedValue };
     }
-    return token;
+
+    const convertedModes: Record<string, unknown> = {};
+    let modesChanged = false;
+    for (const [mode, modeVal] of Object.entries(modes)) {
+      if (isFirstClassValue(modeVal)) {
+        convertedModes[mode] = (modeVal as { toString(): string }).toString();
+        modesChanged = true;
+      } else {
+        convertedModes[mode] = modeVal;
+      }
+    }
+
+    if (convertedValue === value && !modesChanged) {
+      return token;
+    }
+    return { ...token, value: convertedValue, modes: modesChanged ? convertedModes : modes };
   }
 
   stringifyValue(token: Token): Token {
@@ -123,7 +159,7 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
             return acc;
           }
 
-          return plugin.toJSON(acc);
+          return applyPlugin(plugin, acc);
         }, token),
       );
   }
