@@ -216,4 +216,63 @@ describe("resolveReferences", () => {
     const result = resolveReferences(tokens);
     expect(result[0]!.value).toBe(list);
   });
+
+  // ─── Ref edge cases ────────────────────────────────────────
+
+  test("resolves composite refs in mode values", () => {
+    const tokens: Token[] = [
+      { name: "borderColor", type: "color", value: "#e0e0e0" },
+      {
+        name: "card",
+        type: "border",
+        value: { width: "1px", style: "solid", color: "#ccc" },
+        modes: { dark: { width: "1px", style: "solid", color: "{borderColor}" } },
+      },
+    ];
+    const result = resolveReferences(tokens);
+    expect((result[1]!.modes!["dark"] as Record<string, unknown>).color).toBe("#e0e0e0");
+  });
+
+  test("preserves modes on tokens that are not themselves refs", () => {
+    const tokens: Token[] = [
+      {
+        name: "surface",
+        type: "color",
+        value: "#ffffff",
+        modes: { dark: "#1a1a1a", dim: "#333333" },
+      },
+    ];
+    const result = resolveReferences(tokens);
+    expect(result[0]!.modes!["dark"]).toBe("#1a1a1a");
+    expect(result[0]!.modes!["dim"]).toBe("#333333");
+  });
+
+  test("self-referencing token in mode throws circular", () => {
+    const tokens: Token[] = [{ name: "x", type: "color", value: "#000", modes: { dark: "{x}" } }];
+    expect(() => resolveReferences(tokens)).toThrow("Circular reference");
+  });
+
+  test("three-token circular through modes throws", () => {
+    const tokens: Token[] = [
+      { name: "a", type: "color", value: "#000", modes: { dark: "{b}" } },
+      { name: "b", type: "color", value: "{c}" },
+      { name: "c", type: "color", value: "{a}" },
+    ];
+    expect(() => resolveReferences(tokens)).toThrow("Circular reference");
+  });
+
+  test("resolves chain of refs in mode value", () => {
+    const tokens: Token[] = [
+      { name: "base", type: "color", value: "#111" },
+      { name: "alias", type: "color", value: "{base}" },
+      {
+        name: "surface",
+        type: "color",
+        value: "#fff",
+        modes: { dark: "{alias}" },
+      },
+    ];
+    const result = resolveReferences(tokens);
+    expect(result[2]!.modes!["dark"]).toBe("#111");
+  });
 });
