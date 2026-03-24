@@ -147,13 +147,11 @@ export type TeiknOptions = {
   outDir?: string;
 };
 
-const severityMap = {
-  info: "INFO",
-  warning: "WARN",
-  error: "ERROR",
+export type TransformResult = {
+  auditIssues: AuditIssue[];
+  files: { path: string; size: number }[];
+  errors: { path: string; error: unknown }[];
 };
-
-const getLogLevel = (severity: "error" | "info" | "warning") => severityMap[severity];
 
 export class Teikn {
   generators: Generator[];
@@ -234,32 +232,25 @@ export class Teikn {
     return results;
   }
 
-  async transform(tokens: Token[]): Promise<void> {
+  async transform(tokens: Token[]): Promise<TransformResult> {
     const auditIssues = this.audit(tokens);
-    if (auditIssues.length > 0) {
-      for (const issue of auditIssues) {
-        const prefix = getLogLevel(issue.severity);
-        console.warn(`[${prefix}] ${issue.token}: ${issue.message}`);
-      }
-    }
+    const generated = this.generateToStrings(tokens);
+    const files: TransformResult["files"] = [];
+    const errors: TransformResult["errors"] = [];
 
-    const files = this.generateToStrings(tokens);
+    await ensureDirectory(this.outDir);
+    await Promise.all(
+      [...generated.entries()].map(async ([file, content]) => {
+        const filename = path.resolve(this.outDir, file);
+        try {
+          await fs.promises.writeFile(filename, content);
+          files.push({ path: filename, size: content.length });
+        } catch (error) {
+          errors.push({ path: filename, error });
+        }
+      }),
+    );
 
-    try {
-      await ensureDirectory(this.outDir);
-      await Promise.all(
-        [...files.entries()].map(async ([file, content]) => {
-          const filename = path.resolve(this.outDir, file);
-          try {
-            await fs.promises.writeFile(filename, content);
-            console.log(`Wrote ${filename}`);
-          } catch (_) {
-            console.error(`Error writing ${filename}`);
-          }
-        }),
-      );
-    } catch (error) {
-      console.error(error);
-    }
+    return { auditIssues, files, errors };
   }
 }

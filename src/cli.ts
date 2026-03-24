@@ -299,6 +299,22 @@ const startWatch = (inputPath: string) => {
   });
 };
 
+const logTransformResult = (result: Awaited<ReturnType<Teikn["transform"]>>) => {
+  const severityPrefix: Record<string, string> = { error: "ERROR", warning: "WARN", info: "INFO" };
+  for (const issue of result.auditIssues) {
+    console.warn(`[${severityPrefix[issue.severity]}] ${issue.token}: ${issue.message}`);
+  }
+  for (const file of result.files) {
+    console.log(`Wrote ${file.path}`);
+  }
+  for (const err of result.errors) {
+    console.error(`Error writing ${err.path}`);
+  }
+  if (result.errors.length > 0) {
+    process.exit(1);
+  }
+};
+
 const generateTokens = async () => {
   try {
     const tokenPath = getPathTo(command);
@@ -326,7 +342,8 @@ const generateTokens = async () => {
     }
 
     console.log(`Writing tokens to directory: ${outDir}`);
-    await writer.transform(tokens);
+    const result = await writer.transform(tokens);
+    logTransformResult(result);
     console.log("Tokens generated successfully!");
 
     if (hasFlag("watch", "w")) {
@@ -409,7 +426,8 @@ const runFromConfig = async (configPath: string) => {
     }
 
     console.log(`Writing tokens to directory: ${outDir}`);
-    await writer.transform(tokens);
+    const result = await writer.transform(tokens);
+    logTransformResult(result);
     console.log("Tokens generated successfully!");
 
     if (hasFlag("watch", "w")) {
