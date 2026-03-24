@@ -195,17 +195,14 @@ describe("Teikn", () => {
       expect(json.colorPrimary).toBeUndefined();
     });
 
-    test("filters out PrefixTypePlugin to prevent double-prefixing", () => {
-      const colors = group("color", { primary: "#0066cc" });
-
-      const writer = new Teikn({
-        generators: [new Json()],
-        plugins: [new PrefixTypePlugin()],
-      });
-      const json = parseOutput(writer, colors);
-
-      expect(json.colorPrimary).toBeDefined();
-      expect(json.colorColorPrimary).toBeUndefined();
+    test("throws when PrefixTypePlugin is passed", () => {
+      expect(
+        () =>
+          new Teikn({
+            generators: [new Json()],
+            plugins: [new PrefixTypePlugin()],
+          }),
+      ).toThrow("PrefixTypePlugin is no longer needed");
     });
 
     test("last-write-wins when the same prefixed name appears twice", () => {

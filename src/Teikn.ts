@@ -179,16 +179,14 @@ export class Teikn {
   constructor(options: TeiknOptions) {
     const { generators, outDir, plugins = [], themes } = options;
     this.generators = generators ?? [new Teikn.generators.Json()];
-    this.plugins = plugins.filter((p) => {
-      if (p instanceof PrefixTypePlugin) {
-        console.warn(
-          "[teikn] PrefixTypePlugin is no longer needed — type prefixing is now built in. " +
-            "Remove it from your plugins array to avoid double-prefixed names.",
-        );
-        return false;
-      }
-      return true;
-    });
+    const hasPrefixPlugin = plugins.some((p) => p instanceof PrefixTypePlugin);
+    if (hasPrefixPlugin) {
+      throw new Error(
+        "PrefixTypePlugin is no longer needed — type prefixing is now built in. " +
+          "Remove it from your plugins array. To opt out of prefixing, use StripTypePrefixPlugin instead.",
+      );
+    }
+    this.plugins = plugins;
     this.themes = themes ?? [];
     this.outDir = outDir ?? process.cwd();
   }
