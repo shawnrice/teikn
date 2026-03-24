@@ -193,7 +193,15 @@ const loadModuleFromPath = async (tokenPath: string) => {
 
 const extractTokens = (mod: any) => {
   const input = mod.default || mod;
-  return Array.isArray(input) ? input : (input.tokens ?? input.default);
+  const tokens = Array.isArray(input) ? input : (input.tokens ?? input.default);
+  if (!tokens || !Array.isArray(tokens)) {
+    console.error(
+      "Could not find tokens in module. Export an array of tokens as the default export, " +
+        "or as a named `tokens` export.",
+    );
+    process.exit(1);
+  }
+  return tokens;
 };
 
 const extractThemes = (mod: any) => mod.themes ?? mod.default?.themes ?? [];
