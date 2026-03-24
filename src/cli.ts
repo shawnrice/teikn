@@ -274,7 +274,7 @@ const startWatch = (inputPath: string) => {
   const rerunArgs = process.argv.slice(2).filter((a) => a !== "--watch" && a !== "-w");
   let timeout: ReturnType<typeof setTimeout> | null = null;
 
-  fs.watch(inputPath, () => {
+  const watcher = fs.watch(inputPath, () => {
     if (timeout) {
       clearTimeout(timeout);
     }
@@ -294,6 +294,7 @@ const startWatch = (inputPath: string) => {
   });
 
   process.on("SIGINT", () => {
+    watcher.close();
     console.log("\n[teikn] Stopped watching.");
     process.exit(0);
   });

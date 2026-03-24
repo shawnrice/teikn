@@ -10,7 +10,7 @@ exports[`Storybook generator It generates the full token set 1`] = `
  */
 import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
-import { tokens } from './tokens';
+import { tokens } from "./tokens";
 
 const fontFamilyKeys = ['body'] as const;
 const colorKeys = ['primary', 'secondary'] as const;
@@ -35,7 +35,7 @@ const Swatch = ({ name, value }: { name: string; value: string }) => (
 );
 
 const meta = {
-  title: 'Design Tokens',
+  title: "Design Tokens",
   tags: ['autodocs'],
   parameters: { layout: 'padded' },
 } satisfies Meta;

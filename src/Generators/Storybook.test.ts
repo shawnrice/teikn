@@ -31,7 +31,7 @@ describe("Storybook generator", () => {
     const tokens: Token[] = [{ name: "primary", type: "color", value: "#ff0000" }];
     const output = sb.generate(tokens);
 
-    expect(output).toContain("from './tokens'");
+    expect(output).toContain('from "./tokens"');
   });
 
   test("It detects JavaScript sibling import path", () => {
@@ -42,7 +42,7 @@ describe("Storybook generator", () => {
     const tokens: Token[] = [{ name: "primary", type: "color", value: "#ff0000" }];
     const output = sb.generate(tokens);
 
-    expect(output).toContain("from './tokens'");
+    expect(output).toContain('from "./tokens"');
   });
 
   test("It uses custom importPath when provided", () => {
@@ -51,7 +51,7 @@ describe("Storybook generator", () => {
     const tokens: Token[] = [{ name: "primary", type: "color", value: "#ff0000" }];
     const output = sb.generate(tokens);
 
-    expect(output).toContain("from '@design/tokens'");
+    expect(output).toContain('from "@design/tokens"');
   });
 
   test("It falls back to ./tokens when no sibling found", () => {
@@ -60,7 +60,7 @@ describe("Storybook generator", () => {
     const tokens: Token[] = [{ name: "primary", type: "color", value: "#ff0000" }];
     const output = sb.generate(tokens);
 
-    expect(output).toContain("from './tokens'");
+    expect(output).toContain('from "./tokens"');
   });
 
   test("It uses custom storyTitle", () => {
@@ -68,7 +68,7 @@ describe("Storybook generator", () => {
     const tokens: Token[] = [{ name: "primary", type: "color", value: "#ff0000" }];
     const output = sb.generate(tokens);
 
-    expect(output).toContain("title: 'Brand Tokens'");
+    expect(output).toContain('title: "Brand Tokens"');
   });
 
   test("It renders color stories with Swatch", () => {

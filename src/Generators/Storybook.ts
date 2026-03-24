@@ -628,7 +628,7 @@ export class Storybook extends Generator<StorybookOpts> {
 
     lines.push(`import React from 'react';`);
     lines.push(`import type { Meta, StoryObj } from '@storybook/react';`);
-    lines.push(`import { tokens } from '${importSource}';`);
+    lines.push(`import { tokens } from ${JSON.stringify(importSource)};`);
     lines.push("");
 
     // Key arrays per type
@@ -669,7 +669,7 @@ export class Storybook extends Generator<StorybookOpts> {
 
     // Meta
     lines.push(`const meta = {`);
-    lines.push(`  title: '${storyTitle}',`);
+    lines.push(`  title: ${JSON.stringify(storyTitle)},`);
     lines.push(`  tags: ['autodocs'],`);
     lines.push(`  parameters: { layout: 'padded' },`);
     lines.push(`} satisfies Meta;`);
