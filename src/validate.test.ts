@@ -188,6 +188,26 @@ describe("validate", () => {
     expect(modeIssues).toHaveLength(0);
   });
 
+  // ─── Empty values ──────────────────────────────────────────
+
+  test("warns on empty string value", () => {
+    const tokens: Token[] = [{ name: "empty", type: "spacing", value: "" }];
+    const result = validate(tokens);
+    expect(result.issues.some((i) => i.message.includes("Empty string value"))).toBe(true);
+  });
+
+  test("warns on empty string in mode value", () => {
+    const tokens: Token[] = [
+      { name: "gap", type: "spacing", value: "1rem", modes: { compact: "" } },
+    ];
+    const result = validate(tokens);
+    expect(
+      result.issues.some(
+        (i) => i.message.includes('mode "compact"') && i.message.includes("Empty string"),
+      ),
+    ).toBe(true);
+  });
+
   // ─── Circular refs in modes ────────────────────────────────
 
   test("detects circular self-reference in mode value", () => {

@@ -81,6 +81,11 @@ const validateValue = (
   tokenMap: Map<string, Token>,
   issue: (severity: ValidationSeverity, tokenName: string, message: string) => void,
 ): void => {
+  // Check for empty string values
+  if (value === "") {
+    issue("warning", token.name, `${label}Empty string value`);
+  }
+
   // Check color parseability
   if (
     COLOR_TYPES.has(token.type) &&

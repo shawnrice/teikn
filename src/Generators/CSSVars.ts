@@ -34,6 +34,11 @@ export class CSSVars extends Generator<CSSVarsOpts> {
   constructor(options = {}) {
     const opts = Object.assign({}, defaultOptions, options);
     super(opts);
+    if (this.options.groups) {
+      console.warn(
+        "[teikn] CSSVars does not support the `groups` option — CSS has no function syntax. Use Scss or ScssVars for grouped accessors.",
+      );
+    }
   }
 
   override describe(): GeneratorInfo {
