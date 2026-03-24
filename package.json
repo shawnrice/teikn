@@ -45,6 +45,7 @@
     "build": "tsc",
     "format": "oxfmt --write 'src/' './*.json'",
     "lint": "oxlint src/",
+    "lint:fix": "oxlint --fix src/ && oxfmt --write 'src/' './*.json'",
     "prepublishOnly": "tsc",
     "test": "bun test",
     "test:node": "vitest run",
