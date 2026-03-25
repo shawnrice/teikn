@@ -390,7 +390,7 @@ describe("Storybook generator", () => {
     ];
     const output = sb.generate(tokens);
 
-    expect(output).toContain("const toPx");
+    expect(output).toContain("useMeasuredPx");
     expect(output).toContain("BreakpointBar");
     expect(output).toContain("breakpointKeys");
   });

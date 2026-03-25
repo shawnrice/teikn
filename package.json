@@ -39,6 +39,10 @@
     "./generators": {
       "import": "./lib/src/Generators/index.js",
       "types": "./lib/src/Generators/index.d.ts"
+    },
+    "./storybook": {
+      "import": "./lib/src/storybook/index.js",
+      "types": "./lib/src/storybook/index.d.ts"
     }
   },
   "scripts": {

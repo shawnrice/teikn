@@ -4,7 +4,8 @@
   "exports": {
     ".": "./index.ts",
     "./builders": "./src/builders.ts",
-    "./generators": "./src/Generators/index.ts"
+    "./generators": "./src/Generators/index.ts",
+    "./storybook": "./src/storybook/index.ts"
   },
   "publish": {
     "include": ["index.ts", "src/", "LICENSE", "README.md"],
