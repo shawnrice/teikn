@@ -259,23 +259,36 @@ const letterSpacingSampleComponent = `const LetterSpacingSample = ({ name, value
   </div>
 );`;
 
-const breakpointBarComponent = `const toPx = (value: string): number => {
-  const match = value.match(/^([\\d.]+)\\s*(px|rem|em|pt|cm|mm|in)?$/);
-  if (!match) { return 0; }
-  const n = parseFloat(match[1]!);
-  const unit = match[2] ?? 'px';
-  const scale: Record<string, number> = { px: 1, rem: 16, em: 16, pt: 1.333, cm: 37.795, mm: 3.7795, in: 96 };
-  return n * (scale[unit] ?? 1);
+const breakpointBarComponent = `const useMeasuredPx = (value: string): { px: number; isDynamic: boolean } => {
+  const ref = React.useRef<HTMLDivElement>(null);
+  const [px, setPx] = React.useState(0);
+
+  const isStatic = /^[\\d.]+\\s*(px|rem|em|pt|cm|mm|in)?$/.test(value);
+
+  React.useEffect(() => {
+    if (!ref.current) { return; }
+    const measured = ref.current.getBoundingClientRect().width;
+    setPx(measured);
+    if (!isStatic) {
+      const onResize = () => setPx(ref.current?.getBoundingClientRect().width ?? 0);
+      window.addEventListener('resize', onResize);
+      return () => window.removeEventListener('resize', onResize);
+    }
+  }, [value, isStatic]);
+
+  return { px, isDynamic: !isStatic, ref } as any;
 };
 const BreakpointBar = ({ name, value }: { name: string; value: string }) => {
-  const px = toPx(value);
+  const { px, isDynamic, ref } = useMeasuredPx(value);
   const pct = px > 0 ? Math.min((px / 1280) * 100, 100) : 0;
   return (
     <div style={{ background: '#fff', border: '1px solid #e0e0e0', borderRadius: 8, padding: '1rem', marginBottom: '0.75rem' }}>
       <div style={{ fontSize: '0.875rem', color: '#666', marginBottom: '0.5rem' }}>
         {name} <code style={{ background: '#f5f5f5', padding: '0.125rem 0.375rem', borderRadius: 3, fontSize: '0.8125rem' }}>{value}</code>
+        {isDynamic && <span style={{ fontSize: '0.6875rem', color: '#999', marginLeft: '0.5rem' }}>({Math.round(px)}px at current viewport)</span>}
       </div>
-      {px > 0 && <div style={{ height: 12, background: 'linear-gradient(90deg, #0066cc, #38bdf8)', borderRadius: 3, width: \`\${pct}%\` }} />}
+      <div ref={ref} style={{ position: 'absolute', visibility: 'hidden', width: value }} />
+      <div style={{ height: 12, background: isDynamic ? 'linear-gradient(90deg, #6366f1, #a78bfa)' : 'linear-gradient(90deg, #0066cc, #38bdf8)', borderRadius: 3, width: \`\${pct}%\`, transition: 'width 0.2s ease' }} />
     </div>
   );
 };`;
