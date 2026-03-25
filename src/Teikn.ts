@@ -3,11 +3,11 @@ import path from "node:path";
 
 import { ensureDirectory } from "./ensure-directory";
 import {
-  CSSVars,
-  DTCGGenerator,
-  ESModule,
+  CssVars,
+  DtcgGenerator,
+  EsModule,
   Generator,
-  HTML,
+  Html,
   JavaScript,
   Json,
   Scss,
@@ -117,10 +117,10 @@ const BuiltInPlugins: {
 };
 
 const BuiltInGenerators: {
-  CSSVars: typeof CSSVars;
-  DTCG: typeof DTCGGenerator;
-  ESModule: typeof ESModule;
-  HTML: typeof HTML;
+  CssVars: typeof CssVars;
+  Dtcg: typeof DtcgGenerator;
+  EsModule: typeof EsModule;
+  Html: typeof Html;
   JavaScript: typeof JavaScript;
   Json: typeof Json;
   Scss: typeof Scss;
@@ -128,10 +128,10 @@ const BuiltInGenerators: {
   Storybook: typeof Storybook;
   TypeScript: typeof TypeScript;
 } = {
-  CSSVars,
-  DTCG: DTCGGenerator,
-  ESModule,
-  HTML,
+  CssVars,
+  Dtcg: DtcgGenerator,
+  EsModule,
+  Html,
   JavaScript,
   Json,
   Scss,

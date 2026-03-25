@@ -19,19 +19,19 @@ const writer = new Teikn({
   generators: [
     // Code outputs
     new Teikn.generators.Json(),
-    new Teikn.generators.ESModule({ ext: 'js', groups: true }),
+    new Teikn.generators.EsModule({ ext: 'js', groups: true }),
     new Teikn.generators.TypeScript({ groups: true }),
 
     // Stylesheets
     new Teikn.generators.Scss({ groups: true }),
-    new Teikn.generators.CSSVars(),
+    new Teikn.generators.CssVars(),
 
     // Documentation
-    new Teikn.generators.HTML(),
+    new Teikn.generators.Html(),
     new Teikn.generators.Storybook(),
 
     // Interchange
-    new Teikn.generators.DTCG(),
+    new Teikn.generators.Dtcg(),
   ],
   plugins: [
     new Teikn.plugins.ColorTransformPlugin({ type: 'rgba' }),
