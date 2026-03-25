@@ -13,6 +13,11 @@
 - **`PrefixTypePlugin` in Teikn plugins now throws** instead of being
   silently filtered. Remove it from your plugins array; type prefixing is
   built in.
+- **Generator classes renamed to consistent PascalCase.** `CSSVars` → `CssVars`,
+  `ESModule` → `EsModule`, `HTML` → `Html`, `DTCGGenerator` → `DtcgGenerator`.
+  The `Teikn.generators` keys are updated to match (e.g. `Teikn.generators.Dtcg`).
+- **Storybook generator supports JSX output.** Pass `ext: "stories.jsx"` for
+  JavaScript projects. Default remains `stories.tsx`.
 
 ### Added
 
