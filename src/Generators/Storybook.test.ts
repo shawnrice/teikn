@@ -307,6 +307,34 @@ describe("Storybook generator", () => {
     expect(output).toContain("<TokenStory>");
   });
 
+  test("It generates valid JSX when ext is stories.jsx", () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: "test", ext: "stories.jsx" });
+    const tokens: Token[] = [
+      { name: "primary", type: "color", value: "#ff0000" },
+      {
+        name: "heading",
+        type: "typography",
+        value: { fontFamily: "Arial", fontSize: "2rem", fontWeight: 700 },
+      },
+    ];
+    const output = sb.generate(tokens);
+
+    // No TypeScript syntax
+    expect(output).not.toContain("import type");
+    expect(output).not.toContain("as const");
+    expect(output).not.toContain("satisfies Meta");
+    expect(output).not.toContain("type Story");
+    expect(output).not.toContain(": Story");
+    expect(output).not.toContain("Record<");
+    expect(output).not.toContain("as Record");
+
+    // Still has valid structure
+    expect(output).toContain("export default meta");
+    expect(output).toContain("export const Color");
+    expect(output).toContain("<TokenStory>");
+    expect(output).toContain("from 'teikn/storybook'");
+  });
+
   test("It only imports components needed by present token types", () => {
     const sb = new Storybook({ dateFn: fixedDate, version: "test" });
     const tokens: Token[] = [{ name: "primary", type: "color", value: "#ff0000" }];

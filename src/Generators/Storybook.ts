@@ -124,12 +124,12 @@ const toStoryName = (type: string): string => camelCase(type).replace(/^./, (c) 
 
 // ─── Story render builder ───────────────────────────────────
 
-const buildRenderBody = (mapping: ComponentMapping, keysVarName: string): string[] => {
+const buildRenderBody = (mapping: ComponentMapping, keysVarName: string, ts = true): string[] => {
   const { component, layout, extraProps = "", valueType } = mapping;
   const lines: string[] = [];
 
-  const valueCast =
-    valueType === "composite" ? "tokens[key] as Record<string, unknown>" : "String(tokens[key])";
+  const compositeExpr = ts ? "tokens[key] as Record<string, unknown>" : "tokens[key]";
+  const valueCast = valueType === "composite" ? compositeExpr : "String(tokens[key])";
 
   if (component === "ZLayerStack") {
     lines.push(
@@ -211,8 +211,13 @@ export class Storybook extends Generator<StorybookOpts> {
     return sibling ? `./${sibling.file.replace(/\.[^.]+$/, "")}` : "./tokens";
   }
 
+  private isTypeScript(): boolean {
+    return /\.tsx?$/.test(this.options.ext);
+  }
+
   combinator(tokens: Token[]): string {
     const { nameTransformer, storyTitle } = this.options;
+    const ts = this.isTypeScript();
     const groups = groupTokens(tokens);
     const types = [...groups.keys()];
     const hasModes = tokens.some((t) => t.modes && Object.keys(t.modes).length > 0);
@@ -237,7 +242,9 @@ export class Storybook extends Generator<StorybookOpts> {
     const lines: string[] = [];
 
     // Imports
-    lines.push(`import type { Meta, StoryObj } from '@storybook/react';`);
+    if (ts) {
+      lines.push(`import type { Meta, StoryObj } from '@storybook/react';`);
+    }
     lines.push(`import { tokens } from ${JSON.stringify(importSource)};`);
     lines.push(`import { ${[...componentImports].toSorted().join(", ")} } from 'teikn/storybook';`);
     lines.push("");
@@ -246,13 +253,13 @@ export class Storybook extends Generator<StorybookOpts> {
     for (const [type, typeTokens] of groups) {
       const varName = `${camelCase(type)}Keys`;
       const keys = typeTokens.map((t) => `'${nameTransformer!(t.name)}'`).join(", ");
-      lines.push(`const ${varName} = [${keys}] as const;`);
+      lines.push(`const ${varName} = [${keys}]${ts ? " as const" : ""};`);
     }
     lines.push("");
 
     // Modes data
     if (hasModes) {
-      lines.push(`const modesData: Record<string, Record<string, string>> = {`);
+      lines.push(`const modesData${ts ? ": Record<string, Record<string, string>>" : ""} = {`);
       for (const token of tokens) {
         if (!token.modes || Object.keys(token.modes).length === 0) {
           continue;
@@ -274,12 +281,15 @@ export class Storybook extends Generator<StorybookOpts> {
     lines.push(`  title: ${JSON.stringify(storyTitle)},`);
     lines.push(`  tags: ['autodocs'],`);
     lines.push(`  parameters: { layout: 'padded' },`);
-    lines.push(`} satisfies Meta;`);
+    lines.push(`}${ts ? " satisfies Meta" : ""};`);
     lines.push(`export default meta;`);
-    lines.push(`type Story = StoryObj<typeof meta>;`);
+    if (ts) {
+      lines.push(`type Story = StoryObj<typeof meta>;`);
+    }
     lines.push("");
 
     // Stories — one per token type
+    const storyType = ts ? ": Story" : "";
     for (const [type, typeTokens] of groups) {
       const storyName = toStoryName(type);
       const keysVarName = `${camelCase(type)}Keys`;
@@ -287,10 +297,10 @@ export class Storybook extends Generator<StorybookOpts> {
       const typeModes =
         hasModes && typeTokens.some((t) => t.modes && Object.keys(t.modes).length > 0);
 
-      lines.push(`export const ${storyName}: Story = {`);
+      lines.push(`export const ${storyName}${storyType} = {`);
       lines.push(`  render: () => (`);
       lines.push(`    <TokenStory>`);
-      lines.push(...buildRenderBody(mapping, keysVarName));
+      lines.push(...buildRenderBody(mapping, keysVarName, ts));
       if (typeModes) {
         lines.push(`        <ModeTable tokenKeys={${keysVarName}} modesData={modesData} />`);
       }
