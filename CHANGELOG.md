@@ -1,5 +1,48 @@
 # Changelog
 
+## 2.0.0-alpha.6
+
+### Breaking Changes
+
+- **`transform()` now returns `TransformResult` instead of `void`.** Callers
+  that awaited `transform()` for side effects only are unaffected, but the
+  method no longer logs to stdout/stderr. Use the returned `auditIssues`,
+  `files`, and `errors` arrays for programmatic access.
+- **`CSSVars({ groups: true })` now throws** instead of silently ignoring
+  the option. CSS has no function syntax — use Scss or ScssVars instead.
+- **`PrefixTypePlugin` in Teikn plugins now throws** instead of being
+  silently filtered. Remove it from your plugins array; type prefixing is
+  built in.
+
+### Added
+
+- **`teikn/storybook` subpath export** — ships themed React components
+  (`Swatch`, `SpacingBar`, `ShadowBox`, `ModeTable`, etc.) for Storybook
+  token visualization. Components use CSS custom properties and respond
+  to Storybook dark mode automatically.
+- **`TransformResult` type** — returned by `transform()`, contains
+  `auditIssues`, `files` (paths + sizes), and `errors`.
+
+### Changed
+
+- **Storybook generator refactored** — generated stories import from
+  `teikn/storybook` instead of inlining ~400 lines of component code.
+  Generated files are ~60% smaller. All stories wrapped in `TokenStory`
+  for theme support.
+- **Breakpoint bar visualization** — uses DOM measurement for accurate
+  widths across all CSS units. Dynamic values (max, calc, clamp) show a
+  live "(Npx at current viewport)" annotation that updates on resize.
+
+### Fixed
+
+- **Empty gradient stops** now throw instead of producing invalid CSS.
+- **Watch mode file handle leak** — watcher is now closed on SIGINT.
+- **Storybook string injection** — `storyTitle` and `importPath` are
+  properly escaped with `JSON.stringify`.
+- **CLI `extractTokens`** gives a clear error when the module doesn't
+  export tokens, instead of a cryptic TypeError downstream.
+- **Empty string values** trigger a validation warning.
+
 ## 2.0.0-alpha.5
 
 ### Breaking Changes
