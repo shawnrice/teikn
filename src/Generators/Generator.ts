@@ -144,7 +144,11 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
   get file(): string {
     const { ext, filename = "tokens" } = this.options;
 
-    return [filename, ext].join(".");
+    if (filename.endsWith(`.${ext}`)) {
+      return filename;
+    }
+
+    return `${filename}.${ext}`;
   }
 
   header(): string | null {
