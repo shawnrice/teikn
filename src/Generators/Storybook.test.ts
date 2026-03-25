@@ -161,7 +161,6 @@ describe("Storybook generator", () => {
 
     expect(output).toContain("export const Duration: Story");
     expect(output).toContain("DurationBar");
-    expect(output).toContain("useState");
   });
 
   test("It renders timing stories with TimingDemo", () => {
@@ -298,22 +297,27 @@ describe("Storybook generator", () => {
     const output = sb.generate(tokens);
 
     expect(output).toContain("import type { Meta, StoryObj } from '@storybook/react'");
+    expect(output).toContain("from 'teikn/storybook'");
     expect(output).toContain("satisfies Meta");
     expect(output).toContain("export default meta");
     expect(output).toContain("type Story = StoryObj<typeof meta>");
     expect(output).toContain("tags: ['autodocs']");
     expect(output).toContain("layout: 'padded'");
+    expect(output).not.toContain("import React");
+    expect(output).toContain("<TokenStory>");
   });
 
-  test("It only emits components needed by present token types", () => {
+  test("It only imports components needed by present token types", () => {
     const sb = new Storybook({ dateFn: fixedDate, version: "test" });
     const tokens: Token[] = [{ name: "primary", type: "color", value: "#ff0000" }];
     const output = sb.generate(tokens);
 
-    expect(output).toContain("const Swatch");
-    expect(output).not.toContain("const SpacingBar");
-    expect(output).not.toContain("const ShadowBox");
-    expect(output).not.toContain("const DurationBar");
+    expect(output).toContain("Swatch");
+    expect(output).toContain("TokenGrid");
+    expect(output).toContain("TokenStory");
+    expect(output).not.toContain("SpacingBar");
+    expect(output).not.toContain("ShadowBox");
+    expect(output).not.toContain("DurationBar");
   });
 
   test("describe() returns correct info", () => {
@@ -382,7 +386,7 @@ describe("Storybook generator", () => {
 
   // ── Breakpoint bar ────────────────────────────────────────
 
-  test("It emits toPx helper for breakpoint stories", () => {
+  test("It imports BreakpointBar for breakpoint stories", () => {
     const sb = new Storybook({ dateFn: fixedDate, version: "test" });
     const tokens: Token[] = [
       { name: "sm", type: "breakpoint", value: "640px" },
@@ -390,9 +394,9 @@ describe("Storybook generator", () => {
     ];
     const output = sb.generate(tokens);
 
-    expect(output).toContain("useMeasuredPx");
     expect(output).toContain("BreakpointBar");
     expect(output).toContain("breakpointKeys");
+    expect(output).toContain("from 'teikn/storybook'");
   });
 
   // ── Mode variants ─────────────────────────────────────────
