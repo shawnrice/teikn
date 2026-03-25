@@ -275,8 +275,7 @@ const BreakpointBar = ({ name, value }: { name: string; value: string }) => {
       <div style={{ fontSize: '0.875rem', color: '#666', marginBottom: '0.5rem' }}>
         {name} <code style={{ background: '#f5f5f5', padding: '0.125rem 0.375rem', borderRadius: 3, fontSize: '0.8125rem' }}>{value}</code>
       </div>
-      <div style={{ height: 12, background: 'linear-gradient(90deg, #0066cc, #38bdf8)', borderRadius: 3, width: \`\${pct}%\` }} />
-      <div style={{ fontSize: '0.625rem', color: '#888', fontFamily: 'monospace', marginTop: '0.25rem' }}>{value}</div>
+      {px > 0 && <div style={{ height: 12, background: 'linear-gradient(90deg, #0066cc, #38bdf8)', borderRadius: 3, width: \`\${pct}%\` }} />}
     </div>
   );
 };`;
