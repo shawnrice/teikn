@@ -259,8 +259,16 @@ const letterSpacingSampleComponent = `const LetterSpacingSample = ({ name, value
   </div>
 );`;
 
-const breakpointBarComponent = `const BreakpointBar = ({ name, value }: { name: string; value: string }) => {
-  const px = parseFloat(value);
+const breakpointBarComponent = `const toPx = (value: string): number => {
+  const match = value.match(/^([\\d.]+)\\s*(px|rem|em|pt|cm|mm|in)?$/);
+  if (!match) { return 0; }
+  const n = parseFloat(match[1]!);
+  const unit = match[2] ?? 'px';
+  const scale: Record<string, number> = { px: 1, rem: 16, em: 16, pt: 1.333, cm: 37.795, mm: 3.7795, in: 96 };
+  return n * (scale[unit] ?? 1);
+};
+const BreakpointBar = ({ name, value }: { name: string; value: string }) => {
+  const px = toPx(value);
   const pct = px > 0 ? Math.min((px / 1280) * 100, 100) : 0;
   return (
     <div style={{ background: '#fff', border: '1px solid #e0e0e0', borderRadius: 8, padding: '1rem', marginBottom: '0.75rem' }}>

@@ -380,6 +380,21 @@ describe("Storybook generator", () => {
     expect(output).toContain("Storybook stories for design tokens");
   });
 
+  // ── Breakpoint bar ────────────────────────────────────────
+
+  test("It emits toPx helper for breakpoint stories", () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: "test" });
+    const tokens: Token[] = [
+      { name: "sm", type: "breakpoint", value: "640px" },
+      { name: "md", type: "breakpoint", value: "48rem" },
+    ];
+    const output = sb.generate(tokens);
+
+    expect(output).toContain("const toPx");
+    expect(output).toContain("BreakpointBar");
+    expect(output).toContain("breakpointKeys");
+  });
+
   // ── Mode variants ─────────────────────────────────────────
 
   test("It emits modesData and ModeTable when tokens have modes", () => {
