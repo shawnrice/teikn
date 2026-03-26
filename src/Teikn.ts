@@ -31,7 +31,7 @@ import {
   PrefixTypePlugin,
   ReducedMotionPlugin,
   RemUnitPlugin,
-  SCSSQuoteValuePlugin,
+  ScssQuoteValuePlugin,
   StripTypePrefixPlugin,
   TouchTargetPlugin,
 } from "./Plugins";
@@ -95,7 +95,7 @@ const BuiltInPlugins: {
   StripTypePrefixPlugin: typeof StripTypePrefixPlugin;
   ReducedMotionPlugin: typeof ReducedMotionPlugin;
   RemUnitPlugin: typeof RemUnitPlugin;
-  SCSSQuoteValuePlugin: typeof SCSSQuoteValuePlugin;
+  ScssQuoteValuePlugin: typeof ScssQuoteValuePlugin;
   TouchTargetPlugin: typeof TouchTargetPlugin;
 } = {
   AlphaMultiplyPlugin,
@@ -112,7 +112,7 @@ const BuiltInPlugins: {
   StripTypePrefixPlugin,
   ReducedMotionPlugin,
   RemUnitPlugin,
-  SCSSQuoteValuePlugin,
+  ScssQuoteValuePlugin,
   TouchTargetPlugin,
 };
 

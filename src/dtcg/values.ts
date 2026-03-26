@@ -6,16 +6,16 @@ import { Duration, isDurationUnit } from "../TokenTypes/Duration";
 import { GradientList, LinearGradient, RadialGradient } from "../TokenTypes/Gradient";
 import { Transition, TransitionList } from "../TokenTypes/Transition";
 import type {
-  DTCGColorValue,
-  DTCGCubicBezierValue,
-  DTCGDimensionValue,
-  DTCGDurationValue,
-  DTCGGradientStop,
-  DTCGGradientValue,
-  DTCGShadowValue,
-  DTCGValue,
+  DtcgColorValue,
+  DtcgCubicBezierValue,
+  DtcgDimensionValue,
+  DtcgDurationValue,
+  DtcgGradientStop,
+  DtcgGradientValue,
+  DtcgShadowValue,
+  DtcgValue,
 } from "./types";
-import { DTCG_TYPES } from "./types";
+import { DtcgTypes } from "./types";
 
 // ─── Helpers ─────────────────────────────────────────────────
 
@@ -41,7 +41,7 @@ const parseDuration = (str: string): { value: number; unit: "ms" | "s" } | null 
 const isAlias = (value: unknown): value is string =>
   typeof value === "string" && value.startsWith("{") && value.endsWith("}");
 
-// ─── DTCG → teikn type mapping ──────────────────────────────
+// ─── Dtcg → teikn type mapping ──────────────────────────────
 
 const dtcgToTeiknMap: Record<string, string> = {
   fontFamily: "font-family",
@@ -71,11 +71,11 @@ const teiknToDtcgMap: Record<string, string> = {
 
 export const dtcgTypeToTeikn = (type: string): string => dtcgToTeiknMap[type] ?? type;
 
-export const teiknTypeToDTCG = (type: string): string => teiknToDtcgMap[type] ?? type;
+export const teiknTypeToDtcg = (type: string): string => teiknToDtcgMap[type] ?? type;
 
-// ─── DTCG → teikn value converters ──────────────────────────
+// ─── Dtcg → teikn value converters ──────────────────────────
 
-const colorToTeikn = (value: DTCGColorValue): Color => {
+const colorToTeikn = (value: DtcgColorValue): Color => {
   const [r, g, b] = value.components;
   return Color.fromRGB(
     Math.round(r * 255),
@@ -85,20 +85,20 @@ const colorToTeikn = (value: DTCGColorValue): Color => {
   );
 };
 
-const dimensionToTeikn = (value: DTCGDimensionValue): Dimension =>
+const dimensionToTeikn = (value: DtcgDimensionValue): Dimension =>
   new Dimension(value.value, value.unit);
 
-const durationToTeikn = (value: DTCGDurationValue): Duration =>
+const durationToTeikn = (value: DtcgDurationValue): Duration =>
   new Duration(value.value, value.unit as "ms" | "s");
 
-const cubicBezierToTeikn = (value: DTCGCubicBezierValue): CubicBezier =>
+const cubicBezierToTeikn = (value: DtcgCubicBezierValue): CubicBezier =>
   new CubicBezier(value[0], value[1], value[2], value[3]);
 
-const resolveDim = (d: DTCGDimensionValue | string): number =>
+const resolveDim = (d: DtcgDimensionValue | string): number =>
   typeof d === "string" ? parseFloat(d) : d.value;
 
-const shadowToTeikn = (value: DTCGShadowValue): BoxShadow => {
-  const resolveColor = (c: DTCGColorValue | string): Color =>
+const shadowToTeikn = (value: DtcgShadowValue): BoxShadow => {
+  const resolveColor = (c: DtcgColorValue | string): Color =>
     typeof c === "string" ? new Color(c) : colorToTeikn(c);
 
   return new BoxShadow(
@@ -110,7 +110,7 @@ const shadowToTeikn = (value: DTCGShadowValue): BoxShadow => {
   );
 };
 
-const gradientToTeikn = (stops: DTCGGradientStop[]): LinearGradient => {
+const gradientToTeikn = (stops: DtcgGradientStop[]): LinearGradient => {
   const gradientStops = stops.map((stop) => {
     const color = colorToTeikn(stop.color);
     const position = `${Math.round(stop.position * 100)}%`;
@@ -122,15 +122,15 @@ const gradientToTeikn = (stops: DTCGGradientStop[]): LinearGradient => {
 const fontFamilyToTeikn = (value: string | string[]): string =>
   Array.isArray(value) ? value.join(", ") : value;
 
-// ─── DTCG value type guards ──────────────────────────────────
+// ─── Dtcg value type guards ──────────────────────────────────
 
-const isDTCGDimension = (val: unknown): val is DTCGDimensionValue =>
+const isDtcgDimension = (val: unknown): val is DtcgDimensionValue =>
   val != null && typeof val === "object" && "value" in val && "unit" in val;
 
-const isDTCGColor = (val: unknown): val is DTCGColorValue =>
+const isDtcgColor = (val: unknown): val is DtcgColorValue =>
   val != null && typeof val === "object" && "colorSpace" in val;
 
-const isDTCGCubicBezier = (val: unknown): val is DTCGCubicBezierValue =>
+const isDtcgCubicBezier = (val: unknown): val is DtcgCubicBezierValue =>
   Array.isArray(val) && val.length === 4 && val.every((v) => typeof v === "number");
 
 // ─── Composite field converter ───────────────────────────────
@@ -140,14 +140,14 @@ const convertCompositeFields = (obj: Record<string, unknown>): Record<string, un
   for (const [key, val] of Object.entries(obj)) {
     if (isAlias(val)) {
       result[key] = val;
-    } else if (isDTCGDimension(val)) {
+    } else if (isDtcgDimension(val)) {
       const typed = val as { value: number; unit: string };
       result[key] = isDurationUnit(typed.unit)
-        ? durationToTeikn(typed as DTCGDurationValue)
-        : dimensionToTeikn(typed as DTCGDimensionValue);
-    } else if (isDTCGColor(val)) {
+        ? durationToTeikn(typed as DtcgDurationValue)
+        : dimensionToTeikn(typed as DtcgDimensionValue);
+    } else if (isDtcgColor(val)) {
       result[key] = colorToTeikn(val);
-    } else if (isDTCGCubicBezier(val)) {
+    } else if (isDtcgCubicBezier(val)) {
       result[key] = cubicBezierToTeikn(val);
     } else {
       result[key] = val;
@@ -156,49 +156,49 @@ const convertCompositeFields = (obj: Record<string, unknown>): Record<string, un
   return result;
 };
 
-export const dtcgValueToTeikn = (value: DTCGValue, type: string): any => {
+export const dtcgValueToTeikn = (value: DtcgValue, type: string): any => {
   if (isAlias(value)) {
     return value;
   }
 
   switch (type) {
-    case DTCG_TYPES.color:
-      return colorToTeikn(value as DTCGColorValue);
-    case DTCG_TYPES.dimension:
-      return dimensionToTeikn(value as DTCGDimensionValue);
-    case DTCG_TYPES.duration:
-      return durationToTeikn(value as DTCGDurationValue);
-    case DTCG_TYPES.cubicBezier:
-      return cubicBezierToTeikn(value as DTCGCubicBezierValue);
-    case DTCG_TYPES.number:
+    case DtcgTypes.color:
+      return colorToTeikn(value as DtcgColorValue);
+    case DtcgTypes.dimension:
+      return dimensionToTeikn(value as DtcgDimensionValue);
+    case DtcgTypes.duration:
+      return durationToTeikn(value as DtcgDurationValue);
+    case DtcgTypes.cubicBezier:
+      return cubicBezierToTeikn(value as DtcgCubicBezierValue);
+    case DtcgTypes.number:
       return value;
-    case DTCG_TYPES.fontFamily:
+    case DtcgTypes.fontFamily:
       return fontFamilyToTeikn(value as string | string[]);
-    case DTCG_TYPES.fontWeight:
+    case DtcgTypes.fontWeight:
       return value;
-    case DTCG_TYPES.strokeStyle:
+    case DtcgTypes.strokeStyle:
       return value;
-    case DTCG_TYPES.fontStyle:
+    case DtcgTypes.fontStyle:
       return value;
-    case DTCG_TYPES.shadow:
-      return shadowToTeikn(value as DTCGShadowValue);
-    case DTCG_TYPES.gradient:
-      return gradientToTeikn(value as DTCGGradientValue);
-    case DTCG_TYPES.border:
+    case DtcgTypes.shadow:
+      return shadowToTeikn(value as DtcgShadowValue);
+    case DtcgTypes.gradient:
+      return gradientToTeikn(value as DtcgGradientValue);
+    case DtcgTypes.border:
       return convertCompositeFields(value as Record<string, unknown>);
-    case DTCG_TYPES.transition:
+    case DtcgTypes.transition:
       return convertCompositeFields(value as Record<string, unknown>);
-    case DTCG_TYPES.typography:
+    case DtcgTypes.typography:
       return convertCompositeFields(value as Record<string, unknown>);
     default:
       return value;
   }
 };
 
-// ─── teikn → DTCG value converters ──────────────────────────
+// ─── teikn → Dtcg value converters ──────────────────────────
 
-const colorToDTCG = (color: Color): DTCGColorValue => {
-  const result: DTCGColorValue = {
+const colorToDtcg = (color: Color): DtcgColorValue => {
+  const result: DtcgColorValue = {
     colorSpace: "srgb",
     components: [color.red / 255, color.green / 255, color.blue / 255],
   };
@@ -208,75 +208,75 @@ const colorToDTCG = (color: Color): DTCGColorValue => {
   return result;
 };
 
-const stringDimensionToDTCG = (str: string): DTCGDimensionValue | string => {
+const stringDimensionToDtcg = (str: string): DtcgDimensionValue | string => {
   const parsed = parseDimension(str);
   return parsed ?? str;
 };
 
-const stringDurationToDTCG = (str: string): DTCGDurationValue | string => {
+const stringDurationToDtcg = (str: string): DtcgDurationValue | string => {
   const parsed = parseDuration(str);
   return parsed ?? str;
 };
 
-const cubicBezierToDTCG = (cb: CubicBezier): DTCGCubicBezierValue => [cb.x1, cb.y1, cb.x2, cb.y2];
+const cubicBezierToDtcg = (cb: CubicBezier): DtcgCubicBezierValue => [cb.x1, cb.y1, cb.x2, cb.y2];
 
-const shadowToDTCG = (shadow: BoxShadow): DTCGShadowValue => ({
-  color: colorToDTCG(shadow.color),
+const shadowToDtcg = (shadow: BoxShadow): DtcgShadowValue => ({
+  color: colorToDtcg(shadow.color),
   offsetX: { value: shadow.offsetX, unit: "px" },
   offsetY: { value: shadow.offsetY, unit: "px" },
   blur: { value: shadow.blur, unit: "px" },
   spread: { value: shadow.spread, unit: "px" },
 });
 
-const gradientStopToDTCG = (stop: { color: Color; position?: string }): DTCGGradientStop => {
+const gradientStopToDtcg = (stop: { color: Color; position?: string }): DtcgGradientStop => {
   const posStr = stop.position ?? "0%";
   const posNum = parseFloat(posStr) / 100;
   return {
-    color: colorToDTCG(stop.color),
+    color: colorToDtcg(stop.color),
     position: isNaN(posNum) ? 0 : posNum,
   };
 };
 
-const gradientToDTCG = (gradient: LinearGradient | RadialGradient): DTCGGradientValue =>
-  [...gradient.stops].map(gradientStopToDTCG);
+const gradientToDtcg = (gradient: LinearGradient | RadialGradient): DtcgGradientValue =>
+  [...gradient.stops].map(gradientStopToDtcg);
 
-// Convert a single teikn value (instanceof-based) to its DTCG representation.
+// Convert a single teikn value (instanceof-based) to its Dtcg representation.
 // Returns null when the value is not a recognized first-class type.
-const convertSingleValue = (value: unknown): DTCGValue | null => {
+const convertSingleValue = (value: unknown): DtcgValue | null => {
   if (value instanceof Color) {
-    return colorToDTCG(value);
+    return colorToDtcg(value);
   }
   if (value instanceof CubicBezier) {
-    return cubicBezierToDTCG(value);
+    return cubicBezierToDtcg(value);
   }
   if (value instanceof BoxShadow) {
-    return shadowToDTCG(value);
+    return shadowToDtcg(value);
   }
   if (value instanceof BoxShadowList) {
-    return value.layers.map(shadowToDTCG) as unknown as DTCGValue;
+    return value.layers.map(shadowToDtcg) as unknown as DtcgValue;
   }
   if (value instanceof LinearGradient || value instanceof RadialGradient) {
-    return gradientToDTCG(value);
+    return gradientToDtcg(value);
   }
   if (value instanceof GradientList) {
-    return value.layers.map((g) => gradientToDTCG(g)) as unknown as DTCGValue;
+    return value.layers.map((g) => gradientToDtcg(g)) as unknown as DtcgValue;
   }
   if (value instanceof Dimension) {
-    return { value: value.value, unit: value.unit } as DTCGDimensionValue;
+    return { value: value.value, unit: value.unit } as DtcgDimensionValue;
   }
   if (value instanceof Duration) {
-    return { value: value.value, unit: value.unit } as DTCGDurationValue;
+    return { value: value.value, unit: value.unit } as DtcgDurationValue;
   }
   return null;
 };
 
-const transitionToDTCG = (t: Transition): Record<string, unknown> => {
+const transitionToDtcg = (t: Transition): Record<string, unknown> => {
   const result: Record<string, unknown> = {
-    duration: stringDurationToDTCG(t.duration),
-    timingFunction: cubicBezierToDTCG(t.timingFunction),
+    duration: stringDurationToDtcg(t.duration),
+    timingFunction: cubicBezierToDtcg(t.timingFunction),
   };
   if (t.delay && t.delay !== "0s") {
-    result.delay = stringDurationToDTCG(t.delay);
+    result.delay = stringDurationToDtcg(t.delay);
   }
   if (t.property && t.property !== "all") {
     result.property = t.property;
@@ -284,7 +284,7 @@ const transitionToDTCG = (t: Transition): Record<string, unknown> => {
   return result;
 };
 
-export const teiknValueToDTCG = (value: any, type: string): DTCGValue => {
+export const teiknValueToDtcg = (value: any, type: string): DtcgValue => {
   if (isAlias(value)) {
     return value;
   }
@@ -295,32 +295,32 @@ export const teiknValueToDTCG = (value: any, type: string): DTCGValue => {
   }
 
   if (value instanceof TransitionList) {
-    return value.layers.map(transitionToDTCG) as unknown as DTCGValue;
+    return value.layers.map(transitionToDtcg) as unknown as DtcgValue;
   }
 
   if (value instanceof Transition) {
-    return transitionToDTCG(value) as DTCGValue;
+    return transitionToDtcg(value) as DtcgValue;
   }
 
   if (typeof value === "number") {
     return value;
   }
 
-  const dtcgType = teiknTypeToDTCG(type);
+  const dtcgType = teiknTypeToDtcg(type);
 
   if (typeof value === "string") {
-    if (dtcgType === DTCG_TYPES.color) {
+    if (dtcgType === DtcgTypes.color) {
       try {
-        return colorToDTCG(new Color(value));
+        return colorToDtcg(new Color(value));
       } catch {
         return value;
       }
     }
-    if (dtcgType === DTCG_TYPES.dimension) {
-      return stringDimensionToDTCG(value);
+    if (dtcgType === DtcgTypes.dimension) {
+      return stringDimensionToDtcg(value);
     }
-    if (dtcgType === DTCG_TYPES.duration) {
-      return stringDurationToDTCG(value);
+    if (dtcgType === DtcgTypes.duration) {
+      return stringDurationToDtcg(value);
     }
     return value;
   }
@@ -344,7 +344,7 @@ export const teiknValueToDTCG = (value: any, type: string): DTCGValue => {
         result[key] = val;
       }
     }
-    return result as DTCGValue;
+    return result as DtcgValue;
   }
 
   return value;

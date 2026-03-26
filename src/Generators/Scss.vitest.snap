@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`SCSSGenerator tests > It generates the token set 1`] = `
+exports[`Scss Generator tests > It generates the token set 1`] = `
 "///
 /// Teikn vtest
 /// Generated null
@@ -28,7 +28,7 @@ $token-values: (
 }"
 `;
 
-exports[`SCSSGenerator tests > it generates group maps and functions when groups: true 1`] = `
+exports[`Scss Generator tests > it generates group maps and functions when groups: true 1`] = `
 "///
 /// Teikn vtest
 /// Generated null
@@ -76,7 +76,7 @@ $spacing-values: (
 }"
 `;
 
-exports[`SCSSGenerator tests > it generates groups with PrefixTypePlugin 1`] = `
+exports[`Scss Generator tests > it generates groups with PrefixTypePlugin 1`] = `
 "///
 /// Teikn vtest
 /// Generated null

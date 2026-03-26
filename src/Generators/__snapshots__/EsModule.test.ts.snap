@@ -1,6 +1,6 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`ESModule tests it generates tokens as an esmodule 1`] = `
+exports[`EsModule tests it generates tokens as an esmodule 1`] = `
 "/**
  * Teikn vtest
  * Generated null
@@ -29,7 +29,7 @@ export const tokens = {
 export default tokens;"
 `;
 
-exports[`ESModule tests it generates group accessors when groups: true 1`] = `
+exports[`EsModule tests it generates group accessors when groups: true 1`] = `
 "/**
  * Teikn vtest
  * Generated null

@@ -1,6 +1,6 @@
 import type { Token } from "../Token";
-import type { DTCGDocument, DTCGToken } from "./types";
-import { teiknTypeToDTCG, teiknValueToDTCG } from "./values";
+import type { DtcgDocument, DtcgToken } from "./types";
+import { teiknTypeToDtcg, teiknValueToDtcg } from "./values";
 
 export type SerializeOptions = {
   /** Separator used in token names to reconstruct groups. Default: '.' */
@@ -9,7 +9,7 @@ export type SerializeOptions = {
   hierarchical?: boolean;
 };
 
-const setNestedValue = (obj: Record<string, any>, path: string[], token: DTCGToken): void => {
+const setNestedValue = (obj: Record<string, any>, path: string[], token: DtcgToken): void => {
   let current = obj;
   for (let i = 0; i < path.length - 1; i++) {
     const segment = path[i]!;
@@ -65,11 +65,11 @@ const hoistGroupTypes = (obj: Record<string, any>): void => {
   }
 };
 
-const tokenToDTCG = (token: Token): DTCGToken => {
-  const dtcgType = teiknTypeToDTCG(token.type);
-  const dtcgValue = teiknValueToDTCG(token.value, token.type);
+const tokenToDtcg = (token: Token): DtcgToken => {
+  const dtcgType = teiknTypeToDtcg(token.type);
+  const dtcgValue = teiknValueToDtcg(token.value, token.type);
 
-  const result: DTCGToken = {
+  const result: DtcgToken = {
     $value: dtcgValue as any,
     $type: dtcgType,
   };
@@ -81,7 +81,7 @@ const tokenToDTCG = (token: Token): DTCGToken => {
   if (token.modes && Object.keys(token.modes).length > 0) {
     const modeEntries: Record<string, unknown> = {};
     for (const [mode, val] of Object.entries(token.modes)) {
-      modeEntries[mode] = teiknValueToDTCG(val, token.type);
+      modeEntries[mode] = teiknValueToDtcg(val, token.type);
     }
     result.$extensions = { mode: modeEntries };
   }
@@ -89,14 +89,14 @@ const tokenToDTCG = (token: Token): DTCGToken => {
   return result;
 };
 
-export const serializeDTCG = (tokens: Token[], options?: SerializeOptions): DTCGDocument => {
+export const serializeDtcg = (tokens: Token[], options?: SerializeOptions): DtcgDocument => {
   const separator = options?.separator ?? ".";
   const hierarchical = options?.hierarchical ?? true;
 
-  const doc: DTCGDocument = {};
+  const doc: DtcgDocument = {};
 
   for (const token of tokens) {
-    const dtcgToken = tokenToDTCG(token);
+    const dtcgToken = tokenToDtcg(token);
 
     if (hierarchical) {
       const segments = token.name.split(separator);

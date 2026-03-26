@@ -1,10 +1,10 @@
 import { describe, expect, test } from "bun:test";
 
 import type { Token } from "../Token";
-import { SCSSQuoteValuePlugin } from "./SCSSQuoteValuePlugin";
+import { ScssQuoteValuePlugin } from "./ScssQuoteValuePlugin";
 
-describe("SCSSQuoteValuePlugin", () => {
-  const plugin = new SCSSQuoteValuePlugin();
+describe("ScssQuoteValuePlugin", () => {
+  const plugin = new ScssQuoteValuePlugin();
 
   test("outputType matches scss and sass", () => {
     expect(plugin.outputType.test("scss")).toBe(true);

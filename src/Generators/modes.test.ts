@@ -7,10 +7,10 @@ import { Transition } from "../TokenTypes/Transition";
 import { LinearGradient } from "../TokenTypes/Gradient";
 import { ColorTransformPlugin } from "../Plugins/ColorTransformPlugin";
 import type { Token } from "../Token";
-import { CSSVars } from "./CSSVars";
+import { CssVars } from "./CssVars";
 import { Scss } from "./Scss";
 import { ScssVars } from "./ScssVars";
-import { ESModule } from "./ESModule";
+import { EsModule } from "./EsModule";
 import { JavaScript } from "./JavaScript";
 import { Json } from "./Json";
 
@@ -29,8 +29,8 @@ describe("mode values must not produce [object Object]", () => {
 
   const colorModes = { dark: new Color("#1a1a1a") };
 
-  test("CSSVars stringifies Color in modes", () => {
-    const output = new CSSVars(opts).generate(colorToken(colorModes));
+  test("CssVars stringifies Color in modes", () => {
+    const output = new CssVars(opts).generate(colorToken(colorModes));
     expect(output).not.toContain(objectString);
     expect(output).toContain("--surface:");
   });
@@ -45,8 +45,8 @@ describe("mode values must not produce [object Object]", () => {
     expect(output).not.toContain(objectString);
   });
 
-  test("ESModule stringifies Color in modes", () => {
-    const output = new ESModule(opts).generate(colorToken(colorModes));
+  test("EsModule stringifies Color in modes", () => {
+    const output = new EsModule(opts).generate(colorToken(colorModes));
     expect(output).not.toContain(objectString);
   });
 
@@ -60,7 +60,7 @@ describe("mode values must not produce [object Object]", () => {
     expect(output).not.toContain(objectString);
   });
 
-  test("CSSVars stringifies BoxShadow in modes", () => {
+  test("CssVars stringifies BoxShadow in modes", () => {
     const token: Token[] = [
       {
         name: "elevation",
@@ -69,11 +69,11 @@ describe("mode values must not produce [object Object]", () => {
         modes: { high: new BoxShadow(0, 4, 16, 0, "rgba(0,0,0,.2)") },
       },
     ];
-    const output = new CSSVars(opts).generate(token);
+    const output = new CssVars(opts).generate(token);
     expect(output).not.toContain(objectString);
   });
 
-  test("CSSVars stringifies CubicBezier in modes", () => {
+  test("CssVars stringifies CubicBezier in modes", () => {
     const token: Token[] = [
       {
         name: "ease",
@@ -82,11 +82,11 @@ describe("mode values must not produce [object Object]", () => {
         modes: { reduced: CubicBezier.linear },
       },
     ];
-    const output = new CSSVars(opts).generate(token);
+    const output = new CssVars(opts).generate(token);
     expect(output).not.toContain(objectString);
   });
 
-  test("CSSVars stringifies Transition in modes", () => {
+  test("CssVars stringifies Transition in modes", () => {
     const token: Token[] = [
       {
         name: "fade",
@@ -95,11 +95,11 @@ describe("mode values must not produce [object Object]", () => {
         modes: { reduced: Transition.quick },
       },
     ];
-    const output = new CSSVars(opts).generate(token);
+    const output = new CssVars(opts).generate(token);
     expect(output).not.toContain(objectString);
   });
 
-  test("CSSVars stringifies LinearGradient in modes", () => {
+  test("CssVars stringifies LinearGradient in modes", () => {
     const token: Token[] = [
       {
         name: "brand",
@@ -116,7 +116,7 @@ describe("mode values must not produce [object Object]", () => {
         },
       },
     ];
-    const output = new CSSVars(opts).generate(token);
+    const output = new CssVars(opts).generate(token);
     expect(output).not.toContain(objectString);
   });
 });
@@ -133,7 +133,7 @@ describe("plugins must transform mode values", () => {
         modes: { dark: "crimson" },
       },
     ];
-    const output = new CSSVars(opts).generate(tokens, [new ColorTransformPlugin({ type: "rgba" })]);
+    const output = new CssVars(opts).generate(tokens, [new ColorTransformPlugin({ type: "rgba" })]);
 
     // Base value should be rgba
     expect(output).toContain("rgba(");
@@ -155,7 +155,7 @@ describe("plugins must transform mode values", () => {
     expect(output).not.toContain("crimson");
   });
 
-  test("ColorTransformPlugin converts mode values in ESModule", () => {
+  test("ColorTransformPlugin converts mode values in EsModule", () => {
     const tokens: Token[] = [
       {
         name: "surface",
@@ -164,7 +164,7 @@ describe("plugins must transform mode values", () => {
         modes: { dark: "crimson" },
       },
     ];
-    const output = new ESModule(opts).generate(tokens, [
+    const output = new EsModule(opts).generate(tokens, [
       new ColorTransformPlugin({ type: "rgba" }),
     ]);
 

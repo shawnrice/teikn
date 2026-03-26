@@ -6,18 +6,18 @@ import { CubicBezier } from "../TokenTypes/CubicBezier";
 import { Dimension } from "../TokenTypes/Dimension";
 import { Duration } from "../TokenTypes/Duration";
 import { LinearGradient } from "../TokenTypes/Gradient";
-import { parseDTCG } from "./parse";
-import type { DTCGDocument } from "./types";
+import { parseDtcg } from "./parse";
+import type { DtcgDocument } from "./types";
 
-describe("parseDTCG", () => {
+describe("parseDtcg", () => {
   test("parses a simple color token", () => {
-    const doc: DTCGDocument = {
+    const doc: DtcgDocument = {
       primary: {
         $value: { colorSpace: "srgb", components: [1, 0, 0] },
         $type: "color",
       },
     };
-    const tokens = parseDTCG(doc);
+    const tokens = parseDtcg(doc);
     expect(tokens).toHaveLength(1);
     expect(tokens[0]!.name).toBe("primary");
     expect(tokens[0]!.type).toBe("color");
@@ -28,18 +28,18 @@ describe("parseDTCG", () => {
   });
 
   test("parses a color with alpha", () => {
-    const doc: DTCGDocument = {
+    const doc: DtcgDocument = {
       overlay: {
         $value: { colorSpace: "srgb", components: [0, 0, 0], alpha: 0.5 },
         $type: "color",
       },
     };
-    const tokens = parseDTCG(doc);
+    const tokens = parseDtcg(doc);
     expect(tokens[0]!.value.alpha).toBe(0.5);
   });
 
   test("groups inherit $type to children", () => {
-    const doc: DTCGDocument = {
+    const doc: DtcgDocument = {
       color: {
         $type: "color",
         primary: {
@@ -50,14 +50,14 @@ describe("parseDTCG", () => {
         },
       },
     };
-    const tokens = parseDTCG(doc);
+    const tokens = parseDtcg(doc);
     expect(tokens).toHaveLength(2);
     expect(tokens[0]!.type).toBe("color");
     expect(tokens[1]!.type).toBe("color");
   });
 
   test("child $type overrides inherited type", () => {
-    const doc: DTCGDocument = {
+    const doc: DtcgDocument = {
       tokens: {
         $type: "color",
         size: {
@@ -66,14 +66,14 @@ describe("parseDTCG", () => {
         },
       },
     };
-    const tokens = parseDTCG(doc);
+    const tokens = parseDtcg(doc);
     expect(tokens[0]!.type).toBe("dimension");
     expect(tokens[0]!.value).toBeInstanceOf(Dimension);
     expect(tokens[0]!.value.toString()).toBe("16px");
   });
 
   test("nested groups produce dot-separated names", () => {
-    const doc: DTCGDocument = {
+    const doc: DtcgDocument = {
       color: {
         brand: {
           primary: {
@@ -83,12 +83,12 @@ describe("parseDTCG", () => {
         },
       },
     };
-    const tokens = parseDTCG(doc);
+    const tokens = parseDtcg(doc);
     expect(tokens[0]!.name).toBe("color.brand.primary");
   });
 
   test("custom separator works", () => {
-    const doc: DTCGDocument = {
+    const doc: DtcgDocument = {
       color: {
         primary: {
           $value: { colorSpace: "srgb", components: [1, 0, 0] },
@@ -96,12 +96,12 @@ describe("parseDTCG", () => {
         },
       },
     };
-    const tokens = parseDTCG(doc, { separator: "/" });
+    const tokens = parseDtcg(doc, { separator: "/" });
     expect(tokens[0]!.name).toBe("color/primary");
   });
 
   test("dimension values are converted to Dimension instances", () => {
-    const doc: DTCGDocument = {
+    const doc: DtcgDocument = {
       spacing: {
         sm: {
           $value: { value: 8, unit: "px" },
@@ -113,7 +113,7 @@ describe("parseDTCG", () => {
         },
       },
     };
-    const tokens = parseDTCG(doc);
+    const tokens = parseDtcg(doc);
     expect(tokens[0]!.value).toBeInstanceOf(Dimension);
     expect(tokens[0]!.value.toString()).toBe("8px");
     expect(tokens[1]!.value).toBeInstanceOf(Dimension);
@@ -121,7 +121,7 @@ describe("parseDTCG", () => {
   });
 
   test("duration values are converted to Duration instances", () => {
-    const doc: DTCGDocument = {
+    const doc: DtcgDocument = {
       fast: {
         $value: { value: 200, unit: "ms" },
         $type: "duration",
@@ -131,7 +131,7 @@ describe("parseDTCG", () => {
         $type: "duration",
       },
     };
-    const tokens = parseDTCG(doc);
+    const tokens = parseDtcg(doc);
     expect(tokens[0]!.value).toBeInstanceOf(Duration);
     expect(tokens[0]!.value.toString()).toBe("200ms");
     expect(tokens[1]!.value).toBeInstanceOf(Duration);
@@ -139,13 +139,13 @@ describe("parseDTCG", () => {
   });
 
   test("cubicBezier values are converted to CubicBezier instances", () => {
-    const doc: DTCGDocument = {
+    const doc: DtcgDocument = {
       ease: {
         $value: [0.42, 0, 0.58, 1],
         $type: "cubicBezier",
       },
     };
-    const tokens = parseDTCG(doc);
+    const tokens = parseDtcg(doc);
     expect(tokens[0]!.value).toBeInstanceOf(CubicBezier);
     expect(tokens[0]!.value.x1).toBe(0.42);
     expect(tokens[0]!.value.y1).toBe(0);
@@ -156,88 +156,88 @@ describe("parseDTCG", () => {
   });
 
   test("number type is preserved", () => {
-    const doc: DTCGDocument = {
+    const doc: DtcgDocument = {
       opacity: {
         $value: 0.5,
         $type: "number",
       },
     };
-    const tokens = parseDTCG(doc);
+    const tokens = parseDtcg(doc);
     expect(tokens[0]!.value).toBe(0.5);
     expect(tokens[0]!.type).toBe("number");
   });
 
   test("fontFamily string is preserved", () => {
-    const doc: DTCGDocument = {
+    const doc: DtcgDocument = {
       body: {
         $value: "Arial",
         $type: "fontFamily",
       },
     };
-    const tokens = parseDTCG(doc);
+    const tokens = parseDtcg(doc);
     expect(tokens[0]!.value).toBe("Arial");
     expect(tokens[0]!.type).toBe("font-family");
   });
 
   test("fontFamily array is joined", () => {
-    const doc: DTCGDocument = {
+    const doc: DtcgDocument = {
       body: {
         $value: ["Roboto", "Arial", "sans-serif"],
         $type: "fontFamily",
       },
     };
-    const tokens = parseDTCG(doc);
+    const tokens = parseDtcg(doc);
     expect(tokens[0]!.value).toBe("Roboto, Arial, sans-serif");
   });
 
   test("fontWeight is preserved", () => {
-    const doc: DTCGDocument = {
+    const doc: DtcgDocument = {
       bold: {
         $value: 700,
         $type: "fontWeight",
       },
     };
-    const tokens = parseDTCG(doc);
+    const tokens = parseDtcg(doc);
     expect(tokens[0]!.value).toBe(700);
     expect(tokens[0]!.type).toBe("font-weight");
   });
 
   test("strokeStyle string is preserved", () => {
-    const doc: DTCGDocument = {
+    const doc: DtcgDocument = {
       border: {
         $value: "dashed",
         $type: "strokeStyle",
       },
     };
-    const tokens = parseDTCG(doc);
+    const tokens = parseDtcg(doc);
     expect(tokens[0]!.value).toBe("dashed");
   });
 
   test("strokeStyle object is preserved", () => {
-    const doc: DTCGDocument = {
+    const doc: DtcgDocument = {
       border: {
         $value: { dashArray: [2, 4], lineCap: "round" },
         $type: "strokeStyle",
       },
     };
-    const tokens = parseDTCG(doc);
+    const tokens = parseDtcg(doc);
     expect(tokens[0]!.value).toEqual({ dashArray: [2, 4], lineCap: "round" });
   });
 
   test("fontStyle is preserved", () => {
-    const doc: DTCGDocument = {
+    const doc: DtcgDocument = {
       italic: {
         $value: "italic",
         $type: "fontStyle",
       },
     };
-    const tokens = parseDTCG(doc);
+    const tokens = parseDtcg(doc);
     expect(tokens[0]!.value).toBe("italic");
     expect(tokens[0]!.type).toBe("font-style");
   });
 
   test("shadow composite values are converted to BoxShadow", () => {
-    const doc: DTCGDocument = {
+    const doc: DtcgDocument = {
       elevation: {
         $value: {
           color: { colorSpace: "srgb", components: [0, 0, 0], alpha: 0.25 },
@@ -249,14 +249,14 @@ describe("parseDTCG", () => {
         $type: "shadow",
       },
     };
-    const tokens = parseDTCG(doc);
+    const tokens = parseDtcg(doc);
     expect(tokens[0]!.value).toBeInstanceOf(BoxShadow);
     expect(tokens[0]!.value.offsetY).toBe(4);
     expect(tokens[0]!.value.blur).toBe(8);
   });
 
   test("gradient values are converted to LinearGradient", () => {
-    const doc: DTCGDocument = {
+    const doc: DtcgDocument = {
       bg: {
         $value: [
           { color: { colorSpace: "srgb", components: [1, 0, 0] }, position: 0 },
@@ -265,13 +265,13 @@ describe("parseDTCG", () => {
         $type: "gradient",
       },
     };
-    const tokens = parseDTCG(doc);
+    const tokens = parseDtcg(doc);
     expect(tokens[0]!.value).toBeInstanceOf(LinearGradient);
     expect(tokens[0]!.value.stops).toHaveLength(2);
   });
 
   test("border composite is converted to an object", () => {
-    const doc: DTCGDocument = {
+    const doc: DtcgDocument = {
       divider: {
         $value: {
           color: { colorSpace: "srgb", components: [0, 0, 0] },
@@ -281,7 +281,7 @@ describe("parseDTCG", () => {
         $type: "border",
       },
     };
-    const tokens = parseDTCG(doc);
+    const tokens = parseDtcg(doc);
     expect(tokens[0]!.value.color).toBeInstanceOf(Color);
     expect(tokens[0]!.value.width).toBeInstanceOf(Dimension);
     expect(tokens[0]!.value.width.toString()).toBe("1px");
@@ -289,7 +289,7 @@ describe("parseDTCG", () => {
   });
 
   test("transition composite is converted to an object", () => {
-    const doc: DTCGDocument = {
+    const doc: DtcgDocument = {
       fade: {
         $value: {
           duration: { value: 200, unit: "ms" },
@@ -299,7 +299,7 @@ describe("parseDTCG", () => {
         $type: "transition",
       },
     };
-    const tokens = parseDTCG(doc);
+    const tokens = parseDtcg(doc);
     expect(tokens[0]!.value.duration).toBeInstanceOf(Duration);
     expect(tokens[0]!.value.duration.toString()).toBe("200ms");
     expect(tokens[0]!.value.timingFunction).toBeInstanceOf(CubicBezier);
@@ -308,7 +308,7 @@ describe("parseDTCG", () => {
   });
 
   test("typography composite is converted", () => {
-    const doc: DTCGDocument = {
+    const doc: DtcgDocument = {
       heading: {
         $value: {
           fontFamily: ["Inter", "sans-serif"],
@@ -319,7 +319,7 @@ describe("parseDTCG", () => {
         $type: "typography",
       },
     };
-    const tokens = parseDTCG(doc);
+    const tokens = parseDtcg(doc);
     expect(tokens[0]!.value.fontSize).toBeInstanceOf(Dimension);
     expect(tokens[0]!.value.fontSize.toString()).toBe("24px");
     expect(tokens[0]!.value.fontWeight).toBe(700);
@@ -327,7 +327,7 @@ describe("parseDTCG", () => {
   });
 
   test("alias references are preserved", () => {
-    const doc: DTCGDocument = {
+    const doc: DtcgDocument = {
       color: {
         $type: "color",
         primary: {
@@ -338,25 +338,25 @@ describe("parseDTCG", () => {
         },
       },
     };
-    const tokens = parseDTCG(doc);
+    const tokens = parseDtcg(doc);
     const action = tokens.find((t) => t.name === "color.action");
     expect(action!.value).toBe("{color.primary}");
   });
 
   test("$description maps to usage", () => {
-    const doc: DTCGDocument = {
+    const doc: DtcgDocument = {
       primary: {
         $value: { colorSpace: "srgb", components: [1, 0, 0] },
         $type: "color",
         $description: "The primary brand color",
       },
     };
-    const tokens = parseDTCG(doc);
+    const tokens = parseDtcg(doc);
     expect(tokens[0]!.usage).toBe("The primary brand color");
   });
 
   test("$deprecated boolean is included in usage", () => {
-    const doc: DTCGDocument = {
+    const doc: DtcgDocument = {
       old: {
         $value: { colorSpace: "srgb", components: [1, 0, 0] },
         $type: "color",
@@ -364,35 +364,35 @@ describe("parseDTCG", () => {
         $description: "Use primary instead",
       },
     };
-    const tokens = parseDTCG(doc);
+    const tokens = parseDtcg(doc);
     expect(tokens[0]!.usage).toBe("[DEPRECATED] Use primary instead");
   });
 
   test("$deprecated string is included in usage", () => {
-    const doc: DTCGDocument = {
+    const doc: DtcgDocument = {
       old: {
         $value: { colorSpace: "srgb", components: [1, 0, 0] },
         $type: "color",
         $deprecated: "Removed in v3",
       },
     };
-    const tokens = parseDTCG(doc);
+    const tokens = parseDtcg(doc);
     expect(tokens[0]!.usage).toBe("[Removed in v3]");
   });
 
-  test("mapTypes: false preserves DTCG type names", () => {
-    const doc: DTCGDocument = {
+  test("mapTypes: false preserves Dtcg type names", () => {
+    const doc: DtcgDocument = {
       ease: {
         $value: [0.42, 0, 0.58, 1],
         $type: "cubicBezier",
       },
     };
-    const tokens = parseDTCG(doc, { mapTypes: false });
+    const tokens = parseDtcg(doc, { mapTypes: false });
     expect(tokens[0]!.type).toBe("cubicBezier");
   });
 
   test("empty document returns empty array", () => {
-    expect(parseDTCG({})).toEqual([]);
+    expect(parseDtcg({})).toEqual([]);
   });
 
   test("ignores non-object children", () => {
@@ -402,8 +402,8 @@ describe("parseDTCG", () => {
         $value: { colorSpace: "srgb", components: [1, 0, 0] },
         $type: "color",
       },
-    } as DTCGDocument;
-    const tokens = parseDTCG(doc);
+    } as DtcgDocument;
+    const tokens = parseDtcg(doc);
     expect(tokens).toHaveLength(1);
   });
 });

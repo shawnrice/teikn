@@ -10,7 +10,7 @@ const Writer = new Teikn({
     // Create the tokens.scss with the SCSS maps and the getter
     new Teikn.generators.Scss(),
     // Create a JS version of tokens. It defaults to `.mjs`, but, we can change it to `.js` here
-    new Teikn.generators.ESModule({ ext: 'js' }),
+    new Teikn.generators.EsModule({ ext: 'js' }),
     // Create the TypeScript types
     new Teikn.generators.TypeScript(),
     // Create a JSON version of the tokens
@@ -24,7 +24,7 @@ const Writer = new Teikn({
     // will become `colorPrimary` (or `color-primary`)
     new Teikn.plugins.PrefixTypePlugin(),
     // This one is necessary if you're using font families
-    new Teikn.plugins.SCSSQuoteValuePlugin(),
+    new Teikn.plugins.ScssQuoteValuePlugin(),
   ],
   // Output all the tokens to ./lib
   outDir: `${__dirname}/lib/tokens`,

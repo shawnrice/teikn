@@ -26,7 +26,7 @@ import {
   isZLayerType,
 } from "../type-classifiers";
 import { getDate } from "../utils";
-import { ESModule } from "./ESModule";
+import { EsModule } from "./EsModule";
 import type { GeneratorInfo, GeneratorOptions } from "./Generator";
 import { Generator } from "./Generator";
 import { JavaScript } from "./JavaScript";
@@ -207,7 +207,7 @@ export class Storybook extends Generator<StorybookOpts> {
     if (this.options.importPath) {
       return this.options.importPath;
     }
-    const sibling = this.siblings.find((g) => g instanceof ESModule || g instanceof JavaScript);
+    const sibling = this.siblings.find((g) => g instanceof EsModule || g instanceof JavaScript);
     return sibling ? `./${sibling.file.replace(/\.[^.]+$/, "")}` : "./tokens";
   }
 

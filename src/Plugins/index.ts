@@ -2,7 +2,7 @@ export { Plugin, sortPlugins } from "./Plugin.js";
 export type { AuditIssue } from "./Plugin.js";
 export { ColorTransformPlugin } from "./ColorTransformPlugin.js";
 export { PrefixTypePlugin } from "./PrefixTypePlugin.js";
-export { SCSSQuoteValuePlugin } from "./SCSSQuoteValuePlugin.js";
+export { ScssQuoteValuePlugin } from "./ScssQuoteValuePlugin.js";
 export { StripTypePrefixPlugin } from "./StripTypePrefixPlugin.js";
 export { RemUnitPlugin } from "./RemUnitPlugin.js";
 export { AlphaMultiplyPlugin } from "./AlphaMultiplyPlugin.js";

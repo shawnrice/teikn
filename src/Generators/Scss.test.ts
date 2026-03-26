@@ -3,11 +3,11 @@ import { describe, expect, test } from "bun:test";
 import { tokenSet1 } from "../fixtures/tokenSet1";
 import { ColorTransformPlugin } from "../Plugins/ColorTransformPlugin";
 import { PrefixTypePlugin } from "../Plugins/PrefixTypePlugin";
-import { SCSSQuoteValuePlugin } from "../Plugins/SCSSQuoteValuePlugin";
+import { ScssQuoteValuePlugin } from "../Plugins/ScssQuoteValuePlugin";
 import type { Token } from "../Token";
 import { Scss as Generator } from "./Scss";
 
-describe("SCSSGenerator tests", () => {
+describe("Scss Generator tests", () => {
   test("It has the correct filename", () => {
     expect(new Generator().file).toBe("tokens.scss");
   });
@@ -16,7 +16,7 @@ describe("SCSSGenerator tests", () => {
     expect(
       new Generator({ dateFn: () => "null", version: "test" }).generate(tokenSet1, [
         new ColorTransformPlugin({ type: "rgba" }),
-        new SCSSQuoteValuePlugin(),
+        new ScssQuoteValuePlugin(),
         new PrefixTypePlugin(),
       ]),
     ).toMatchSnapshot();
@@ -37,7 +37,7 @@ describe("SCSSGenerator tests", () => {
     expect(
       new Generator({ dateFn: () => "null", version: "test", groups: true }).generate(tokenSet1, [
         new ColorTransformPlugin({ type: "rgba" }),
-        new SCSSQuoteValuePlugin(),
+        new ScssQuoteValuePlugin(),
         new PrefixTypePlugin(),
       ]),
     ).toMatchSnapshot();

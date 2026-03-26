@@ -6,7 +6,7 @@ import { Plugin } from "./Plugin";
  *
  * This is needed for things like font-families to get the right values
  */
-export class SCSSQuoteValuePlugin extends Plugin {
+export class ScssQuoteValuePlugin extends Plugin {
   outputType: RegExp = /s(a|c)ss/;
 
   tokenType: RegExp = /^(font|font-family)$/;

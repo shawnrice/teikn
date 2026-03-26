@@ -1,4 +1,4 @@
-import { serializeDTCG } from "../dtcg";
+import { serializeDtcg } from "../dtcg";
 import type { Plugin } from "../Plugins";
 import type { Token } from "../Token";
 import { matches } from "../utils";
@@ -9,22 +9,22 @@ const defaultOptions = {
   ext: "tokens.json",
 };
 
-export type DTCGOpts = {
+export type DtcgOpts = {
   /** Use hierarchical grouping based on token names. Default: true */
   hierarchical?: boolean;
   /** Separator for reconstructing groups. Default: '.' */
   separator?: string;
 } & GeneratorOptions;
 
-export class DTCGGenerator extends Generator<DTCGOpts> {
+export class DtcgGenerator extends Generator<DtcgOpts> {
   constructor(options = {}) {
     super(Object.assign({}, defaultOptions, options));
   }
 
   override describe(): GeneratorInfo {
     return {
-      format: "DTCG",
-      usage: `// W3C Design Token Community Group format\n// Import into Style Dictionary, Tokens Studio, or other DTCG-compatible tools`,
+      format: "Dtcg",
+      usage: `// W3C Design Token Community Group format\n// Import into Style Dictionary, Tokens Studio, or other Dtcg-compatible tools`,
     };
   }
 
@@ -53,7 +53,7 @@ export class DTCGGenerator extends Generator<DTCGOpts> {
   }
 
   combinator(tokens: Token[]): string {
-    const doc = serializeDTCG(tokens, {
+    const doc = serializeDtcg(tokens, {
       hierarchical: this.options.hierarchical ?? true,
       separator: this.options.separator ?? ".",
     });

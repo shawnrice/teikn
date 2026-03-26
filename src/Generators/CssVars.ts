@@ -23,20 +23,20 @@ const defaultOptions = {
   dateFn: getDate,
 };
 
-export type CSSVarsOpts = {
+export type CssVarsOpts = {
   nameTransformer?: (name: string) => string;
   dateFn?: () => string | null;
   useMediaQuery?: boolean;
   modeSelectors?: Record<string, string>;
 } & GeneratorOptions;
 
-export class CSSVars extends Generator<CSSVarsOpts> {
+export class CssVars extends Generator<CssVarsOpts> {
   constructor(options = {}) {
     const opts = Object.assign({}, defaultOptions, options);
     super(opts);
     if (this.options.groups) {
       throw new Error(
-        "CSSVars does not support the `groups` option — CSS has no function syntax. Use Scss or ScssVars for grouped accessors.",
+        "CssVars does not support the `groups` option — CSS has no function syntax. Use Scss or ScssVars for grouped accessors.",
       );
     }
   }

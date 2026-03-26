@@ -55,7 +55,7 @@ const help = () => {
   console.log(
     "*",
     caller.join(" "),
-    'path/to/tokens.ts --outDir=path/to/out --generators="Scss,Json,ESModule,CSSVars,HTML" --plugins="PrefixToken,ColorTransform,SCSSQuoteValue"',
+    'path/to/tokens.ts --outDir=path/to/out --generators="Scss,Json,EsModule,CssVars,Html" --plugins="PrefixTypePlugin,ColorTransformPlugin,ScssQuoteValuePlugin"',
   );
   console.log();
 
@@ -153,7 +153,7 @@ const usage = () => {
   console.log(
     "Usage:",
     caller.join(" "),
-    'path/to/tokens.ts --outDir=path/to/out --generators="Scss,Json,ESModule" --plugins="PrefixToken,ColorTransform,SCSSQuoteValue"',
+    'path/to/tokens.ts --outDir=path/to/out --generators="Scss,Json,EsModule" --plugins="PrefixTypePlugin,ColorTransformPlugin,ScssQuoteValuePlugin"',
   );
   process.exit(2);
 };
@@ -254,7 +254,7 @@ const getPlugins = () => {
 
   return plugins.length
     ? plugins
-    : [Teikn.plugins.ColorTransformPlugin, Teikn.plugins.SCSSQuoteValuePlugin];
+    : [Teikn.plugins.ColorTransformPlugin, Teikn.plugins.ScssQuoteValuePlugin];
 };
 
 const dryRun = (writer: Teikn, tokens: any) => {

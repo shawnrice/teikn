@@ -2,9 +2,9 @@ import { describe, expect, test } from "bun:test";
 
 import { tokenSet1 } from "../fixtures/tokenSet1";
 import type { Token } from "../Token";
-import { ESModule as Generator } from "./ESModule";
+import { EsModule as Generator } from "./EsModule";
 
-describe("ESModule tests", () => {
+describe("EsModule tests", () => {
   test("it generates tokens as an esmodule", () => {
     expect(
       new Generator({ dateFn: () => "null", version: "test" }).generate(tokenSet1),

@@ -1,6 +1,6 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`DTCGGenerator snapshot test with standard token set 1`] = `
+exports[`DtcgGenerator tests snapshot test with standard token set 1`] = `
 "{
   "color": {
     "primary": {

@@ -6,13 +6,13 @@ import { Color } from "../TokenTypes/Color";
 import { CubicBezier } from "../TokenTypes/CubicBezier";
 import { LinearGradient } from "../TokenTypes/Gradient";
 import { Transition } from "../TokenTypes/Transition";
-import { parseDTCG } from "./parse";
-import { serializeDTCG } from "./serialize";
+import { parseDtcg } from "./parse";
+import { serializeDtcg } from "./serialize";
 
-describe("serializeDTCG", () => {
+describe("serializeDtcg", () => {
   test("serializes a simple color token", () => {
     const tokens: Token[] = [{ name: "primary", value: new Color(255, 0, 0), type: "color" }];
-    const doc = serializeDTCG(tokens);
+    const doc = serializeDtcg(tokens);
     const primary = doc.primary as any;
     expect(primary.$value).toEqual({
       colorSpace: "srgb",
@@ -25,7 +25,7 @@ describe("serializeDTCG", () => {
     const tokens: Token[] = [
       { name: "overlay", value: new Color(0, 0, 0).setAlpha(0.5), type: "color" },
     ];
-    const doc = serializeDTCG(tokens);
+    const doc = serializeDtcg(tokens);
     const overlay = doc.overlay as any;
     expect(overlay.$value.alpha).toBe(0.5);
   });
@@ -34,24 +34,24 @@ describe("serializeDTCG", () => {
     const tokens: Token[] = [
       { name: "ease", value: new CubicBezier(0.42, 0, 0.58, 1), type: "timing" },
     ];
-    const doc = serializeDTCG(tokens);
+    const doc = serializeDtcg(tokens);
     const ease = doc.ease as any;
     expect(ease.$value).toEqual([0.42, 0, 0.58, 1]);
     expect(ease.$type).toBe("cubicBezier");
   });
 
-  test("serializes BoxShadow to DTCG shadow", () => {
+  test("serializes BoxShadow to Dtcg shadow", () => {
     const tokens: Token[] = [
       { name: "shadow", value: new BoxShadow(0, 4, 8, 0, new Color(0, 0, 0)), type: "shadow" },
     ];
-    const doc = serializeDTCG(tokens);
+    const doc = serializeDtcg(tokens);
     const shadow = doc.shadow as any;
     expect(shadow.$value.offsetY).toEqual({ value: 4, unit: "px" });
     expect(shadow.$value.blur).toEqual({ value: 8, unit: "px" });
     expect(shadow.$value.color.colorSpace).toBe("srgb");
   });
 
-  test("serializes LinearGradient to DTCG gradient stops", () => {
+  test("serializes LinearGradient to Dtcg gradient stops", () => {
     const tokens: Token[] = [
       {
         name: "bg",
@@ -62,7 +62,7 @@ describe("serializeDTCG", () => {
         type: "gradient",
       },
     ];
-    const doc = serializeDTCG(tokens);
+    const doc = serializeDtcg(tokens);
     const bg = doc.bg as any;
     expect(bg.$value).toHaveLength(2);
     expect(bg.$value[0].position).toBe(0);
@@ -74,7 +74,7 @@ describe("serializeDTCG", () => {
       { name: "color.primary", value: new Color(255, 0, 0), type: "color" },
       { name: "color.secondary", value: new Color(0, 0, 255), type: "color" },
     ];
-    const doc = serializeDTCG(tokens, { hierarchical: true });
+    const doc = serializeDtcg(tokens, { hierarchical: true });
     const color = doc.color as any;
     expect(color).toBeDefined();
     expect(color.$type).toBe("color");
@@ -89,7 +89,7 @@ describe("serializeDTCG", () => {
       { name: "color.primary", value: new Color(255, 0, 0), type: "color" },
       { name: "color.secondary", value: new Color(0, 0, 255), type: "color" },
     ];
-    const doc = serializeDTCG(tokens, { hierarchical: false });
+    const doc = serializeDtcg(tokens, { hierarchical: false });
     expect(doc["color.primary"]).toBeDefined();
     expect(doc["color.secondary"]).toBeDefined();
     expect(doc.color).toBeUndefined();
@@ -99,13 +99,13 @@ describe("serializeDTCG", () => {
     const tokens: Token[] = [
       { name: "primary", value: new Color(255, 0, 0), type: "color", usage: "Brand color" },
     ];
-    const doc = serializeDTCG(tokens);
+    const doc = serializeDtcg(tokens);
     expect((doc.primary as any).$description).toBe("Brand color");
   });
 
-  test("maps teikn type names to DTCG", () => {
+  test("maps teikn type names to Dtcg", () => {
     const tokens: Token[] = [{ name: "sm", value: "8px", type: "spacing" }];
-    const doc = serializeDTCG(tokens);
+    const doc = serializeDtcg(tokens);
     const sm = doc.sm as any;
     expect(sm.$type).toBe("dimension");
     expect(sm.$value).toEqual({ value: 8, unit: "px" });
@@ -113,26 +113,26 @@ describe("serializeDTCG", () => {
 
   test("maps font-family to fontFamily", () => {
     const tokens: Token[] = [{ name: "body", value: "Arial, sans-serif", type: "font-family" }];
-    const doc = serializeDTCG(tokens);
+    const doc = serializeDtcg(tokens);
     expect((doc.body as any).$type).toBe("fontFamily");
   });
 
   test("maps font-weight to fontWeight", () => {
     const tokens: Token[] = [{ name: "bold", value: 700, type: "font-weight" }];
-    const doc = serializeDTCG(tokens);
+    const doc = serializeDtcg(tokens);
     expect((doc.bold as any).$type).toBe("fontWeight");
     expect((doc.bold as any).$value).toBe(700);
   });
 
   test("serializes string dimension values", () => {
     const tokens: Token[] = [{ name: "gap", value: "1rem", type: "spacing" }];
-    const doc = serializeDTCG(tokens);
+    const doc = serializeDtcg(tokens);
     expect((doc.gap as any).$value).toEqual({ value: 1, unit: "rem" });
   });
 
   test("serializes number values", () => {
     const tokens: Token[] = [{ name: "opacity", value: 0.5, type: "opacity" }];
-    const doc = serializeDTCG(tokens);
+    const doc = serializeDtcg(tokens);
     expect((doc.opacity as any).$value).toBe(0.5);
     expect((doc.opacity as any).$type).toBe("number");
   });
@@ -157,8 +157,8 @@ describe("serializeDTCG", () => {
       },
     };
 
-    const tokens = parseDTCG(original);
-    const result = serializeDTCG(tokens);
+    const tokens = parseDtcg(original);
+    const result = serializeDtcg(tokens);
 
     // Color group should be reconstructed
     const colorGroup = result.color as any;
@@ -178,7 +178,7 @@ describe("serializeDTCG", () => {
       { name: "theme.primary", value: new Color(255, 0, 0), type: "color" },
       { name: "theme.spacing", value: "8px", type: "spacing" },
     ];
-    const doc = serializeDTCG(tokens, { hierarchical: true });
+    const doc = serializeDtcg(tokens, { hierarchical: true });
     const theme = doc.theme as any;
     // Different types → no hoisting
     expect(theme.$type).toBeUndefined();
@@ -186,7 +186,7 @@ describe("serializeDTCG", () => {
     expect(theme.spacing.$type).toBe("dimension");
   });
 
-  test("serializes Transition to DTCG transition composite", () => {
+  test("serializes Transition to Dtcg transition composite", () => {
     const tokens: Token[] = [
       {
         name: "fade",
@@ -194,7 +194,7 @@ describe("serializeDTCG", () => {
         type: "transition",
       },
     ];
-    const doc = serializeDTCG(tokens);
+    const doc = serializeDtcg(tokens);
     const fade = doc.fade as any;
     expect(fade.$type).toBe("transition");
     expect(fade.$value.duration).toEqual({ value: 300, unit: "ms" });
@@ -209,7 +209,7 @@ describe("serializeDTCG", () => {
         type: "transition",
       },
     ];
-    const doc = serializeDTCG(tokens);
+    const doc = serializeDtcg(tokens);
     const slide = doc.slide as any;
     expect(slide.$value.delay).toEqual({ value: 0.1, unit: "s" });
     expect(slide.$value.property).toBe("transform");
@@ -224,7 +224,7 @@ describe("serializeDTCG", () => {
         modes: { dark: new Color(26, 26, 26) },
       },
     ];
-    const doc = serializeDTCG(tokens);
+    const doc = serializeDtcg(tokens);
     const surface = doc.surface as any;
     expect(surface.$extensions).toBeDefined();
     expect(surface.$extensions.mode).toBeDefined();
@@ -240,11 +240,11 @@ describe("serializeDTCG", () => {
 
   test("does not include $extensions when token has no modes", () => {
     const tokens: Token[] = [{ name: "primary", value: new Color(255, 0, 0), type: "color" }];
-    const doc = serializeDTCG(tokens);
+    const doc = serializeDtcg(tokens);
     expect((doc.primary as any).$extensions).toBeUndefined();
   });
 
-  test("mode values go through teiknValueToDTCG conversion", () => {
+  test("mode values go through teiknValueToDtcg conversion", () => {
     const tokens: Token[] = [
       {
         name: "gap",
@@ -253,7 +253,7 @@ describe("serializeDTCG", () => {
         modes: { compact: "8px" },
       },
     ];
-    const doc = serializeDTCG(tokens);
+    const doc = serializeDtcg(tokens);
     const gap = doc.gap as any;
     expect(gap.$extensions.mode.compact).toEqual({ value: 8, unit: "px" });
   });

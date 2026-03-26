@@ -1,105 +1,105 @@
-// DTCG value types per the W3C spec
-export type DTCGColorValue = {
+// Dtcg value types per the W3C spec
+export type DtcgColorValue = {
   colorSpace: string;
   components: [number, number, number];
   alpha?: number;
 };
 
-export type DTCGDimensionValue = {
+export type DtcgDimensionValue = {
   value: number;
   unit: "px" | "rem";
 };
 
-export type DTCGDurationValue = {
+export type DtcgDurationValue = {
   value: number;
   unit: "ms" | "s";
 };
 
-export type DTCGStrokeStyleValue =
+export type DtcgStrokeStyleValue =
   | string
   | {
       dashArray: number[];
       lineCap: "butt" | "round" | "square";
     };
 
-export type DTCGCubicBezierValue = [number, number, number, number];
+export type DtcgCubicBezierValue = [number, number, number, number];
 
-export type DTCGGradientStop = {
-  color: DTCGColorValue;
+export type DtcgGradientStop = {
+  color: DtcgColorValue;
   position: number;
 };
 
 // Composite types
-export type DTCGBorderValue = {
-  color: DTCGColorValue | string;
-  width: DTCGDimensionValue | string;
-  style: DTCGStrokeStyleValue | string;
+export type DtcgBorderValue = {
+  color: DtcgColorValue | string;
+  width: DtcgDimensionValue | string;
+  style: DtcgStrokeStyleValue | string;
 };
 
-export type DTCGTransitionValue = {
-  duration: DTCGDurationValue | string;
-  timingFunction: DTCGCubicBezierValue | string;
-  delay?: DTCGDurationValue | string;
+export type DtcgTransitionValue = {
+  duration: DtcgDurationValue | string;
+  timingFunction: DtcgCubicBezierValue | string;
+  delay?: DtcgDurationValue | string;
 };
 
-export type DTCGShadowValue = {
-  color: DTCGColorValue | string;
-  offsetX: DTCGDimensionValue | string;
-  offsetY: DTCGDimensionValue | string;
-  blur: DTCGDimensionValue | string;
-  spread: DTCGDimensionValue | string;
+export type DtcgShadowValue = {
+  color: DtcgColorValue | string;
+  offsetX: DtcgDimensionValue | string;
+  offsetY: DtcgDimensionValue | string;
+  blur: DtcgDimensionValue | string;
+  spread: DtcgDimensionValue | string;
 };
 
-export type DTCGTypographyValue = {
+export type DtcgTypographyValue = {
   fontFamily: string | string[];
-  fontSize: DTCGDimensionValue | string;
+  fontSize: DtcgDimensionValue | string;
   fontWeight: number | string;
   lineHeight?: number | string;
-  letterSpacing?: DTCGDimensionValue | string;
+  letterSpacing?: DtcgDimensionValue | string;
   [key: string]: unknown;
 };
 
-export type DTCGGradientValue = DTCGGradientStop[];
+export type DtcgGradientValue = DtcgGradientStop[];
 
-// Any DTCG value
-export type DTCGValue =
-  | DTCGColorValue
-  | DTCGDimensionValue
-  | DTCGDurationValue
-  | DTCGStrokeStyleValue
-  | DTCGCubicBezierValue
-  | DTCGBorderValue
-  | DTCGTransitionValue
-  | DTCGShadowValue
-  | DTCGTypographyValue
-  | DTCGGradientValue
+// Any Dtcg value
+export type DtcgValue =
+  | DtcgColorValue
+  | DtcgDimensionValue
+  | DtcgDurationValue
+  | DtcgStrokeStyleValue
+  | DtcgCubicBezierValue
+  | DtcgBorderValue
+  | DtcgTransitionValue
+  | DtcgShadowValue
+  | DtcgTypographyValue
+  | DtcgGradientValue
   | number
   | string
   | string[];
 
 // Document structure
-export type DTCGToken = {
-  $value: DTCGValue | string;
+export type DtcgToken = {
+  $value: DtcgValue | string;
   $type?: string;
   $description?: string;
   $deprecated?: boolean | string;
   $extensions?: Record<string, unknown>;
 };
 
-export type DTCGGroup = {
+export type DtcgGroup = {
   $type?: string;
   $description?: string;
   $extensions?: Record<string, unknown>;
-  [key: string]: DTCGGroup | DTCGToken | string | boolean | Record<string, unknown> | undefined;
+  [key: string]: DtcgGroup | DtcgToken | string | boolean | Record<string, unknown> | undefined;
 };
 
-export type DTCGDocument = Record<
+export type DtcgDocument = Record<
   string,
-  DTCGGroup | DTCGToken | string | boolean | Record<string, unknown> | undefined
+  DtcgGroup | DtcgToken | string | boolean | Record<string, unknown> | undefined
 >;
 
-// Type name constants matching the DTCG spec
-export const DTCG_TYPES = {
+// Type name constants matching the Dtcg spec
+export const DtcgTypes = {
   color: "color",
   dimension: "dimension",
   fontFamily: "fontFamily",
@@ -116,4 +116,4 @@ export const DTCG_TYPES = {
   fontStyle: "fontStyle",
 } as const;
 
-export type DTCGTypeName = (typeof DTCG_TYPES)[keyof typeof DTCG_TYPES];
+export type DtcgTypeName = (typeof DtcgTypes)[keyof typeof DtcgTypes];

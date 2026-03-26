@@ -7,32 +7,32 @@ import { Dimension } from "../TokenTypes/Dimension";
 import { Duration } from "../TokenTypes/Duration";
 import { LinearGradient, RadialGradient } from "../TokenTypes/Gradient";
 import { Transition } from "../TokenTypes/Transition";
-import { dtcgTypeToTeikn, dtcgValueToTeikn, teiknTypeToDTCG, teiknValueToDTCG } from "./values";
+import { dtcgTypeToTeikn, dtcgValueToTeikn, teiknTypeToDtcg, teiknValueToDtcg } from "./values";
 
-describe("teiknValueToDTCG", () => {
-  test("Color instance converts to structured DTCG color", () => {
-    const result = teiknValueToDTCG(new Color(255, 0, 0), "color");
+describe("teiknValueToDtcg", () => {
+  test("Color instance converts to structured Dtcg color", () => {
+    const result = teiknValueToDtcg(new Color(255, 0, 0), "color");
     expect(result).toEqual({ colorSpace: "srgb", components: [1, 0, 0] });
   });
 
   test("Color with alpha !== 1 includes alpha field", () => {
-    const result = teiknValueToDTCG(Color.fromRGB(255, 0, 0, 0.5), "color");
+    const result = teiknValueToDtcg(Color.fromRGB(255, 0, 0, 0.5), "color");
     expect(result).toEqual({ colorSpace: "srgb", components: [1, 0, 0], alpha: 0.5 });
   });
 
   test("color string converts via string recovery fallback", () => {
-    const result = teiknValueToDTCG("steelblue", "color") as any;
+    const result = teiknValueToDtcg("steelblue", "color") as any;
     expect(result.colorSpace).toBe("srgb");
     expect(result.components).toHaveLength(3);
   });
 
   test("CubicBezier converts to 4-element array", () => {
-    const result = teiknValueToDTCG(new CubicBezier(0.4, 0, 0.2, 1), "timing");
+    const result = teiknValueToDtcg(new CubicBezier(0.4, 0, 0.2, 1), "timing");
     expect(result).toEqual([0.4, 0, 0.2, 1]);
   });
 
   test("BoxShadow converts to structured shadow", () => {
-    const result = teiknValueToDTCG(new BoxShadow(0, 2, 8, 0, new Color(0, 0, 0)), "shadow") as any;
+    const result = teiknValueToDtcg(new BoxShadow(0, 2, 8, 0, new Color(0, 0, 0)), "shadow") as any;
     expect(result.offsetX).toEqual({ value: 0, unit: "px" });
     expect(result.offsetY).toEqual({ value: 2, unit: "px" });
     expect(result.blur).toEqual({ value: 8, unit: "px" });
@@ -45,7 +45,7 @@ describe("teiknValueToDTCG", () => {
       [new Color(255, 0, 0), "0%"],
       [new Color(0, 0, 255), "100%"],
     ]);
-    const result = teiknValueToDTCG(lg, "gradient") as any[];
+    const result = teiknValueToDtcg(lg, "gradient") as any[];
     expect(result).toHaveLength(2);
     expect(result[0].color.components).toEqual([1, 0, 0]);
     expect(result[0].position).toBe(0);
@@ -58,58 +58,58 @@ describe("teiknValueToDTCG", () => {
       [new Color(255, 0, 0), "0%"],
       [new Color(0, 255, 0), "50%"],
     ]);
-    const result = teiknValueToDTCG(rg, "gradient") as any[];
+    const result = teiknValueToDtcg(rg, "gradient") as any[];
     expect(result).toHaveLength(2);
     expect(result[0].position).toBe(0);
     expect(result[1].position).toBe(0.5);
   });
 
   test("string dimension like 16px converts to structured dimension", () => {
-    const result = teiknValueToDTCG("16px", "spacing");
+    const result = teiknValueToDtcg("16px", "spacing");
     expect(result).toEqual({ value: 16, unit: "px" });
   });
 
   test("string dimension like 1rem converts to structured dimension", () => {
-    const result = teiknValueToDTCG("1rem", "font-size");
+    const result = teiknValueToDtcg("1rem", "font-size");
     expect(result).toEqual({ value: 1, unit: "rem" });
   });
 
   test("duration string 0.2s converts to structured duration", () => {
-    const result = teiknValueToDTCG("0.2s", "duration");
+    const result = teiknValueToDtcg("0.2s", "duration");
     expect(result).toEqual({ value: 0.2, unit: "s" });
   });
 
   test("duration string 200ms converts to structured duration", () => {
-    const result = teiknValueToDTCG("200ms", "duration");
+    const result = teiknValueToDtcg("200ms", "duration");
     expect(result).toEqual({ value: 200, unit: "ms" });
   });
 
   test("Dimension instance converts to structured dimension", () => {
-    const result = teiknValueToDTCG(new Dimension(16, "px"), "spacing");
+    const result = teiknValueToDtcg(new Dimension(16, "px"), "spacing");
     expect(result).toEqual({ value: 16, unit: "px" });
   });
 
   test("Duration instance converts to structured duration", () => {
-    const result = teiknValueToDTCG(new Duration(200, "ms"), "duration");
+    const result = teiknValueToDtcg(new Duration(200, "ms"), "duration");
     expect(result).toEqual({ value: 200, unit: "ms" });
   });
 
   test("number values pass through", () => {
-    expect(teiknValueToDTCG(42, "opacity")).toBe(42);
+    expect(teiknValueToDtcg(42, "opacity")).toBe(42);
   });
 
   test("alias string passes through unchanged", () => {
-    expect(teiknValueToDTCG("{primary}", "color")).toBe("{primary}");
+    expect(teiknValueToDtcg("{primary}", "color")).toBe("{primary}");
   });
 
   test("composite object with nested Color gets color converted", () => {
-    const result = teiknValueToDTCG({ color: new Color(255, 0, 0), width: "1px" }, "border") as any;
+    const result = teiknValueToDtcg({ color: new Color(255, 0, 0), width: "1px" }, "border") as any;
     expect(result.color).toEqual({ colorSpace: "srgb", components: [1, 0, 0] });
     expect(result.width).toEqual({ value: 1, unit: "px" });
   });
 
   test("composite object with CubicBezier gets converted", () => {
-    const result = teiknValueToDTCG(
+    const result = teiknValueToDtcg(
       { timing: new CubicBezier(0.4, 0, 0.2, 1), duration: "0.3s" },
       "transition",
     ) as any;
@@ -118,7 +118,7 @@ describe("teiknValueToDTCG", () => {
   });
 
   test("composite object with BoxShadow gets converted", () => {
-    const result = teiknValueToDTCG(
+    const result = teiknValueToDtcg(
       { shadow: new BoxShadow(0, 2, 4, 0, new Color(0, 0, 0)) },
       "border",
     ) as any;
@@ -126,24 +126,24 @@ describe("teiknValueToDTCG", () => {
   });
 
   test("composite object with non-dimension string passes through", () => {
-    const result = teiknValueToDTCG({ fontFamily: "Arial", fontSize: "16px" }, "typography") as any;
+    const result = teiknValueToDtcg({ fontFamily: "Arial", fontSize: "16px" }, "typography") as any;
     expect(result.fontFamily).toBe("Arial");
     expect(result.fontSize).toEqual({ value: 16, unit: "px" });
   });
 
   test("string that is not a valid dimension passes through for dimension type", () => {
-    const result = teiknValueToDTCG("auto", "spacing");
+    const result = teiknValueToDtcg("auto", "spacing");
     expect(result).toBe("auto");
   });
 
   test("string that is not a color passes through for color type", () => {
-    const result = teiknValueToDTCG("not-a-color-zzz", "color");
+    const result = teiknValueToDtcg("not-a-color-zzz", "color");
     expect(result).toBe("not-a-color-zzz");
   });
 
-  test("Transition instance converts to DTCG transition composite", () => {
+  test("Transition instance converts to Dtcg transition composite", () => {
     const t = new Transition("300ms", new CubicBezier(0.4, 0, 0.2, 1));
-    const result = teiknValueToDTCG(t, "transition") as any;
+    const result = teiknValueToDtcg(t, "transition") as any;
     expect(result.duration).toEqual({ value: 300, unit: "ms" });
     expect(result.timingFunction).toEqual([0.4, 0, 0.2, 1]);
     expect(result.delay).toBeUndefined();
@@ -152,21 +152,21 @@ describe("teiknValueToDTCG", () => {
 
   test("Transition with delay includes delay field", () => {
     const t = new Transition("0.3s", "ease", "0.1s");
-    const result = teiknValueToDTCG(t, "transition") as any;
+    const result = teiknValueToDtcg(t, "transition") as any;
     expect(result.duration).toEqual({ value: 0.3, unit: "s" });
     expect(result.delay).toEqual({ value: 0.1, unit: "s" });
   });
 
   test("Transition with non-all property includes property field", () => {
     const t = new Transition("0.3s", "ease", "0s", "opacity");
-    const result = teiknValueToDTCG(t, "transition") as any;
+    const result = teiknValueToDtcg(t, "transition") as any;
     expect(result.property).toBe("opacity");
     expect(result.delay).toBeUndefined();
   });
 
   test("Transition with delay=0s and property=all omits both", () => {
     const t = new Transition("0.2s", "ease");
-    const result = teiknValueToDTCG(t, "transition") as any;
+    const result = teiknValueToDtcg(t, "transition") as any;
     expect(result.delay).toBeUndefined();
     expect(result.property).toBeUndefined();
   });
@@ -332,20 +332,20 @@ describe("type mapping", () => {
     expect(dtcgTypeToTeikn("unknown")).toBe("unknown");
   });
 
-  test("teiknTypeToDTCG maps spacing to dimension", () => {
-    expect(teiknTypeToDTCG("spacing")).toBe("dimension");
+  test("teiknTypeToDtcg maps spacing to dimension", () => {
+    expect(teiknTypeToDtcg("spacing")).toBe("dimension");
   });
 
-  test("teiknTypeToDTCG maps font-family to fontFamily", () => {
-    expect(teiknTypeToDTCG("font-family")).toBe("fontFamily");
+  test("teiknTypeToDtcg maps font-family to fontFamily", () => {
+    expect(teiknTypeToDtcg("font-family")).toBe("fontFamily");
   });
 
-  test("teiknTypeToDTCG maps timing to cubicBezier", () => {
-    expect(teiknTypeToDTCG("timing")).toBe("cubicBezier");
+  test("teiknTypeToDtcg maps timing to cubicBezier", () => {
+    expect(teiknTypeToDtcg("timing")).toBe("cubicBezier");
   });
 
-  test("teiknTypeToDTCG passes unknown types through", () => {
-    expect(teiknTypeToDTCG("color")).toBe("color");
-    expect(teiknTypeToDTCG("unknown")).toBe("unknown");
+  test("teiknTypeToDtcg passes unknown types through", () => {
+    expect(teiknTypeToDtcg("color")).toBe("color");
+    expect(teiknTypeToDtcg("unknown")).toBe("unknown");
   });
 });

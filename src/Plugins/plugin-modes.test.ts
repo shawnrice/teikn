@@ -2,14 +2,14 @@ import { describe, expect, test } from "bun:test";
 
 import type { Token } from "../Token";
 import { Color } from "../TokenTypes/Color";
-import { CSSVars } from "../Generators/CSSVars";
+import { CssVars } from "../Generators/CssVars";
 import { Json } from "../Generators/Json";
 import { Scss } from "../Generators/Scss";
 import { ColorTransformPlugin } from "./ColorTransformPlugin";
 import { RemUnitPlugin } from "./RemUnitPlugin";
 import { AlphaMultiplyPlugin } from "./AlphaMultiplyPlugin";
 import { NameConventionPlugin } from "./NameConventionPlugin";
-import { SCSSQuoteValuePlugin } from "./SCSSQuoteValuePlugin";
+import { ScssQuoteValuePlugin } from "./ScssQuoteValuePlugin";
 import { DeprecationPlugin } from "./DeprecationPlugin";
 
 const opts = { dateFn: () => "null", version: "test" };
@@ -23,7 +23,7 @@ describe("ColorTransformPlugin with modes", () => {
     const tokens: Token[] = [
       { name: "bg", type: "color", value: "steelblue", modes: { dark: "crimson" } },
     ];
-    const output = new CSSVars(opts).generate(tokens, [plugin]);
+    const output = new CssVars(opts).generate(tokens, [plugin]);
     expect(output).not.toContain("steelblue");
     expect(output).not.toContain("crimson");
     expect(output).toContain("rgba(");
@@ -53,7 +53,7 @@ describe("ColorTransformPlugin with modes", () => {
         modes: { dark: "#1a1a1a", "high-contrast": "#000000" },
       },
     ];
-    const output = new CSSVars(opts).generate(tokens, [plugin]);
+    const output = new CssVars(opts).generate(tokens, [plugin]);
     expect(output).not.toContain("#1a1a1a");
     expect(output).not.toContain("#000000");
   });
@@ -68,7 +68,7 @@ describe("RemUnitPlugin with modes", () => {
     const tokens: Token[] = [
       { name: "gap", type: "spacing", value: "16px", modes: { dense: "8px" } },
     ];
-    const output = new CSSVars(opts).generate(tokens, [plugin]);
+    const output = new CssVars(opts).generate(tokens, [plugin]);
     expect(output).toContain("1rem");
     expect(output).toContain("0.5rem");
     expect(output).not.toContain("16px");
@@ -108,7 +108,7 @@ describe("RemUnitPlugin with modes", () => {
     const tokens: Token[] = [
       { name: "gap", type: "spacing", value: "1em", modes: { dense: "0.5em" } },
     ];
-    const output = new CSSVars(opts).generate(tokens, [plugin]);
+    const output = new CssVars(opts).generate(tokens, [plugin]);
     expect(output).toContain("1em");
     expect(output).toContain("0.5em");
   });
@@ -152,10 +152,10 @@ describe("AlphaMultiplyPlugin with modes", () => {
   });
 });
 
-// ─── SCSSQuoteValuePlugin with modes ─────────────────────────
+// ─── ScssQuoteValuePlugin with modes ─────────────────────────
 
-describe("SCSSQuoteValuePlugin with modes", () => {
-  const plugin = new SCSSQuoteValuePlugin();
+describe("ScssQuoteValuePlugin with modes", () => {
+  const plugin = new ScssQuoteValuePlugin();
 
   test("quotes font-family values in modes", () => {
     const tokens: Token[] = [

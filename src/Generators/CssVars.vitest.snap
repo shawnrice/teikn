@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`CSSVars Generator tests > It generates the token set 1`] = `
+exports[`CssVars Generator tests > It generates the token set 1`] = `
 "/**
  * Teikn vtest
  * Generated null
@@ -17,7 +17,7 @@ exports[`CSSVars Generator tests > It generates the token set 1`] = `
 }"
 `;
 
-exports[`CSSVars Generator tests > It generates themed tokens with modes 1`] = `
+exports[`CssVars Generator tests > It generates themed tokens with modes 1`] = `
 "/**
  * Teikn vtest
  * Generated null

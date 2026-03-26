@@ -40,7 +40,7 @@ const defaultOptions = {
   dateFn: getDate,
 };
 
-export type HTMLOpts = {
+export type HtmlOpts = {
   nameTransformer?: (name: string) => string;
   dateFn?: () => string | null;
 } & GeneratorOptions;
@@ -456,7 +456,7 @@ document.addEventListener('click', function(e) {
 
 // ─── Generator ───────────────────────────────────────────────
 
-export class HTML extends Generator<HTMLOpts> {
+export class Html extends Generator<HtmlOpts> {
   constructor(options = {}) {
     super(Object.assign({}, defaultOptions, options));
   }

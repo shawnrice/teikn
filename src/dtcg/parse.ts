@@ -1,25 +1,25 @@
 import type { Token } from "../Token";
-import type { DTCGDocument, DTCGGroup, DTCGToken } from "./types";
+import type { DtcgDocument, DtcgGroup, DtcgToken } from "./types";
 import { dtcgTypeToTeikn, dtcgValueToTeikn } from "./values";
 
 export type ParseOptions = {
   /** Separator for flattening group paths into token names. Default: '.' */
   separator?: string;
-  /** When true, map DTCG type names to teikn equivalents. Default: true */
+  /** When true, map Dtcg type names to teikn equivalents. Default: true */
   mapTypes?: boolean;
 };
 
-const isDTCGToken = (node: unknown): node is DTCGToken =>
+const isDtcgToken = (node: unknown): node is DtcgToken =>
   node !== null && typeof node === "object" && "$value" in node;
 
-const isDTCGGroup = (node: unknown): node is DTCGGroup =>
+const isDtcgGroup = (node: unknown): node is DtcgGroup =>
   node !== null && typeof node === "object" && !("$value" in node);
 
 const isAlias = (value: unknown): value is string =>
   typeof value === "string" && value.startsWith("{") && value.endsWith("}");
 
 const walk = (
-  node: DTCGDocument | DTCGGroup,
+  node: DtcgDocument | DtcgGroup,
   path: string[],
   inheritedType: string | undefined,
   separator: string,
@@ -37,7 +37,7 @@ const walk = (
 
     const childPath = [...path, key];
 
-    if (isDTCGToken(child)) {
+    if (isDtcgToken(child)) {
       const rawType = child.$type ?? inheritedType;
       const dtcgType = rawType ?? "unknown";
       const teiknType = mapTypes ? dtcgTypeToTeikn(dtcgType) : dtcgType;
@@ -70,14 +70,14 @@ const walk = (
       continue;
     }
 
-    if (isDTCGGroup(child)) {
-      const groupType = (child as DTCGGroup).$type ?? inheritedType;
-      walk(child as DTCGGroup, childPath, groupType, separator, mapTypes, tokens);
+    if (isDtcgGroup(child)) {
+      const groupType = (child as DtcgGroup).$type ?? inheritedType;
+      walk(child as DtcgGroup, childPath, groupType, separator, mapTypes, tokens);
     }
   }
 };
 
-export const parseDTCG = (document: DTCGDocument, options?: ParseOptions): Token[] => {
+export const parseDtcg = (document: DtcgDocument, options?: ParseOptions): Token[] => {
   const separator = options?.separator ?? ".";
   const mapTypes = options?.mapTypes ?? true;
   const tokens: Token[] = [];

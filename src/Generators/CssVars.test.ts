@@ -2,9 +2,9 @@ import { describe, expect, test } from "bun:test";
 
 import { tokenSet1 } from "../fixtures/tokenSet1";
 import type { Token } from "../Token";
-import { CSSVars as Generator } from "./CSSVars";
+import { CssVars as Generator } from "./CssVars";
 
-describe("CSSVars Generator tests", () => {
+describe("CssVars Generator tests", () => {
   test("It has the correct filename", () => {
     expect(new Generator().file).toBe("tokens.css");
   });

@@ -1,6 +1,6 @@
-// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`HTMLGenerator tests > It generates the token set 1`] = `
+exports[`Html Generator tests It generates the token set 1`] = `
 "<!DOCTYPE html>
 <html lang="en">
 <head>

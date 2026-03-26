@@ -13,9 +13,13 @@
 - **`PrefixTypePlugin` in Teikn plugins now throws** instead of being
   silently filtered. Remove it from your plugins array; type prefixing is
   built in.
-- **Generator classes renamed to consistent PascalCase.** `CSSVars` → `CssVars`,
-  `ESModule` → `EsModule`, `HTML` → `Html`, `DTCGGenerator` → `DtcgGenerator`.
-  The `Teikn.generators` keys are updated to match (e.g. `Teikn.generators.Dtcg`).
+- **Public API names were normalized for casing consistency.** Acronym-heavy
+  names were converted to mixed-case forms across generators, plugins, and
+  Dtcg helpers. Examples: `CSSVars` → `CssVars`, `ESModule` → `EsModule`,
+  `HTML` → `Html`, `DTCGGenerator` → `DtcgGenerator`,
+  `SCSSQuoteValuePlugin` → `ScssQuoteValuePlugin`, `parseDTCG` → `parseDtcg`,
+  and `serializeDTCG` → `serializeDtcg`. Related exports, registry keys,
+  file names, and `DTCG*` helper types/constants were updated to match.
 - **Storybook generator supports JSX output.** Pass `ext: "stories.jsx"` for
   JavaScript projects. Default remains `stories.tsx`.
 

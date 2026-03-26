@@ -7,14 +7,14 @@ import { Color } from "../TokenTypes/Color";
 import { CubicBezier } from "../TokenTypes/CubicBezier";
 import { LinearGradient, RadialGradient } from "../TokenTypes/Gradient";
 import { Transition } from "../TokenTypes/Transition";
-import { CSSVars } from "./CSSVars";
-import { ESModule } from "./ESModule";
-import { HTML as Generator } from "./HTML";
+import { CssVars } from "./CssVars";
+import { EsModule } from "./EsModule";
+import { Html as Generator } from "./Html";
 import { Scss } from "./Scss";
 
 const fixedDate = () => "Mon Jan 01 2024 12:00:00";
 
-describe("HTMLGenerator tests", () => {
+describe("Html Generator tests", () => {
   test("It generates the token set", () => {
     expect(
       new Generator({ dateFn: fixedDate, version: "test" }).generate(tokenSet1),
@@ -107,9 +107,9 @@ describe("HTMLGenerator tests", () => {
 
   test("It renders flip cards with sibling usage snippets", () => {
     const htmlGen = new Generator({ dateFn: fixedDate, version: "test" });
-    const esGen = new ESModule({ groups: true });
+    const esGen = new EsModule({ groups: true });
     const scssGen = new Scss();
-    const cssGen = new CSSVars();
+    const cssGen = new CssVars();
 
     const siblings = [htmlGen, esGen, scssGen, cssGen];
     for (const g of siblings) {
@@ -155,7 +155,7 @@ describe("HTMLGenerator tests", () => {
 
   test("It does not wrap z-layer tokens in flip cards", () => {
     const htmlGen = new Generator({ dateFn: fixedDate, version: "test" });
-    const cssGen = new CSSVars();
+    const cssGen = new CssVars();
     const siblings = [htmlGen, cssGen];
     for (const g of siblings) {
       g.siblings = siblings;

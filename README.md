@@ -38,7 +38,7 @@ if (!result.valid) {
 const writer = new Teikn({
   outDir: './dist',
   generators: [
-    new Teikn.generators.CSSVars(),
+    new Teikn.generators.CssVars(),
     new Teikn.generators.Json(),
     new Teikn.generators.TypeScript(),
   ],
@@ -159,7 +159,7 @@ const dense = theme('dense', spacing, { gap: '4px', padding: '8px' });
 // Pass all layers to Teikn — generators output them as scoped overrides
 const writer = new Teikn({
   themes: [dark, dense, colorblindDark],
-  generators: [new CSSVars()],
+  generators: [new CssVars()],
 });
 await writer.transform(tokens(colors, spacing));
 ```
@@ -417,32 +417,32 @@ Generators produce output files from your tokens. Each targets a different forma
 const writer = new Teikn({
   outDir: './dist',
   generators: [
-    new Teikn.generators.CSSVars(),
+    new Teikn.generators.CssVars(),
     new Teikn.generators.Scss({ groups: true }),
     new Teikn.generators.ScssVars(),
     new Teikn.generators.Json(),
-    new Teikn.generators.ESModule({ ext: 'js', groups: true }),
+    new Teikn.generators.EsModule({ ext: 'js', groups: true }),
     new Teikn.generators.JavaScript({ groups: true }),
     new Teikn.generators.TypeScript({ groups: true }),
-    new Teikn.generators.HTML(),
+    new Teikn.generators.Html(),
     new Teikn.generators.Storybook(),
-    new Teikn.generators.DTCG(),
+    new Teikn.generators.DtcgGenerator(),
   ],
 });
 ```
 
 | Generator | Extension | Description |
 |-----------|-----------|-------------|
-| **CSSVars** | `.css` | CSS custom properties (`--token-name`) with optional media query mode support |
+| **CssVars** | `.css` | CSS custom properties (`--token-name`) with optional media query mode support |
 | **Scss** | `.scss` | SCSS map with `get-token()` function and optional typed group accessors |
 | **ScssVars** | `.scss` | SCSS variables (`$token-name`) with mode support |
 | **Json** | `.json` | Plain JSON object |
-| **ESModule** | `.mjs` | ES module export with optional typed group accessors |
+| **EsModule** | `.mjs` | ES module export with optional typed group accessors |
 | **JavaScript** | `.js` | CommonJS module with optional typed group accessors |
 | **TypeScript** | `.d.ts` | TypeScript type declarations |
-| **HTML** | `.html` | Visual documentation page with color swatches, font samples, spacing bars, and more |
+| **Html** | `.html` | Visual documentation page with color swatches, font samples, spacing bars, and more |
 | **Storybook** | `.stories.tsx` | React Storybook stories with interactive visual components |
-| **DTCG** | `.tokens.json` | W3C Design Token Community Group format for tool interoperability |
+| **DtcgGenerator** | `.tokens.json` | W3C Design Token Community Group format for tool interoperability |
 
 ### Common Options
 
@@ -456,9 +456,9 @@ All generators accept:
 
 ### Generator-Specific Options
 
-**CSSVars**: `useMediaQuery?: boolean`, `modeSelectors?: Record<string, string>`
+**CssVars**: `useMediaQuery?: boolean`, `modeSelectors?: Record<string, string>`
 **Storybook**: `importPath?: string`, `storyTitle?: string`
-**DTCG**: `hierarchical?: boolean` (default: true), `separator?: string` (default: '.')
+**DtcgGenerator**: `hierarchical?: boolean` (default: true), `separator?: string` (default: '.')
 
 ## Plugins
 
@@ -471,7 +471,7 @@ const writer = new Teikn({
   plugins: [
     new Teikn.plugins.ColorTransformPlugin({ type: 'hsl' }),
     new Teikn.plugins.PrefixTypePlugin(),
-    new Teikn.plugins.SCSSQuoteValuePlugin(),
+    new Teikn.plugins.ScssQuoteValuePlugin(),
     new Teikn.plugins.RemUnitPlugin({ base: 16, targetUnit: 'rem' }),
     new Teikn.plugins.AlphaMultiplyPlugin({ background: '#ffffff' }),
     new Teikn.plugins.NameConventionPlugin({ convention: 'camelCase' }),
@@ -486,7 +486,7 @@ const writer = new Teikn({
 |--------|-------------|
 | **ColorTransformPlugin** | Normalizes color tokens to a specific format (`hex`, `rgb`, `hsl`, `lab`, `lch`, `xyz`) |
 | **PrefixTypePlugin** | Prefixes token type to token name (e.g., `primary` becomes `colorPrimary`) |
-| **SCSSQuoteValuePlugin** | Wraps font and font-family values in `unquote()` for SCSS compatibility |
+| **ScssQuoteValuePlugin** | Wraps font and font-family values in `unquote()` for SCSS compatibility |
 | **RemUnitPlugin** | Converts px Dimensions to rem (or configurable unit). Options: `base` (default 16), `targetUnit` (default `'rem'`) |
 | **AlphaMultiplyPlugin** | Flattens semi-transparent colors against a background via alpha blending. Options: `background` (default `'#ffffff'`) |
 | **NameConventionPlugin** | Transforms token names to `camelCase`, `kebab-case`, `snake_case`, `PascalCase`, or `SCREAMING_SNAKE` |
@@ -561,18 +561,18 @@ issues.forEach(i => console.warn(`[${i.severity}] ${i.token}: ${i.message}`));
 | 3.5 – 5.0 | Clearly different — but confusable from memory |
 | > 5.0 | Safely distinct in any context |
 
-## DTCG Interoperability
+## Dtcg Interoperability
 
 Import and export tokens in the W3C Design Token Community Group format for use with tools like Style Dictionary and Tokens Studio.
 
 ```typescript
-import { parseDTCG, serializeDTCG } from 'teikn';
+import { parseDtcg, serializeDtcg } from 'teikn';
 
-// Import from DTCG
-const tokens = parseDTCG(dtcgDocument, { separator: '.' });
+// Import from Dtcg
+const tokens = parseDtcg(dtcgDocument, { separator: '.' });
 
-// Export to DTCG
-const dtcg = serializeDTCG(tokens, { hierarchical: true });
+// Export to Dtcg
+const dtcg = serializeDtcg(tokens, { hierarchical: true });
 ```
 
 ## Validation
@@ -598,8 +598,8 @@ teikn
 # Run with a token file and flags
 teikn path/to/tokens.ts \
   --outDir=./dist \
-  --generators="Scss,Json,ESModule,CSSVars,HTML" \
-  --plugins="ColorTransform,PrefixType,SCSSQuoteValue"
+  --generators="Scss,Json,EsModule,CssVars,Html" \
+  --plugins="ColorTransformPlugin,PrefixTypePlugin,ScssQuoteValuePlugin"
 
 # Watch mode
 teikn --watch

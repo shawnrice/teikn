@@ -5,7 +5,7 @@ import { CubicBezier } from "../TokenTypes/CubicBezier";
 import { LinearGradient } from "../TokenTypes/Gradient";
 import { tokenSet1 } from "../fixtures/tokenSet1";
 import type { Token } from "../Token";
-import { ESModule } from "./ESModule";
+import { EsModule } from "./EsModule";
 import { JavaScript } from "./JavaScript";
 import { Storybook } from "./Storybook";
 
@@ -23,9 +23,9 @@ describe("Storybook generator", () => {
     expect(gen.file).toBe("tokens.stories.tsx");
   });
 
-  test("It detects ESModule sibling import path", () => {
+  test("It detects EsModule sibling import path", () => {
     const sb = new Storybook({ dateFn: fixedDate, version: "test" });
-    const es = new ESModule({ ext: "js" });
+    const es = new EsModule({ ext: "js" });
     sb.siblings = [sb, es];
 
     const tokens: Token[] = [{ name: "primary", type: "color", value: "#ff0000" }];

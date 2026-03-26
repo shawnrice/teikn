@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`ESModule tests > it generates group accessors when groups: true 1`] = `
+exports[`EsModule tests > it generates group accessors when groups: true 1`] = `
 "/**
  * Teikn vtest
  * Generated null
@@ -42,7 +42,7 @@ export const spacing = (name) => {
 export default tokens;"
 `;
 
-exports[`ESModule tests > it generates tokens as an esmodule 1`] = `
+exports[`EsModule tests > it generates tokens as an esmodule 1`] = `
 "/**
  * Teikn vtest
  * Generated null

@@ -26,7 +26,7 @@ const isValidIdentifier = (name: string): boolean => /^[a-zA-Z_$][a-zA-Z0-9_$]*$
 
 const quoteKey = (name: string): string => (isValidIdentifier(name) ? name : `'${name}'`);
 
-export type ESModuleOpts = {
+export type EsModuleOpts = {
   dateFn?: () => string | null;
   nameTransformer?: (name: string) => string;
 } & GeneratorOptions;
@@ -34,7 +34,7 @@ export type ESModuleOpts = {
 /**
  * Generates tokens as an ES Module
  */
-export class ESModule extends Generator<ESModuleOpts> {
+export class EsModule extends Generator<EsModuleOpts> {
   constructor(options = {}) {
     super(Object.assign({}, defaultOptions, options));
   }
