@@ -17,10 +17,10 @@ describe("MinFontSizePlugin", () => {
     expect(plugin.tokenType.test("spacing")).toBe(false);
   });
 
-  test("toJSON returns token unchanged", () => {
+  test("transform returns token unchanged", () => {
     const plugin = new MinFontSizePlugin({});
     const token = makeToken("fs", "16px");
-    expect(plugin.toJSON(token)).toBe(token);
+    expect(plugin.transform(token)).toBe(token);
   });
 
   test("passes when font size meets minimum", () => {

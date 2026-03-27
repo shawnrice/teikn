@@ -74,6 +74,8 @@ const solveX = (x1: number, x2: number, x: number): number => {
 };
 
 export class CubicBezier {
+  /** @internal brand — do not use directly; see `isFirstClassValue()` */
+  readonly __teikn_fcv__: true = true;
   readonly #x1: number;
   readonly #y1: number;
   readonly #x2: number;

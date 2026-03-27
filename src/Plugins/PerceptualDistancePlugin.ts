@@ -12,7 +12,7 @@ export class PerceptualDistancePlugin extends Plugin<PerceptualDistancePluginOpt
   tokenType: string = "color";
   outputType: RegExp = /.*/;
 
-  toJSON(token: Token): Token {
+  transform(token: Token): Token {
     return token;
   }
 
@@ -24,7 +24,7 @@ export class PerceptualDistancePlugin extends Plugin<PerceptualDistancePluginOpt
 
     const toColor = (t: Token): Color | null => {
       try {
-        return t.value instanceof Color ? t.value : new Color(t.value);
+        return t.value instanceof Color ? t.value : new Color(t.value as string);
       } catch {
         return null;
       }

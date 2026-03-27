@@ -17,10 +17,10 @@ describe("PerceptualDistancePlugin", () => {
     expect(plugin.outputType.test("css")).toBe(true);
   });
 
-  test("toJSON returns token unchanged", () => {
+  test("transform returns token unchanged", () => {
     const plugin = new PerceptualDistancePlugin({});
     const token = makeToken("red", "#ff0000");
-    expect(plugin.toJSON(token)).toBe(token);
+    expect(plugin.transform(token)).toBe(token);
   });
 
   test("passes when colors are sufficiently distinct", () => {

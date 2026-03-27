@@ -13,39 +13,32 @@ npm install teikn
 ```typescript
 import { Teikn, Color, group, scale, dp, tokens, validate } from 'teikn';
 
+const base = new Color('#0066cc');
+
 const colors = group('color', {
-  primary: [new Color('steelblue'), 'Primary branding color'],
-  secondary: new Color('crimson'),
-  error: 'red',
+  primary: [base, 'Primary brand color'],
+  primaryLight: base.tint(0.3),
+  primaryDark: base.shade(0.3),
 });
 
 const spacing = scale('spacing', {
-  sm: dp(8),
-  md: [dp(16), 'Standard spacing'],
-  lg: dp(24),
+  sm: dp(8),   // 0.5rem
+  md: dp(16),  // 1rem
+  lg: dp(24),  // 1.5rem
 });
 
 const allTokens = tokens(colors, spacing);
+validate(allTokens);
 
-// Validate
-const result = validate(allTokens);
-if (!result.valid) {
-  result.issues.forEach(i => console.error(`[${i.severity}] ${i.token}: ${i.message}`));
-  process.exit(1);
-}
-
-// Generate
-const writer = new Teikn({
+await new Teikn({
   outDir: './dist',
-  generators: [
-    new Teikn.generators.CssVars(),
-    new Teikn.generators.Json(),
-    new Teikn.generators.TypeScript(),
-  ],
-});
-
-writer.transform(allTokens);
+  generators: [new Teikn.generators.CssVars(), new Teikn.generators.TypeScript()],
+}).transform(allTokens);
 ```
+
+For a full walkthrough that builds a production token set step by step -- colors, spacing,
+typography, shadows, motion, themes, and accessibility audits -- see the
+[Quick Start guide](docs/quick-start.md).
 
 ## Defining Tokens
 
@@ -56,13 +49,13 @@ Tokens are created with builder functions that produce `Token[]` arrays. Each to
 Create tokens sharing a type. Values can be bare values, `[value, usage]` tuples, or references.
 
 ```typescript
-import { group, ref } from 'teikn';
+import { Color, group, ref } from 'teikn';
 
 const colors = group('color', {
   primary: [new Color('steelblue'), 'Primary branding color'],
   secondary: new Color('crimson'),
   link: ref('primary'),       // references another token by name
-  textPrimary: 'rgba(0, 0, 0, .95)',
+  textPrimary: new Color(0, 0, 0, 0.95),
 });
 ```
 
@@ -178,17 +171,28 @@ const colors = group('color', {
 
 ### `onColors(type, colors)`
 
-Auto-generate contrasting text colors (black or white) for a set of background colors.
+Auto-generate contrasting text colors (dark or light) for a set of background colors. Pair this
+with your color group so every branded surface has a readable text color from the start.
 
 ```typescript
-import { onColors } from 'teikn';
+import { group, onColors, tokens } from 'teikn';
 
-const contrast = onColors('color', {
+const palette = {
   primary: new Color('steelblue'),
   secondary: new Color('crimson'),
-  error: 'red',
+  error: new Color('red'),
+};
+
+const colors = group('color', {
+  primary: palette.primary,
+  secondary: palette.secondary,
+  error: palette.error,
 });
-// Produces: onPrimary: white, onSecondary: white, onError: white
+
+// Generates: onPrimary, onSecondary, onError
+const contrast = onColors('color', palette);
+
+const allColors = tokens(colors, contrast);
 ```
 
 ### Helpers
@@ -200,6 +204,10 @@ dp(16)            // Dimension: 1rem (16px base)
 dim(2, 'em')      // Dimension: 2em
 dur(200, 'ms')    // Duration: 200ms
 ```
+
+> **Note:** `dp` stands for *density-independent pixel*, a term from Android's display system.
+> In web terms, it converts a pixel value from your design spec to its `rem` equivalent
+> (assuming a 16px base). `dp(16)` returns `1rem`, `dp(8)` returns `0.5rem`.
 
 ## Value Types
 
@@ -274,6 +282,34 @@ new Color('#F00A')       // #FF0000 with alpha ~0.67
 new Color('#FF0000AA')   // #FF0000 with alpha ~0.67
 ```
 
+#### Deriving Colors
+
+Define a base color once and derive related colors with `.shade()`, `.tint()`, and `.mix()`.
+This keeps your palette internally consistent -- when the base changes, everything updates.
+
+```typescript
+const brand = new Color('#0066cc');
+
+brand.tint(0.3)          // lighten by mixing 30% white
+brand.shade(0.3)         // darken by mixing 30% black
+brand.mix(other, 0.5)    // 50/50 blend with another color
+```
+
+Use `.mix()` for text colors and `.setAlpha()` for overlays. Text at reduced alpha looks washed
+out on colored backgrounds; `.mix()` produces a solid color that stays readable everywhere.
+
+```typescript
+// Opaque text: .mix() against white or black
+const textSecondary = dark.mix(new Color('#ffffff'), 0.4);
+
+// Transparent overlay: .setAlpha()
+const overlay = dark.setAlpha(0.5);
+```
+
+> **Tip:** `AlphaMultiplyPlugin` flattens semi-transparent colors to opaque at generation time by
+> alpha-compositing against a background color. Useful for email or contexts where transparency is
+> unreliable.
+
 ### BoxShadow
 
 ```typescript
@@ -321,7 +357,8 @@ CubicBezier.standard    // Material Design standard
 CubicBezier.accelerate  // Material Design accelerate
 CubicBezier.decelerate  // Material Design decelerate
 
-ease.evaluate(0.5)   // y-value at x=0.5
+ease.at(0.5)         // y-value at x=0.5
+ease.reverse()       // time-reversed curve
 ease.toString()      // 'cubic-bezier(0.25, 0.1, 0.25, 1)'
 ```
 
@@ -402,11 +439,34 @@ import { Transition, CubicBezier } from 'teikn';
 const t = new Transition('0.4s', CubicBezier.standard, '0s', 'opacity');
 
 // Built-in presets
-Transition.fade    // opacity transition
-Transition.slide   // transform transition
-Transition.quick   // fast all-properties transition
+Transition.fade    // 0.2s ease (all properties)
+Transition.slide   // 0.3s standard curve
+Transition.quick   // 0.1s ease
 
-t.toString()       // 'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0s'
+// Immutable updates
+Transition.fade.setDuration('0.5s')
+Transition.fade.setProperty('color')
+Transition.fade.setTimingFunction(CubicBezier.decelerate)
+
+t.toString()       // 'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
+```
+
+Use presets directly as token values:
+
+```typescript
+import { group } from 'teikn';
+
+const easings = group('timing', {
+  standard: CubicBezier.standard,
+  accelerate: CubicBezier.accelerate,
+  decelerate: CubicBezier.decelerate,
+});
+
+const transitions = group('transition', {
+  fade: [Transition.fade, 'Fade in/out'],
+  slide: [Transition.slide, 'Slide animations'],
+  quick: Transition.quick,
+});
 ```
 
 ## Generators
@@ -426,7 +486,7 @@ const writer = new Teikn({
     new Teikn.generators.TypeScript({ groups: true }),
     new Teikn.generators.Html(),
     new Teikn.generators.Storybook(),
-    new Teikn.generators.DtcgGenerator(),
+    new Teikn.generators.Dtcg(),
   ],
 });
 ```
@@ -442,7 +502,7 @@ const writer = new Teikn({
 | **TypeScript** | `.d.ts` | TypeScript type declarations |
 | **Html** | `.html` | Visual documentation page with color swatches, font samples, spacing bars, and more |
 | **Storybook** | `.stories.tsx` | React Storybook stories with interactive visual components |
-| **DtcgGenerator** | `.tokens.json` | W3C Design Token Community Group format for tool interoperability |
+| **Dtcg** | `.tokens.json` | W3C Design Token Community Group format for tool interoperability |
 
 ### Common Options
 
@@ -458,7 +518,7 @@ All generators accept:
 
 **CssVars**: `useMediaQuery?: boolean`, `modeSelectors?: Record<string, string>`
 **Storybook**: `importPath?: string`, `storyTitle?: string`
-**DtcgGenerator**: `hierarchical?: boolean` (default: true), `separator?: string` (default: '.')
+**Dtcg**: `hierarchical?: boolean` (default: true), `separator?: string` (default: '.')
 
 ## Plugins
 
@@ -470,7 +530,6 @@ Plugins transform, expand, and validate tokens before generation. All plugins im
 const writer = new Teikn({
   plugins: [
     new Teikn.plugins.ColorTransformPlugin({ type: 'hsl' }),
-    new Teikn.plugins.PrefixTypePlugin(),
     new Teikn.plugins.ScssQuoteValuePlugin(),
     new Teikn.plugins.RemUnitPlugin({ base: 16, targetUnit: 'rem' }),
     new Teikn.plugins.AlphaMultiplyPlugin({ background: '#ffffff' }),
@@ -485,7 +544,7 @@ const writer = new Teikn({
 | Plugin | Description |
 |--------|-------------|
 | **ColorTransformPlugin** | Normalizes color tokens to a specific format (`hex`, `rgb`, `hsl`, `lab`, `lch`, `xyz`) |
-| **PrefixTypePlugin** | Prefixes token type to token name (e.g., `primary` becomes `colorPrimary`) |
+| **PrefixTypePlugin** | Prefixes token type to token name (e.g., `primary` becomes `colorPrimary`) (deprecated -- type prefixing is now built-in) |
 | **ScssQuoteValuePlugin** | Wraps font and font-family values in `unquote()` for SCSS compatibility |
 | **RemUnitPlugin** | Converts px Dimensions to rem (or configurable unit). Options: `base` (default 16), `targetUnit` (default `'rem'`) |
 | **AlphaMultiplyPlugin** | Flattens semi-transparent colors against a background via alpha blending. Options: `background` (default `'#ffffff'`) |
@@ -599,7 +658,7 @@ teikn
 teikn path/to/tokens.ts \
   --outDir=./dist \
   --generators="Scss,Json,EsModule,CssVars,Html" \
-  --plugins="ColorTransformPlugin,PrefixTypePlugin,ScssQuoteValuePlugin"
+  --plugins="ColorTransformPlugin,ScssQuoteValuePlugin"
 
 # Watch mode
 teikn --watch

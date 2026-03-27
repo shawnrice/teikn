@@ -2,6 +2,7 @@ import { EOL } from "node:os";
 
 import { camelCase, deriveShortName } from "../string-utils";
 import type { Token } from "../Token";
+import { isFirstClassValue } from "../type-classifiers";
 import { getDate } from "../utils";
 import type { GeneratorInfo, GeneratorOptions } from "./Generator";
 import { Generator } from "./Generator";
@@ -9,6 +10,24 @@ import { Generator } from "./Generator";
 const isValidIdentifier = (name: string): boolean => /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(name);
 
 const quoteKey = (name: string): string => (isValidIdentifier(name) ? name : `'${name}'`);
+
+const toTypeAnnotation = (value: unknown): string => {
+  if (
+    typeof value === "object" &&
+    value !== null &&
+    !Array.isArray(value)
+  ) {
+    // First-class values (Color, Dimension, etc.) stringify to string
+    if (isFirstClassValue(value)) {
+      return "string";
+    }
+    const fields = Object.entries(value as Record<string, unknown>)
+      .map(([k, v]) => `${quoteKey(k)}: ${toTypeAnnotation(v)}`)
+      .join("; ");
+    return `{ ${fields} }`;
+  }
+  return typeof value;
+};
 
 const defaultOptions = {
   ext: "d.ts",
@@ -56,16 +75,8 @@ export class TypeScript extends Generator<TypeScriptOpts> {
   }
 
   override header(): string {
-    const { dateFn } = this.options;
-
     return [
-      `/**`,
-      ` * ${this.signature()}`,
-      ` * Generated ${dateFn!()}`,
-      ` *`,
-      ` * This file is generated and should be commited to source control`,
-      ` *`,
-      ` */`,
+      this.commentHeader(),
       EOL,
       `/**`,
       ` * Design tokens`,
@@ -76,12 +87,14 @@ export class TypeScript extends Generator<TypeScriptOpts> {
   generateToken(token: Token): string {
     const { nameTransformer } = this.options;
 
+    const typeAnnotation = toTypeAnnotation(token.value);
+
     return [
       `  /**`,
       token.usage && `   *  ${token.usage}`,
       `   *  Type: ${token.type}`,
       `   */`,
-      `  ${nameTransformer!(token.name)}: ${typeof token.value},`,
+      `  ${nameTransformer!(token.name)}: ${typeAnnotation},`,
     ]
       .filter(Boolean)
       .join(EOL);

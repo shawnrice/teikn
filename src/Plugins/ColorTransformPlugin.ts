@@ -22,12 +22,12 @@ export class ColorTransformPlugin extends Plugin<ColorTransformPluginOptions> {
     super(options);
   }
 
-  toJSON(token: Token): Token {
+  transform(token: Token): Token {
     const { type } = this.options;
 
     return {
       ...token,
-      value: new Color(token.value).toString(type),
+      value: new Color(token.value as string | Color).toString(type),
     };
   }
 }

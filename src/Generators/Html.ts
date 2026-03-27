@@ -465,7 +465,7 @@ export class Html extends Generator<HtmlOpts> {
     return token;
   }
 
-  override convertColorToString(token: Token): Token {
+  override stringifyValues(token: Token): Token {
     return this.stringifyValue(token);
   }
 
@@ -1055,7 +1055,7 @@ export class Html extends Generator<HtmlOpts> {
     if (isColorType(type)) {
       return this.renderColorToken(token);
     }
-    if (isTypographyType(type) && typeof value === "object" && !(value instanceof Color)) {
+    if (isTypographyType(type) && typeof value === "object" && !isFirstClassValue(value)) {
       return this.renderTypographyToken(token);
     }
     if (isShadowType(type)) {
@@ -1070,7 +1070,7 @@ export class Html extends Generator<HtmlOpts> {
     if (isBorderRadiusType(type)) {
       return this.renderBorderRadiusToken(token);
     }
-    if (isBorderType(type) && typeof value === "object" && !(value instanceof Color)) {
+    if (isBorderType(type) && typeof value === "object" && !isFirstClassValue(value)) {
       return this.renderBorderToken(token);
     }
     if (isFontSizeType(type)) {

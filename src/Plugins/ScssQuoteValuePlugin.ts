@@ -13,7 +13,7 @@ export class ScssQuoteValuePlugin extends Plugin {
 
   override readonly runAfter: string[] = ["ColorTransformPlugin", "RemUnitPlugin"];
 
-  toJSON(token: Token): Token {
+  transform(token: Token): Token {
     const { value } = token;
 
     return {

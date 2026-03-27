@@ -19,9 +19,9 @@ describe("ClampPlugin", () => {
     expect(plugin.outputType.test("json")).toBe(true);
   });
 
-  test("toJSON returns token unchanged", () => {
+  test("transform returns token unchanged", () => {
     const token: Token = { name: "fontSize-100", type: "dimension", value: "1rem" };
-    const result = plugin.toJSON(token);
+    const result = plugin.transform(token);
     expect(result).toBe(token);
   });
 

@@ -1,28 +1,15 @@
 import type { Token } from "./Token";
-import { BoxShadow, BoxShadowList } from "./TokenTypes/BoxShadow";
-import { Color } from "./TokenTypes/Color";
-import { CubicBezier } from "./TokenTypes/CubicBezier";
-import { Dimension } from "./TokenTypes/Dimension";
-import { Duration } from "./TokenTypes/Duration";
-import { GradientList, LinearGradient, RadialGradient } from "./TokenTypes/Gradient";
-import { Transition, TransitionList } from "./TokenTypes/Transition";
+
+// ─── First-class value brand ─────────────────────────────────────
+// Every first-class value type class carries a `__teikn_fcv__`
+// property so we can detect them without importing every class.
 
 // ─── First-class value check ─────────────────────────────────────
 // Shared by resolve.ts and validate.ts to prevent composite
 // destructuring of private-field objects into `{}`.
 
 export const isFirstClassValue = (value: unknown): boolean =>
-  value instanceof Color ||
-  value instanceof CubicBezier ||
-  value instanceof BoxShadow ||
-  value instanceof BoxShadowList ||
-  value instanceof LinearGradient ||
-  value instanceof RadialGradient ||
-  value instanceof Transition ||
-  value instanceof TransitionList ||
-  value instanceof GradientList ||
-  value instanceof Dimension ||
-  value instanceof Duration;
+  typeof value === "object" && value !== null && "__teikn_fcv__" in (value as object);
 
 // ─── Token type classifiers ──────────────────────────────────────
 // Duplicated in HTML.ts and Storybook.ts — centralized here so

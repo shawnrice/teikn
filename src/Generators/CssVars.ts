@@ -1,25 +1,11 @@
 import { EOL } from "node:os";
 
 import { kebabCase } from "../string-utils";
-import { isFirstClassValue } from "../type-classifiers";
 import type { Token } from "../Token";
 import { getDate } from "../utils";
 import type { GeneratorInfo, GeneratorOptions } from "./Generator";
 import { Generator } from "./Generator";
-
-const cssValue = (value: unknown): string => {
-  if (typeof value !== "object" || value === null) {
-    return String(value);
-  }
-  if (isFirstClassValue(value)) {
-    return String(value);
-  }
-  const obj = value as Record<string, unknown>;
-  if ("width" in obj && "style" in obj && "color" in obj) {
-    return [obj.width, obj.style, obj.color].filter(Boolean).join(" ");
-  }
-  return Object.values(obj).join(" ");
-};
+import { cssValue } from "./value-serializers";
 
 const defaultOptions = {
   ext: "css",
@@ -58,16 +44,7 @@ export class CssVars extends Generator<CssVarsOpts> {
   }
 
   override header(): string {
-    const { dateFn } = this.options;
-
-    return [
-      `/**`,
-      ` * ${this.signature()}`,
-      ` * Generated ${dateFn!()}`,
-      ` *`,
-      ` * This file is generated and should be committed to source control`,
-      ` */`,
-    ].join(EOL);
+    return this.commentHeader();
   }
 
   generateToken(token: Token): string {
@@ -79,27 +56,11 @@ export class CssVars extends Generator<CssVarsOpts> {
   }
 
   combinator(tokens: Token[]): string {
-    const { nameTransformer } = this.options;
     const rootVars = tokens.map((token) => this.generateToken(token));
 
-    const modeMap = new Map<string, string[]>();
-
-    for (const token of tokens) {
-      if (!token.modes) {
-        continue;
-      }
-
-      const key = `--${nameTransformer!(token.name)}`;
-
-      for (const [mode, val] of Object.entries(token.modes)) {
-        const line = `  ${key}: ${val};`;
-
-        if (!modeMap.has(mode)) {
-          modeMap.set(mode, []);
-        }
-        modeMap.get(mode)!.push(line);
-      }
-    }
+    const modeMap = this.buildModeMap(tokens, (key, val) =>
+      `  --${key}: ${cssValue(val)};`,
+    );
 
     const blocks = [`:root {`, rootVars.join(EOL), `}`];
 

@@ -1,11 +1,13 @@
 import { Color } from "./TokenTypes/Color";
-import { Dimension } from "./TokenTypes/Dimension";
+import { Dimension, allUnits } from "./TokenTypes/Dimension";
 import type { DimensionUnit } from "./TokenTypes/Dimension";
-import { Duration } from "./TokenTypes/Duration";
+import { Duration, durationUnits } from "./TokenTypes/Duration";
 import type { DurationUnit } from "./TokenTypes/Duration";
+import { isFirstClassValue } from "./type-classifiers";
 import type {
   CompositeInput,
   CompositeTokenInput,
+  CompositeValue,
   ThemeLayer,
   Token,
   TokenInput,
@@ -14,7 +16,11 @@ import type {
 } from "./Token";
 
 const isTokenInputObject = (v: unknown): v is TokenInputObject =>
-  typeof v === "object" && v !== null && !Color.isColor(v) && !Array.isArray(v) && "value" in v;
+  typeof v === "object" &&
+  v !== null &&
+  !Array.isArray(v) &&
+  !isFirstClassValue(v) &&
+  "value" in v;
 
 const resolveTokenInput = (name: string, input: TokenInput): Omit<Token, "type"> => {
   if (Array.isArray(input)) {
@@ -57,7 +63,7 @@ const resolveCompositeInput = (name: string, input: CompositeTokenInput): Omit<T
     return token;
   }
 
-  return { name, value: input };
+  return { name, value: input as CompositeValue };
 };
 
 /**
@@ -77,12 +83,17 @@ const resolveCompositeInput = (name: string, input: CompositeTokenInput): Omit<T
  * });
  * ```
  */
-export const group = (type: string, entries: Record<string, TokenInput>): Token[] =>
-  Object.entries(entries).map(([name, input]) => ({
+export const group = (type: string, entries: Record<string, TokenInput>): Token[] => {
+  if (typeof entries !== "object" || entries === null || Array.isArray(entries)) {
+    throw new TypeError(`group(): entries must be a plain object, got ${typeof entries}`);
+  }
+
+  return Object.entries(entries).map(([name, input]) => ({
     ...resolveTokenInput(name, input),
     type,
     group: type,
   }));
+};
 
 /**
  * Create a scale of tokens — useful for spacing, font sizes, z-indices, etc.
@@ -108,6 +119,10 @@ export const scale = (
   values: Record<string, TokenInput> | number[],
   options?: { names?: string[]; transform?: (n: number) => TokenValue; usage?: string },
 ): Token[] => {
+  if (!Array.isArray(values) && (typeof values !== "object" || values === null)) {
+    throw new TypeError(`scale(): values must be a plain object or array, got ${typeof values}`);
+  }
+
   if (Array.isArray(values)) {
     const { names, transform = (n: number) => n, usage } = options ?? {};
     return values.map((v, i) => {
@@ -137,11 +152,20 @@ export const scale = (
  * ```
  */
 export const composite = (type: string, entries: Record<string, CompositeTokenInput>): Token[] =>
-  Object.entries(entries).map(([name, input]) => ({
-    ...resolveCompositeInput(name, input),
-    type,
-    group: type,
-  }));
+  Object.entries(entries).map(([name, input]) => {
+    const token = { ...resolveCompositeInput(name, input), type, group: type };
+    const compositeValue = token.value;
+
+    if (typeof compositeValue === "object" && compositeValue !== null && !isFirstClassValue(compositeValue) && !Array.isArray(compositeValue)) {
+      for (const [field, fieldVal] of Object.entries(compositeValue as Record<string, unknown>)) {
+        if (typeof fieldVal === "object" && fieldVal !== null && !isFirstClassValue(fieldVal) && !Array.isArray(fieldVal)) {
+          throw new Error(`composite(): nested objects are not supported. Token "${name}" field "${field}" contains an object. Flatten your composite or split into separate tokens.`);
+        }
+      }
+    }
+
+    return token;
+  });
 
 /**
  * Determine the best contrasting text color (black or white) for a given background.
@@ -194,7 +218,10 @@ export const onColors = (
   }));
 
 /**
- * Convert a pixel value to a rem Dimension (assuming 16px base).
+ * Convert a pixel value to a rem-based Dimension (assuming 16px base).
+ * The name `dp` stands for "density-independent pixel" — a concept borrowed
+ * from Android's display system. In web terms: converts a px design spec
+ * value to its rem equivalent.
  *
  * @example
  * ```ts
@@ -202,7 +229,13 @@ export const onColors = (
  * dp(8)   // => Dimension(0.5, 'rem')
  * ```
  */
-export const dp = (px: number): Dimension => new Dimension(px / 16, "rem");
+export const dp = (px: number): Dimension => {
+  if (!Number.isFinite(px)) {
+    throw new Error(`dp(): value must be a finite number, got ${px}`);
+  }
+
+  return new Dimension(px / 16, "rem");
+};
 
 /**
  * Create a Dimension value.
@@ -213,7 +246,17 @@ export const dp = (px: number): Dimension => new Dimension(px / 16, "rem");
  * dim(1, 'rem')  // => Dimension(1, 'rem')
  * ```
  */
-export const dim = (value: number, unit: DimensionUnit): Dimension => new Dimension(value, unit);
+export const dim = (value: number, unit: DimensionUnit): Dimension => {
+  if (!Number.isFinite(value)) {
+    throw new Error(`dim(): value must be a finite number, got ${value}`);
+  }
+
+  if (!allUnits.has(unit)) {
+    throw new Error(`dim(): invalid unit "${unit}". Valid units: ${[...allUnits].join(", ")}`);
+  }
+
+  return new Dimension(value, unit);
+};
 
 /**
  * Create a Duration value.
@@ -224,7 +267,17 @@ export const dim = (value: number, unit: DimensionUnit): Dimension => new Dimens
  * dur(0.3, 's')   // => Duration(0.3, 's')
  * ```
  */
-export const dur = (value: number, unit: DurationUnit): Duration => new Duration(value, unit);
+export const dur = (value: number, unit: DurationUnit): Duration => {
+  if (!Number.isFinite(value)) {
+    throw new Error(`dur(): value must be a finite number, got ${value}`);
+  }
+
+  if (!durationUnits.has(unit)) {
+    throw new Error(`dur(): invalid unit "${unit}". Valid units: ${[...durationUnits].join(", ")}`);
+  }
+
+  return new Duration(value, unit);
+};
 
 /**
  * Merge multiple token arrays into one.
@@ -280,6 +333,10 @@ export const theme = (
  * ```
  */
 export const ref = (tokenName: string, usage?: string): TokenInputObject => {
+  if (!tokenName || typeof tokenName !== "string") {
+    throw new Error(`ref(): token name must be a non-empty string`);
+  }
+
   const result: TokenInputObject = { value: `{${tokenName}}` };
   if (usage) {
     result.usage = usage;

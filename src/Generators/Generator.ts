@@ -4,12 +4,12 @@ import { version } from "../version";
 import { sortPlugins } from "../Plugins/Plugin";
 import type { Plugin } from "../Plugins";
 import { camelCase, deriveShortName } from "../string-utils";
-import type { Token } from "../Token";
+import type { ModeValues, Token } from "../Token";
 import { isFirstClassValue } from "../type-classifiers";
 import { matches } from "../utils";
 
-const applyPlugin = (plugin: Plugin, token: Token): Token => {
-  const transformed = plugin.toJSON(token);
+export const applyPlugin = (plugin: Plugin, token: Token): Token => {
+  const transformed = plugin.transform(token);
 
   if (!token.modes) {
     return transformed;
@@ -18,11 +18,11 @@ const applyPlugin = (plugin: Plugin, token: Token): Token => {
   // Use transformed.modes for keys (plugin may have renamed them)
   // but run each mode value through the plugin for value transforms
   const sourceModes = transformed.modes ?? token.modes;
-  const transformedModes: Record<string, unknown> = {};
+  const transformedModes: ModeValues = {};
   for (const [mode, modeVal] of Object.entries(sourceModes)) {
-    const { modes: _, ...rest } = token;
+    const { modes: _, ...rest } = transformed;
     const syntheticToken = { ...rest, value: modeVal };
-    transformedModes[mode] = plugin.toJSON(syntheticToken).value;
+    transformedModes[mode] = plugin.transform(syntheticToken).value;
   }
 
   return { ...transformed, modes: transformedModes };
@@ -91,7 +91,7 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
     return `Teikn v${this.options.version ?? version}`;
   }
 
-  convertColorToString(token: Token): Token {
+  stringifyValues(token: Token): Token {
     const { value, modes } = token;
     const convertedValue = isFirstClassValue(value)
       ? (value as { toString(): string }).toString()
@@ -101,7 +101,7 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
       return convertedValue === value ? token : { ...token, value: convertedValue };
     }
 
-    const convertedModes: Record<string, unknown> = {};
+    const convertedModes: ModeValues = {};
     let modesChanged = false;
     for (const [mode, modeVal] of Object.entries(modes)) {
       if (isFirstClassValue(modeVal)) {
@@ -119,7 +119,7 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
   }
 
   stringifyValue(token: Token): Token {
-    return this.convertColorToString(token);
+    return this.stringifyValues(token);
   }
 
   validateOptions(): void {
@@ -155,6 +155,47 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
     return null;
   }
 
+  protected commentHeader(style: 'jsdoc' | 'scss' = 'jsdoc'): string {
+    const { dateFn } = this.options as GeneratorOptions & { dateFn?: () => string | null };
+    const date = dateFn ? dateFn() : null;
+    if (style === 'scss') {
+      return [
+        `///`,
+        `/// ${this.signature()}`,
+        date ? `/// Generated ${date}` : null,
+        `///`,
+        `/// This file is generated and should be commited to source control`,
+        `///`,
+        EOL,
+      ].filter(Boolean).join(EOL);
+    }
+    return [
+      `/**`,
+      ` * ${this.signature()}`,
+      date ? ` * Generated ${date}` : null,
+      ` *`,
+      ` * This file is generated and should be committed to source control`,
+      ` */`,
+    ].filter(Boolean).join(EOL);
+  }
+
+  protected buildModeMap(
+    tokens: Token[],
+    formatter: (key: string, val: unknown, mode: string, token: Token) => string,
+  ): Map<string, string[]> {
+    const { nameTransformer } = this.options as GeneratorOptions & { nameTransformer?: (name: string) => string };
+    const modeMap = new Map<string, string[]>();
+    for (const token of tokens) {
+      if (!token.modes) { continue; }
+      const key = nameTransformer?.(token.name) ?? token.name;
+      for (const [mode, val] of Object.entries(token.modes)) {
+        if (!modeMap.has(mode)) { modeMap.set(mode, []); }
+        modeMap.get(mode)!.push(formatter(key, val, mode, token));
+      }
+    }
+    return modeMap;
+  }
+
   footer(): string | null {
     return null;
   }
@@ -162,7 +203,7 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
   protected prepareTokens(tokens: Token[], plugins: Plugin[]): Token[] {
     const sorted = sortPlugins(plugins);
     return tokens
-      .map((t) => this.convertColorToString(t))
+      .map((t) => this.stringifyValues(t))
       .map((token) =>
         sorted.reduce((acc, plugin) => {
           if (!matches(plugin.tokenType, token.type)) {

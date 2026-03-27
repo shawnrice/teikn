@@ -2,25 +2,11 @@ import { EOL } from "node:os";
 
 import type { Plugin } from "../Plugins";
 import { camelCase, deriveShortName, kebabCase } from "../string-utils";
-import { isFirstClassValue } from "../type-classifiers";
 import type { Token } from "../Token";
 import { getDate } from "../utils";
 import type { GeneratorInfo, GeneratorOptions } from "./Generator";
 import { Generator } from "./Generator";
-
-const scssValue = (value: unknown): string => {
-  if (typeof value !== "object" || value === null) {
-    return String(value);
-  }
-  if (isFirstClassValue(value)) {
-    return String(value);
-  }
-  const obj = value as Record<string, unknown>;
-  if ("width" in obj && "style" in obj && "color" in obj) {
-    return [obj.width, obj.style, obj.color].filter(Boolean).join(" ");
-  }
-  return Object.values(obj).join(" ");
-};
+import { cssValue } from "./value-serializers";
 
 const defaultOptions = {
   ext: "scss",
@@ -70,30 +56,19 @@ export class Scss extends Generator<ScssOpts> {
     // prettier-ignore
     return [
       usage && `  /// ${usage}`,
-      `  ${key}: ${scssValue(value)},`,
+      `  ${key}: ${cssValue(value)},`,
     ]
       .filter(Boolean)
       .join(EOL);
   }
 
   combinator(tokens: Token[]): string {
-    const { nameTransformer } = this.options;
     const values = tokens.map((token) => this.generateToken(token));
     const lines = [`// prettier-ignore`, `$token-values: (`, values.join(EOL), `);`];
 
-    const modeMap = new Map<string, string[]>();
-    for (const token of tokens) {
-      if (!token.modes) {
-        continue;
-      }
-      const key = nameTransformer!(token.name);
-      for (const [mode, val] of Object.entries(token.modes)) {
-        if (!modeMap.has(mode)) {
-          modeMap.set(mode, []);
-        }
-        modeMap.get(mode)!.push(`    ${key}: ${scssValue(val)},`);
-      }
-    }
+    const modeMap = this.buildModeMap(tokens, (key, val) =>
+      `    ${key}: ${cssValue(val)},`,
+    );
 
     if (modeMap.size > 0) {
       lines.push("");
@@ -112,17 +87,7 @@ export class Scss extends Generator<ScssOpts> {
   }
 
   override header(): string | null {
-    const { dateFn } = this.options;
-
-    return [
-      `///`,
-      `/// ${this.signature()}`,
-      `/// Generated ${dateFn!()}`,
-      `///`,
-      `/// This file is generated and should be commited to source control`,
-      `///`,
-      EOL,
-    ].join(EOL);
+    return this.commentHeader('scss');
   }
 
   override footer(): string | null {

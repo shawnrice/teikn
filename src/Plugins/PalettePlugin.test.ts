@@ -17,9 +17,9 @@ describe("PalettePlugin", () => {
     expect(plugin.outputType.test("json")).toBe(true);
   });
 
-  test("toJSON returns token unchanged", () => {
+  test("transform returns token unchanged", () => {
     const token: Token = { name: "primary", type: "color", value: new Color("#3366ff") };
-    const result = plugin.toJSON(token);
+    const result = plugin.transform(token);
     expect(result).toBe(token);
   });
 

@@ -23,13 +23,11 @@ export type TokenValue =
 
 export type CompositeValue = Record<string, TokenValue>;
 
-export type ModeValues = Record<string, any>;
+export type ModeValues = Record<string, TokenValue | CompositeValue>;
 
-// Token.value stays as `any` for backward compat — plugins and generators
-// depend on untyped access. Conceptually: TokenValue | CompositeValue.
 export type Token = {
   name: string;
-  value: any;
+  value: TokenValue | CompositeValue;
   usage?: string;
   type: string;
   group?: string;

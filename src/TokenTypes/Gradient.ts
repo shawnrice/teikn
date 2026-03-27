@@ -111,6 +111,8 @@ const normalizeAngle = (deg: number): number => ((deg % 360) + 360) % 360;
 const linearRe = /^linear-gradient\(([\s\S]+)\)$/i;
 
 export class LinearGradient {
+  /** @internal brand — do not use directly; see `isFirstClassValue()` */
+  readonly __teikn_fcv__: true = true;
   readonly #angle: number;
   readonly #stops: readonly GradientStop[];
 
@@ -213,6 +215,8 @@ const isShapeSpec = (str: string): boolean =>
   /^(circle|ellipse|closest|farthest)/i.test(str) || /\bat\s/i.test(str);
 
 export class RadialGradient {
+  /** @internal brand — do not use directly; see `isFirstClassValue()` */
+  readonly __teikn_fcv__: true = true;
   readonly #shape: RadialShape;
   readonly #size: RadialSize;
   readonly #position: string;
@@ -373,6 +377,8 @@ const parseGradient = (str: string): AnyGradient => {
 };
 
 export class GradientList {
+  /** @internal brand — do not use directly; see `isFirstClassValue()` */
+  readonly __teikn_fcv__: true = true;
   readonly #layers: readonly AnyGradient[];
 
   constructor(value: GradientList | string | AnyGradient[]);

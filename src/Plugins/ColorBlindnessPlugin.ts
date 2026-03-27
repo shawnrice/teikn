@@ -18,7 +18,7 @@ const buildName = (baseName: string, type: ColorBlindnessType, suffix: string): 
   `${baseName}${suffix.replace("{type}", type)}`;
 
 const makeSimulatedToken = (token: Token, type: ColorBlindnessType, suffix: string): Token => {
-  const color = token.value instanceof Color ? token.value : new Color(token.value);
+  const color = token.value instanceof Color ? token.value : new Color(token.value as string);
 
   const simulated = color.simulateColorBlindness(type);
 
@@ -38,7 +38,7 @@ export class ColorBlindnessPlugin extends Plugin<ColorBlindnessPluginOptions> {
     super(options);
   }
 
-  toJSON(token: Token): Token {
+  transform(token: Token): Token {
     return token;
   }
 

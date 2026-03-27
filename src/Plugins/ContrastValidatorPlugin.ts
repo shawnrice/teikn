@@ -17,7 +17,7 @@ export class ContrastValidatorPlugin extends Plugin<ContrastValidatorPluginOptio
   tokenType: string = "color";
   outputType: RegExp = /.*/;
 
-  toJSON(token: Token): Token {
+  transform(token: Token): Token {
     return token;
   }
 
@@ -49,8 +49,8 @@ export class ContrastValidatorPlugin extends Plugin<ContrastValidatorPluginOptio
       }
 
       try {
-        const fgColor = fgToken.value instanceof Color ? fgToken.value : new Color(fgToken.value);
-        const bgColor = bgToken.value instanceof Color ? bgToken.value : new Color(bgToken.value);
+        const fgColor = fgToken.value instanceof Color ? fgToken.value : new Color(fgToken.value as string);
+        const bgColor = bgToken.value instanceof Color ? bgToken.value : new Color(bgToken.value as string);
         const ratio = fgColor.contrastRatio(bgColor);
         const threshold = minRatio ?? WCAG_THRESHOLDS[level];
         const rounded = Math.round(ratio * 100) / 100;

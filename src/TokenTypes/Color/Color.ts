@@ -96,6 +96,8 @@ const wcagLinearize = (x: number): number =>
  * with lazy conversion and caching for other spaces.
  */
 export class Color {
+  /** @internal brand — do not use directly; see `isFirstClassValue()` */
+  readonly __teikn_fcv__: true = true;
   #nativeSpace: Space;
   #nativeData: SpaceData[Space];
   #alpha: number;

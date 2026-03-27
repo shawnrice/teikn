@@ -20,7 +20,7 @@ const generatePaletteTokens = (
   lightEnd: number,
   darkEnd: number,
 ): Token[] => {
-  const baseColor = new Color(token.value);
+  const baseColor = new Color(token.value as string | Color);
   const midStep = 500;
   const minStep = Math.min(...steps);
   const maxStep = Math.max(...steps);
@@ -69,7 +69,7 @@ export class PalettePlugin extends Plugin<PalettePluginOptions> {
     super(options);
   }
 
-  toJSON(token: Token): Token {
+  transform(token: Token): Token {
     return token;
   }
 

@@ -17,10 +17,10 @@ describe("ContrastValidatorPlugin", () => {
     expect(plugin.outputType.test("css")).toBe(true);
   });
 
-  test("toJSON returns token unchanged", () => {
+  test("transform returns token unchanged", () => {
     const plugin = new ContrastValidatorPlugin({ pairs: [] });
     const token = makeToken("fg", "#000");
-    expect(plugin.toJSON(token)).toBe(token);
+    expect(plugin.transform(token)).toBe(token);
   });
 
   test("passes when contrast ratio meets AA threshold", () => {

@@ -1,5 +1,5 @@
 import { camelCase, kebabCase } from "../string-utils";
-import type { Token } from "../Token";
+import type { ModeValues, Token } from "../Token";
 import { Plugin } from "./Plugin";
 
 type NameConvention = "camelCase" | "kebab-case" | "snake_case" | "PascalCase" | "SCREAMING_SNAKE";
@@ -38,7 +38,7 @@ export class NameConventionPlugin extends Plugin<NameConventionPluginOptions> {
 
   override readonly runAfter: string[] = ["PrefixTypePlugin", "StripTypePrefixPlugin"];
 
-  toJSON(token: Token): Token {
+  transform(token: Token): Token {
     const { convention } = this.options;
     const convert = converters[convention];
 
@@ -48,7 +48,7 @@ export class NameConventionPlugin extends Plugin<NameConventionPluginOptions> {
     };
 
     if (token.modes) {
-      const convertedModes: Record<string, unknown> = {};
+      const convertedModes: ModeValues = {};
       for (const [key, value] of Object.entries(token.modes)) {
         convertedModes[convert(key)] = value;
       }

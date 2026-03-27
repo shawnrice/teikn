@@ -31,31 +31,33 @@ const parseCss = (css: string): { value: number; unit: DurationUnit } => {
 // ─── Duration ───────────────────────────────────────────────
 
 export class Duration {
-  readonly #value: number;
+  /** @internal brand — do not use directly; see `isFirstClassValue()` */
+  readonly __teikn_fcv__: true = true;
+  readonly #amount: number;
   readonly #unit: DurationUnit;
 
   constructor(value: number, unit: DurationUnit);
   constructor(css: Duration | string);
   constructor(first: number | string | Duration, unit?: DurationUnit) {
     if (first instanceof Duration) {
-      this.#value = first.#value;
+      this.#amount = first.#amount;
       this.#unit = first.#unit;
       return;
     }
 
     if (typeof first === "string") {
       const parsed = parseCss(first);
-      this.#value = parsed.value;
+      this.#amount = parsed.value;
       this.#unit = parsed.unit;
       return;
     }
 
-    this.#value = first;
+    this.#amount = first;
     this.#unit = unit!;
   }
 
-  get value(): number {
-    return this.#value;
+  get amount(): number {
+    return this.#amount;
   }
   get unit(): DurationUnit {
     return this.#unit;
@@ -64,7 +66,7 @@ export class Duration {
   // ─── Conversion ─────────────────────────────────────────────
 
   to(targetUnit: DurationUnit): Duration {
-    return new Duration(convertDuration(this.#value, this.#unit, targetUnit), targetUnit);
+    return new Duration(convertDuration(this.#amount, this.#unit, targetUnit), targetUnit);
   }
 
   toMs(): Duration {
@@ -76,35 +78,35 @@ export class Duration {
   }
 
   ms(): number {
-    return this.#unit === "ms" ? this.#value : this.#value * 1000;
+    return this.#unit === "ms" ? this.#amount : this.#amount * 1000;
   }
 
   // ─── Math ───────────────────────────────────────────────────
 
   scale(factor: number): Duration {
-    return new Duration(this.#value * factor, this.#unit);
+    return new Duration(this.#amount * factor, this.#unit);
   }
 
   add(other: Duration): Duration {
     if (this.#unit === other.#unit) {
-      return new Duration(this.#value + other.#value, this.#unit);
+      return new Duration(this.#amount + other.#amount, this.#unit);
     }
     const converted = other.to(this.#unit);
-    return new Duration(this.#value + converted.value, this.#unit);
+    return new Duration(this.#amount + converted.amount, this.#unit);
   }
 
   subtract(other: Duration): Duration {
     if (this.#unit === other.#unit) {
-      return new Duration(this.#value - other.#value, this.#unit);
+      return new Duration(this.#amount - other.#amount, this.#unit);
     }
     const converted = other.to(this.#unit);
-    return new Duration(this.#value - converted.value, this.#unit);
+    return new Duration(this.#amount - converted.amount, this.#unit);
   }
 
   // ─── Comparison ─────────────────────────────────────────────
 
   equals(other: Duration): boolean {
-    return this.#value === other.#value && this.#unit === other.#unit;
+    return this.#amount === other.#amount && this.#unit === other.#unit;
   }
 
   // ─── Serialization ─────────────────────────────────────────
@@ -114,7 +116,7 @@ export class Duration {
   }
 
   toString(): string {
-    return `${this.#value}${this.#unit}`;
+    return `${this.#amount}${this.#unit}`;
   }
 
   // ─── Static helpers ──────────────────────────────────────────

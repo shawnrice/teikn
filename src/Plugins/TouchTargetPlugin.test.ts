@@ -11,10 +11,10 @@ describe("TouchTargetPlugin", () => {
     value,
   });
 
-  test("toJSON returns token unchanged", () => {
+  test("transform returns token unchanged", () => {
     const plugin = new TouchTargetPlugin({});
     const token = makeToken("btn", "48px");
-    expect(plugin.toJSON(token)).toBe(token);
+    expect(plugin.transform(token)).toBe(token);
   });
 
   test("passes when size meets minimum", () => {

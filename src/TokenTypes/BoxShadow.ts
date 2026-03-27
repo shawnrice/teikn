@@ -56,6 +56,8 @@ const parse = (
 };
 
 export class BoxShadow {
+  /** @internal brand — do not use directly; see `isFirstClassValue()` */
+  readonly __teikn_fcv__: true = true;
   readonly #offsetX: number;
   readonly #offsetY: number;
   readonly #blur: number;
@@ -188,6 +190,8 @@ export class BoxShadow {
 }
 
 export class BoxShadowList {
+  /** @internal brand — do not use directly; see `isFirstClassValue()` */
+  readonly __teikn_fcv__: true = true;
   readonly #layers: readonly BoxShadow[];
 
   constructor(value: BoxShadow[] | string | BoxShadowList);

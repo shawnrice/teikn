@@ -22,13 +22,13 @@ describe("ReducedMotionPlugin", () => {
     expect(plugin.outputType.test("json")).toBe(true);
   });
 
-  test("toJSON returns token unchanged", () => {
+  test("transform returns token unchanged", () => {
     const token: Token = {
       name: "fade-duration",
       type: "duration",
       value: new Duration(200, "ms"),
     };
-    const result = plugin.toJSON(token);
+    const result = plugin.transform(token);
     expect(result).toBe(token);
   });
 

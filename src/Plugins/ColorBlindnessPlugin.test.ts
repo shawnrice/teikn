@@ -103,9 +103,9 @@ describe("ColorBlindnessPlugin", () => {
     expect(simulated?.usage).toBe("Deuteranopia simulation of link");
   });
 
-  test("toJSON returns token unchanged", () => {
+  test("transform returns token unchanged", () => {
     const plugin = new ColorBlindnessPlugin();
     const token = colorToken("test", new Color(100, 100, 100));
-    expect(plugin.toJSON(token)).toBe(token);
+    expect(plugin.transform(token)).toBe(token);
   });
 });

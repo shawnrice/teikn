@@ -262,10 +262,10 @@ const convertSingleValue = (value: unknown): DtcgValue | null => {
     return value.layers.map((g) => gradientToDtcg(g)) as unknown as DtcgValue;
   }
   if (value instanceof Dimension) {
-    return { value: value.value, unit: value.unit } as DtcgDimensionValue;
+    return { value: value.amount, unit: value.unit } as DtcgDimensionValue;
   }
   if (value instanceof Duration) {
-    return { value: value.value, unit: value.unit } as DtcgDurationValue;
+    return { value: value.amount, unit: value.unit } as DtcgDurationValue;
   }
   return null;
 };

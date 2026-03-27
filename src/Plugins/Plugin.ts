@@ -22,7 +22,7 @@ export abstract class Plugin<Options extends Record<string, unknown> = Record<st
     this.options = options;
   }
 
-  abstract toJSON(token: Token): Token;
+  abstract transform(token: Token): Token;
 
   audit?(tokens: Token[]): AuditIssue[];
 }

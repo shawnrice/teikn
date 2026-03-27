@@ -13,10 +13,11 @@ import { ScssVars } from "./ScssVars";
 import { EsModule } from "./EsModule";
 import { JavaScript } from "./JavaScript";
 import { Json } from "./Json";
+import { testOpts } from "../fixtures/testOpts";
 
 // ─── Helpers ─────────────────────────────────────────────────
 
-const opts = { dateFn: () => "null", version: "test" };
+const opts = testOpts;
 
 const colorToken = (modes: Record<string, unknown>): Token[] => [
   { name: "surface", type: "color", value: "#ffffff", modes },

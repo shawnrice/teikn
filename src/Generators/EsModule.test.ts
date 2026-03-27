@@ -3,11 +3,12 @@ import { describe, expect, test } from "bun:test";
 import { tokenSet1 } from "../fixtures/tokenSet1";
 import type { Token } from "../Token";
 import { EsModule as Generator } from "./EsModule";
+import { testOpts } from "../fixtures/testOpts";
 
 describe("EsModule tests", () => {
   test("it generates tokens as an esmodule", () => {
     expect(
-      new Generator({ dateFn: () => "null", version: "test" }).generate(tokenSet1),
+      new Generator(testOpts).generate(tokenSet1),
     ).toMatchSnapshot();
   });
 
@@ -18,7 +19,7 @@ describe("EsModule tests", () => {
       { name: "spacingSm", type: "spacing", value: "4px" },
     ];
     expect(
-      new Generator({ dateFn: () => "null", version: "test", groups: true }).generate(tokens),
+      new Generator({ ...testOpts, groups: true }).generate(tokens),
     ).toMatchSnapshot();
   });
 
@@ -27,7 +28,7 @@ describe("EsModule tests", () => {
       { name: "colorSurface", type: "color", value: "#ffffff", modes: { dark: "#1a1a1a" } },
       { name: "colorText", type: "color", value: "#000000", modes: { dark: "#eeeeee" } },
     ];
-    const output = new Generator({ dateFn: () => "null", version: "test" }).generate(tokens);
+    const output = new Generator(testOpts).generate(tokens);
     expect(output).toContain("export const modes = {");
     expect(output).toContain("colorSurface: '#1a1a1a',");
     expect(output).toContain("colorText: '#eeeeee',");
@@ -36,7 +37,7 @@ describe("EsModule tests", () => {
 
   test("omits modes export when no tokens have modes", () => {
     const tokens: Token[] = [{ name: "colorSurface", type: "color", value: "#ffffff" }];
-    const output = new Generator({ dateFn: () => "null", version: "test" }).generate(tokens);
+    const output = new Generator(testOpts).generate(tokens);
     expect(output).not.toContain("modes");
   });
 });

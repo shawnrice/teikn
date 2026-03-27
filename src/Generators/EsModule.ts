@@ -5,26 +5,13 @@ import type { Token } from "../Token";
 import { getDate } from "../utils";
 import type { GeneratorInfo, GeneratorOptions } from "./Generator";
 import { Generator } from "./Generator";
+import { maybeQuote, quoteKey } from "./value-serializers";
 
 const defaultOptions = {
   ext: "mjs",
   nameTransformer: camelCase,
   dateFn: getDate,
 };
-
-const maybeQuote = (val: any): string => {
-  if (typeof val === "string") {
-    return `'${val}'`;
-  }
-  if (typeof val === "object" && val !== null) {
-    return JSON.stringify(val);
-  }
-  return String(val);
-};
-
-const isValidIdentifier = (name: string): boolean => /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(name);
-
-const quoteKey = (name: string): string => (isValidIdentifier(name) ? name : `'${name}'`);
 
 export type EsModuleOpts = {
   dateFn?: () => string | null;
@@ -61,17 +48,7 @@ export class EsModule extends Generator<EsModuleOpts> {
   }
 
   override header(): string {
-    const { dateFn } = this.options;
-
-    return [
-      `/**`,
-      ` * ${this.signature()}`,
-      ` * Generated ${dateFn!()}`,
-      ` *`,
-      ` * This file is generated and should be commited to source control`,
-      ` *`,
-      ` */`,
-    ].join(EOL);
+    return this.commentHeader();
   }
 
   generateToken(token: Token): string {
@@ -114,18 +91,9 @@ export class EsModule extends Generator<EsModuleOpts> {
       parts.push("", ...groupBlocks);
     }
 
-    const modeMap = new Map<string, string[]>();
-    for (const token of tokens) {
-      if (!token.modes) {
-        continue;
-      }
-      for (const [mode, val] of Object.entries(token.modes)) {
-        if (!modeMap.has(mode)) {
-          modeMap.set(mode, []);
-        }
-        modeMap.get(mode)!.push(`    ${nameTransformer!(token.name)}: ${maybeQuote(val)},`);
-      }
-    }
+    const modeMap = this.buildModeMap(tokens, (key, val) =>
+      `    ${key}: ${maybeQuote(val)},`,
+    );
 
     if (modeMap.size > 0) {
       const modeEntries = [...modeMap.entries()].map(([mode, entries]) =>

@@ -28,7 +28,7 @@ export class PrefixTypePlugin extends Plugin {
 
   tokenType: RegExp = /.*/;
 
-  toJSON(token: Token): Token {
+  transform(token: Token): Token {
     const { type, name } = token;
 
     if (!type || !name) {

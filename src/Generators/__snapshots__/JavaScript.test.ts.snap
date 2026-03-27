@@ -5,8 +5,7 @@ exports[`es5 tests it generates things 1`] = `
  * Teikn vtest
  * Generated null
  *
- * This file is generated and should be commited to source control
- *
+ * This file is generated and should be committed to source control
  */
 const tokens = {
   /**
@@ -34,8 +33,7 @@ exports[`es5 tests it generates group accessors when groups: true 1`] = `
  * Teikn vtest
  * Generated null
  *
- * This file is generated and should be commited to source control
- *
+ * This file is generated and should be committed to source control
  */
 const tokens = {
   /**

@@ -11,8 +11,9 @@ import { AlphaMultiplyPlugin } from "./AlphaMultiplyPlugin";
 import { NameConventionPlugin } from "./NameConventionPlugin";
 import { ScssQuoteValuePlugin } from "./ScssQuoteValuePlugin";
 import { DeprecationPlugin } from "./DeprecationPlugin";
+import { testOpts } from "../fixtures/testOpts";
 
-const opts = { dateFn: () => "null", version: "test" };
+const opts = testOpts;
 
 // ─── ColorTransformPlugin with modes ─────────────────────────
 

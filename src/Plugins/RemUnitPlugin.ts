@@ -1,4 +1,5 @@
 import type { Token } from "../Token";
+import { isFirstClassValue } from "../type-classifiers";
 import { Dimension } from "../TokenTypes/Dimension";
 import { Plugin } from "./Plugin";
 
@@ -11,7 +12,12 @@ const PX_RE = /^(-?\d+(?:\.\d+)?)px$/;
 
 const convertValue = (value: unknown, base: number, targetUnit: string): unknown => {
   if (value instanceof Dimension) {
-    return value.unit === "px" ? new Dimension(value.value / base, targetUnit as "rem") : value;
+    return value.unit === "px" ? new Dimension(value.amount / base, targetUnit as "rem") : value;
+  }
+
+  // Preserve other first-class values (Color, CubicBezier, BoxShadow, etc.)
+  if (isFirstClassValue(value)) {
+    return value;
   }
 
   if (typeof value === "string") {
@@ -40,12 +46,12 @@ export class RemUnitPlugin extends Plugin<RemUnitPluginOptions> {
     super(options);
   }
 
-  toJSON(token: Token): Token {
+  transform(token: Token): Token {
     const { base = 16, targetUnit = "rem" } = this.options;
 
     return {
       ...token,
-      value: convertValue(token.value, base, targetUnit),
+      value: convertValue(token.value, base, targetUnit) as Token["value"],
     };
   }
 }

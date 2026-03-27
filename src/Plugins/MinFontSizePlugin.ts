@@ -13,7 +13,7 @@ const DIMENSION_RE = /^(-?\d+(?:\.\d+)?)(px|rem|em|pt)$/;
 const toPx = (value: unknown, basePx: number): number | null => {
   if (value instanceof Dimension) {
     try {
-      return value.toPx(basePx).value;
+      return value.toPx(basePx).amount;
     } catch {
       // Non-convertible unit (e.g., vw)
       return null;
@@ -54,7 +54,7 @@ export class MinFontSizePlugin extends Plugin<MinFontSizePluginOptions> {
   tokenType: RegExp = /font-size/;
   outputType: RegExp = /.*/;
 
-  toJSON(token: Token): Token {
+  transform(token: Token): Token {
     return token;
   }
 

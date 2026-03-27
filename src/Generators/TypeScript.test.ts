@@ -3,13 +3,14 @@ import { describe, expect, test } from "bun:test";
 import { tokenSet1 } from "../fixtures/tokenSet1";
 import type { Token } from "../Token";
 import { TypeScript as Generator } from "./TypeScript";
+import { testOpts } from "../fixtures/testOpts";
 
 const fixedDate = () => "Mon Jan 01 2024 12:00:00";
 
 describe("TypeScript generator tests", () => {
   test("It matches the TypeScript snapshot", () => {
     expect(
-      new Generator({ dateFn: () => "null", version: "test" }).generate(tokenSet1),
+      new Generator(testOpts).generate(tokenSet1),
     ).toMatchSnapshot();
   });
 
@@ -20,7 +21,7 @@ describe("TypeScript generator tests", () => {
       { name: "spacingSm", type: "spacing", value: "4px" },
     ];
     expect(
-      new Generator({ dateFn: () => "null", version: "test", groups: true }).generate(tokens),
+      new Generator({ ...testOpts, groups: true }).generate(tokens),
     ).toMatchSnapshot();
   });
 

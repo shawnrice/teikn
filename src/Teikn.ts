@@ -145,6 +145,7 @@ export type TeiknOptions = {
   plugins?: Plugin[];
   themes?: ThemeLayer[];
   outDir?: string;
+  validate?: boolean;
 };
 
 export type TransformResult = {
@@ -174,9 +175,21 @@ export class Teikn {
 
   static resolveReferences: typeof resolveReferences = resolveReferences;
 
+  options: TeiknOptions;
+
   constructor(options: TeiknOptions) {
     const { generators, outDir, plugins = [], themes } = options;
+    this.options = options;
     this.generators = generators ?? [new Teikn.generators.Json()];
+
+    const filenames = this.generators.map((g) => g.file);
+    const dupes = filenames.filter((f, i) => filenames.indexOf(f) !== i);
+    if (dupes.length > 0) {
+      throw new Error(
+        `Duplicate generator output filenames: ${[...new Set(dupes)].join(", ")}. Use the "filename" option to differentiate.`,
+      );
+    }
+
     const hasPrefixPlugin = plugins.some((p) => p instanceof PrefixTypePlugin);
     if (hasPrefixPlugin) {
       throw new Error(
@@ -216,6 +229,16 @@ export class Teikn {
   }
 
   generateToStrings(tokens: Token[]): Map<string, string> {
+    if (this.options.validate !== false) {
+      const result = validate(tokens);
+      const errors = result.issues.filter((i) => i.severity === "error");
+      if (errors.length > 0) {
+        throw new Error(
+          `Token validation failed:\n${errors.map((e) => `  ${e.token}: ${e.message}`).join("\n")}`,
+        );
+      }
+    }
+
     const expanded = this.expand(tokens);
     const withThemes = applyThemes(this.themes, expanded);
     const resolved = resolveReferences(withThemes);
@@ -233,6 +256,7 @@ export class Teikn {
   }
 
   async transform(tokens: Token[]): Promise<TransformResult> {
+    // generateToStrings() handles validation, so we don't duplicate it here
     const auditIssues = this.audit(tokens);
     const generated = this.generateToStrings(tokens);
     const files: TransformResult["files"] = [];

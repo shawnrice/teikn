@@ -62,7 +62,7 @@ export class ReducedMotionPlugin extends Plugin<ReducedMotionPluginOptions> {
     super(options);
   }
 
-  toJSON(token: Token): Token {
+  transform(token: Token): Token {
     return token;
   }
 

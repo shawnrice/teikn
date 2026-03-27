@@ -8,7 +8,7 @@ import { Plugin, sortPlugins } from "./Plugin";
 class PluginA extends Plugin {
   tokenType: RegExp = /.*/;
   outputType: RegExp = /.*/;
-  toJSON(token: Token): Token {
+  transform(token: Token): Token {
     return token;
   }
 }
@@ -17,7 +17,7 @@ class PluginB extends Plugin {
   tokenType: RegExp = /.*/;
   outputType: RegExp = /.*/;
   override readonly runAfter: string[] = ["PluginA"];
-  toJSON(token: Token): Token {
+  transform(token: Token): Token {
     return token;
   }
 }
@@ -26,7 +26,7 @@ class PluginC extends Plugin {
   tokenType: RegExp = /.*/;
   outputType: RegExp = /.*/;
   override readonly runAfter: string[] = ["PluginB"];
-  toJSON(token: Token): Token {
+  transform(token: Token): Token {
     return token;
   }
 }
@@ -72,7 +72,7 @@ describe("sortPlugins", () => {
       tokenType: RegExp = /.*/;
       outputType: RegExp = /.*/;
       override readonly runAfter: string[] = ["CycleB"];
-      toJSON(token: Token): Token {
+      transform(token: Token): Token {
         return token;
       }
     }
@@ -81,7 +81,7 @@ describe("sortPlugins", () => {
       tokenType: RegExp = /.*/;
       outputType: RegExp = /.*/;
       override readonly runAfter: string[] = ["CycleA"];
-      toJSON(token: Token): Token {
+      transform(token: Token): Token {
         return token;
       }
     }
@@ -93,7 +93,7 @@ describe("sortPlugins", () => {
     class IndepX extends Plugin {
       tokenType: RegExp = /.*/;
       outputType: RegExp = /.*/;
-      toJSON(token: Token): Token {
+      transform(token: Token): Token {
         return token;
       }
     }
@@ -101,7 +101,7 @@ describe("sortPlugins", () => {
     class IndepY extends Plugin {
       tokenType: RegExp = /.*/;
       outputType: RegExp = /.*/;
-      toJSON(token: Token): Token {
+      transform(token: Token): Token {
         return token;
       }
     }

@@ -14,10 +14,10 @@ export class AlphaMultiplyPlugin extends Plugin<AlphaMultiplyPluginOptions> {
     super(options);
   }
 
-  toJSON(token: Token): Token {
+  transform(token: Token): Token {
     const { background = "#ffffff" } = this.options;
 
-    const fg = token.value instanceof Color ? token.value : new Color(token.value);
+    const fg = token.value instanceof Color ? token.value : new Color(token.value as string);
 
     if (fg.alpha >= 1) {
       return token;

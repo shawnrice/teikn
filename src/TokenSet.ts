@@ -63,7 +63,7 @@ export const composeTokenSetsAsModes = (
       } else {
         tokenMap.set(modeToken.name, {
           ...modeToken,
-          value: undefined,
+          value: undefined as unknown as Token["value"],
           modes: { [modeName]: modeToken.value },
         });
       }

@@ -219,7 +219,7 @@ describe("builders", () => {
     test("converts px to rem Dimension", () => {
       const d = dp(16);
       expect(d).toBeInstanceOf(Dimension);
-      expect(d.value).toBe(1);
+      expect(d.amount).toBe(1);
       expect(d.unit).toBe("rem");
       expect(d.toString()).toBe("1rem");
     });
@@ -235,7 +235,7 @@ describe("builders", () => {
     test("creates a Dimension", () => {
       const d = dim(16, "px");
       expect(d).toBeInstanceOf(Dimension);
-      expect(d.value).toBe(16);
+      expect(d.amount).toBe(16);
       expect(d.unit).toBe("px");
     });
   });
@@ -244,7 +244,7 @@ describe("builders", () => {
     test("creates a Duration", () => {
       const d = dur(200, "ms");
       expect(d).toBeInstanceOf(Duration);
-      expect(d.value).toBe(200);
+      expect(d.amount).toBe(200);
       expect(d.unit).toBe("ms");
     });
   });

@@ -14,7 +14,7 @@ const DIMENSION_RE = /^(-?\d+(?:\.\d+)?)(px|rem|em|pt)$/;
 const toPx = (value: unknown, basePx: number): number | null => {
   if (value instanceof Dimension) {
     try {
-      return value.toPx(basePx).value;
+      return value.toPx(basePx).amount;
     } catch {
       return null;
     }
@@ -56,7 +56,7 @@ export class TouchTargetPlugin extends Plugin<TouchTargetPluginOptions> {
   tokenType: RegExp = /.*/;
   outputType: RegExp = /.*/;
 
-  toJSON(token: Token): Token {
+  transform(token: Token): Token {
     return token;
   }
 

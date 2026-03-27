@@ -55,7 +55,7 @@ const help = () => {
   console.log(
     "*",
     caller.join(" "),
-    'path/to/tokens.ts --outDir=path/to/out --generators="Scss,Json,EsModule,CssVars,Html" --plugins="PrefixTypePlugin,ColorTransformPlugin,ScssQuoteValuePlugin"',
+    'path/to/tokens.ts --outDir=path/to/out --generators="Scss,Json,EsModule,CssVars,Html" --plugins="ColorTransformPlugin,ScssQuoteValuePlugin"',
   );
   console.log();
 
@@ -153,7 +153,7 @@ const usage = () => {
   console.log(
     "Usage:",
     caller.join(" "),
-    'path/to/tokens.ts --outDir=path/to/out --generators="Scss,Json,EsModule" --plugins="PrefixTypePlugin,ColorTransformPlugin,ScssQuoteValuePlugin"',
+    'path/to/tokens.ts --outDir=path/to/out --generators="Scss,Json,EsModule" --plugins="ColorTransformPlugin,ScssQuoteValuePlugin"',
   );
   process.exit(2);
 };

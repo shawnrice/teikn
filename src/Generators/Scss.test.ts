@@ -6,6 +6,7 @@ import { PrefixTypePlugin } from "../Plugins/PrefixTypePlugin";
 import { ScssQuoteValuePlugin } from "../Plugins/ScssQuoteValuePlugin";
 import type { Token } from "../Token";
 import { Scss as Generator } from "./Scss";
+import { testOpts } from "../fixtures/testOpts";
 
 describe("Scss Generator tests", () => {
   test("It has the correct filename", () => {
@@ -14,7 +15,7 @@ describe("Scss Generator tests", () => {
 
   test("It generates the token set", () => {
     expect(
-      new Generator({ dateFn: () => "null", version: "test" }).generate(tokenSet1, [
+      new Generator(testOpts).generate(tokenSet1, [
         new ColorTransformPlugin({ type: "rgba" }),
         new ScssQuoteValuePlugin(),
         new PrefixTypePlugin(),
@@ -29,13 +30,13 @@ describe("Scss Generator tests", () => {
       { name: "spacingSm", type: "spacing", value: "4px" },
     ];
     expect(
-      new Generator({ dateFn: () => "null", version: "test", groups: true }).generate(tokens),
+      new Generator({ ...testOpts, groups: true }).generate(tokens),
     ).toMatchSnapshot();
   });
 
   test("it generates groups with PrefixTypePlugin", () => {
     expect(
-      new Generator({ dateFn: () => "null", version: "test", groups: true }).generate(tokenSet1, [
+      new Generator({ ...testOpts, groups: true }).generate(tokenSet1, [
         new ColorTransformPlugin({ type: "rgba" }),
         new ScssQuoteValuePlugin(),
         new PrefixTypePlugin(),
@@ -49,7 +50,7 @@ describe("Scss Generator tests", () => {
       { name: "colorText", type: "color", value: "#000000", modes: { dark: "#e0e0e0" } },
       { name: "spacingSm", type: "spacing", value: "4px" },
     ];
-    const output = new Generator({ dateFn: () => "null", version: "test" }).generate(tokens);
+    const output = new Generator(testOpts).generate(tokens);
 
     expect(output).toContain("$modes: (");
     expect(output).toContain("dark: (");
@@ -60,7 +61,7 @@ describe("Scss Generator tests", () => {
 
   test("it does not emit $modes when no tokens have modes", () => {
     const tokens: Token[] = [{ name: "colorPrimary", type: "color", value: "#ff0000" }];
-    const output = new Generator({ dateFn: () => "null", version: "test" }).generate(tokens);
+    const output = new Generator(testOpts).generate(tokens);
 
     expect(output).not.toContain("$modes");
   });
@@ -69,7 +70,7 @@ describe("Scss Generator tests", () => {
     const tokens: Token[] = [
       { name: "colorSurface", type: "color", value: "#fff", modes: { dark: "#111", dim: "#333" } },
     ];
-    const output = new Generator({ dateFn: () => "null", version: "test" }).generate(tokens);
+    const output = new Generator(testOpts).generate(tokens);
 
     expect(output).toContain("dark: (");
     expect(output).toContain("dim: (");

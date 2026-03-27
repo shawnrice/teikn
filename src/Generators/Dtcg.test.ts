@@ -40,8 +40,8 @@ describe("DtcgGenerator tests", () => {
   test("describe() returns correct info", () => {
     const gen = new DtcgGenerator();
     const info = gen.describe();
-    expect(info!.format).toBe("Dtcg");
-    expect(info!.usage).toContain("Dtcg");
+    expect(info!.format).toBe("DTCG");
+    expect(info!.usage).toContain("DTCG");
   });
 
   test("tokenUsage returns null", () => {

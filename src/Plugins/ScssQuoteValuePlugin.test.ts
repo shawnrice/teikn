@@ -18,17 +18,17 @@ describe("ScssQuoteValuePlugin", () => {
     expect(plugin.tokenType.test("color")).toBe(false);
   });
 
-  test("toJSON wraps value with unquote", () => {
+  test("transform wraps value with unquote", () => {
     const token: Token = { name: "body", type: "font-family", value: '"Arial", sans-serif' };
-    const result = plugin.toJSON(token);
+    const result = plugin.transform(token);
     expect(result.value).toBe("unquote('#{\"Arial\", sans-serif}')");
     expect(result.name).toBe("body");
     expect(result.type).toBe("font-family");
   });
 
-  test("toJSON preserves all other token fields", () => {
+  test("transform preserves all other token fields", () => {
     const token: Token = { name: "heading", type: "font", value: "Georgia", usage: "Heading font" };
-    const result = plugin.toJSON(token);
+    const result = plugin.transform(token);
     expect(result.usage).toBe("Heading font");
     expect(result.value).toBe("unquote('#{Georgia}')");
   });

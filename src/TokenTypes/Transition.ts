@@ -68,6 +68,8 @@ const parse = (
 };
 
 export class Transition {
+  /** @internal brand — do not use directly; see `isFirstClassValue()` */
+  readonly __teikn_fcv__: true = true;
   readonly #duration: string;
   readonly #timingFunction: CubicBezier;
   readonly #delay: string;
@@ -169,6 +171,8 @@ export class Transition {
 // ─── TransitionList ───────────────────────────────────────────
 
 export class TransitionList {
+  /** @internal brand — do not use directly; see `isFirstClassValue()` */
+  readonly __teikn_fcv__: true = true;
   readonly #layers: readonly Transition[];
 
   constructor(value: TransitionList | string | Transition[]);

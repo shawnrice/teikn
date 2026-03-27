@@ -1,24 +1,10 @@
 import { EOL } from "node:os";
 
 import { camelCase, deriveShortName, kebabCase } from "../string-utils";
-import { isFirstClassValue } from "../type-classifiers";
 import type { Token } from "../Token";
 import type { GeneratorInfo } from "./Generator";
 import { Scss } from "./Scss";
-
-const scssValue = (value: unknown): string => {
-  if (typeof value !== "object" || value === null) {
-    return String(value);
-  }
-  if (isFirstClassValue(value)) {
-    return String(value);
-  }
-  const obj = value as Record<string, unknown>;
-  if ("width" in obj && "style" in obj && "color" in obj) {
-    return [obj.width, obj.style, obj.color].filter(Boolean).join(" ");
-  }
-  return Object.values(obj).join(" ");
-};
+import { cssValue } from "./value-serializers";
 
 export class ScssVars extends Scss {
   override describe(): GeneratorInfo | null {
@@ -45,32 +31,21 @@ export class ScssVars extends Scss {
 
   override generateToken(token: Token): string {
     const { usage, name, value } = token;
-    return [usage && `/// ${usage}`, `$${name}: ${scssValue(value)};`].filter(Boolean).join(EOL);
+    return [usage && `/// ${usage}`, `$${name}: ${cssValue(value)};`].filter(Boolean).join(EOL);
   }
 
   override combinator(tokens: Token[]): string {
     const values = tokens.map((token) => this.generateToken(token));
     const lines = [values.join(EOL)];
 
-    const modeMap = new Map<string, { name: string; value: unknown }[]>();
-    for (const token of tokens) {
-      if (!token.modes) {
-        continue;
-      }
-      for (const [mode, val] of Object.entries(token.modes)) {
-        if (!modeMap.has(mode)) {
-          modeMap.set(mode, []);
-        }
-        modeMap.get(mode)!.push({ name: token.name, value: val });
-      }
-    }
+    const modeMap = this.buildModeMap(tokens, (_key, val, mode, token) =>
+      `$${token.name}--${mode}: ${cssValue(val)};`,
+    );
 
     for (const [mode, entries] of modeMap) {
       lines.push("");
       lines.push(`// Mode: ${mode}`);
-      for (const { name, value } of entries) {
-        lines.push(`$${name}--${mode}: ${scssValue(value)};`);
-      }
+      lines.push(...entries);
     }
 
     return lines.join(EOL);
