@@ -2,6 +2,7 @@ import { EOL } from "node:os";
 
 import type { Plugin } from "../Plugins";
 import { camelCase, deriveShortName, kebabCase } from "../string-utils";
+import { isFirstClassValue } from "../type-classifiers";
 import type { Token } from "../Token";
 import { getDate } from "../utils";
 import type { GeneratorInfo, GeneratorOptions } from "./Generator";
@@ -9,6 +10,9 @@ import { Generator } from "./Generator";
 
 const scssValue = (value: unknown): string => {
   if (typeof value !== "object" || value === null) {
+    return String(value);
+  }
+  if (isFirstClassValue(value)) {
     return String(value);
   }
   const obj = value as Record<string, unknown>;

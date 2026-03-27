@@ -1,6 +1,7 @@
 import { EOL } from "node:os";
 
 import { kebabCase } from "../string-utils";
+import { isFirstClassValue } from "../type-classifiers";
 import type { Token } from "../Token";
 import { getDate } from "../utils";
 import type { GeneratorInfo, GeneratorOptions } from "./Generator";
@@ -8,6 +9,9 @@ import { Generator } from "./Generator";
 
 const cssValue = (value: unknown): string => {
   if (typeof value !== "object" || value === null) {
+    return String(value);
+  }
+  if (isFirstClassValue(value)) {
     return String(value);
   }
   const obj = value as Record<string, unknown>;

@@ -1,12 +1,16 @@
 import { EOL } from "node:os";
 
 import { camelCase, deriveShortName, kebabCase } from "../string-utils";
+import { isFirstClassValue } from "../type-classifiers";
 import type { Token } from "../Token";
 import type { GeneratorInfo } from "./Generator";
 import { Scss } from "./Scss";
 
 const scssValue = (value: unknown): string => {
   if (typeof value !== "object" || value === null) {
+    return String(value);
+  }
+  if (isFirstClassValue(value)) {
     return String(value);
   }
   const obj = value as Record<string, unknown>;
