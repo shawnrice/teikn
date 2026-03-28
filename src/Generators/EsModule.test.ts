@@ -7,9 +7,7 @@ import { testOpts } from "../fixtures/testOpts";
 
 describe("EsModule tests", () => {
   test("it generates tokens as an esmodule", () => {
-    expect(
-      new Generator(testOpts).generate(tokenSet1),
-    ).toMatchSnapshot();
+    expect(new Generator(testOpts).generate(tokenSet1)).toMatchSnapshot();
   });
 
   test("it generates group accessors when groups: true", () => {
@@ -18,9 +16,7 @@ describe("EsModule tests", () => {
       { name: "colorSecondary", type: "color", value: "rgb(102, 205, 170)" },
       { name: "spacingSm", type: "spacing", value: "4px" },
     ];
-    expect(
-      new Generator({ ...testOpts, groups: true }).generate(tokens),
-    ).toMatchSnapshot();
+    expect(new Generator({ ...testOpts, groups: true }).generate(tokens)).toMatchSnapshot();
   });
 
   test("exports modes object when tokens have modes", () => {

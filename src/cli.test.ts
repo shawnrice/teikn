@@ -157,11 +157,7 @@ describe("cli: generate", () => {
 
   test("--dry-run shows output without writing files", () => {
     const dryDir = path.join(tmpDir, "dry");
-    const { stdout, code } = run(
-      "example/raw-tokens.ts",
-      `--outDir=${dryDir}`,
-      "--dry-run",
-    );
+    const { stdout, code } = run("example/raw-tokens.ts", `--outDir=${dryDir}`, "--dry-run");
     expect(code).toBe(0);
     expect(stdout).toContain("Dry run");
     expect(fs.existsSync(dryDir)).toBe(false);

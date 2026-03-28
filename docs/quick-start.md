@@ -280,6 +280,20 @@ const dark = theme('dark', colors, {
 });
 ```
 
+`theme()` accepts any `Token[]`, so you can pass the merged output of `tokens()` to theme across
+groups in a single call:
+
+```typescript
+const allTokens = tokens(colors, textColors, spacing);
+
+// Override tokens from any group — no need for separate theme() calls per group
+const dark = theme('dark', allTokens, {
+  surface: darkSurface,
+  background: darkSurface.shade(0.3),
+  textPrimary: new Color('#e0e0e0'),
+});
+```
+
 Themes stack: derive a high-contrast variant from your dark theme, only overriding what changes.
 
 ```typescript

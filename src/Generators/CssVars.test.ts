@@ -11,9 +11,7 @@ describe("CssVars Generator tests", () => {
   });
 
   test("It generates the token set", () => {
-    expect(
-      new Generator(testOpts).generate(tokenSet1),
-    ).toMatchSnapshot();
+    expect(new Generator(testOpts).generate(tokenSet1)).toMatchSnapshot();
   });
 
   test("It generates a basic token without usage", () => {

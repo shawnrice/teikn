@@ -5,10 +5,11 @@ import { Color } from "../TokenTypes/Color";
 import { PerceptualDistancePlugin } from "./PerceptualDistancePlugin";
 
 describe("PerceptualDistancePlugin", () => {
-  const makeToken = (name: string, value: string | Color): Token => ({
+  const makeToken = (name: string, value: string | Color, group?: string): Token => ({
     name,
     type: "color",
     value,
+    ...(group ? { group } : {}),
   });
 
   test("tokenType and outputType", () => {
@@ -105,15 +106,48 @@ describe("PerceptualDistancePlugin", () => {
     expect(deltaE).toBeLessThan(5);
   });
 
-  test("compares all pairs when no groups specified", () => {
+  test("compares all pairs within same auto-group when no groups specified", () => {
+    const plugin = new PerceptualDistancePlugin({ minDeltaE: 100 });
+    const tokens = [
+      makeToken("a", "#ff0000", "warm"),
+      makeToken("b", "#00ff00", "warm"),
+      makeToken("c", "#0000ff", "cool"),
+    ];
+    // a and b are in "warm" group (1 pair), c is alone in "cool" (0 pairs)
+    const issues = plugin.audit!(tokens);
+    expect(issues).toHaveLength(1);
+  });
+
+  test("ungrouped tokens are compared together", () => {
     const plugin = new PerceptualDistancePlugin({ minDeltaE: 100 });
     const tokens = [
       makeToken("a", "#ff0000"),
       makeToken("b", "#00ff00"),
       makeToken("c", "#0000ff"),
     ];
-    // 3 tokens = 3 pairs (a-b, a-c, b-c), all likely below 100
+    // All 3 are ungrouped => same auto-group => 3 pairs
     const issues = plugin.audit!(tokens);
     expect(issues).toHaveLength(3);
+  });
+
+  test("does not compare tokens across different groups", () => {
+    const plugin = new PerceptualDistancePlugin({});
+    const tokens = [
+      makeToken("gray-a", "#808080", "neutrals"),
+      makeToken("gray-b", "#828282", "accents"),
+    ];
+    // Different groups — no comparison, no warning
+    const issues = plugin.audit!(tokens);
+    expect(issues).toHaveLength(0);
+  });
+
+  test("warns for similar tokens within same auto-group", () => {
+    const plugin = new PerceptualDistancePlugin({});
+    const tokens = [
+      makeToken("gray-a", "#808080", "neutrals"),
+      makeToken("gray-b", "#828282", "neutrals"),
+    ];
+    const issues = plugin.audit!(tokens);
+    expect(issues).toHaveLength(1);
   });
 });

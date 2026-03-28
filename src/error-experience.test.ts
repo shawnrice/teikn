@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { composite, dim, dp, dur, group, ref, scale, theme, tokens } from "./builders";
+import { composite, dim, dp, dur, group, ref, scale, theme, tokens, onColor } from "./builders";
 import { resolveReferences } from "./resolve";
 import { Teikn } from "./Teikn";
 import type { Token } from "./Token";
@@ -106,9 +106,7 @@ describe("validate() errors", () => {
   });
 
   test("composite missing fields (typography)", () => {
-    const t: Token[] = [
-      { name: "heading", type: "typography", value: { fontFamily: "Arial" } },
-    ];
+    const t: Token[] = [{ name: "heading", type: "typography", value: { fontFamily: "Arial" } }];
     const result = validate(t);
     const shape = result.issues.find((i) => i.message.includes("missing fields"));
     expect(shape).toBeDefined();
@@ -221,9 +219,7 @@ describe("Builder errors", () => {
   });
 
   test("group() with null entries", () => {
-    expect(() => group("color", null as any)).toThrow(
-      /group\(\): entries must be a plain object/,
-    );
+    expect(() => group("color", null as any)).toThrow(/group\(\): entries must be a plain object/);
     // GOOD ERROR: now throws a teikn-specific TypeError instead of a raw JS TypeError
   });
 
@@ -510,9 +506,7 @@ describe("Resolution errors (resolveReferences)", () => {
   });
 
   test("ref in mode value to nonexistent token throws", () => {
-    const t: Token[] = [
-      { name: "bg", type: "color", value: "#fff", modes: { dark: "{noToken}" } },
-    ];
+    const t: Token[] = [{ name: "bg", type: "color", value: "#fff", modes: { dark: "{noToken}" } }];
     expect(() => resolveReferences(t)).toThrow(/Unresolved reference/);
     // GOOD ERROR: catches bad references in mode values
   });
@@ -598,47 +592,8 @@ describe("Edge cases", () => {
   });
 
   test("onColor with invalid color string throws", () => {
-    const { onColor } = require("./builders");
     expect(() => onColor("not-a-color")).toThrow();
     // CRASH: Color constructor throws — error message is from Color, not from onColor
     // OK ERROR: the underlying Color error propagates but loses the onColor context
   });
 });
-
-// ═══════════════════════════════════════════════════════════════
-// SUMMARY
-// ═══════════════════════════════════════════════════════════════
-//
-// === FIXED (previously footguns, now caught with helpful errors) ===
-//
-// 1. dp(), dim(), dur() now reject NaN and Infinity with clear error messages.
-// 2. ref("") now throws eagerly instead of deferring the error to resolve time.
-// 3. group() with a non-object now throws a TypeError with guidance.
-// 4. group()/composite() with null now throws a teikn-specific error.
-// 5. dim() with invalid unit now throws listing valid units.
-// 6. composite() with nested objects now throws with guidance to flatten.
-//
-// === REMAINING ISSUES ===
-//
-// 1. FOOTGUN — composite() accepts a plain string where an object is
-//    expected. No validation at builder time — passes through silently.
-//
-// 2. NO VALIDATION — Color constructor accepts out-of-range RGB values
-//    silently (999, -50, 300). Output may be clamped or corrupted.
-//
-// === BEST ERROR EXPERIENCES ===
-//
-// 1. theme() — excellent error: names the theme, the unknown token, and
-//    lists all available tokens. Textbook good error message.
-//
-// 2. PrefixTypePlugin deprecation — explains it's removed, tells you to
-//    remove it, and suggests the replacement plugin by name.
-//
-// 3. validate() circular references — shows the full cycle path
-//    (a -> b -> c -> a) so you can see exactly where the loop is.
-//
-// 4. validate() missing fields — names the token (or uses [index N]) and
-//    lists exactly which required fields are absent.
-//
-// 5. resolveReferences() — throws with both the source token name and the
-//    target reference, making broken aliases easy to find.

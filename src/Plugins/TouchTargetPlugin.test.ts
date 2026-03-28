@@ -41,8 +41,15 @@ describe("TouchTargetPlugin", () => {
     expect(issues).toHaveLength(1);
   });
 
-  test("checks icon type by default", () => {
+  test("does not check icon type by default", () => {
     const plugin = new TouchTargetPlugin({});
+    const tokens = [makeToken("icon-sm", "16px", "icon")];
+    const issues = plugin.audit!(tokens);
+    expect(issues).toHaveLength(0);
+  });
+
+  test("checks icon type when opted in via types option", () => {
+    const plugin = new TouchTargetPlugin({ types: ["size", "touch-target", "icon"] });
     const tokens = [makeToken("icon-sm", "16px", "icon")];
     const issues = plugin.audit!(tokens);
     expect(issues).toHaveLength(1);

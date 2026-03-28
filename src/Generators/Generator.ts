@@ -155,10 +155,10 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
     return null;
   }
 
-  protected commentHeader(style: 'jsdoc' | 'scss' = 'jsdoc'): string {
+  protected commentHeader(style: "jsdoc" | "scss" = "jsdoc"): string {
     const { dateFn } = this.options as GeneratorOptions & { dateFn?: () => string | null };
     const date = dateFn ? dateFn() : null;
-    if (style === 'scss') {
+    if (style === "scss") {
       return [
         `///`,
         `/// ${this.signature()}`,
@@ -167,7 +167,9 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
         `/// This file is generated and should be commited to source control`,
         `///`,
         EOL,
-      ].filter(Boolean).join(EOL);
+      ]
+        .filter(Boolean)
+        .join(EOL);
     }
     return [
       `/**`,
@@ -176,20 +178,28 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
       ` *`,
       ` * This file is generated and should be committed to source control`,
       ` */`,
-    ].filter(Boolean).join(EOL);
+    ]
+      .filter(Boolean)
+      .join(EOL);
   }
 
   protected buildModeMap(
     tokens: Token[],
     formatter: (key: string, val: unknown, mode: string, token: Token) => string,
   ): Map<string, string[]> {
-    const { nameTransformer } = this.options as GeneratorOptions & { nameTransformer?: (name: string) => string };
+    const { nameTransformer } = this.options as GeneratorOptions & {
+      nameTransformer?: (name: string) => string;
+    };
     const modeMap = new Map<string, string[]>();
     for (const token of tokens) {
-      if (!token.modes) { continue; }
+      if (!token.modes) {
+        continue;
+      }
       const key = nameTransformer?.(token.name) ?? token.name;
       for (const [mode, val] of Object.entries(token.modes)) {
-        if (!modeMap.has(mode)) { modeMap.set(mode, []); }
+        if (!modeMap.has(mode)) {
+          modeMap.set(mode, []);
+        }
         modeMap.get(mode)!.push(formatter(key, val, mode, token));
       }
     }

@@ -142,6 +142,19 @@ const colorblindDark = theme('colorblind-dark', dark, {
 });
 ```
 
+`theme()` accepts any `Token[]`, including the merged output of `tokens()`. This lets you theme across groups in a single call:
+
+```typescript
+const allTokens = tokens(colors, spacing, typography);
+
+// Override tokens from any group — no need for separate theme() calls per group
+const dark = theme('dark', allTokens, {
+  surface: '#1a1a1a',
+  background: '#121212',
+  onSurface: 'rgba(255, 255, 255, .87)',
+});
+```
+
 Multiple theme dimensions (color scheme, density, brand) are independent layers:
 
 ```typescript
@@ -230,11 +243,12 @@ const c6 = new Color(70, 130, 180);         // r, g, b
 const c7 = new Color(70, 130, 180, 0.5);    // r, g, b, a
 
 // Color operations
-c1.lighten(20)       // lighten by 20%
-c1.darken(10)        // darken by 10%
-c1.saturate(15)      // increase saturation
-c1.desaturate(15)    // decrease saturation
-c1.rotate(180)       // rotate hue
+c1.lighten(0.2)      // lighten by 20% (relative, 0-1)
+c1.darken(0.1)       // darken by 10% (relative, 0-1)
+c1.saturate(15)      // increase saturation by 15 percentage points (0-100)
+c1.desaturate(15)    // decrease saturation by 15 percentage points (0-100)
+c1.grayscale()       // fully desaturate
+c1.rotateHue(180)    // rotate hue
 c1.complement()      // complementary color
 
 // Mixing (premultiplied alpha, CSS color-mix spec)
@@ -244,7 +258,7 @@ c1.shade(0.3)        // mix with black
 
 // Analysis
 c1.luminance()       // relative luminance (0-1)
-c1.contrast(c2)      // WCAG contrast ratio
+c1.contrastRatio(c2) // WCAG contrast ratio
 c1.deltaE(c2)        // CIEDE2000 perceptual difference (0 = identical, ~100 = max)
 c1.isLight()         // luminance > 0.5
 c1.isDark()

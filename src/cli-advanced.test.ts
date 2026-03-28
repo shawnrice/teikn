@@ -129,11 +129,7 @@ describe("cli: --plugins flag", () => {
 
   test("StripTypePrefixPlugin strips type prefix from token names", () => {
     // Generate with default plugins (type prefix is built in)
-    run(
-      "example/raw-tokens.ts",
-      `--outDir=${defaultOutDir}`,
-      '--generators="Json"',
-    );
+    run("example/raw-tokens.ts", `--outDir=${defaultOutDir}`, '--generators="Json"');
     const defaultJson = JSON.parse(
       fs.readFileSync(path.join(defaultOutDir, "tokens.json"), "utf-8"),
     );
@@ -152,9 +148,7 @@ describe("cli: --plugins flag", () => {
     expect(code).toBe(0);
     expect(stdout).toContain("StripTypePrefixPlugin");
 
-    const json = JSON.parse(
-      fs.readFileSync(path.join(pluginOutDir, "tokens.json"), "utf-8"),
-    );
+    const json = JSON.parse(fs.readFileSync(path.join(pluginOutDir, "tokens.json"), "utf-8"));
     const keys = Object.keys(json);
     // StripTypePrefixPlugin removes the type prefix, so "colorPrimary" becomes "primary"
     const hasUnprefixed = keys.some((k) => k === "primary");
@@ -197,17 +191,11 @@ describe("cli: JSON input", () => {
   });
 
   test("generates output from a .json token file", () => {
-    const { stdout, code } = run(
-      jsonTokenPath,
-      `--outDir=${jsonOutDir}`,
-      '--generators="Json"',
-    );
+    const { stdout, code } = run(jsonTokenPath, `--outDir=${jsonOutDir}`, '--generators="Json"');
     expect(code).toBe(0);
     expect(stdout).toContain("Tokens generated successfully!");
 
-    const json = JSON.parse(
-      fs.readFileSync(path.join(jsonOutDir, "tokens.json"), "utf-8"),
-    );
+    const json = JSON.parse(fs.readFileSync(path.join(jsonOutDir, "tokens.json"), "utf-8"));
     // Keys are type-prefixed and camelCased by the Json generator
     expect(json).toHaveProperty("colorPrimary");
     expect(json).toHaveProperty("colorSecondary");
@@ -231,17 +219,11 @@ describe("cli: default export", () => {
   });
 
   test("handles default export token file", () => {
-    const { stdout, code } = run(
-      tokenFile,
-      `--outDir=${defOutDir}`,
-      '--generators="Json"',
-    );
+    const { stdout, code } = run(tokenFile, `--outDir=${defOutDir}`, '--generators="Json"');
     expect(code).toBe(0);
     expect(stdout).toContain("Tokens generated successfully!");
 
-    const json = JSON.parse(
-      fs.readFileSync(path.join(defOutDir, "tokens.json"), "utf-8"),
-    );
+    const json = JSON.parse(fs.readFileSync(path.join(defOutDir, "tokens.json"), "utf-8"));
     // Keys are type-prefixed and camelCased by the Json generator
     expect(json).toHaveProperty("borderRadiusRadiusSm");
   });
@@ -264,17 +246,11 @@ describe("cli: named tokens export", () => {
   });
 
   test("handles named `tokens` export", () => {
-    const { stdout, code } = run(
-      tokenFile,
-      `--outDir=${namedOutDir}`,
-      '--generators="Json"',
-    );
+    const { stdout, code } = run(tokenFile, `--outDir=${namedOutDir}`, '--generators="Json"');
     expect(code).toBe(0);
     expect(stdout).toContain("Tokens generated successfully!");
 
-    const json = JSON.parse(
-      fs.readFileSync(path.join(namedOutDir, "tokens.json"), "utf-8"),
-    );
+    const json = JSON.parse(fs.readFileSync(path.join(namedOutDir, "tokens.json"), "utf-8"));
     // Keys are type-prefixed and camelCased by the Json generator
     expect(json).toHaveProperty("spacingSpaceSm");
   });

@@ -1,16 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import {
-  composite,
-  dim,
-  dp,
-  dur,
-  group,
-  ref,
-  scale,
-  theme,
-  tokens,
-} from "./builders";
+import { composite, dim, dp, dur, group, ref, scale, theme, tokens } from "./builders";
 import { Teikn } from "./Teikn";
 import { BoxShadow } from "./TokenTypes/BoxShadow";
 import { Color } from "./TokenTypes/Color";
@@ -166,11 +156,7 @@ const assertNoGarbage = (content: string, label: string) => {
   // Check for literal "null" as a value but not in comments/dates
   const lines = content.split("\n");
   for (const line of lines) {
-    if (
-      line.includes(": null;") ||
-      line.includes(": null,") ||
-      line.includes(": null}")
-    ) {
+    if (line.includes(": null;") || line.includes(": null,") || line.includes(": null}")) {
       // Allow "null" in date fields (dateFn returns "null")
       if (!line.includes("Generated") && !line.includes("dateFn")) {
         throw new Error(`${label}: found literal null value in line: ${line}`);
@@ -547,12 +533,9 @@ describe("output-validation: EsModule", () => {
   });
 
   test("all values are present (no empty strings)", () => {
-    const valueLines = esm.split("\n").filter(
-      (l) =>
-        l.match(/^\s+\w[\w]*:/) &&
-        !l.trim().startsWith("*") &&
-        !l.includes("Type:"),
-    );
+    const valueLines = esm
+      .split("\n")
+      .filter((l) => l.match(/^\s+\w[\w]*:/) && !l.trim().startsWith("*") && !l.includes("Type:"));
     for (const line of valueLines) {
       const match = line.match(/:\s*(.*),?\s*$/);
       if (match) {
@@ -580,7 +563,9 @@ describe("output-validation: TypeScript", () => {
 
   test("composite types have the right fields", () => {
     // Typography should produce an inline shape type
-    expect(ts).toContain("typographyDisplayLg: { fontFamily: string; fontSize: string; fontWeight: number; lineHeight: number }");
+    expect(ts).toContain(
+      "typographyDisplayLg: { fontFamily: string; fontSize: string; fontWeight: number; lineHeight: number }",
+    );
   });
 
   test("mode type should be Partial<...>", () => {

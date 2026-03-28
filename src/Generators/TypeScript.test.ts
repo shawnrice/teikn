@@ -9,9 +9,7 @@ const fixedDate = () => "Mon Jan 01 2024 12:00:00";
 
 describe("TypeScript generator tests", () => {
   test("It matches the TypeScript snapshot", () => {
-    expect(
-      new Generator(testOpts).generate(tokenSet1),
-    ).toMatchSnapshot();
+    expect(new Generator(testOpts).generate(tokenSet1)).toMatchSnapshot();
   });
 
   test("it generates group type declarations when groups: true", () => {
@@ -20,9 +18,7 @@ describe("TypeScript generator tests", () => {
       { name: "colorSecondary", type: "color", value: "rgb(102, 205, 170)" },
       { name: "spacingSm", type: "spacing", value: "4px" },
     ];
-    expect(
-      new Generator({ ...testOpts, groups: true }).generate(tokens),
-    ).toMatchSnapshot();
+    expect(new Generator({ ...testOpts, groups: true }).generate(tokens)).toMatchSnapshot();
   });
 
   test("describe includes group accessor usage when groups enabled", () => {

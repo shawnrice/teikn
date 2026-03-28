@@ -3,7 +3,7 @@ const Teikn = require('../lib').default;
 // We defined our tokens elsewhere, so import the JS object that we want to transform
 const { tokens } = require('./raw-tokens');
 
-// Create an instace of the writer
+// Create an instance of the writer
 const Writer = new Teikn({
   // Generators are the things that translate the original JS values into clean, annotated tokens in different formats
   generators: [

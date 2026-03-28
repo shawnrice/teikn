@@ -16,11 +16,7 @@ import type {
 } from "./Token";
 
 const isTokenInputObject = (v: unknown): v is TokenInputObject =>
-  typeof v === "object" &&
-  v !== null &&
-  !Array.isArray(v) &&
-  !isFirstClassValue(v) &&
-  "value" in v;
+  typeof v === "object" && v !== null && !Array.isArray(v) && !isFirstClassValue(v) && "value" in v;
 
 const resolveTokenInput = (name: string, input: TokenInput): Omit<Token, "type"> => {
   if (Array.isArray(input)) {
@@ -156,10 +152,22 @@ export const composite = (type: string, entries: Record<string, CompositeTokenIn
     const token = { ...resolveCompositeInput(name, input), type, group: type };
     const compositeValue = token.value;
 
-    if (typeof compositeValue === "object" && compositeValue !== null && !isFirstClassValue(compositeValue) && !Array.isArray(compositeValue)) {
+    if (
+      typeof compositeValue === "object" &&
+      compositeValue !== null &&
+      !isFirstClassValue(compositeValue) &&
+      !Array.isArray(compositeValue)
+    ) {
       for (const [field, fieldVal] of Object.entries(compositeValue as Record<string, unknown>)) {
-        if (typeof fieldVal === "object" && fieldVal !== null && !isFirstClassValue(fieldVal) && !Array.isArray(fieldVal)) {
-          throw new Error(`composite(): nested objects are not supported. Token "${name}" field "${field}" contains an object. Flatten your composite or split into separate tokens.`);
+        if (
+          typeof fieldVal === "object" &&
+          fieldVal !== null &&
+          !isFirstClassValue(fieldVal) &&
+          !Array.isArray(fieldVal)
+        ) {
+          throw new Error(
+            `composite(): nested objects are not supported. Token "${name}" field "${field}" contains an object. Flatten your composite or split into separate tokens.`,
+          );
         }
       }
     }
@@ -167,8 +175,11 @@ export const composite = (type: string, entries: Record<string, CompositeTokenIn
     return token;
   });
 
+// TODO: consider supporting custom text colors beyond black/white for cases where neither meets WCAG AA
 /**
  * Determine the best contrasting text color (black or white) for a given background.
+ *
+ * Uses WCAG contrast ratio to pick the candidate with higher contrast.
  *
  * @example
  * ```ts
@@ -187,7 +198,18 @@ export const onColor = (
   const c = color instanceof Color ? color : new Color(color);
   const d = dark instanceof Color ? dark : new Color(dark);
   const l = light instanceof Color ? light : new Color(light);
-  return c.luminance() > 0.5 ? d : l;
+
+  // WCAG contrast ratio: (L1 + 0.05) / (L2 + 0.05) where L1 > L2
+  const cLum = c.luminance();
+  const dLum = d.luminance();
+  const lLum = l.luminance();
+
+  const contrastWithDark =
+    cLum > dLum ? (cLum + 0.05) / (dLum + 0.05) : (dLum + 0.05) / (cLum + 0.05);
+  const contrastWithLight =
+    cLum > lLum ? (cLum + 0.05) / (lLum + 0.05) : (lLum + 0.05) / (cLum + 0.05);
+
+  return contrastWithDark > contrastWithLight ? d : l;
 };
 
 /**

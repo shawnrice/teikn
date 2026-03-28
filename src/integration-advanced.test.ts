@@ -58,10 +58,7 @@ describe("composite with first-class values through theming", () => {
   });
 
   const writer = new Teikn({
-    generators: [
-      new Teikn.generators.CssVars(testOpts),
-      new Teikn.generators.Json(),
-    ],
+    generators: [new Teikn.generators.CssVars(testOpts), new Teikn.generators.Json()],
     themes: [dark],
     plugins: [new Teikn.plugins.NameConventionPlugin({ convention: "kebab-case" })],
   });

@@ -91,9 +91,7 @@ export class EsModule extends Generator<EsModuleOpts> {
       parts.push("", ...groupBlocks);
     }
 
-    const modeMap = this.buildModeMap(tokens, (key, val) =>
-      `    ${key}: ${maybeQuote(val)},`,
-    );
+    const modeMap = this.buildModeMap(tokens, (key, val) => `    ${key}: ${maybeQuote(val)},`);
 
     if (modeMap.size > 0) {
       const modeEntries = [...modeMap.entries()].map(([mode, entries]) =>

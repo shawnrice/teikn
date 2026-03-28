@@ -22,9 +22,7 @@ describe("ScssQuoteValuePlugin preserves first-class values", () => {
   const quotePlugin = new ScssQuoteValuePlugin();
 
   test("Dimension values are not quoted in SCSS", () => {
-    const tokens: Token[] = [
-      { name: "gap", type: "spacing", value: new Dimension(1, "rem") },
-    ];
+    const tokens: Token[] = [{ name: "gap", type: "spacing", value: new Dimension(1, "rem") }];
     const output = new Scss(opts).generate(tokens, [quotePlugin]);
     expect(output).toContain("1rem");
     expect(output).not.toContain('"1rem"');

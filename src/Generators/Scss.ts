@@ -66,9 +66,7 @@ export class Scss extends Generator<ScssOpts> {
     const values = tokens.map((token) => this.generateToken(token));
     const lines = [`// prettier-ignore`, `$token-values: (`, values.join(EOL), `);`];
 
-    const modeMap = this.buildModeMap(tokens, (key, val) =>
-      `    ${key}: ${cssValue(val)},`,
-    );
+    const modeMap = this.buildModeMap(tokens, (key, val) => `    ${key}: ${cssValue(val)},`);
 
     if (modeMap.size > 0) {
       lines.push("");
@@ -87,7 +85,7 @@ export class Scss extends Generator<ScssOpts> {
   }
 
   override header(): string | null {
-    return this.commentHeader('scss');
+    return this.commentHeader("scss");
   }
 
   override footer(): string | null {

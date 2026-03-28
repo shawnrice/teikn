@@ -12,11 +12,7 @@ const isValidIdentifier = (name: string): boolean => /^[a-zA-Z_$][a-zA-Z0-9_$]*$
 const quoteKey = (name: string): string => (isValidIdentifier(name) ? name : `'${name}'`);
 
 const toTypeAnnotation = (value: unknown): string => {
-  if (
-    typeof value === "object" &&
-    value !== null &&
-    !Array.isArray(value)
-  ) {
+  if (typeof value === "object" && value !== null && !Array.isArray(value)) {
     // First-class values (Color, Dimension, etc.) stringify to string
     if (isFirstClassValue(value)) {
       return "string";
@@ -75,13 +71,7 @@ export class TypeScript extends Generator<TypeScriptOpts> {
   }
 
   override header(): string {
-    return [
-      this.commentHeader(),
-      EOL,
-      `/**`,
-      ` * Design tokens`,
-      ` */`,
-    ].join(EOL);
+    return [this.commentHeader(), EOL, `/**`, ` * Design tokens`, ` */`].join(EOL);
   }
 
   generateToken(token: Token): string {
@@ -110,8 +100,24 @@ export class TypeScript extends Generator<TypeScriptOpts> {
       "}",
     ];
 
+    // Token name union types grouped under a single namespace type
+    const groups = this.tokenGroups(tokens);
+    if (groups.length > 0) {
+      const { nameTransformer } = this.options;
+      const fields = groups.map(({ groupName, entries }) => {
+        const names = entries.map(({ token }) => `'${nameTransformer!(token.name)}'`).join(" | ");
+        const typeName = groupName.charAt(0).toUpperCase() + groupName.slice(1);
+        return `  ${typeName}: ${names};`;
+      });
+      const allUnion = groups
+        .map(({ groupName }) => `TokenNames['${groupName.charAt(0).toUpperCase() + groupName.slice(1)}']`)
+        .join(" | ");
+      fields.push(`  All: ${allUnion};`);
+      parts.push("", `export type TokenNames = {`, ...fields, `};`);
+    }
+
     if (this.options.groups) {
-      const groupDecls = this.tokenGroups(tokens).map(({ groupName, entries }) => {
+      const groupDecls = groups.map(({ groupName, entries }) => {
         const union = entries.map(({ shortName }) => `'${shortName}'`).join(" | ");
         return `export const ${groupName}: (name: ${union}) => string;`;
       });

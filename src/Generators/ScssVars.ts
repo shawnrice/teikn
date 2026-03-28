@@ -38,8 +38,9 @@ export class ScssVars extends Scss {
     const values = tokens.map((token) => this.generateToken(token));
     const lines = [values.join(EOL)];
 
-    const modeMap = this.buildModeMap(tokens, (_key, val, mode, token) =>
-      `$${token.name}--${mode}: ${cssValue(val)};`,
+    const modeMap = this.buildModeMap(
+      tokens,
+      (_key, val, mode, token) => `$${token.name}--${mode}: ${cssValue(val)};`,
     );
 
     for (const [mode, entries] of modeMap) {

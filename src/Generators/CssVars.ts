@@ -58,9 +58,7 @@ export class CssVars extends Generator<CssVarsOpts> {
   combinator(tokens: Token[]): string {
     const rootVars = tokens.map((token) => this.generateToken(token));
 
-    const modeMap = this.buildModeMap(tokens, (key, val) =>
-      `  --${key}: ${cssValue(val)};`,
-    );
+    const modeMap = this.buildModeMap(tokens, (key, val) => `  --${key}: ${cssValue(val)};`);
 
     const blocks = [`:root {`, rootVars.join(EOL), `}`];
 

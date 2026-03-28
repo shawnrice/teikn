@@ -403,6 +403,32 @@ export class Color {
     return this.lighten(-amount);
   }
 
+  /** Returns true if luminance > 0.5 */
+  isLight(): boolean {
+    return this.luminance() > 0.5;
+  }
+
+  /** Returns true if luminance <= 0.5 */
+  isDark(): boolean {
+    return !this.isLight();
+  }
+
+  /** Create a new color with saturation increased by the given percentage points (0-100) */
+  saturate(amount: number): Color {
+    const [h, s, l] = this.asHSL();
+    return Color.#new("hsl", [h, percentRange(s + amount / 100), l] as HSL, this.#alpha);
+  }
+
+  /** Create a new color with saturation decreased by the given percentage points (0-100) */
+  desaturate(amount: number): Color {
+    return this.saturate(-amount);
+  }
+
+  /** Fully desaturate the color to grayscale */
+  grayscale(): Color {
+    return this.desaturate(100);
+  }
+
   /** Create a new color by mixing with white */
   tint(amount: number): Color {
     return this.mix(new Color(255, 255, 255), amount);

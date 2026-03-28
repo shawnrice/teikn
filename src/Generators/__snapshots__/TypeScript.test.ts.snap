@@ -29,6 +29,12 @@ export const tokens: {
    */
   secondary: string
 }
+
+export type TokenNames = {
+  FontFamily: 'body';
+  Color: 'primary' | 'secondary';
+  All: TokenNames['FontFamily'] | TokenNames['Color'];
+};
 export default tokens;"
 `;
 
@@ -58,6 +64,12 @@ export const tokens: {
    */
   spacingSm: string
 }
+
+export type TokenNames = {
+  Color: 'colorPrimary' | 'colorSecondary';
+  Spacing: 'spacingSm';
+  All: TokenNames['Color'] | TokenNames['Spacing'];
+};
 
 export const color: (name: 'primary' | 'secondary') => string;
 export const spacing: (name: 'sm') => string;

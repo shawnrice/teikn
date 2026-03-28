@@ -30,8 +30,6 @@ export const maybeQuote = (val: unknown): string => {
   return String(val);
 };
 
-export const isValidIdentifier = (name: string): boolean =>
-  /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(name);
+export const isValidIdentifier = (name: string): boolean => /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(name);
 
-export const quoteKey = (name: string): string =>
-  isValidIdentifier(name) ? name : `'${name}'`;
+export const quoteKey = (name: string): string => (isValidIdentifier(name) ? name : `'${name}'`);

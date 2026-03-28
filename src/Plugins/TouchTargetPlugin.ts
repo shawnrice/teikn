@@ -50,7 +50,7 @@ const toPx = (value: unknown, basePx: number): number | null => {
   }
 };
 
-const DEFAULT_TYPES = ["size", "touch-target", "icon"];
+const DEFAULT_TYPES = ["size", "touch-target"];
 
 export class TouchTargetPlugin extends Plugin<TouchTargetPluginOptions> {
   tokenType: RegExp = /.*/;

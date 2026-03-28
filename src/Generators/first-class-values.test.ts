@@ -20,25 +20,18 @@ import { testOpts } from "../fixtures/testOpts";
 
 const opts = testOpts;
 
-const cssGenerators = () =>
-  [
-    ["CssVars", new CssVars(opts)] as const,
-    ["Scss", new Scss(opts)] as const,
-    ["ScssVars", new ScssVars(opts)] as const,
-  ];
+const cssGenerators = () => [
+  ["CssVars", new CssVars(opts)] as const,
+  ["Scss", new Scss(opts)] as const,
+  ["ScssVars", new ScssVars(opts)] as const,
+];
 
-const jsGenerators = () =>
-  [
-    ["EsModule", new EsModule(opts)] as const,
-    ["JavaScript", new JavaScript(opts)] as const,
-  ];
+const jsGenerators = () => [
+  ["EsModule", new EsModule(opts)] as const,
+  ["JavaScript", new JavaScript(opts)] as const,
+];
 
-const allGenerators = () =>
-  [
-    ...cssGenerators(),
-    ...jsGenerators(),
-    ["Json", new Json()] as const,
-  ];
+const allGenerators = () => [...cssGenerators(), ...jsGenerators(), ["Json", new Json()] as const];
 
 // ─── Dimension tokens ───────────────────────────────────────
 

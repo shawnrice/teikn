@@ -1035,6 +1035,75 @@ describe("simulateColorBlindness", () => {
   });
 });
 
+// ─── isLight / isDark tests ─────────────────────────────────
+
+describe("isLight / isDark", () => {
+  test("white is light", () => {
+    expect(new Color("white").isLight()).toBe(true);
+  });
+
+  test("black is dark", () => {
+    expect(new Color("black").isLight()).toBe(false);
+  });
+
+  test("mid-gray (128) is dark (luminance ~0.22)", () => {
+    expect(new Color(128, 128, 128).isDark()).toBe(true);
+  });
+
+  test("isDark is inverse of isLight", () => {
+    const c = new Color("steelblue");
+    expect(c.isDark()).toBe(!c.isLight());
+  });
+});
+
+// ─── saturate / desaturate / grayscale tests ────────────────
+
+describe("saturate / desaturate / grayscale", () => {
+  test("saturate(20) on a muted color increases saturation", () => {
+    const muted = Color.fromHSL(200, 0.3, 0.5);
+    const saturated = muted.saturate(20);
+    expect(saturated.saturation).toBeCloseTo(0.5, 5);
+  });
+
+  test("desaturate(20) on a vivid color decreases saturation", () => {
+    const vivid = Color.fromHSL(200, 0.8, 0.5);
+    const desaturated = vivid.desaturate(20);
+    expect(desaturated.saturation).toBeCloseTo(0.6, 5);
+  });
+
+  test("grayscale() produces zero saturation", () => {
+    const c = Color.fromHSL(200, 0.8, 0.5);
+    expect(c.grayscale().saturation).toBe(0);
+  });
+
+  test("saturate(0) returns equivalent color", () => {
+    const c = Color.fromHSL(200, 0.5, 0.5);
+    const result = c.saturate(0);
+    expect(result.saturation).toBeCloseTo(0.5, 5);
+    expect(result.hue).toBe(200);
+    expect(result.lightness).toBeCloseTo(0.5, 5);
+  });
+
+  test("desaturate(100) equals grayscale", () => {
+    const c = Color.fromHSL(200, 0.8, 0.5);
+    const desaturated = c.desaturate(100);
+    const grayscaled = c.grayscale();
+    expect(desaturated.saturation).toBe(grayscaled.saturation);
+  });
+
+  test("saturate clamps at 100%", () => {
+    const c = Color.fromHSL(200, 0.9, 0.5);
+    const result = c.saturate(50);
+    expect(result.saturation).toBe(1);
+  });
+
+  test("desaturate clamps at 0%", () => {
+    const c = Color.fromHSL(200, 0.1, 0.5);
+    const result = c.desaturate(50);
+    expect(result.saturation).toBe(0);
+  });
+});
+
 // ─── HSL string construction test ──────────────────────────
 
 describe("HSL string construction", () => {

@@ -64,9 +64,18 @@ export class PerceptualDistancePlugin extends Plugin<PerceptualDistancePluginOpt
     };
 
     if (groups) {
-      return groups.flatMap((group) => comparePairs(group));
+      return groups.flatMap(comparePairs);
     }
 
-    return comparePairs(colorTokens.map((t) => t.name));
+    // Auto-group by token.group (set by the group() builder)
+    const byGroup = new Map<string, string[]>();
+    for (const t of colorTokens) {
+      const g = t.group ?? "_ungrouped";
+      if (!byGroup.has(g)) {
+        byGroup.set(g, []);
+      }
+      byGroup.get(g)!.push(t.name);
+    }
+    return [...byGroup.values()].flatMap(comparePairs);
   }
 }

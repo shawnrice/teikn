@@ -199,6 +199,31 @@ describe("builders", () => {
       const hex = result.toString("hex");
       expect(hex).toBe("#eeeeee");
     });
+
+    test("picks dark text for yellow (mid-lightness, high luminance)", () => {
+      // Yellow #ffe335 has high luminance — dark text should have better contrast
+      const result = onColor("#ffe335");
+      expect(result.red).toBe(40);
+      expect(result.green).toBe(50);
+      expect(result.blue).toBe(56);
+    });
+
+    test("picks light text for teal (mid-lightness, low luminance)", () => {
+      // Teal #008080 has low luminance — light text should have better contrast
+      const result = onColor("#008080");
+      expect(result.red).toBe(255);
+      expect(result.green).toBe(255);
+      expect(result.blue).toBe(255);
+    });
+
+    test("picks dark text for orange (WCAG contrast improvement over luminance threshold)", () => {
+      // Orange #ff8c00 — luminance is ~0.36, below 0.5 threshold, but WCAG contrast
+      // ratio with dark text is higher than with white text
+      const result = onColor("#ff8c00");
+      expect(result.red).toBe(40);
+      expect(result.green).toBe(50);
+      expect(result.blue).toBe(56);
+    });
   });
 
   describe("onColors", () => {
@@ -350,6 +375,43 @@ describe("builders", () => {
 
       expect(() =>
         theme("bad", dark, {
+          nonexistent: "#red",
+        } as any),
+      ).toThrow('unknown token "nonexistent"');
+    });
+
+    test("works with merged tokens() output across groups", () => {
+      const colors = group("color", {
+        background: "#ffffff",
+        textPrimary: "#333",
+      });
+      const spacing = group("spacing", {
+        sm: "0.5rem",
+        md: "1rem",
+      });
+
+      const allTokens = tokens(colors, spacing);
+
+      const dark = theme("dark", allTokens, {
+        background: "#1a1a1a",
+        textPrimary: "#eee",
+      });
+
+      expect(dark.name).toBe("dark");
+      expect(dark.tokenNames).toEqual(["background", "textPrimary", "sm", "md"]);
+      expect(dark.overrides).toEqual({
+        background: "#1a1a1a",
+        textPrimary: "#eee",
+      });
+    });
+
+    test("throws on unknown token when using merged tokens() output", () => {
+      const colors = group("color", { primary: "#0066cc" });
+      const spacing = group("spacing", { sm: "0.5rem" });
+      const allTokens = tokens(colors, spacing);
+
+      expect(() =>
+        theme("dark", allTokens, {
           nonexistent: "#red",
         } as any),
       ).toThrow('unknown token "nonexistent"');

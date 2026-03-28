@@ -29,9 +29,7 @@ describe("Scss Generator tests", () => {
       { name: "colorSecondary", type: "color", value: "rgb(102, 205, 170)" },
       { name: "spacingSm", type: "spacing", value: "4px" },
     ];
-    expect(
-      new Generator({ ...testOpts, groups: true }).generate(tokens),
-    ).toMatchSnapshot();
+    expect(new Generator({ ...testOpts, groups: true }).generate(tokens)).toMatchSnapshot();
   });
 
   test("it generates groups with PrefixTypePlugin", () => {

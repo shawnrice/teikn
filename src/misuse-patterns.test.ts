@@ -267,7 +267,9 @@ describe("misuse patterns", () => {
             other: "hello",
           },
         }),
-      ).toThrow('composite(): nested objects are not supported. Token "outer" field "inner" contains an object.');
+      ).toThrow(
+        'composite(): nested objects are not supported. Token "outer" field "inner" contains an object.',
+      );
     });
   });
 
@@ -403,47 +405,3 @@ describe("misuse patterns", () => {
     });
   });
 });
-
-/*
- * ════════════════════════════════════════════════════════════════════
- * FINDINGS SUMMARY
- * ════════════════════════════════════════════════════════════════════
- *
- * GOOD (helpful error or correct behavior):
- * 1. validate() catches missing required fields (name, type, value)
- * 2. validate() warns about unparseable color strings
- * 3. validate() catches unresolved references (error severity)
- * 4. resolveReferences() throws on unresolved references at generation time
- * 5. validate() detects circular references
- * 6. resolveReferences() throws on circular references at generation time
- * 7. theme() eagerly validates override keys against source token names
- * 8. validate() warns about duplicate token names
- * 9. dp() in theme overrides works correctly
- * 10. generateToStrings() works without outDir (returns strings)
- * 11. validate() passes for Dimension and Duration values
- *
- * ACCEPTABLE (works, not ideal):
- * 1. Bare Token objects work if the shape is correct — no builder required
- * 2. dp(0) => "0rem" — valid CSS, though "0" would also be fine
- * 3. dp(-8) => "-0.5rem" — valid for negative margins
- * 4. Empty group/tokens/scale/composite return empty arrays silently
- * 5. outDir defaults to cwd — could accidentally write files in wrong place
- * 6. Mixing Color objects and color strings in the same group works, but
- *    the string doesn't have Color methods (shade, lighten, etc.)
- *
- * FOOTGUN (silent wrong output or confusing behavior):
- * 1. Passing a bare number (16) where dp(16) was intended produces "16" with no unit
- * 2. Duplicate token names in generateToStrings both emit — CSS cascade picks the last,
- *    but both appear in the output, wasting bytes and confusing readers
- * 3. Composite field value types are not validated — you can put "bold" for fontWeight
- *    and "not-a-dimension" for fontSize with no warning
- *
- * FIXED (previously footguns, now caught with helpful errors):
- * 1. dim() with an invalid unit (e.g., "bananas") now throws with valid unit list
- * 2. Nested composites (objects within composites) now throw with guidance to flatten
- *
- * BUG (crash or data loss):
- * 1. Passing string generator names instead of instances: constructor accepts them,
- *    but generateToStrings crashes with a confusing error about property access on string
- * 2. Plugin.toJSON returning undefined crashes the pipeline with an opaque spread error
- */
