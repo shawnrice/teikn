@@ -156,11 +156,12 @@ const assertNoGarbage = (content: string, label: string) => {
   // Check for literal "null" as a value but not in comments/dates
   const lines = content.split("\n");
   for (const line of lines) {
-    if (line.includes(": null;") || line.includes(": null,") || line.includes(": null}")) {
+    if (
+      (line.includes(": null;") || line.includes(": null,") || line.includes(": null}")) &&
+      !line.includes("Generated") && !line.includes("dateFn")
+    ) {
       // Allow "null" in date fields (dateFn returns "null")
-      if (!line.includes("Generated") && !line.includes("dateFn")) {
-        throw new Error(`${label}: found literal null value in line: ${line}`);
-      }
+      throw new Error(`${label}: found literal null value in line: ${line}`);
     }
   }
 };
@@ -327,7 +328,7 @@ describe("output-validation: Json", () => {
 
   test("every token has a non-empty value field", () => {
     json = JSON.parse(jsonStr);
-    for (const [key, token] of Object.entries(json)) {
+    for (const [_key, token] of Object.entries(json)) {
       expect(token.value).toBeDefined();
       expect(token.value).not.toBeNull();
       if (typeof token.value === "string") {
@@ -338,7 +339,7 @@ describe("output-validation: Json", () => {
 
   test("every token has a type field", () => {
     json = JSON.parse(jsonStr);
-    for (const [key, token] of Object.entries(json)) {
+    for (const [_key, token] of Object.entries(json)) {
       expect(token.type).toBeDefined();
       expect(typeof token.type).toBe("string");
       expect(token.type.length).toBeGreaterThan(0);

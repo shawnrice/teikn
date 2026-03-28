@@ -30,7 +30,7 @@ export class StripTypePrefixPlugin extends Plugin {
 
   tokenType: RegExp = /.*/;
 
-  transform(token: Token): Token {
+  override transform(token: Token): Token {
     return {
       ...token,
       name: deriveShortName(token.name, token.type),

@@ -38,7 +38,7 @@ export class NameConventionPlugin extends Plugin<NameConventionPluginOptions> {
 
   override readonly runAfter: string[] = ["PrefixTypePlugin", "StripTypePrefixPlugin"];
 
-  transform(token: Token): Token {
+  override transform(token: Token): Token {
     const { convention } = this.options;
     const convert = converters[convention];
 

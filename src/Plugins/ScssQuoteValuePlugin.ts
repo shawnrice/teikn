@@ -13,7 +13,8 @@ export class ScssQuoteValuePlugin extends Plugin {
 
   override readonly runAfter: string[] = ["ColorTransformPlugin", "RemUnitPlugin"];
 
-  transform(token: Token): Token {
+  // oxlint-disable-next-line class-methods-use-this
+  override transform(token: Token): Token {
     const { value } = token;
 
     return {

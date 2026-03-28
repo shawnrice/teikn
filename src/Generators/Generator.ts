@@ -91,6 +91,7 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
     return `Teikn v${this.options.version ?? version}`;
   }
 
+  // oxlint-disable-next-line class-methods-use-this
   stringifyValues(token: Token): Token {
     const { value, modes } = token;
     const convertedValue = isFirstClassValue(value)

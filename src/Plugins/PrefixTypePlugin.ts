@@ -28,7 +28,8 @@ export class PrefixTypePlugin extends Plugin {
 
   tokenType: RegExp = /.*/;
 
-  transform(token: Token): Token {
+  // oxlint-disable-next-line class-methods-use-this
+  override transform(token: Token): Token {
     const { type, name } = token;
 
     if (!type || !name) {

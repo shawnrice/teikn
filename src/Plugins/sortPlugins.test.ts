@@ -1,6 +1,5 @@
 import { describe, expect, test } from "bun:test";
 
-import type { Token } from "../Token";
 import { Plugin, sortPlugins } from "./Plugin";
 
 // ─── Test plugins ────────────────────────────────────────────
@@ -8,27 +7,18 @@ import { Plugin, sortPlugins } from "./Plugin";
 class PluginA extends Plugin {
   tokenType: RegExp = /.*/;
   outputType: RegExp = /.*/;
-  transform(token: Token): Token {
-    return token;
-  }
 }
 
 class PluginB extends Plugin {
   tokenType: RegExp = /.*/;
   outputType: RegExp = /.*/;
   override readonly runAfter: string[] = ["PluginA"];
-  transform(token: Token): Token {
-    return token;
-  }
 }
 
 class PluginC extends Plugin {
   tokenType: RegExp = /.*/;
   outputType: RegExp = /.*/;
   override readonly runAfter: string[] = ["PluginB"];
-  transform(token: Token): Token {
-    return token;
-  }
 }
 
 // ─── Tests ───────────────────────────────────────────────────
@@ -72,18 +62,12 @@ describe("sortPlugins", () => {
       tokenType: RegExp = /.*/;
       outputType: RegExp = /.*/;
       override readonly runAfter: string[] = ["CycleB"];
-      transform(token: Token): Token {
-        return token;
-      }
     }
 
     class CycleB extends Plugin {
       tokenType: RegExp = /.*/;
       outputType: RegExp = /.*/;
       override readonly runAfter: string[] = ["CycleA"];
-      transform(token: Token): Token {
-        return token;
-      }
     }
 
     expect(() => sortPlugins([new CycleA(), new CycleB()])).toThrow("cycle");
@@ -93,17 +77,11 @@ describe("sortPlugins", () => {
     class IndepX extends Plugin {
       tokenType: RegExp = /.*/;
       outputType: RegExp = /.*/;
-      transform(token: Token): Token {
-        return token;
-      }
     }
 
     class IndepY extends Plugin {
       tokenType: RegExp = /.*/;
       outputType: RegExp = /.*/;
-      transform(token: Token): Token {
-        return token;
-      }
     }
 
     const x = new IndepX();

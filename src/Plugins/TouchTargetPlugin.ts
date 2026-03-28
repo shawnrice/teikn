@@ -56,10 +56,6 @@ export class TouchTargetPlugin extends Plugin<TouchTargetPluginOptions> {
   tokenType: RegExp = /.*/;
   outputType: RegExp = /.*/;
 
-  transform(token: Token): Token {
-    return token;
-  }
-
   override audit(tokens: Token[]): AuditIssue[] {
     const { minPx = 44, basePx = 16, types = DEFAULT_TYPES } = this.options;
     const typeSet = new Set(types);

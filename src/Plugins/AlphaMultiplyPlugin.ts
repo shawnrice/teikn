@@ -14,7 +14,7 @@ export class AlphaMultiplyPlugin extends Plugin<AlphaMultiplyPluginOptions> {
     super(options);
   }
 
-  transform(token: Token): Token {
+  override transform(token: Token): Token {
     const { background = "#ffffff" } = this.options;
 
     const fg = token.value instanceof Color ? token.value : new Color(token.value as string);

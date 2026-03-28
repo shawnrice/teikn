@@ -12,10 +12,6 @@ export class PerceptualDistancePlugin extends Plugin<PerceptualDistancePluginOpt
   tokenType: string = "color";
   outputType: RegExp = /.*/;
 
-  transform(token: Token): Token {
-    return token;
-  }
-
   override audit(tokens: Token[]): AuditIssue[] {
     const { minDeltaE = 5.0, groups } = this.options;
 

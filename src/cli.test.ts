@@ -62,7 +62,7 @@ describe("cli: list", () => {
   });
 
   test("list without argument prints error", () => {
-    const { stderr, code } = run("list");
+    const { stderr, code: _code } = run("list");
     // Exits with 0 but prints usage to stderr
     expect(stderr).toContain("generators | plugins");
   });
@@ -147,7 +147,7 @@ describe("cli: generate", () => {
     expect(json[firstKey]).toHaveProperty("type");
 
     // No values should be empty strings
-    for (const [key, token] of Object.entries(json) as [string, any][]) {
+    for (const [_key, token] of Object.entries(json) as [string, any][]) {
       expect(token.value).not.toBe("");
       if (typeof token.value === "string") {
         expect(token.value).not.toBe("[object Object]");
@@ -174,12 +174,12 @@ describe("cli: error handling", () => {
   });
 
   test("exits with error for nonexistent file", () => {
-    const { stderr, code } = run("nonexistent-file.ts");
+    const { stderr: _stderr, code } = run("nonexistent-file.ts");
     expect(code).not.toBe(0);
   });
 
   test("no arguments shows usage", () => {
-    const { stdout, code } = run();
+    const { stdout: _stdout, code } = run();
     expect(code).toBe(2);
   });
 });

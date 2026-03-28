@@ -22,7 +22,10 @@ export abstract class Plugin<Options extends Record<string, unknown> = Record<st
     this.options = options;
   }
 
-  abstract transform(token: Token): Token;
+  // oxlint-disable-next-line class-methods-use-this
+  transform(token: Token): Token {
+    return token;
+  }
 
   audit?(tokens: Token[]): AuditIssue[];
 }

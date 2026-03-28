@@ -262,7 +262,7 @@ describe("cli: invalid generator name", () => {
   const fallbackOutDir = path.join(tmpDir, "fallback-gen-out");
 
   test("falls back to Json for unknown generator names", () => {
-    const { stdout, code } = run(
+    const { stdout: _stdout, code } = run(
       "example/raw-tokens.ts",
       `--outDir=${fallbackOutDir}`,
       '--generators="NonexistentGenerator"',

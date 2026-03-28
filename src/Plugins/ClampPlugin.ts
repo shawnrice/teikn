@@ -88,10 +88,6 @@ export class ClampPlugin extends Plugin<ClampPluginOptions> {
     super(options);
   }
 
-  transform(token: Token): Token {
-    return token;
-  }
-
   expand(tokens: Token[]): Token[] {
     const pairs = this.options.pairs ?? [];
     const viewportMin = this.options.viewportMin ?? DEFAULT_VIEWPORT_MIN;

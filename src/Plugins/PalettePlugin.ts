@@ -69,10 +69,6 @@ export class PalettePlugin extends Plugin<PalettePluginOptions> {
     super(options);
   }
 
-  transform(token: Token): Token {
-    return token;
-  }
-
   expand(tokens: Token[]): Token[] {
     const steps = this.options.steps ?? DEFAULT_STEPS;
     const lightEnd = this.options.lightEnd ?? DEFAULT_LIGHT_END;

@@ -38,10 +38,6 @@ export class ColorBlindnessPlugin extends Plugin<ColorBlindnessPluginOptions> {
     super(options);
   }
 
-  transform(token: Token): Token {
-    return token;
-  }
-
   expand(tokens: Token[]): Token[] {
     const types = this.options.types ?? DEFAULT_TYPES;
     const suffix = this.options.suffix ?? DEFAULT_SUFFIX;

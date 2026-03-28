@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { group, scale, composite, tokens, theme, dp, dim, dur } from "./builders";
+import { group, scale, composite, tokens, theme, dp, dur } from "./builders";
 import { Color } from "./TokenTypes/Color";
 import { BoxShadow } from "./TokenTypes/BoxShadow";
 import { Teikn } from "./Teikn";

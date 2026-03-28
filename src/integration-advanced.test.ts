@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { group, scale, composite, tokens, theme, dp, dim, dur } from "./builders";
+import { group, scale, composite, tokens, theme, dp, dur } from "./builders";
 import { Color } from "./TokenTypes/Color";
 import { Teikn } from "./Teikn";
 import { testOpts } from "./fixtures/testOpts";
@@ -80,7 +80,7 @@ describe("composite with first-class values through theming", () => {
     // border shorthand: width style color
     const borderMatch = css.match(/--border-thin:\s*(.+?);/);
     expect(borderMatch).not.toBeNull();
-    const borderValue = borderMatch![1];
+    const [, borderValue] = borderMatch!;
     // Should contain the dimension, style keyword, and color
     expect(borderValue).toContain("0.0625rem");
     expect(borderValue).toContain("solid");
@@ -147,7 +147,7 @@ describe("round-trip JSON integrity", () => {
   const json = JSON.parse(writer.generateToStrings(allTokens).get("tokens.json")!);
 
   test("every token has a non-empty value field", () => {
-    for (const [key, entry] of Object.entries(json)) {
+    for (const [_key, entry] of Object.entries(json)) {
       const token = entry as { value: unknown };
       expect(token.value).toBeDefined();
       // Non-empty: strings must have length, objects must have keys

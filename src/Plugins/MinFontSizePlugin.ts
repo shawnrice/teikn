@@ -54,10 +54,6 @@ export class MinFontSizePlugin extends Plugin<MinFontSizePluginOptions> {
   tokenType: RegExp = /font-size/;
   outputType: RegExp = /.*/;
 
-  transform(token: Token): Token {
-    return token;
-  }
-
   override audit(tokens: Token[]): AuditIssue[] {
     const { minPx = 12, basePx = 16 } = this.options;
 

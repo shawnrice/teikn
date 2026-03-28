@@ -1,7 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { Color } from "./TokenTypes/Color";
 import { Dimension } from "./TokenTypes/Dimension";
-import { Duration } from "./TokenTypes/Duration";
 import { Teikn } from "./Teikn";
 import { Plugin } from "./Plugins";
 import { composite, dp, dim, dur, group, ref, scale, theme, tokens } from "./builders";
@@ -352,7 +351,7 @@ describe("misuse patterns", () => {
   // 17. Plugin that returns undefined
   // ──────────────────────────────────────────────────────────────────
   describe("17. plugin that returns undefined", () => {
-    test("plugin toJSON returning undefined causes crash", () => {
+    test("plugin toJSON returning undefined does not crash with default transform", () => {
       class BadPlugin extends Plugin {
         tokenType = /.*/;
         outputType = /.*/;
@@ -366,8 +365,8 @@ describe("misuse patterns", () => {
         generators: [new Teikn.generators.CssVars({ version: "test" })],
         plugins: [new BadPlugin()],
       });
-      // BUG: the pipeline crashes because it tries to spread undefined
-      expect(() => t.generateToStrings(toks)).toThrow();
+      // Base class provides a default transform, so a bad toJSON no longer crashes
+      expect(() => t.generateToStrings(toks)).not.toThrow();
     });
   });
 

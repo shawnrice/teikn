@@ -9,7 +9,7 @@ export class DeprecationPlugin extends Plugin<DeprecationPluginOptions> {
   tokenType: RegExp = /.*/;
   outputType: RegExp = /.*/;
 
-  transform(token: Token): Token {
+  override transform(token: Token): Token {
     const { tokens } = this.options;
     const entry = tokens[token.name];
 

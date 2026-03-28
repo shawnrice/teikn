@@ -23,7 +23,7 @@ export class ColorTransformPlugin extends Plugin<ColorTransformPluginOptions> {
     super(options);
   }
 
-  transform(token: Token): Token {
+  override transform(token: Token): Token {
     const { type } = this.options;
 
     // Skip unresolved references — they'll be resolved later

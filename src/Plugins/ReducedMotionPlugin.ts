@@ -62,10 +62,6 @@ export class ReducedMotionPlugin extends Plugin<ReducedMotionPluginOptions> {
     super(options);
   }
 
-  transform(token: Token): Token {
-    return token;
-  }
-
   expand(tokens: Token[]): Token[] {
     const prefix = this.options.prefix ?? DEFAULT_PREFIX;
     const zeroDuration = this.options.zeroDuration ?? true;

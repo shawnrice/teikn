@@ -46,7 +46,7 @@ export class RemUnitPlugin extends Plugin<RemUnitPluginOptions> {
     super(options);
   }
 
-  transform(token: Token): Token {
+  override transform(token: Token): Token {
     const { base = 16, targetUnit = "rem" } = this.options;
 
     return {
