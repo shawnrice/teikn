@@ -110,7 +110,10 @@ export class TypeScript extends Generator<TypeScriptOpts> {
         return `  ${typeName}: ${names};`;
       });
       const allUnion = groups
-        .map(({ groupName }) => `TokenNames['${groupName.charAt(0).toUpperCase() + groupName.slice(1)}']`)
+        .map(
+          ({ groupName }) =>
+            `TokenNames['${groupName.charAt(0).toUpperCase() + groupName.slice(1)}']`,
+        )
         .join(" | ");
       fields.push(`  All: ${allUnion};`);
       parts.push("", `export type TokenNames = {`, ...fields, `};`);

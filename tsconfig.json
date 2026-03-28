@@ -5,6 +5,7 @@
     "module": "es2022",
     "moduleResolution": "bundler",
     "lib": ["esnext", "dom"],
+    "types": ["node"],
     "jsx": "react-jsx",
     "outDir": "./lib",
     "declaration": true,

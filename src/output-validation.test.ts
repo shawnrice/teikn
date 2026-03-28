@@ -158,7 +158,8 @@ const assertNoGarbage = (content: string, label: string) => {
   for (const line of lines) {
     if (
       (line.includes(": null;") || line.includes(": null,") || line.includes(": null}")) &&
-      !line.includes("Generated") && !line.includes("dateFn")
+      !line.includes("Generated") &&
+      !line.includes("dateFn")
     ) {
       // Allow "null" in date fields (dateFn returns "null")
       throw new Error(`${label}: found literal null value in line: ${line}`);
