@@ -1,5 +1,96 @@
 # Changelog
 
+## 2.0.0-alpha.8
+
+### Breaking Changes
+
+- **`Plugin.toJSON()` renamed to `Plugin.transform()`.** Custom plugins must
+  rename their `toJSON` method to `transform`. The `toJSON` name was misleading —
+  it transforms tokens, not JSON.
+- **`Generator.convertColorToString()` renamed to `stringifyValues()`.** Custom
+  generators overriding this method must update the name.
+- **`Dimension.value` and `Duration.value` renamed to `.amount`.** These getters
+  collided with the token config `{ value: ... }` shape, causing silent
+  destructuring bugs. Use `.amount` to access the numeric value.
+- **`isFirstClassValue()` now uses a brand check instead of `instanceof`.**
+  Custom first-class value types must add `readonly __teikn_fcv__: true = true`
+  to opt in. The old `instanceof` chain is removed.
+- **`Token.value` type tightened from `any` to `TokenValue | CompositeValue`.**
+  Code passing arbitrary values may need type assertions.
+- **`Plugin.transform()` is no longer abstract.** The base class provides a
+  default no-op. Audit-only plugins no longer need to override it.
+- **`PerceptualDistancePlugin` now auto-groups by `token.group`** instead of
+  comparing all color tokens globally. Pass `groups` option for manual control.
+- **`TouchTargetPlugin` no longer checks `"icon"` type by default.** Opt in
+  with `types: ["size", "touch-target", "icon"]`.
+
+### Added
+
+- **`Color.saturate(amount)`** — increase saturation by percentage points.
+- **`Color.desaturate(amount)`** — decrease saturation.
+- **`Color.grayscale()`** — fully desaturate.
+- **`Color.isLight()`** / **`Color.isDark()`** — luminance-based light/dark check.
+- **`TokenNames` compound type** in TypeScript generator output. Provides
+  per-group token name unions (`TokenNames['Color']`, `TokenNames['Spacing']`)
+  and a combined `TokenNames['All']` for type-safe CSS variable helpers.
+- **Builder input validation** — `dp()`, `dim()`, `dur()` reject `NaN`/`Infinity`.
+  `dim()`/`dur()` validate units against known CSS unit sets. `group()`/`scale()`
+  validate input types. `composite()` detects nested objects. `ref()` rejects
+  empty strings.
+- **`Teikn` constructor detects duplicate generator filenames** and throws
+  with a helpful message.
+- **Automatic validation** — `transform()` and `generateToStrings()` run
+  `validate()` by default. Opt out with `validate: false`.
+- **`ColorTransformPlugin` audit** warns when hex output drops alpha channel.
+
+### Changed
+
+- **`onColor()` uses WCAG contrast ratio** instead of a luminance > 0.5
+  threshold. Picks whichever of dark/light text gives better contrast,
+  fixing incorrect text color for mid-lightness backgrounds (teal, yellow,
+  orange).
+- **`ColorTransformPlugin` skips ref() strings** instead of crashing with
+  `"Invalid color constructor arguments"`.
+
+### Fixed
+
+- **`isTokenInputObject` unwrapping Dimension/Duration** — `Dimension` has a
+  `.value` getter, so `'value' in dimension` was `true`, causing builders to
+  destructure `dp(16)` into the bare number `1` instead of preserving the
+  Dimension object. Root cause of unitless spacing output.
+- **CssVars mode values bypassing `cssValue()`** — mode values used template
+  literal `${val}` directly instead of the serializer function.
+- **`RemUnitPlugin` replacing Color/CubicBezier/BoxShadow with `{}`** in
+  composite tokens — `Object.values()` on private-field objects returns `[]`.
+- **DTCG generator bypassing plugin topological sort and mode plugin
+  application** — `prepareTokens` override was a simplified copy that skipped
+  `sortPlugins()` and `applyPlugin()`.
+- **`applyPlugin` building synthetic mode tokens from original** instead of
+  transformed token — plugins that rename tokens now see consistent names
+  in mode processing.
+- **`maybeQuote` not escaping** single quotes, backslashes, and newlines in
+  generated JS/MJS output.
+- **TypeScript generator emitting `object`** for composite token types —
+  now produces proper inline shape types.
+- **DTCG `describe()` using "Dtcg"** instead of "DTCG" for the acronym.
+- **Double validation** in `transform()` — removed redundant `validate()` call.
+- **README API mismatches** — `lighten`/`darken` use 0–1 range (not 0–100),
+  `rotate` → `rotateHue`, `contrast` → `contrastRatio`.
+- **CLI help text recommending deprecated `PrefixTypePlugin`.**
+
+### Internal
+
+- Value serializers (`cssValue`, `maybeQuote`, `quoteKey`) extracted to shared
+  `value-serializers.ts` — was duplicated across 5 generator files.
+- `commentHeader()` and `buildModeMap()` extracted to Generator base class —
+  was duplicated across 5 generators.
+- Shared `testOpts` fixture replaces 40+ inline `{ dateFn, version }` objects.
+- Removed stale files: `__mocks__/fs.ts`, `.husky/`, `prettier.config.js`.
+- npm package trimmed from 293 → 148 files (excluded sourcemaps and tsbuildinfo).
+- Test coverage: 1137 → 1513 tests (+376) across 14 new test files covering
+  generators, builders, plugins, CLI, integration, round-trip, misuse patterns,
+  error experience, and output validation.
+
 ## 2.0.0-alpha.7
 
 ### Breaking Changes
