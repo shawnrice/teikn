@@ -13,12 +13,30 @@ const defaultOptions = {
   dateFn: getDate,
 };
 
+export type ModeSelector = string | { atRule: string; selector?: string };
+
 export type CssVarsOpts = {
   nameTransformer?: (name: string) => string;
   dateFn?: () => string | null;
   useMediaQuery?: boolean;
-  modeSelectors?: Record<string, string>;
+  modeSelectors?: Record<string, ModeSelector>;
 } & GeneratorOptions;
+
+const parseModeSelector = (
+  raw: ModeSelector | undefined,
+  mode: string,
+): { atRule: string | null; selector: string } => {
+  if (raw == null) {
+    return { atRule: null, selector: `[data-theme="${mode}"]` };
+  }
+  if (typeof raw === "object") {
+    return { atRule: raw.atRule, selector: raw.selector ?? ":root" };
+  }
+  if (raw.startsWith("@")) {
+    return { atRule: raw, selector: ":root" };
+  }
+  return { atRule: null, selector: raw };
+};
 
 export class CssVars extends Generator<CssVarsOpts> {
   constructor(options = {}) {
@@ -64,10 +82,17 @@ export class CssVars extends Generator<CssVarsOpts> {
 
     for (const [mode, vars] of modeMap) {
       const { useMediaQuery, modeSelectors } = this.options;
-      const selector = modeSelectors?.[mode] ?? `[data-theme="${mode}"]`;
-      blocks.push("", `${selector} {`, vars.join(EOL), `}`);
+      const raw = modeSelectors?.[mode];
+      const { atRule, selector } = parseModeSelector(raw, mode);
 
-      if (useMediaQuery && mode === "dark") {
+      if (atRule) {
+        const indented = vars.map((v) => `  ${v}`);
+        blocks.push("", `${atRule} {`, `  ${selector} {`, indented.join(EOL), `  }`, `}`);
+      } else {
+        blocks.push("", `${selector} {`, vars.join(EOL), `}`);
+      }
+
+      if (useMediaQuery && mode === "dark" && !atRule) {
         const indented = vars.map((v) => `  ${v}`);
         blocks.push(
           "",
