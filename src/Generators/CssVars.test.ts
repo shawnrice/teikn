@@ -137,7 +137,12 @@ describe("CssVars Generator tests", () => {
       },
     });
     const tokens: Token[] = [
-      { name: "bg", type: "color", value: "#ffffff", modes: { dark: "#1a1a1a", contrast: "#000000" } },
+      {
+        name: "bg",
+        type: "color",
+        value: "#ffffff",
+        modes: { dark: "#1a1a1a", contrast: "#000000" },
+      },
     ];
     const output = gen.generate(tokens);
     // at-rule gets :root wrapper
