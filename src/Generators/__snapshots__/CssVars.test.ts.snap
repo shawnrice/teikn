@@ -34,3 +34,61 @@ exports[`CssVars Generator tests It generates themed tokens with modes 1`] = `
   --text: #eeeeee;
 }"
 `;
+
+exports[`CssVars Generator tests modeSelectors wraps at-rule strings in :root 1`] = `
+"/**
+ * Teikn vtest
+ * Generated null
+ *
+ * This file is generated and should be committed to source control
+ */
+:root {
+  --bg: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1a1a1a;
+  }
+}"
+`;
+
+exports[`CssVars Generator tests modeSelectors object form uses custom selector inside at-rule 1`] = `
+"/**
+ * Teikn vtest
+ * Generated null
+ *
+ * This file is generated and should be committed to source control
+ */
+:root {
+  --bg: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  .app {
+    --bg: #1a1a1a;
+  }
+}"
+`;
+
+exports[`CssVars Generator tests modeSelectors handles mix of selectors and at-rules 1`] = `
+"/**
+ * Teikn vtest
+ * Generated null
+ *
+ * This file is generated and should be committed to source control
+ */
+:root {
+  --bg: #ffffff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1a1a1a;
+  }
+}
+
+.high-contrast {
+  --bg: #000000;
+}"
+`;

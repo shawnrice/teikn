@@ -1,5 +1,21 @@
 # Changelog
 
+## 2.0.0-alpha.9
+
+### Fixed
+
+- **`modeSelectors` no longer produces invalid CSS for at-rules** (#29). Passing
+  a `@media` or `@supports` query as a `modeSelectors` value now automatically
+  wraps variables in `:root` inside the at-rule block. Previously, variables were
+  placed directly inside the at-rule with no selector, producing CSS that browsers
+  silently ignored.
+
+### Added
+
+- **`ModeSelector` object form** for `modeSelectors` values. Use
+  `{ atRule: "@media ...", selector: ".app" }` to control both the at-rule wrapper
+  and the inner selector. The `selector` field defaults to `:root`.
+
 ## 2.0.0-alpha.8
 
 ### Breaking Changes
