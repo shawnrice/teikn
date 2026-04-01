@@ -270,13 +270,15 @@ const convertSingleValue = (value: unknown): DtcgValue | null => {
   return null;
 };
 
+const durationToDtcg = (d: Duration): DtcgDurationValue => ({ value: d.amount, unit: d.unit });
+
 const transitionToDtcg = (t: Transition): Record<string, unknown> => {
   const result: Record<string, unknown> = {
-    duration: stringDurationToDtcg(t.duration),
+    duration: durationToDtcg(t.duration),
     timingFunction: cubicBezierToDtcg(t.timingFunction),
   };
-  if (t.delay && t.delay !== "0s") {
-    result.delay = stringDurationToDtcg(t.delay);
+  if (t.delay.amount !== 0) {
+    result.delay = durationToDtcg(t.delay);
   }
   if (t.property && t.property !== "all") {
     result.property = t.property;

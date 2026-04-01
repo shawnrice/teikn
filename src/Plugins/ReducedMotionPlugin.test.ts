@@ -80,7 +80,7 @@ describe("ReducedMotionPlugin", () => {
     expect(reduced.name).toBe("reduced-fade");
     expect(reduced.type).toBe("transition");
     expect(reduced.value).toBeInstanceOf(Transition);
-    expect(reduced.value.duration).toBe("0s");
+    expect(reduced.value.duration.toString()).toBe("0s");
     expect(reduced.value.timingFunction.keyword).toBe("linear");
   });
 

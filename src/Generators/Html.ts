@@ -202,9 +202,9 @@ const transitionProps = (
     const v = value as Transition;
     return [
       ["property", v.property],
-      ["duration", v.duration],
+      ["duration", v.duration.toString()],
       ["timing", v.timingFunction.keyword ?? v.timingFunction.toString()],
-      ["delay", v.delay],
+      ["delay", v.delay.toString()],
     ];
   }
   if (typeof value === "object" && !(value instanceof Color)) {

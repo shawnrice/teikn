@@ -1,5 +1,6 @@
 import { splitTopLevel } from "../string-utils";
 import { CubicBezier } from "./CubicBezier";
+import { Duration } from "./Duration";
 
 const timeRe = /^(\d+(?:\.\d+)?)(ms|s)$/;
 
@@ -67,25 +68,36 @@ const parse = (
   };
 };
 
+const toDuration = (value: Duration | string): Duration =>
+  value instanceof Duration ? value : new Duration(value);
+
+export type TransitionInput = {
+  duration: Duration | string;
+  timingFunction: CubicBezier | string;
+  delay?: Duration | string;
+  property?: string;
+};
+
 export class Transition {
   /** @internal brand — do not use directly; see `isFirstClassValue()` */
   readonly __teikn_fcv__: true = true;
-  readonly #duration: string;
+  readonly #duration: Duration;
   readonly #timingFunction: CubicBezier;
-  readonly #delay: string;
+  readonly #delay: Duration;
   readonly #property: string;
 
   constructor(
-    duration: string,
+    duration: Duration | string,
     timingFunction: CubicBezier | string,
-    delay?: string,
+    delay?: Duration | string,
     property?: string,
   );
+  constructor(input: TransitionInput);
   constructor(css: Transition | string);
   constructor(
-    first: string | Transition,
+    first: Duration | string | Transition | TransitionInput,
     timingFunction?: CubicBezier | string,
-    delay?: string,
+    delay?: Duration | string,
     property?: string,
   ) {
     if (first instanceof Transition) {
@@ -98,36 +110,51 @@ export class Transition {
 
     if (typeof first === "string" && timingFunction === undefined) {
       const parsed = parse(first);
-      this.#duration = parsed.duration;
+      this.#duration = new Duration(parsed.duration);
       this.#timingFunction = parsed.timingFunction;
-      this.#delay = parsed.delay;
+      this.#delay = new Duration(parsed.delay);
       this.#property = parsed.property;
       return;
     }
 
-    this.#duration = first as string;
+    // Object input: { duration, timingFunction, delay?, property? }
+    if (typeof first === "object" && !(first instanceof Duration)) {
+      const opts = first as TransitionInput;
+      this.#duration = toDuration(opts.duration);
+      this.#timingFunction =
+        opts.timingFunction instanceof CubicBezier
+          ? opts.timingFunction
+          : new CubicBezier(opts.timingFunction);
+      this.#delay = opts.delay !== undefined ? toDuration(opts.delay) : new Duration(0, "s");
+      this.#property = opts.property ?? "all";
+      return;
+    }
+
+    this.#duration = toDuration(first);
     this.#timingFunction =
       timingFunction instanceof CubicBezier
         ? timingFunction
         : new CubicBezier(timingFunction ?? "ease");
-    this.#delay = delay ?? "0s";
+    this.#delay = delay !== undefined ? toDuration(delay) : new Duration(0, "s");
     this.#property = property ?? "all";
   }
 
-  get duration(): string {
+  get duration(): Duration {
     return this.#duration;
   }
   get timingFunction(): CubicBezier {
     return this.#timingFunction;
   }
-  get delay(): string {
+  get delay(): Duration {
     return this.#delay;
   }
   get property(): string {
     return this.#property;
   }
 
-  setDuration(duration: string): Transition {
+  // ─── Immutable setters ──────────────────────────────────────
+
+  setDuration(duration: Duration | string): Transition {
     return new Transition(duration, this.#timingFunction, this.#delay, this.#property);
   }
 
@@ -135,13 +162,52 @@ export class Transition {
     return new Transition(this.#duration, tf, this.#delay, this.#property);
   }
 
-  setDelay(delay: string): Transition {
+  setDelay(delay: Duration | string): Transition {
     return new Transition(this.#duration, this.#timingFunction, delay, this.#property);
   }
 
   setProperty(property: string): Transition {
     return new Transition(this.#duration, this.#timingFunction, this.#delay, property);
   }
+
+  // ─── Math ───────────────────────────────────────────────────
+
+  /** T.scale(k) → (d·k, f, δ·k, p) — uniform time dilation */
+  scale(factor: number): Transition {
+    return new Transition(
+      this.#duration.scale(factor),
+      this.#timingFunction,
+      this.#delay.scale(factor),
+      this.#property,
+    );
+  }
+
+  /** T.shift(Δ) → (d, f, δ+Δ, p) — delay offset */
+  shift(delta: Duration | string): Transition {
+    return new Transition(
+      this.#duration,
+      this.#timingFunction,
+      this.#delay.add(toDuration(delta)),
+      this.#property,
+    );
+  }
+
+  /** T.reverse() → (d, f.reverse(), δ, p) — reverse the easing curve */
+  reverse(): Transition {
+    return new Transition(
+      this.#duration,
+      this.#timingFunction.reverse(),
+      this.#delay,
+      this.#property,
+    );
+  }
+
+  /** d + δ — total time before the transition completes */
+  get totalTime(): Duration {
+    return this.#duration.add(this.#delay);
+  }
+
+  // ─── Serialization ──────────────────────────────────────────
 
   toJSON(): string {
     return this.toString();
@@ -152,16 +218,23 @@ export class Transition {
     if (this.#property !== "all") {
       parts.push(this.#property);
     }
-    parts.push(this.#duration);
+    parts.push(this.#duration.toString());
     const { keyword } = this.#timingFunction;
     parts.push(keyword ?? this.#timingFunction.toString());
-    if (this.#delay !== "0s") {
-      parts.push(this.#delay);
+    if (this.#delay.amount !== 0) {
+      parts.push(this.#delay.toString());
     }
     return parts.join(" ");
   }
 
   // ─── Static presets ──────────────────────────────────────────
+
+  static from(value: Transition | TransitionInput | string): Transition {
+    if (typeof value === "object" && !(value instanceof Transition) && !(value instanceof Duration)) {
+      return new Transition(value as TransitionInput);
+    }
+    return new Transition(value as Transition | string);
+  }
 
   static readonly fade: Transition = new Transition("0.2s", "ease");
   static readonly slide: Transition = new Transition("0.3s", CubicBezier.standard);
@@ -211,5 +284,9 @@ export class TransitionList {
 
   toString(): string {
     return this.#layers.map((t) => t.toString()).join(", ");
+  }
+
+  static from(value: TransitionList | string | Transition[]): TransitionList {
+    return new TransitionList(value);
   }
 }
