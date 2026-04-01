@@ -14,7 +14,7 @@ const DIMENSION_RE = /^(-?\d+(?:\.\d+)?)(px|rem|em|pt)$/;
 const toPx = (value: unknown, basePx: number): number | null => {
   if (value instanceof Dimension) {
     try {
-      return value.toPx(basePx).amount;
+      return value.toPx(basePx).value;
     } catch {
       return null;
     }

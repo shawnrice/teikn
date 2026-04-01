@@ -28,14 +28,14 @@ const toRem = (value: number, unit: string, remBase = 16): number => {
   }
   // For other absolute units, convert to px first then to rem
   const dim = new Dimension(value, unit as any);
-  return dim.to("px").amount / remBase;
+  return dim.to("px").value / remBase;
 };
 
 const extractNumericValue = (token: Token): { value: number; unit: string } | null => {
   const { value } = token;
 
   if (value instanceof Dimension) {
-    return { value: value.amount, unit: value.unit };
+    return { value: value.value, unit: value.unit };
   }
 
   if (typeof value === "string") {

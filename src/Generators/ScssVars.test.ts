@@ -3,6 +3,8 @@ import { describe, expect, test } from "bun:test";
 import { group, tokens } from "../builders";
 import { tokenSet1 } from "../fixtures/tokenSet1";
 import type { Token } from "../Token";
+import { BoxShadow } from "../TokenTypes/BoxShadow";
+import { Color } from "../TokenTypes/Color";
 import { CubicBezier } from "../TokenTypes/CubicBezier";
 import { Duration } from "../TokenTypes/Duration";
 import { Transition } from "../TokenTypes/Transition";
@@ -159,5 +161,32 @@ describe("SCSS Vars Generator tests", () => {
     expect(output).toContain("$duration-fast: 100ms;");
     expect(output).toContain("$timing-standard: cubic-bezier(0.4, 0, 0.2, 1);");
     expect(output).toContain("$transition-fade: $duration-fast $timing-standard;");
+  });
+
+  test("tokens without references preserve original order", () => {
+    const a = group("color", { alpha: "#aaa" });
+    const b = group("color", { bravo: "#bbb" });
+    const gen = new Generator(testOpts);
+    const output = gen.generate(tokens(a, b));
+    expect(output.indexOf("$alpha:")).toBeLessThan(output.indexOf("$bravo:"));
+  });
+
+  test("transition referencing non-token values does not crash topoSort", () => {
+    const standalone = new Duration(100, "ms");
+    const transitions = group("transition", {
+      fade: new Transition(standalone, "ease"),
+    });
+    const gen = new Generator(testOpts);
+    expect(() => gen.generate(tokens(transitions))).not.toThrow();
+  });
+
+  test("BoxShadow references a color token by $variable", () => {
+    const colors = group("color", { "color-shadow": new Color(0, 0, 0, 0.12) });
+    const shadows = group("shadow", {
+      "shadow-sm": new BoxShadow({ offsetY: 1, blur: 2, color: colors["color-shadow"] }),
+    });
+    const gen = new Generator(testOpts);
+    const output = gen.generate(tokens(colors, shadows));
+    expect(output).toContain("$shadow-sm: 0 1px 2px $color-shadow;");
   });
 });

@@ -1,8 +1,7 @@
 import { EOL } from "node:os";
 
 import { camelCase, deriveShortName, kebabCase } from "../string-utils";
-import type { ModeValues, Token, TokenValue } from "../Token";
-import { isFirstClassValue } from "../type-classifiers";
+import type { Token, TokenValue } from "../Token";
 import type { Generator, GeneratorInfo } from "./Generator";
 import { Scss } from "./Scss";
 import { cssValue, stringifyWithRefs, valueDependencies } from "./value-serializers";
@@ -62,32 +61,6 @@ export class ScssVars extends Scss {
     return stringifyWithRefs(value, (v) => this.#ref(v));
   }
 
-  override stringifyValues(token: Token): Token {
-    const { value, modes } = token;
-    const convertedValue = isFirstClassValue(value)
-      ? this.stringifyTokenValue(value as TokenValue)
-      : value;
-
-    if (!modes) {
-      return convertedValue === value ? token : { ...token, value: convertedValue };
-    }
-
-    const convertedModes: ModeValues = {};
-    let modesChanged = false;
-    for (const [mode, modeVal] of Object.entries(modes)) {
-      if (isFirstClassValue(modeVal)) {
-        convertedModes[mode] = this.stringifyTokenValue(modeVal as TokenValue);
-        modesChanged = true;
-      } else {
-        convertedModes[mode] = modeVal;
-      }
-    }
-
-    if (convertedValue === value && !modesChanged) {
-      return token;
-    }
-    return { ...token, value: convertedValue, modes: modesChanged ? convertedModes : modes };
-  }
   override describe(): GeneratorInfo | null {
     const base = `@use '${this.options.filename ?? "tokens"}';\n\n// Access variables with namespace\ntokens.$tokenName`;
     const groupUsage = this.options.groups

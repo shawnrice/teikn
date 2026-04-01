@@ -221,7 +221,7 @@ export class Transition {
     parts.push(this.#duration.toString());
     const { keyword } = this.#timingFunction;
     parts.push(keyword ?? this.#timingFunction.toString());
-    if (this.#delay.amount !== 0) {
+    if (this.#delay.value !== 0) {
       parts.push(this.#delay.toString());
     }
     return parts.join(" ");

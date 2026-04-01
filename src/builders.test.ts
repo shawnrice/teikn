@@ -150,6 +150,34 @@ describe("builders", () => {
       expect(keys).not.toContain("slow");
     });
 
+    test("Object.keys only shows array indices", () => {
+      const result = group("duration", {
+        fast: new Duration(100, "ms"),
+        slow: new Duration(300, "ms"),
+      });
+      expect(Object.keys(result)).toEqual(["0", "1"]);
+    });
+
+    test("JSON.stringify serializes as a plain array", () => {
+      const result = group("color", { primary: "#000", secondary: "#fff" });
+      const parsed = JSON.parse(JSON.stringify(result));
+      expect(Array.isArray(parsed)).toBe(true);
+      expect(parsed).toHaveLength(2);
+    });
+
+    test("spread produces plain Token[] without named props", () => {
+      const result = group("duration", { fast: new Duration(100, "ms") });
+      const spread = [...result];
+      expect(spread).toHaveLength(1);
+      expect((spread as any).fast).toBeUndefined();
+    });
+
+    test("throws when token name conflicts with Array.prototype", () => {
+      expect(() => group("size", { length: "100px" })).toThrow("conflicts with Array.prototype");
+      expect(() => group("size", { push: "100px" })).toThrow("conflicts with Array.prototype");
+      expect(() => group("size", { map: "100px" })).toThrow("conflicts with Array.prototype");
+    });
+
     test("named values compose into higher-level types", () => {
       const durations = group("duration", { fast: new Duration(100, "ms") });
       const easings = group("timing", { standard: CubicBezier.standard });
@@ -322,7 +350,7 @@ describe("builders", () => {
     test("converts px to rem Dimension", () => {
       const d = dp(16);
       expect(d).toBeInstanceOf(Dimension);
-      expect(d.amount).toBe(1);
+      expect(d.value).toBe(1);
       expect(d.unit).toBe("rem");
       expect(d.toString()).toBe("1rem");
     });
@@ -338,7 +366,7 @@ describe("builders", () => {
     test("creates a Dimension", () => {
       const d = dim(16, "px");
       expect(d).toBeInstanceOf(Dimension);
-      expect(d.amount).toBe(16);
+      expect(d.value).toBe(16);
       expect(d.unit).toBe("px");
     });
   });
@@ -347,7 +375,7 @@ describe("builders", () => {
     test("creates a Duration", () => {
       const d = dur(200, "ms");
       expect(d).toBeInstanceOf(Duration);
-      expect(d.amount).toBe(200);
+      expect(d.value).toBe(200);
       expect(d.unit).toBe("ms");
     });
   });

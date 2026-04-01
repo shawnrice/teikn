@@ -164,7 +164,7 @@ export type DimensionInput = { value: number; unit: DimensionUnit };
 export class Dimension {
   /** @internal brand — do not use directly; see `isFirstClassValue()` */
   readonly __teikn_fcv__: true = true;
-  readonly #amount: number;
+  readonly #value: number;
   readonly #unit: DimensionUnit;
 
   constructor(value: number, unit: DimensionUnit);
@@ -172,30 +172,33 @@ export class Dimension {
   constructor(css: Dimension | string);
   constructor(first: number | string | Dimension | DimensionInput, unit?: DimensionUnit) {
     if (first instanceof Dimension) {
-      this.#amount = first.#amount;
+      this.#value = first.#value;
       this.#unit = first.#unit;
       return;
     }
 
     if (typeof first === "string") {
       const parsed = parseCss(first);
-      this.#amount = parsed.value;
+      this.#value = parsed.value;
       this.#unit = parsed.unit;
       return;
     }
 
     if (typeof first === "object") {
-      this.#amount = first.value;
+      this.#value = first.value;
       this.#unit = first.unit;
       return;
     }
 
-    this.#amount = first;
-    this.#unit = unit!;
+    if (unit === undefined) {
+      throw new Error("Dimension(number) requires a unit");
+    }
+    this.#value = first;
+    this.#unit = unit;
   }
 
-  get amount(): number {
-    return this.#amount;
+  get value(): number {
+    return this.#value;
   }
   get unit(): DimensionUnit {
     return this.#unit;
@@ -227,7 +230,7 @@ export class Dimension {
 
   to(targetUnit: DimensionUnit, { remBase = 16 }: { remBase?: number } = {}): Dimension {
     return new Dimension(
-      convertDimension(this.#amount, this.#unit, targetUnit, { remBase }),
+      convertDimension(this.#value, this.#unit, targetUnit, { remBase }),
       targetUnit,
     );
   }
@@ -243,31 +246,31 @@ export class Dimension {
   // ─── Math ───────────────────────────────────────────────────
 
   scale(factor: number): Dimension {
-    return new Dimension(this.#amount * factor, this.#unit);
+    return new Dimension(this.#value * factor, this.#unit);
   }
 
   add(other: Dimension): Dimension {
     if (this.#unit !== other.#unit) {
       throw new Error(`Cannot add ${this.#unit} and ${other.#unit} — convert first`);
     }
-    return new Dimension(this.#amount + other.#amount, this.#unit);
+    return new Dimension(this.#value + other.#value, this.#unit);
   }
 
   subtract(other: Dimension): Dimension {
     if (this.#unit !== other.#unit) {
       throw new Error(`Cannot subtract ${this.#unit} and ${other.#unit} — convert first`);
     }
-    return new Dimension(this.#amount - other.#amount, this.#unit);
+    return new Dimension(this.#value - other.#value, this.#unit);
   }
 
   negate(): Dimension {
-    return new Dimension(-this.#amount, this.#unit);
+    return new Dimension(-this.#value, this.#unit);
   }
 
   // ─── Comparison ─────────────────────────────────────────────
 
   equals(other: Dimension): boolean {
-    return this.#amount === other.#amount && this.#unit === other.#unit;
+    return this.#value === other.#value && this.#unit === other.#unit;
   }
 
   // ─── Serialization ─────────────────────────────────────────
@@ -277,7 +280,7 @@ export class Dimension {
   }
 
   toString(): string {
-    return `${this.#amount}${this.#unit}`;
+    return `${this.#value}${this.#unit}`;
   }
 
   // ─── Static helpers ──────────────────────────────────────────

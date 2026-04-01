@@ -308,7 +308,7 @@ describe("Transition", () => {
     const shifted = t.shift(new Duration(200, "ms"));
     // Duration.add preserves this.unit (s), so 0.1s + 200ms = 0.3s
     expect(shifted.delay.unit).toBe("s");
-    expect(shifted.delay.amount).toBeCloseTo(0.3);
+    expect(shifted.delay.value).toBeCloseTo(0.3);
   });
 
   it("shift is immutable", () => {
@@ -383,7 +383,7 @@ describe("Transition", () => {
     const t = new Transition("0.2s", "ease", "100ms");
     const total = t.totalTime;
     expect(total.unit).toBe("s");
-    expect(total.amount).toBeCloseTo(0.3);
+    expect(total.value).toBeCloseTo(0.3);
   });
 
   // ─── Serialization ──────────────────────────────────────────

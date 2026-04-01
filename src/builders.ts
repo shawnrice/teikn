@@ -103,7 +103,13 @@ export const group = <E extends Record<string, TokenInput>>(
     group: type,
   }));
 
+  const arrayKeys = new Set(Object.getOwnPropertyNames(Array.prototype));
   for (const token of result) {
+    if (arrayKeys.has(token.name)) {
+      throw new Error(
+        `group(): token name "${token.name}" conflicts with Array.prototype.${token.name}. Rename the token to avoid shadowing built-in array behavior.`,
+      );
+    }
     Object.defineProperty(result, token.name, { value: token.value, enumerable: false });
   }
 

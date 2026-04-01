@@ -254,10 +254,10 @@ const convertSingleValue = (value: unknown, refMap?: DtcgRefMap): DtcgValue | nu
     return value.layers.map((g) => gradientToDtcg(g)) as unknown as DtcgValue;
   }
   if (value instanceof Dimension) {
-    return { value: value.amount, unit: value.unit } as DtcgDimensionValue;
+    return { value: value.value, unit: value.unit } as DtcgDimensionValue;
   }
   if (value instanceof Duration) {
-    return { value: value.amount, unit: value.unit } as DtcgDurationValue;
+    return { value: value.value, unit: value.unit } as DtcgDurationValue;
   }
   return null;
 };
@@ -266,16 +266,19 @@ export type DtcgRefMap = Map<unknown, string>;
 
 const dtcgAlias = (name: string): string => `{${name}}`;
 
-const durationToDtcg = (d: Duration): DtcgDurationValue => ({ value: d.amount, unit: d.unit });
+const durationToDtcg = (d: Duration): DtcgDurationValue => ({ value: d.value, unit: d.unit });
 
 const transitionToDtcg = (t: Transition, refMap?: DtcgRefMap): Record<string, unknown> => {
   const ref = (v: unknown) => refMap?.get(v);
+  const durRef = ref(t.duration);
+  const tfRef = ref(t.timingFunction);
   const result: Record<string, unknown> = {
-    duration: ref(t.duration) ? dtcgAlias(ref(t.duration)!) : durationToDtcg(t.duration),
-    timingFunction: ref(t.timingFunction) ? dtcgAlias(ref(t.timingFunction)!) : cubicBezierToDtcg(t.timingFunction),
+    duration: durRef ? dtcgAlias(durRef) : durationToDtcg(t.duration),
+    timingFunction: tfRef ? dtcgAlias(tfRef) : cubicBezierToDtcg(t.timingFunction),
   };
-  if (t.delay.amount !== 0) {
-    result.delay = ref(t.delay) ? dtcgAlias(ref(t.delay)!) : durationToDtcg(t.delay);
+  if (t.delay.value !== 0) {
+    const delayRef = ref(t.delay);
+    result.delay = delayRef ? dtcgAlias(delayRef) : durationToDtcg(t.delay);
   }
   if (t.property && t.property !== "all") {
     result.property = t.property;

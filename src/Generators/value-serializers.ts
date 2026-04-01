@@ -61,7 +61,7 @@ export const stringifyTransitionWithRefs = (
     const { keyword } = t.timingFunction;
     parts.push(keyword ?? t.timingFunction.toString());
   }
-  if (t.delay.amount !== 0) {
+  if (t.delay.value !== 0) {
     parts.push(ref(t.delay) ?? t.delay.toString());
   }
   return parts.join(" ");
@@ -98,25 +98,33 @@ export const stringifyWithRefs = (value: TokenValue, ref: RefResolver): string =
 };
 
 /**
+ * Visit the referenceable components of a composed value.
+ * Shared by stringifyWithRefs (serialization) and valueDependencies (topo sort)
+ * to keep field enumeration in one place.
+ */
+export const visitComponents = (value: unknown, fn: (v: unknown) => void): void => {
+  if (value instanceof Transition) {
+    fn(value.duration);
+    fn(value.timingFunction);
+    if (value.delay.value !== 0) {
+      fn(value.delay);
+    }
+  } else if (value instanceof BoxShadow) {
+    fn(value.color);
+  }
+};
+
+/**
  * Extract the set of token names that a value's components reference.
  * Used for dependency ordering (SCSS topological sort).
  */
 export const valueDependencies = (value: unknown, refMap: Map<unknown, string>): string[] => {
   const deps: string[] = [];
-  const check = (v: unknown) => {
+  visitComponents(value, (v) => {
     const name = refMap.get(v);
     if (name) {
       deps.push(name);
     }
-  };
-  if (value instanceof Transition) {
-    check(value.duration);
-    check(value.timingFunction);
-    if (value.delay.amount !== 0) {
-      check(value.delay);
-    }
-  } else if (value instanceof BoxShadow) {
-    check(value.color);
-  }
+  });
   return deps;
 };

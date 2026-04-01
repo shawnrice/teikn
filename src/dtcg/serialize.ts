@@ -93,7 +93,7 @@ const tokenToDtcg = (token: Token, refMap?: DtcgRefMap): DtcgToken => {
 const buildRefMap = (tokens: Token[]): DtcgRefMap => {
   const map: DtcgRefMap = new Map();
   for (const token of tokens) {
-    if (typeof token.value === "object" && token.value !== null) {
+    if (typeof token.value === "object" && token.value !== null && !map.has(token.value)) {
       map.set(token.value, token.name);
     }
   }

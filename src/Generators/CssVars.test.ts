@@ -212,4 +212,44 @@ describe("CssVars Generator tests", () => {
 
     expect(output).toContain("--shadow-sm: 0 1px 2px var(--color-shadow);");
   });
+
+  test("same value object in multiple tokens references the first-registered name", () => {
+    const fast = new Duration(100, "ms");
+    const durations = group("duration", { alpha: fast, bravo: fast });
+    const transitions = group("transition", {
+      fade: new Transition(fast, "ease"),
+    });
+
+    const gen = new Generator(testOpts);
+    const output = gen.generate(tokens(durations, transitions));
+
+    // First-wins: alpha was registered first
+    expect(output).toContain("var(--alpha)");
+    expect(output).not.toContain("var(--bravo)");
+  });
+
+  test("Transition in a mode still resolves references", () => {
+    const fast = new Duration(100, "ms");
+    const slow = new Duration(300, "ms");
+    const durations = group("duration", { "duration-fast": fast, "duration-slow": slow });
+    const easings = group("timing", { "timing-standard": CubicBezier.standard });
+    const transitions: Token[] = [
+      {
+        name: "transition-fade",
+        type: "transition",
+        value: new Transition(durations["duration-fast"], easings["timing-standard"]),
+        modes: {
+          reduced: new Transition(durations["duration-slow"], easings["timing-standard"]),
+        },
+      },
+    ];
+
+    const gen = new Generator(testOpts);
+    const output = gen.generate(tokens(durations, easings, transitions));
+
+    // Base value uses references
+    expect(output).toContain("--transition-fade: var(--duration-fast) var(--timing-standard);");
+    // Mode value also uses references
+    expect(output).toContain("var(--duration-slow)");
+  });
 });

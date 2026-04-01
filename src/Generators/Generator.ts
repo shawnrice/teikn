@@ -91,11 +91,10 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
     return `Teikn v${this.options.version ?? version}`;
   }
 
-  // oxlint-disable-next-line class-methods-use-this
   stringifyValues(token: Token): Token {
     const { value, modes } = token;
     const convertedValue = isFirstClassValue(value)
-      ? (value as { toString(): string }).toString()
+      ? this.stringifyTokenValue(value as TokenValue)
       : value;
 
     if (!modes) {
@@ -106,7 +105,7 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
     let modesChanged = false;
     for (const [mode, modeVal] of Object.entries(modes)) {
       if (isFirstClassValue(modeVal)) {
-        convertedModes[mode] = (modeVal as { toString(): string }).toString();
+        convertedModes[mode] = this.stringifyTokenValue(modeVal as TokenValue);
         modesChanged = true;
       } else {
         convertedModes[mode] = modeVal;
@@ -219,7 +218,7 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
   protected buildReferenceMap(tokens: Token[]): Map<unknown, string> {
     const map = new Map<unknown, string>();
     for (const token of tokens) {
-      if (typeof token.value === "object" && token.value !== null) {
+      if (typeof token.value === "object" && token.value !== null && !map.has(token.value)) {
         map.set(token.value, token.name);
       }
     }

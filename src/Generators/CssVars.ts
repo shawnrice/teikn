@@ -1,8 +1,7 @@
 import { EOL } from "node:os";
 
 import { kebabCase } from "../string-utils";
-import type { ModeValues, Token, TokenValue } from "../Token";
-import { isFirstClassValue } from "../type-classifiers";
+import type { Token, TokenValue } from "../Token";
 import { getDate } from "../utils";
 import type { GeneratorInfo, GeneratorOptions } from "./Generator";
 import { Generator } from "./Generator";
@@ -63,33 +62,6 @@ export class CssVars extends Generator<CssVarsOpts> {
 
   protected override stringifyTokenValue(value: TokenValue): string {
     return stringifyWithRefs(value, (v) => this.#ref(v));
-  }
-
-  override stringifyValues(token: Token): Token {
-    const { value, modes } = token;
-    const convertedValue = isFirstClassValue(value)
-      ? this.stringifyTokenValue(value as TokenValue)
-      : value;
-
-    if (!modes) {
-      return convertedValue === value ? token : { ...token, value: convertedValue };
-    }
-
-    const convertedModes: ModeValues = {};
-    let modesChanged = false;
-    for (const [mode, modeVal] of Object.entries(modes)) {
-      if (isFirstClassValue(modeVal)) {
-        convertedModes[mode] = this.stringifyTokenValue(modeVal as TokenValue);
-        modesChanged = true;
-      } else {
-        convertedModes[mode] = modeVal;
-      }
-    }
-
-    if (convertedValue === value && !modesChanged) {
-      return token;
-    }
-    return { ...token, value: convertedValue, modes: modesChanged ? convertedModes : modes };
   }
 
   protected override prepareTokens(...args: Parameters<Generator['prepareTokens']>): Token[] {

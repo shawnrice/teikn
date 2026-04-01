@@ -182,7 +182,7 @@ describe("dtcgValueToTeikn", () => {
   test("structured dimension converts to Dimension instance", () => {
     const result = dtcgValueToTeikn({ value: 16, unit: "px" }, "dimension");
     expect(result).toBeInstanceOf(Dimension);
-    expect(result.amount).toBe(16);
+    expect(result.value).toBe(16);
     expect(result.unit).toBe("px");
     expect(result.toString()).toBe("16px");
   });
@@ -190,7 +190,7 @@ describe("dtcgValueToTeikn", () => {
   test("structured duration converts to Duration instance", () => {
     const result = dtcgValueToTeikn({ value: 200, unit: "ms" }, "duration");
     expect(result).toBeInstanceOf(Duration);
-    expect(result.amount).toBe(200);
+    expect(result.value).toBe(200);
     expect(result.unit).toBe("ms");
     expect(result.toString()).toBe("200ms");
   });
