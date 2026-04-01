@@ -20,7 +20,10 @@ describe("stringifyTransitionWithRefs", () => {
     const dur = new Duration(200, "ms");
     const cb = CubicBezier.standard;
     const t = new Transition(dur, cb);
-    const refs = new Map<unknown, string>([[dur, "var(--fast)"], [cb, "var(--standard)"]]);
+    const refs = new Map<unknown, string>([
+      [dur, "var(--fast)"],
+      [cb, "var(--standard)"],
+    ]);
     const ref = (v: unknown) => refs.get(v) ?? null;
     expect(stringifyTransitionWithRefs(t, ref)).toBe("var(--fast) var(--standard)");
   });
