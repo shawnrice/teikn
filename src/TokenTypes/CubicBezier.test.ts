@@ -36,6 +36,32 @@ describe("CubicBezier", () => {
     expect(b.controlPoints).toEqual(a.controlPoints);
   });
 
+  it("creates from an options object", () => {
+    const b = new CubicBezier({ x1: 0.4, y1: 0, x2: 0.2, y2: 1 });
+    expect(b.x1).toBe(0.4);
+    expect(b.y1).toBe(0);
+    expect(b.x2).toBe(0.2);
+    expect(b.y2).toBe(1);
+  });
+
+  it("from() accepts a string", () => {
+    const b = CubicBezier.from("ease-in");
+    expect(b.keyword).toBe("ease-in");
+  });
+
+  it("from() accepts an options object", () => {
+    const b = CubicBezier.from({ x1: 0.4, y1: 0, x2: 0.2, y2: 1 });
+    expect(b.x1).toBe(0.4);
+    expect(b.y2).toBe(1);
+  });
+
+  it("from() accepts a CubicBezier", () => {
+    const a = new CubicBezier(0.4, 0, 0.2, 1);
+    const b = CubicBezier.from(a);
+    expect(b.x1).toBe(0.4);
+    expect(b).not.toBe(a);
+  });
+
   it("throws on invalid string", () => {
     expect(() => new CubicBezier("not-a-timing")).toThrow("Invalid cubic-bezier");
   });

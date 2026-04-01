@@ -38,6 +38,31 @@ describe("LinearGradient", () => {
     expect(g.stops[1]!.position).toBeUndefined();
   });
 
+  it("creates from options object", () => {
+    const g = new LinearGradient({ angle: 90, stops: ["red", "blue"] });
+    expect(g.angle).toBe(90);
+    expect(g.stops).toHaveLength(2);
+  });
+
+  it("from() accepts a CSS string", () => {
+    const g = LinearGradient.from("linear-gradient(90deg, red, blue)");
+    expect(g.angle).toBe(90);
+    expect(g.stops).toHaveLength(2);
+  });
+
+  it("from() accepts an options object", () => {
+    const g = LinearGradient.from({ angle: 45, stops: ["red", "blue"] });
+    expect(g.angle).toBe(45);
+    expect(g.stops).toHaveLength(2);
+  });
+
+  it("from() accepts a LinearGradient instance", () => {
+    const a = new LinearGradient(45, ["red", "blue"]);
+    const b = LinearGradient.from(a);
+    expect(b.angle).toBe(45);
+    expect(b).not.toBe(a);
+  });
+
   it("normalizes angle to [0, 360)", () => {
     expect(new LinearGradient(400, ["red", "blue"]).angle).toBe(40);
     expect(new LinearGradient(-90, ["red", "blue"]).angle).toBe(270);
@@ -153,6 +178,19 @@ describe("RadialGradient", () => {
     expect(g.stops).toHaveLength(2);
   });
 
+  it("from() accepts a CSS string", () => {
+    const g = RadialGradient.from("radial-gradient(circle, red, blue)");
+    expect(g.shape).toBe("circle");
+    expect(g.stops).toHaveLength(2);
+  });
+
+  it("from() accepts a RadialGradient instance", () => {
+    const a = new RadialGradient({ shape: "circle" }, ["red", "blue"]);
+    const b = RadialGradient.from(a);
+    expect(b.shape).toBe("circle");
+    expect(b).not.toBe(a);
+  });
+
   it("defaults to ellipse/farthest-corner/center", () => {
     const g = new RadialGradient({}, ["red", "blue"]);
     expect(g.shape).toBe("ellipse");
@@ -254,6 +292,18 @@ describe("RadialGradient", () => {
 describe("GradientList", () => {
   const lg = new LinearGradient(90, ["red", "blue"]);
   const rg = new RadialGradient({ shape: "circle" }, ["green", "yellow"]);
+
+  it("from() accepts an array of gradients", () => {
+    const list = GradientList.from([lg, rg]);
+    expect(list.length).toBe(2);
+  });
+
+  it("from() accepts a CSS string", () => {
+    const list = GradientList.from(
+      "linear-gradient(90deg, red, blue), radial-gradient(circle, green, yellow)",
+    );
+    expect(list.length).toBe(2);
+  });
 
   it("creates from an array of gradients", () => {
     const list = new GradientList([lg, rg]);

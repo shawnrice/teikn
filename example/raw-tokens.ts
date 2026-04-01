@@ -1,9 +1,11 @@
 import {
   BoxShadow,
+  BoxShadowList,
   Color,
   composite,
   CubicBezier,
   dp,
+  Duration,
   group,
   LinearGradient,
   onColors,
@@ -116,18 +118,25 @@ const borders = composite('border', {
 
 // ─── Shadows ─────────────────────────────────────────────────
 
+const shadowColor = new Color(0, 0, 0, 0.12);
+
 const shadows = group('shadow', {
-  sm: new BoxShadow(0, 1, 2, 0, 'rgba(0,0,0,.1)'),
-  md: new BoxShadow(0, 2, 8, 0, 'rgba(0,0,0,.12)'),
-  lg: new BoxShadow(0, 4, 16, 0, 'rgba(0,0,0,.15)'),
+  sm: new BoxShadow({ offsetY: 1, blur: 2, color: shadowColor }),
+  md: new BoxShadow({ offsetY: 2, blur: 8, color: shadowColor }),
+  lg: new BoxShadow({ offsetY: 4, blur: 16, color: shadowColor }),
+  // Material Design-style elevation with stacked shadows
+  elevated: new BoxShadowList([
+    new BoxShadow({ offsetY: 2, blur: 4, color: new Color(0, 0, 0, 0.1) }),
+    new BoxShadow({ offsetY: 8, blur: 16, color: new Color(0, 0, 0, 0.08) }),
+  ]),
 });
 
 // ─── Motion ──────────────────────────────────────────────────
 
 const durations = group('duration', {
-  fast: '0.1s',
-  normal: '0.2s',
-  slow: '0.3s',
+  fast: new Duration(100, 'ms'),
+  normal: new Duration(200, 'ms'),
+  slow: new Duration(300, 'ms'),
 });
 
 const easings = group('timing', {
@@ -213,12 +222,17 @@ const aspectRatios = group('aspect-ratio', {
 });
 
 // ─── Transitions ─────────────────────────────────────────────
+// Compose from duration and easing tokens — generators emit var() / $variable references
 
 const transitions = group('transition', {
-  fade: [Transition.fade, 'Fade in/out elements'],
-  slide: [Transition.slide, 'Slide animations'],
-  quick: Transition.quick,
-  custom: new Transition('0.4s', CubicBezier.standard, '0s', 'opacity'),
+  fade: [new Transition(durations.fast, easings.ease), 'Fade in/out elements'],
+  slide: [new Transition(durations.slow, easings.ease), 'Slide animations'],
+  quick: new Transition(durations.fast, easings.accelerate),
+  custom: new Transition({
+    duration: durations.normal,
+    timingFunction: easings.ease,
+    property: 'opacity',
+  }),
 });
 
 // ─── Z-Layers ────────────────────────────────────────────────

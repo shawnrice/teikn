@@ -11,7 +11,7 @@ describe("builders edge cases: first-class value types", () => {
 
     expect(result).toHaveLength(1);
     expect(result[0]!.value).toBeInstanceOf(Dimension);
-    expect((result[0]!.value as Dimension).amount).toBe(1);
+    expect((result[0]!.value as Dimension).value).toBe(1);
     expect((result[0]!.value as Dimension).unit).toBe("rem");
     expect(result[0]!.usage).toBe("Medium spacing");
   });
@@ -23,10 +23,10 @@ describe("builders edge cases: first-class value types", () => {
 
     expect(result).toHaveLength(1);
     expect(result[0]!.value).toBeInstanceOf(Dimension);
-    expect((result[0]!.value as Dimension).amount).toBe(1);
+    expect((result[0]!.value as Dimension).value).toBe(1);
     expect(result[0]!.usage).toBe("Medium");
     expect(result[0]!.modes!.compact).toBeInstanceOf(Dimension);
-    expect((result[0]!.modes!.compact as Dimension).amount).toBe(0.5);
+    expect((result[0]!.modes!.compact as Dimension).value).toBe(0.5);
   });
 
   test("scale with numeric array and Dimension transform", () => {
@@ -39,8 +39,8 @@ describe("builders edge cases: first-class value types", () => {
       expect(token.value).toBeInstanceOf(Dimension);
       expect((token.value as Dimension).unit).toBe("rem");
     }
-    expect((result[0]!.value as Dimension).amount).toBe(10 / 16);
-    expect((result[3]!.value as Dimension).amount).toBe(1);
+    expect((result[0]!.value as Dimension).value).toBe(10 / 16);
+    expect((result[3]!.value as Dimension).value).toBe(1);
   });
 
   test("scale with record of Dimensions", () => {
@@ -48,9 +48,9 @@ describe("builders edge cases: first-class value types", () => {
 
     expect(result).toHaveLength(2);
     expect(result[0]!.value).toBeInstanceOf(Dimension);
-    expect((result[0]!.value as Dimension).amount).toBe(0.5);
+    expect((result[0]!.value as Dimension).value).toBe(0.5);
     expect(result[1]!.value).toBeInstanceOf(Dimension);
-    expect((result[1]!.value as Dimension).amount).toBe(1);
+    expect((result[1]!.value as Dimension).value).toBe(1);
   });
 
   test("composite with nested first-class Dimension value", () => {
@@ -66,7 +66,7 @@ describe("builders edge cases: first-class value types", () => {
     expect(result).toHaveLength(1);
     const value = result[0]!.value as Record<string, unknown>;
     expect(value.fontSize).toBeInstanceOf(Dimension);
-    expect((value.fontSize as Dimension).amount).toBe(1.5);
+    expect((value.fontSize as Dimension).value).toBe(1.5);
     expect(value.fontFamily).toBe("sans-serif");
     expect(value.fontWeight).toBe(700);
   });
@@ -79,10 +79,10 @@ describe("builders edge cases: first-class value types", () => {
 
     expect(result).toHaveLength(2);
     expect(result[0]!.value).toBeInstanceOf(Duration);
-    expect((result[0]!.value as Duration).amount).toBe(150);
+    expect((result[0]!.value as Duration).value).toBe(150);
     expect((result[0]!.value as Duration).unit).toBe("ms");
     expect(result[1]!.value).toBeInstanceOf(Duration);
-    expect((result[1]!.value as Duration).amount).toBe(500);
+    expect((result[1]!.value as Duration).value).toBe(500);
   });
 
   test("dim through group preserves Dimension instance", () => {
@@ -90,7 +90,7 @@ describe("builders edge cases: first-class value types", () => {
 
     expect(result).toHaveLength(1);
     expect(result[0]!.value).toBeInstanceOf(Dimension);
-    expect((result[0]!.value as Dimension).amount).toBe(1);
+    expect((result[0]!.value as Dimension).value).toBe(1);
     expect((result[0]!.value as Dimension).unit).toBe("rem");
   });
 
@@ -116,7 +116,7 @@ describe("builders edge cases: first-class value types", () => {
 
     expect(result).toHaveLength(2);
     expect(result[0]!.value).toBeInstanceOf(Dimension);
-    expect((result[0]!.value as Dimension).amount).toBe(0.5);
+    expect((result[0]!.value as Dimension).value).toBe(0.5);
     expect(result[1]!.value).toBe("2vw");
   });
 

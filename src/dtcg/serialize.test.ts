@@ -4,6 +4,7 @@ import type { Token } from "../Token";
 import { BoxShadow } from "../TokenTypes/BoxShadow";
 import { Color } from "../TokenTypes/Color";
 import { CubicBezier } from "../TokenTypes/CubicBezier";
+import { Duration } from "../TokenTypes/Duration";
 import { LinearGradient } from "../TokenTypes/Gradient";
 import { Transition } from "../TokenTypes/Transition";
 import { parseDtcg } from "./parse";
@@ -256,5 +257,45 @@ describe("serializeDtcg", () => {
     const doc = serializeDtcg(tokens);
     const gap = doc.gap as any;
     expect(gap.$extensions.mode.compact).toEqual({ value: 8, unit: "px" });
+  });
+
+  test("transition emits DTCG aliases for referenced duration and timing tokens", () => {
+    const fast = new Duration(100, "ms");
+    const standard = new CubicBezier(0.4, 0, 0.2, 1);
+    const tokens: Token[] = [
+      { name: "fast", type: "duration", value: fast },
+      { name: "standard", type: "timing", value: standard },
+      { name: "fade", type: "transition", value: new Transition(fast, standard) },
+    ];
+    const doc = serializeDtcg(tokens);
+    const fade = doc.fade as any;
+    expect(fade.$value.duration).toBe("{fast}");
+    expect(fade.$value.timingFunction).toBe("{standard}");
+  });
+
+  test("transition inlines values when no matching token exists", () => {
+    const tokens: Token[] = [
+      { name: "fade", type: "transition", value: new Transition("100ms", "ease") },
+    ];
+    const doc = serializeDtcg(tokens);
+    const fade = doc.fade as any;
+    expect(fade.$value.duration).toEqual({ value: 100, unit: "ms" });
+    expect(fade.$value.timingFunction).toEqual([0.25, 0.1, 0.25, 1]);
+  });
+
+  test("shadow emits DTCG alias for referenced color token", () => {
+    const shadowColor = new Color(0, 0, 0, 0.12);
+    const tokens: Token[] = [
+      { name: "shadow-color", type: "color", value: shadowColor },
+      {
+        name: "sm",
+        type: "shadow",
+        value: new BoxShadow({ offsetY: 1, blur: 2, color: shadowColor }),
+      },
+    ];
+    const doc = serializeDtcg(tokens);
+    const sm = doc.sm as any;
+    expect(sm.$value.color).toBe("{shadow-color}");
+    expect(sm.$value.offsetY).toEqual({ value: 1, unit: "px" });
   });
 });

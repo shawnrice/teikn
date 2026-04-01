@@ -14,8 +14,10 @@ import {
   tokens,
 } from "./builders";
 import { Color } from "./TokenTypes/Color";
+import { CubicBezier } from "./TokenTypes/CubicBezier";
 import { Dimension } from "./TokenTypes/Dimension";
 import { Duration } from "./TokenTypes/Duration";
+import { Transition } from "./TokenTypes/Transition";
 
 describe("builders", () => {
   describe("group", () => {
@@ -79,6 +81,110 @@ describe("builders", () => {
     test("handles numeric values", () => {
       const result = group("zLayer", { modal: 5000 });
       expect(result[0]!.value).toBe(5000);
+    });
+
+    test("exposes named value properties on the returned array", () => {
+      const fast = new Duration(100, "ms");
+      const result = group("duration", { fast, slow: new Duration(300, "ms") });
+
+      expect(result.fast).toBe(fast);
+      expect(result.slow).toBeInstanceOf(Duration);
+      expect(result.slow.toString()).toBe("300ms");
+    });
+
+    test("named properties unwrap tuple values", () => {
+      const c = new Color(255, 0, 0);
+      const result = group("color", { primary: [c, "Brand color"] });
+
+      expect(result.primary).toBe(c);
+    });
+
+    test("named properties unwrap object input values", () => {
+      const result = group("color", {
+        surface: { value: "#fff", modes: { dark: "#1a1a1a" } },
+      });
+
+      expect(result.surface).toBe("#fff");
+    });
+
+    test("named properties work alongside array access", () => {
+      const result = group("duration", {
+        fast: new Duration(100, "ms"),
+        slow: new Duration(300, "ms"),
+      });
+
+      // Still a Token[]
+      expect(result).toHaveLength(2);
+      expect(result[0]!.name).toBe("fast");
+
+      // Also a named record
+      expect(result.fast.toString()).toBe("100ms");
+    });
+
+    test("for...of iterates tokens only", () => {
+      const result = group("duration", {
+        fast: new Duration(100, "ms"),
+        slow: new Duration(300, "ms"),
+      });
+
+      const names: string[] = [];
+      for (const token of result) {
+        names.push(token.name);
+      }
+      expect(names).toEqual(["fast", "slow"]);
+    });
+
+    test("for...in only sees array indices, not named properties", () => {
+      const result = group("duration", {
+        fast: new Duration(100, "ms"),
+        slow: new Duration(300, "ms"),
+      });
+
+      const keys: string[] = [];
+      for (const key in result) {
+        keys.push(key);
+      }
+      // Only array indices — named properties are non-enumerable
+      expect(keys).toEqual(["0", "1"]);
+      expect(keys).not.toContain("fast");
+      expect(keys).not.toContain("slow");
+    });
+
+    test("Object.keys only shows array indices", () => {
+      const result = group("duration", {
+        fast: new Duration(100, "ms"),
+        slow: new Duration(300, "ms"),
+      });
+      expect(Object.keys(result)).toEqual(["0", "1"]);
+    });
+
+    test("JSON.stringify serializes as a plain array", () => {
+      const result = group("color", { primary: "#000", secondary: "#fff" });
+      const parsed = structuredClone(result);
+      expect(Array.isArray(parsed)).toBe(true);
+      expect(parsed).toHaveLength(2);
+    });
+
+    test("spread produces plain Token[] without named props", () => {
+      const result = group("duration", { fast: new Duration(100, "ms") });
+      const spread = [...result];
+      expect(spread).toHaveLength(1);
+      expect((spread as any).fast).toBeUndefined();
+    });
+
+    test("throws when token name conflicts with Array.prototype", () => {
+      expect(() => group("size", { length: "100px" })).toThrow("conflicts with Array.prototype");
+      expect(() => group("size", { push: "100px" })).toThrow("conflicts with Array.prototype");
+      expect(() => group("size", { map: "100px" })).toThrow("conflicts with Array.prototype");
+    });
+
+    test("named values compose into higher-level types", () => {
+      const durations = group("duration", { fast: new Duration(100, "ms") });
+      const easings = group("timing", { standard: CubicBezier.standard });
+
+      const t = new Transition(durations.fast, easings.standard);
+      expect(t.duration.toString()).toBe("100ms");
+      expect(t.timingFunction.x1).toBe(0.4);
     });
   });
 
@@ -244,7 +350,7 @@ describe("builders", () => {
     test("converts px to rem Dimension", () => {
       const d = dp(16);
       expect(d).toBeInstanceOf(Dimension);
-      expect(d.amount).toBe(1);
+      expect(d.value).toBe(1);
       expect(d.unit).toBe("rem");
       expect(d.toString()).toBe("1rem");
     });
@@ -260,7 +366,7 @@ describe("builders", () => {
     test("creates a Dimension", () => {
       const d = dim(16, "px");
       expect(d).toBeInstanceOf(Dimension);
-      expect(d.amount).toBe(16);
+      expect(d.value).toBe(16);
       expect(d.unit).toBe("px");
     });
   });
@@ -269,7 +375,7 @@ describe("builders", () => {
     test("creates a Duration", () => {
       const d = dur(200, "ms");
       expect(d).toBeInstanceOf(Duration);
-      expect(d.amount).toBe(200);
+      expect(d.value).toBe(200);
       expect(d.unit).toBe("ms");
     });
   });

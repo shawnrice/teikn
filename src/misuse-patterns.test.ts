@@ -102,7 +102,7 @@ describe("misuse patterns", () => {
       // ACCEPTABLE: dp(0) => Dimension(0, 'rem') => "0rem"
       // In CSS, "0rem" is valid but "0" alone would also be fine.
       expect(d.toString()).toBe("0rem");
-      expect(d.amount).toBe(0);
+      expect(d.value).toBe(0);
       expect(d.unit).toBe("rem");
     });
   });
@@ -115,7 +115,7 @@ describe("misuse patterns", () => {
       const d = dp(-8);
       // ACCEPTABLE: negative values are valid CSS (e.g., negative margin)
       expect(d.toString()).toBe("-0.5rem");
-      expect(d.amount).toBe(-0.5);
+      expect(d.value).toBe(-0.5);
     });
 
     test("dim(-1, 'rem') produces a negative dimension", () => {

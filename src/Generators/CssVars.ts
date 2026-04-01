@@ -1,11 +1,11 @@
 import { EOL } from "node:os";
 
 import { kebabCase } from "../string-utils";
-import type { Token } from "../Token";
+import type { Token, TokenValue } from "../Token";
 import { getDate } from "../utils";
 import type { GeneratorInfo, GeneratorOptions } from "./Generator";
 import { Generator } from "./Generator";
-import { cssValue } from "./value-serializers";
+import { cssValue, stringifyWithRefs } from "./value-serializers";
 
 const defaultOptions = {
   ext: "css",
@@ -39,6 +39,8 @@ const parseModeSelector = (
 };
 
 export class CssVars extends Generator<CssVarsOpts> {
+  #refMap: Map<unknown, string> = new Map();
+
   constructor(options = {}) {
     const opts = Object.assign({}, defaultOptions, options);
     super(opts);
@@ -47,6 +49,24 @@ export class CssVars extends Generator<CssVarsOpts> {
         "CssVars does not support the `groups` option — CSS has no function syntax. Use Scss or ScssVars for grouped accessors.",
       );
     }
+  }
+
+  #ref(value: unknown): string | null {
+    const name = this.#refMap.get(value);
+    if (!name) {
+      return null;
+    }
+    const { nameTransformer } = this.options;
+    return `var(--${nameTransformer!(name)})`;
+  }
+
+  protected override stringifyTokenValue(value: TokenValue): string {
+    return stringifyWithRefs(value, (v) => this.#ref(v));
+  }
+
+  protected override prepareTokens(...args: Parameters<Generator["prepareTokens"]>): Token[] {
+    this.#refMap = this.buildReferenceMap(args[0]);
+    return super.prepareTokens(...args);
   }
 
   override describe(): GeneratorInfo {

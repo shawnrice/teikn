@@ -110,6 +110,11 @@ const normalizeAngle = (deg: number): number => ((deg % 360) + 360) % 360;
 
 const linearRe = /^linear-gradient\(([\s\S]+)\)$/i;
 
+export type LinearGradientInput = {
+  angle: number;
+  stops: StopInput[];
+};
+
 export class LinearGradient {
   /** @internal brand — do not use directly; see `isFirstClassValue()` */
   readonly __teikn_fcv__: true = true;
@@ -117,8 +122,8 @@ export class LinearGradient {
   readonly #stops: readonly GradientStop[];
 
   constructor(angle: number, stops: StopInput[]);
-  constructor(value: LinearGradient | string);
-  constructor(first: number | string | LinearGradient, stops?: StopInput[]) {
+  constructor(input: LinearGradientInput | LinearGradient | string);
+  constructor(first: number | string | LinearGradient | LinearGradientInput, stops?: StopInput[]) {
     if (first instanceof LinearGradient) {
       this.#angle = first.#angle;
       this.#stops = first.#stops;
@@ -155,7 +160,14 @@ export class LinearGradient {
       return;
     }
 
-    this.#angle = normalizeAngle(first);
+    if (typeof first === "object") {
+      const opts = first as LinearGradientInput;
+      this.#angle = normalizeAngle(opts.angle);
+      this.#stops = opts.stops.map(normalizeStop);
+      return;
+    }
+
+    this.#angle = normalizeAngle(first as number);
     this.#stops = (stops ?? []).map(normalizeStop);
   }
 
@@ -195,6 +207,13 @@ export class LinearGradient {
     const kw = angleKeywords[this.#angle];
     const dir = kw ?? `${this.#angle}deg`;
     return `linear-gradient(${dir}, ${stopsStr})`;
+  }
+
+  static from(value: LinearGradient | LinearGradientInput | string): LinearGradient {
+    if (typeof value === "object" && !(value instanceof LinearGradient)) {
+      return new LinearGradient(value);
+    }
+    return new LinearGradient(value);
   }
 }
 
@@ -359,6 +378,10 @@ export class RadialGradient {
     }
     return `radial-gradient(${stopsStr})`;
   }
+
+  static from(value: RadialGradient | string): RadialGradient {
+    return new RadialGradient(value);
+  }
 }
 
 // ─── GradientList ────────────────────────────────────────────
@@ -417,5 +440,9 @@ export class GradientList {
 
   toString(): string {
     return this.#layers.map((g) => g.toString()).join(", ");
+  }
+
+  static from(value: GradientList | string | (LinearGradient | RadialGradient)[]): GradientList {
+    return new GradientList(value);
   }
 }

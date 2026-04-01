@@ -1,5 +1,6 @@
 import type { Token } from "../Token";
 import type { DtcgDocument, DtcgToken } from "./types";
+import type { DtcgRefMap } from "./values";
 import { teiknTypeToDtcg, teiknValueToDtcg } from "./values";
 
 export type SerializeOptions = {
@@ -65,9 +66,9 @@ const hoistGroupTypes = (obj: Record<string, any>): void => {
   }
 };
 
-const tokenToDtcg = (token: Token): DtcgToken => {
+const tokenToDtcg = (token: Token, refMap?: DtcgRefMap): DtcgToken => {
   const dtcgType = teiknTypeToDtcg(token.type);
-  const dtcgValue = teiknValueToDtcg(token.value, token.type);
+  const dtcgValue = teiknValueToDtcg(token.value, token.type, refMap);
 
   const result: DtcgToken = {
     $value: dtcgValue as any,
@@ -89,14 +90,25 @@ const tokenToDtcg = (token: Token): DtcgToken => {
   return result;
 };
 
+const buildRefMap = (tokens: Token[]): DtcgRefMap => {
+  const map: DtcgRefMap = new Map();
+  for (const token of tokens) {
+    if (typeof token.value === "object" && token.value !== null && !map.has(token.value)) {
+      map.set(token.value, token.name);
+    }
+  }
+  return map;
+};
+
 export const serializeDtcg = (tokens: Token[], options?: SerializeOptions): DtcgDocument => {
   const separator = options?.separator ?? ".";
   const hierarchical = options?.hierarchical ?? true;
+  const refMap = buildRefMap(tokens);
 
   const doc: DtcgDocument = {};
 
   for (const token of tokens) {
-    const dtcgToken = tokenToDtcg(token);
+    const dtcgToken = tokenToDtcg(token, refMap);
 
     if (hierarchical) {
       const segments = token.name.split(separator);

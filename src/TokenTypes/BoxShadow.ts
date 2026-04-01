@@ -55,6 +55,15 @@ const parse = (
   };
 };
 
+export type BoxShadowOptions = {
+  offsetX?: number;
+  offsetY?: number;
+  blur?: number;
+  spread?: number;
+  color?: Color | string;
+  inset?: boolean;
+};
+
 export class BoxShadow {
   /** @internal brand — do not use directly; see `isFirstClassValue()` */
   readonly __teikn_fcv__: true = true;
@@ -73,9 +82,9 @@ export class BoxShadow {
     color?: Color | string,
     inset?: boolean,
   );
-  constructor(value: BoxShadow | string);
+  constructor(input: BoxShadow | BoxShadowOptions | string);
   constructor(
-    first: number | string | BoxShadow,
+    first: number | string | BoxShadow | BoxShadowOptions,
     offsetY?: number,
     blur?: number,
     spread?: number,
@@ -100,6 +109,17 @@ export class BoxShadow {
       this.#spread = parsed.spread;
       this.#color = parsed.color;
       this.#inset = parsed.inset;
+      return;
+    }
+
+    if (typeof first === "object") {
+      const c = first.color;
+      this.#offsetX = first.offsetX ?? 0;
+      this.#offsetY = first.offsetY ?? 0;
+      this.#blur = first.blur ?? 0;
+      this.#spread = first.spread ?? 0;
+      this.#color = typeof c === "string" ? new Color(c) : (c ?? new Color(0, 0, 0));
+      this.#inset = first.inset ?? false;
       return;
     }
 
@@ -130,16 +150,7 @@ export class BoxShadow {
     return this.#inset;
   }
 
-  with(
-    updates: Partial<{
-      offsetX: number;
-      offsetY: number;
-      blur: number;
-      spread: number;
-      color: Color | string;
-      inset: boolean;
-    }>,
-  ): BoxShadow {
+  with(updates: BoxShadowOptions): BoxShadow {
     return new BoxShadow(
       updates.offsetX ?? this.#offsetX,
       updates.offsetY ?? this.#offsetY,
@@ -181,6 +192,13 @@ export class BoxShadow {
     }
     parts.push(this.#color.toString());
     return parts.join(" ");
+  }
+
+  static from(value: BoxShadow | BoxShadowOptions | string): BoxShadow {
+    if (typeof value === "object" && !(value instanceof BoxShadow)) {
+      return new BoxShadow(value);
+    }
+    return new BoxShadow(value);
   }
 
   /** Combine multiple shadows into a single CSS value */
@@ -230,5 +248,9 @@ export class BoxShadowList {
 
   toString(): string {
     return this.#layers.map((s) => s.toString()).join(", ");
+  }
+
+  static from(value: BoxShadowList | string | BoxShadow[]): BoxShadowList {
+    return new BoxShadowList(value);
   }
 }

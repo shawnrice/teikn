@@ -20,33 +20,45 @@ describe("Dimension", () => {
   describe("constructor overloads", () => {
     test("value and unit", () => {
       const d = new Dimension(16, "px");
-      expect(d.amount).toBe(16);
+      expect(d.value).toBe(16);
       expect(d.unit).toBe("px");
     });
 
     test("CSS string", () => {
       const d = new Dimension("1.5rem");
-      expect(d.amount).toBe(1.5);
+      expect(d.value).toBe(1.5);
       expect(d.unit).toBe("rem");
     });
 
     test("copy constructor", () => {
       const original = new Dimension(24, "px");
       const copy = new Dimension(original);
-      expect(copy.amount).toBe(24);
+      expect(copy.value).toBe(24);
       expect(copy.unit).toBe("px");
     });
 
     test("negative value in CSS string", () => {
       const d = new Dimension("-4px");
-      expect(d.amount).toBe(-4);
+      expect(d.value).toBe(-4);
       expect(d.unit).toBe("px");
     });
 
     test("decimal value in CSS string", () => {
       const d = new Dimension("0.75em");
-      expect(d.amount).toBe(0.75);
+      expect(d.value).toBe(0.75);
       expect(d.unit).toBe("em");
+    });
+
+    test("object with value and unit", () => {
+      const d = new Dimension({ value: 16, unit: "px" });
+      expect(d.value).toBe(16);
+      expect(d.unit).toBe("px");
+    });
+
+    test("object with value and unit in rem", () => {
+      const d = new Dimension({ value: 1.5, unit: "rem" });
+      expect(d.value).toBe(1.5);
+      expect(d.unit).toBe("rem");
     });
 
     test("throws on invalid CSS string", () => {
@@ -57,21 +69,41 @@ describe("Dimension", () => {
   });
 
   describe("static helpers", () => {
+    test("from() with CSS string", () => {
+      const d = Dimension.from("16px");
+      expect(d.value).toBe(16);
+      expect(d.unit).toBe("px");
+    });
+
+    test("from() with object input", () => {
+      const d = Dimension.from({ value: 1.5, unit: "rem" });
+      expect(d.value).toBe(1.5);
+      expect(d.unit).toBe("rem");
+    });
+
+    test("from() with Dimension instance returns copy", () => {
+      const a = new Dimension(16, "px");
+      const b = Dimension.from(a);
+      expect(b.value).toBe(16);
+      expect(b.unit).toBe("px");
+      expect(b).not.toBe(a);
+    });
+
     test("parse()", () => {
       const d = Dimension.parse("32px");
-      expect(d.amount).toBe(32);
+      expect(d.value).toBe(32);
       expect(d.unit).toBe("px");
     });
 
     test("zero() defaults to px", () => {
       const d = Dimension.zero();
-      expect(d.amount).toBe(0);
+      expect(d.value).toBe(0);
       expect(d.unit).toBe("px");
     });
 
     test("zero() with custom unit", () => {
       const d = Dimension.zero("rem");
-      expect(d.amount).toBe(0);
+      expect(d.value).toBe(0);
       expect(d.unit).toBe("rem");
     });
 
@@ -112,13 +144,13 @@ describe("Dimension", () => {
   describe("math operations", () => {
     test("scale", () => {
       const d = new Dimension(8, "px").scale(2);
-      expect(d.amount).toBe(16);
+      expect(d.value).toBe(16);
       expect(d.unit).toBe("px");
     });
 
     test("add same unit", () => {
       const d = new Dimension(8, "px").add(new Dimension(4, "px"));
-      expect(d.amount).toBe(12);
+      expect(d.value).toBe(12);
       expect(d.unit).toBe("px");
     });
 
@@ -128,7 +160,7 @@ describe("Dimension", () => {
 
     test("subtract same unit", () => {
       const d = new Dimension(16, "px").subtract(new Dimension(4, "px"));
-      expect(d.amount).toBe(12);
+      expect(d.value).toBe(12);
       expect(d.unit).toBe("px");
     });
 
@@ -140,13 +172,13 @@ describe("Dimension", () => {
 
     test("negate", () => {
       const d = new Dimension(16, "px").negate();
-      expect(d.amount).toBe(-16);
+      expect(d.value).toBe(-16);
       expect(d.unit).toBe("px");
     });
 
     test("negate negative becomes positive", () => {
       const d = new Dimension(-4, "rem").negate();
-      expect(d.amount).toBe(4);
+      expect(d.value).toBe(4);
       expect(d.unit).toBe("rem");
     });
   });
@@ -154,25 +186,25 @@ describe("Dimension", () => {
   describe("unit conversion: px ↔ rem", () => {
     test("px to rem (default base 16)", () => {
       const d = new Dimension(32, "px").toRem();
-      expect(d.amount).toBe(2);
+      expect(d.value).toBe(2);
       expect(d.unit).toBe("rem");
     });
 
     test("rem to px (default base 16)", () => {
       const d = new Dimension(1.5, "rem").toPx();
-      expect(d.amount).toBe(24);
+      expect(d.value).toBe(24);
       expect(d.unit).toBe("px");
     });
 
     test("px to rem with custom base", () => {
       const d = new Dimension(20, "px").toRem(10);
-      expect(d.amount).toBe(2);
+      expect(d.value).toBe(2);
       expect(d.unit).toBe("rem");
     });
 
     test("rem to px with custom base", () => {
       const d = new Dimension(2, "rem").toPx(10);
-      expect(d.amount).toBe(20);
+      expect(d.value).toBe(20);
       expect(d.unit).toBe("px");
     });
   });
@@ -180,68 +212,68 @@ describe("Dimension", () => {
   describe("unit conversion: absolute units", () => {
     test("px to in", () => {
       const d = new Dimension(96, "px").to("in");
-      expect(d.amount).toBeCloseTo(1, 10);
+      expect(d.value).toBeCloseTo(1, 10);
       expect(d.unit).toBe("in");
     });
 
     test("in to px", () => {
       const d = new Dimension(1, "in").to("px");
-      expect(d.amount).toBeCloseTo(96, 10);
+      expect(d.value).toBeCloseTo(96, 10);
     });
 
     test("px to cm", () => {
       const d = new Dimension(96, "px").to("cm");
-      expect(d.amount).toBeCloseTo(2.54, 10);
+      expect(d.value).toBeCloseTo(2.54, 10);
     });
 
     test("cm to px", () => {
       const d = new Dimension(2.54, "cm").to("px");
-      expect(d.amount).toBeCloseTo(96, 10);
+      expect(d.value).toBeCloseTo(96, 10);
     });
 
     test("px to mm", () => {
       const d = new Dimension(96, "px").to("mm");
-      expect(d.amount).toBeCloseTo(25.4, 10);
+      expect(d.value).toBeCloseTo(25.4, 10);
     });
 
     test("px to pt", () => {
       const d = new Dimension(96, "px").to("pt");
-      expect(d.amount).toBeCloseTo(72, 10);
+      expect(d.value).toBeCloseTo(72, 10);
     });
 
     test("pt to px", () => {
       const d = new Dimension(72, "pt").to("px");
-      expect(d.amount).toBeCloseTo(96, 10);
+      expect(d.value).toBeCloseTo(96, 10);
     });
 
     test("px to pc", () => {
       const d = new Dimension(16, "px").to("pc");
-      expect(d.amount).toBeCloseTo(1, 10);
+      expect(d.value).toBeCloseTo(1, 10);
     });
 
     test("pc to px", () => {
       const d = new Dimension(1, "pc").to("px");
-      expect(d.amount).toBeCloseTo(16, 10);
+      expect(d.value).toBeCloseTo(16, 10);
     });
 
     test("px to Q", () => {
       const d = new Dimension(96, "px").to("Q");
-      expect(d.amount).toBeCloseTo(101.6, 10);
+      expect(d.value).toBeCloseTo(101.6, 10);
     });
 
     test("Q to px", () => {
       const d = new Dimension(101.6, "Q").to("px");
-      expect(d.amount).toBeCloseTo(96, 10);
+      expect(d.value).toBeCloseTo(96, 10);
     });
 
     test("in to cm", () => {
       const d = new Dimension(1, "in").to("cm");
-      expect(d.amount).toBeCloseTo(2.54, 10);
+      expect(d.value).toBeCloseTo(2.54, 10);
     });
 
     test("same unit returns new instance", () => {
       const d = new Dimension(16, "px").to("px");
-      expect(d.amount).toBe(16);
+      expect(d.value).toBe(16);
       expect(d.unit).toBe("px");
     });
   });
@@ -249,17 +281,17 @@ describe("Dimension", () => {
   describe("conversion: px ↔ rem via to()", () => {
     test("px to rem via to()", () => {
       const d = new Dimension(32, "px").to("rem");
-      expect(d.amount).toBe(2);
+      expect(d.value).toBe(2);
     });
 
     test("rem to px via to()", () => {
       const d = new Dimension(2, "rem").to("px");
-      expect(d.amount).toBe(32);
+      expect(d.value).toBe(32);
     });
 
     test("px to rem via to() with custom base", () => {
       const d = new Dimension(20, "px").to("rem", { remBase: 10 });
-      expect(d.amount).toBe(2);
+      expect(d.value).toBe(2);
     });
   });
 
@@ -314,7 +346,7 @@ describe("Dimension", () => {
     for (const unit of units) {
       test(`parses 1${unit}`, () => {
         const d = new Dimension(`1${unit}`);
-        expect(d.amount).toBe(1);
+        expect(d.value).toBe(1);
         expect(d.unit).toBe(unit);
       });
     }
@@ -324,17 +356,17 @@ describe("Dimension", () => {
     test("scale returns new instance", () => {
       const a = new Dimension(8, "px");
       const b = a.scale(2);
-      expect(a.amount).toBe(8);
-      expect(b.amount).toBe(16);
+      expect(a.value).toBe(8);
+      expect(b.value).toBe(16);
     });
 
     test("add returns new instance", () => {
       const a = new Dimension(8, "px");
       const b = new Dimension(4, "px");
       const c = a.add(b);
-      expect(a.amount).toBe(8);
-      expect(b.amount).toBe(4);
-      expect(c.amount).toBe(12);
+      expect(a.value).toBe(8);
+      expect(b.value).toBe(4);
+      expect(c.value).toBe(12);
     });
   });
 

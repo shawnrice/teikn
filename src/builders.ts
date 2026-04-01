@@ -79,16 +79,38 @@ const resolveCompositeInput = (name: string, input: CompositeTokenInput): Omit<T
  * });
  * ```
  */
-export const group = (type: string, entries: Record<string, TokenInput>): Token[] => {
+type ExtractFromObject<T> = T extends { value: infer V } ? V : T;
+type ExtractTokenValue<T> = T extends [infer V, string] ? V : ExtractFromObject<T>;
+
+export type TokenGroup<E extends Record<string, TokenInput>> = Token[] & {
+  [K in keyof E]: ExtractTokenValue<E[K]>;
+};
+
+export const group = <E extends Record<string, TokenInput>>(
+  type: string,
+  entries: E,
+): TokenGroup<E> => {
   if (typeof entries !== "object" || entries === null || Array.isArray(entries)) {
     throw new TypeError(`group(): entries must be a plain object, got ${typeof entries}`);
   }
 
-  return Object.entries(entries).map(([name, input]) => ({
+  const result = Object.entries(entries).map(([name, input]) => ({
     ...resolveTokenInput(name, input),
     type,
     group: type,
   }));
+
+  const arrayKeys = new Set(Object.getOwnPropertyNames(Array.prototype));
+  for (const token of result) {
+    if (arrayKeys.has(token.name)) {
+      throw new Error(
+        `group(): token name "${token.name}" conflicts with Array.prototype.${token.name}. Rename the token to avoid shadowing built-in array behavior.`,
+      );
+    }
+    Object.defineProperty(result, token.name, { value: token.value, enumerable: false });
+  }
+
+  return result as TokenGroup<E>;
 };
 
 /**
