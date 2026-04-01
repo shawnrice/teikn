@@ -236,8 +236,7 @@ export class Color {
 
   // ─── Factory methods ───────────────────────────────────────
 
-  /** Create a new Color instance from an existing one */
-  static from(color: Color): Color {
+  static from(color: Color | string): Color {
     return new Color(color);
   }
 

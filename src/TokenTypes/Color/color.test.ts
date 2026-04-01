@@ -140,8 +140,13 @@ describe("Color tests", () => {
     expect(new Color(new Color("blue")).toString("named")).toBe("blue");
   });
 
-  test("You can use Color.from", () => {
+  test("You can use Color.from with a Color instance", () => {
     expect(Color.from(new Color("blue")).toString("named")).toBe("blue");
+  });
+
+  test("Color.from accepts a string", () => {
+    expect(Color.from("#ff0000").red).toBe(255);
+    expect(Color.from("blue").toString("named")).toBe("blue");
   });
 
   test("an alternative constructor works", () => {
