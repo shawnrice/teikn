@@ -1,7 +1,13 @@
 import { describe, expect, test } from "bun:test";
 
+import { group, tokens } from "../builders";
 import { tokenSet1 } from "../fixtures/tokenSet1";
 import type { Token } from "../Token";
+import { BoxShadow } from "../TokenTypes/BoxShadow";
+import { Color } from "../TokenTypes/Color";
+import { CubicBezier } from "../TokenTypes/CubicBezier";
+import { Duration } from "../TokenTypes/Duration";
+import { Transition } from "../TokenTypes/Transition";
 import { CssVars as Generator } from "./CssVars";
 import { testOpts } from "../fixtures/testOpts";
 
@@ -151,5 +157,59 @@ describe("CssVars Generator tests", () => {
     // plain selector stays flat
     expect(output).toContain(".high-contrast {");
     expect(output).toMatchSnapshot();
+  });
+
+  test("Transition references duration and timing tokens by var()", () => {
+    const durations = group("duration", { "duration-fast": new Duration(100, "ms") });
+    const easings = group("timing", { "timing-standard": CubicBezier.standard });
+    const transitions = group("transition", {
+      "transition-fade": new Transition(durations["duration-fast"], easings["timing-standard"]),
+    });
+
+    const gen = new Generator(testOpts);
+    const output = gen.generate(tokens(durations, easings, transitions));
+
+    expect(output).toContain("--duration-fast: 100ms;");
+    expect(output).toContain("--timing-standard: cubic-bezier(0.4, 0, 0.2, 1);");
+    expect(output).toContain("--transition-fade: var(--duration-fast) var(--timing-standard);");
+  });
+
+  test("Transition only references tokens that exist in the token set", () => {
+    const fast = new Duration(100, "ms");
+    // fast is NOT registered as a token — only used in the transition
+    const transitions = group("transition", {
+      fade: new Transition(fast, "ease"),
+    });
+
+    const gen = new Generator(testOpts);
+    const output = gen.generate(tokens(transitions));
+
+    // No reference available, so inline the value
+    expect(output).toContain("--fade: 100ms ease;");
+  });
+
+  test("Transition with partial references inlines non-token components", () => {
+    const durations = group("duration", { "duration-fast": new Duration(100, "ms") });
+    const transitions = group("transition", {
+      "transition-fade": new Transition(durations["duration-fast"], "ease"),
+    });
+
+    const gen = new Generator(testOpts);
+    const output = gen.generate(tokens(durations, transitions));
+
+    // Duration is a reference, but timing is not a token
+    expect(output).toContain("--transition-fade: var(--duration-fast) ease;");
+  });
+
+  test("BoxShadow references a color token by var()", () => {
+    const colors = group("color", { "color-shadow": new Color(0, 0, 0, 0.12) });
+    const shadows = group("shadow", {
+      "shadow-sm": new BoxShadow({ offsetY: 1, blur: 2, color: colors["color-shadow"] }),
+    });
+
+    const gen = new Generator(testOpts);
+    const output = gen.generate(tokens(colors, shadows));
+
+    expect(output).toContain("--shadow-sm: 0 1px 2px var(--color-shadow);");
   });
 });

@@ -1,11 +1,12 @@
 import { EOL } from "node:os";
 
 import { kebabCase } from "../string-utils";
-import type { Token } from "../Token";
+import type { ModeValues, Token, TokenValue } from "../Token";
+import { isFirstClassValue } from "../type-classifiers";
 import { getDate } from "../utils";
 import type { GeneratorInfo, GeneratorOptions } from "./Generator";
 import { Generator } from "./Generator";
-import { cssValue } from "./value-serializers";
+import { cssValue, stringifyWithRefs } from "./value-serializers";
 
 const defaultOptions = {
   ext: "css",
@@ -39,6 +40,8 @@ const parseModeSelector = (
 };
 
 export class CssVars extends Generator<CssVarsOpts> {
+  #refMap: Map<unknown, string> = new Map();
+
   constructor(options = {}) {
     const opts = Object.assign({}, defaultOptions, options);
     super(opts);
@@ -47,6 +50,51 @@ export class CssVars extends Generator<CssVarsOpts> {
         "CssVars does not support the `groups` option — CSS has no function syntax. Use Scss or ScssVars for grouped accessors.",
       );
     }
+  }
+
+  #ref(value: unknown): string | null {
+    const name = this.#refMap.get(value);
+    if (!name) {
+      return null;
+    }
+    const { nameTransformer } = this.options;
+    return `var(--${nameTransformer!(name)})`;
+  }
+
+  protected override stringifyTokenValue(value: TokenValue): string {
+    return stringifyWithRefs(value, (v) => this.#ref(v));
+  }
+
+  override stringifyValues(token: Token): Token {
+    const { value, modes } = token;
+    const convertedValue = isFirstClassValue(value)
+      ? this.stringifyTokenValue(value as TokenValue)
+      : value;
+
+    if (!modes) {
+      return convertedValue === value ? token : { ...token, value: convertedValue };
+    }
+
+    const convertedModes: ModeValues = {};
+    let modesChanged = false;
+    for (const [mode, modeVal] of Object.entries(modes)) {
+      if (isFirstClassValue(modeVal)) {
+        convertedModes[mode] = this.stringifyTokenValue(modeVal as TokenValue);
+        modesChanged = true;
+      } else {
+        convertedModes[mode] = modeVal;
+      }
+    }
+
+    if (convertedValue === value && !modesChanged) {
+      return token;
+    }
+    return { ...token, value: convertedValue, modes: modesChanged ? convertedModes : modes };
+  }
+
+  protected override prepareTokens(...args: Parameters<Generator['prepareTokens']>): Token[] {
+    this.#refMap = this.buildReferenceMap(args[0]);
+    return super.prepareTokens(...args);
   }
 
   override describe(): GeneratorInfo {

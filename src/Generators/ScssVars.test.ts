@@ -1,7 +1,11 @@
 import { describe, expect, test } from "bun:test";
 
+import { group, tokens } from "../builders";
 import { tokenSet1 } from "../fixtures/tokenSet1";
 import type { Token } from "../Token";
+import { CubicBezier } from "../TokenTypes/CubicBezier";
+import { Duration } from "../TokenTypes/Duration";
+import { Transition } from "../TokenTypes/Transition";
 import { ScssVars as Generator } from "./ScssVars";
 import { testOpts } from "../fixtures/testOpts";
 
@@ -120,5 +124,20 @@ describe("SCSS Vars Generator tests", () => {
     expect(output).toContain("$colorSurface--dark: #111;");
     expect(output).toContain("// Mode: dim");
     expect(output).toContain("$colorSurface--dim: #333;");
+  });
+
+  test("Transition references duration and timing tokens by $variable", () => {
+    const durations = group("duration", { "duration-fast": new Duration(100, "ms") });
+    const easings = group("timing", { "timing-standard": CubicBezier.standard });
+    const transitions = group("transition", {
+      "transition-fade": new Transition(durations["duration-fast"], easings["timing-standard"]),
+    });
+
+    const gen = new Generator(testOpts);
+    const output = gen.generate(tokens(durations, easings, transitions));
+
+    expect(output).toContain("$duration-fast: 100ms;");
+    expect(output).toContain("$timing-standard: cubic-bezier(0.4, 0, 0.2, 1);");
+    expect(output).toContain("$transition-fade: $duration-fast $timing-standard;");
   });
 });
