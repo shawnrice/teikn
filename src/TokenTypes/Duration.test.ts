@@ -34,6 +34,18 @@ describe("Duration", () => {
       expect(d.unit).toBe("ms");
     });
 
+    test("object with value and unit", () => {
+      const d = new Duration({ value: 200, unit: "ms" });
+      expect(d.amount).toBe(200);
+      expect(d.unit).toBe("ms");
+    });
+
+    test("object with value and unit in seconds", () => {
+      const d = new Duration({ value: 0.5, unit: "s" });
+      expect(d.amount).toBe(0.5);
+      expect(d.unit).toBe("s");
+    });
+
     test("throws on invalid CSS string", () => {
       expect(() => new Duration("bad")).toThrow("Invalid duration");
       expect(() => new Duration("200")).toThrow("Invalid duration");
@@ -65,6 +77,32 @@ describe("Duration", () => {
       expect(Duration.convert(1000, "ms", "s")).toBe(1);
       expect(Duration.convert(0.5, "s", "ms")).toBe(500);
       expect(Duration.convert(200, "ms", "ms")).toBe(200);
+    });
+
+    test("from() with CSS string", () => {
+      const d = Duration.from("2s");
+      expect(d.amount).toBe(2);
+      expect(d.unit).toBe("s");
+    });
+
+    test("from() with ms string", () => {
+      const d = Duration.from("200ms");
+      expect(d.amount).toBe(200);
+      expect(d.unit).toBe("ms");
+    });
+
+    test("from() with object input", () => {
+      const d = Duration.from({ value: 200, unit: "ms" });
+      expect(d.amount).toBe(200);
+      expect(d.unit).toBe("ms");
+    });
+
+    test("from() with Duration instance returns copy", () => {
+      const a = new Duration(200, "ms");
+      const b = Duration.from(a);
+      expect(b.amount).toBe(200);
+      expect(b.unit).toBe("ms");
+      expect(b).not.toBe(a);
     });
   });
 

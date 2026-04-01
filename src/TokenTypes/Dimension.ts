@@ -159,6 +159,8 @@ const parseCss = (css: string): { value: number; unit: DimensionUnit } => {
 
 // ─── Dimension ──────────────────────────────────────────────
 
+export type DimensionInput = { value: number; unit: DimensionUnit };
+
 export class Dimension {
   /** @internal brand — do not use directly; see `isFirstClassValue()` */
   readonly __teikn_fcv__: true = true;
@@ -166,8 +168,9 @@ export class Dimension {
   readonly #unit: DimensionUnit;
 
   constructor(value: number, unit: DimensionUnit);
+  constructor(input: DimensionInput);
   constructor(css: Dimension | string);
-  constructor(first: number | string | Dimension, unit?: DimensionUnit) {
+  constructor(first: number | string | Dimension | DimensionInput, unit?: DimensionUnit) {
     if (first instanceof Dimension) {
       this.#amount = first.#amount;
       this.#unit = first.#unit;
@@ -178,6 +181,12 @@ export class Dimension {
       const parsed = parseCss(first);
       this.#amount = parsed.value;
       this.#unit = parsed.unit;
+      return;
+    }
+
+    if (typeof first === "object") {
+      this.#amount = first.value;
+      this.#unit = first.unit;
       return;
     }
 
@@ -275,6 +284,13 @@ export class Dimension {
 
   static zero(unit: DimensionUnit = "px"): Dimension {
     return new Dimension(0, unit);
+  }
+
+  static from(value: Dimension | DimensionInput | string): Dimension {
+    if (typeof value === "object" && !(value instanceof Dimension)) {
+      return new Dimension(value);
+    }
+    return new Dimension(value);
   }
 
   static parse(css: string): Dimension {

@@ -49,6 +49,18 @@ describe("Dimension", () => {
       expect(d.unit).toBe("em");
     });
 
+    test("object with value and unit", () => {
+      const d = new Dimension({ value: 16, unit: "px" });
+      expect(d.amount).toBe(16);
+      expect(d.unit).toBe("px");
+    });
+
+    test("object with value and unit in rem", () => {
+      const d = new Dimension({ value: 1.5, unit: "rem" });
+      expect(d.amount).toBe(1.5);
+      expect(d.unit).toBe("rem");
+    });
+
     test("throws on invalid CSS string", () => {
       expect(() => new Dimension("bad")).toThrow("Invalid dimension");
       expect(() => new Dimension("16")).toThrow("Invalid dimension");
@@ -57,6 +69,26 @@ describe("Dimension", () => {
   });
 
   describe("static helpers", () => {
+    test("from() with CSS string", () => {
+      const d = Dimension.from("16px");
+      expect(d.amount).toBe(16);
+      expect(d.unit).toBe("px");
+    });
+
+    test("from() with object input", () => {
+      const d = Dimension.from({ value: 1.5, unit: "rem" });
+      expect(d.amount).toBe(1.5);
+      expect(d.unit).toBe("rem");
+    });
+
+    test("from() with Dimension instance returns copy", () => {
+      const a = new Dimension(16, "px");
+      const b = Dimension.from(a);
+      expect(b.amount).toBe(16);
+      expect(b.unit).toBe("px");
+      expect(b).not.toBe(a);
+    });
+
     test("parse()", () => {
       const d = Dimension.parse("32px");
       expect(d.amount).toBe(32);

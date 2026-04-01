@@ -30,6 +30,8 @@ const parseCss = (css: string): { value: number; unit: DurationUnit } => {
 
 // ─── Duration ───────────────────────────────────────────────
 
+export type DurationInput = { value: number; unit: DurationUnit };
+
 export class Duration {
   /** @internal brand — do not use directly; see `isFirstClassValue()` */
   readonly __teikn_fcv__: true = true;
@@ -37,8 +39,9 @@ export class Duration {
   readonly #unit: DurationUnit;
 
   constructor(value: number, unit: DurationUnit);
+  constructor(input: DurationInput);
   constructor(css: Duration | string);
-  constructor(first: number | string | Duration, unit?: DurationUnit) {
+  constructor(first: number | string | Duration | DurationInput, unit?: DurationUnit) {
     if (first instanceof Duration) {
       this.#amount = first.#amount;
       this.#unit = first.#unit;
@@ -49,6 +52,12 @@ export class Duration {
       const parsed = parseCss(first);
       this.#amount = parsed.value;
       this.#unit = parsed.unit;
+      return;
+    }
+
+    if (typeof first === "object") {
+      this.#amount = first.value;
+      this.#unit = first.unit;
       return;
     }
 
@@ -123,6 +132,13 @@ export class Duration {
 
   static zero(unit: DurationUnit = "ms"): Duration {
     return new Duration(0, unit);
+  }
+
+  static from(value: Duration | DurationInput | string): Duration {
+    if (typeof value === "object" && !(value instanceof Duration)) {
+      return new Duration(value);
+    }
+    return new Duration(value);
   }
 
   static parse(css: string): Duration {
