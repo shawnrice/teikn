@@ -220,14 +220,6 @@ const stringDurationToDtcg = (str: string): DtcgDurationValue | string => {
 
 const cubicBezierToDtcg = (cb: CubicBezier): DtcgCubicBezierValue => [cb.x1, cb.y1, cb.x2, cb.y2];
 
-const shadowToDtcg = (shadow: BoxShadow): DtcgShadowValue => ({
-  color: colorToDtcg(shadow.color),
-  offsetX: { value: shadow.offsetX, unit: "px" },
-  offsetY: { value: shadow.offsetY, unit: "px" },
-  blur: { value: shadow.blur, unit: "px" },
-  spread: { value: shadow.spread, unit: "px" },
-});
-
 const gradientStopToDtcg = (stop: { color: Color; position?: string }): DtcgGradientStop => {
   const posStr = stop.position ?? "0%";
   const posNum = parseFloat(posStr) / 100;
@@ -242,7 +234,7 @@ const gradientToDtcg = (gradient: LinearGradient | RadialGradient): DtcgGradient
 
 // Convert a single teikn value (instanceof-based) to its Dtcg representation.
 // Returns null when the value is not a recognized first-class type.
-const convertSingleValue = (value: unknown): DtcgValue | null => {
+const convertSingleValue = (value: unknown, refMap?: DtcgRefMap): DtcgValue | null => {
   if (value instanceof Color) {
     return colorToDtcg(value);
   }
@@ -250,10 +242,10 @@ const convertSingleValue = (value: unknown): DtcgValue | null => {
     return cubicBezierToDtcg(value);
   }
   if (value instanceof BoxShadow) {
-    return shadowToDtcg(value);
+    return shadowToDtcgWithRefs(value, refMap);
   }
   if (value instanceof BoxShadowList) {
-    return value.layers.map(shadowToDtcg) as unknown as DtcgValue;
+    return value.layers.map((s) => shadowToDtcgWithRefs(s, refMap)) as unknown as DtcgValue;
   }
   if (value instanceof LinearGradient || value instanceof RadialGradient) {
     return gradientToDtcg(value);
@@ -270,15 +262,20 @@ const convertSingleValue = (value: unknown): DtcgValue | null => {
   return null;
 };
 
+export type DtcgRefMap = Map<unknown, string>;
+
+const dtcgAlias = (name: string): string => `{${name}}`;
+
 const durationToDtcg = (d: Duration): DtcgDurationValue => ({ value: d.amount, unit: d.unit });
 
-const transitionToDtcg = (t: Transition): Record<string, unknown> => {
+const transitionToDtcg = (t: Transition, refMap?: DtcgRefMap): Record<string, unknown> => {
+  const ref = (v: unknown) => refMap?.get(v);
   const result: Record<string, unknown> = {
-    duration: durationToDtcg(t.duration),
-    timingFunction: cubicBezierToDtcg(t.timingFunction),
+    duration: ref(t.duration) ? dtcgAlias(ref(t.duration)!) : durationToDtcg(t.duration),
+    timingFunction: ref(t.timingFunction) ? dtcgAlias(ref(t.timingFunction)!) : cubicBezierToDtcg(t.timingFunction),
   };
   if (t.delay.amount !== 0) {
-    result.delay = durationToDtcg(t.delay);
+    result.delay = ref(t.delay) ? dtcgAlias(ref(t.delay)!) : durationToDtcg(t.delay);
   }
   if (t.property && t.property !== "all") {
     result.property = t.property;
@@ -286,22 +283,33 @@ const transitionToDtcg = (t: Transition): Record<string, unknown> => {
   return result;
 };
 
-export const teiknValueToDtcg = (value: any, type: string): DtcgValue => {
+const shadowToDtcgWithRefs = (shadow: BoxShadow, refMap?: DtcgRefMap): DtcgShadowValue => {
+  const colorRef = refMap?.get(shadow.color);
+  return {
+    color: colorRef ? dtcgAlias(colorRef) as unknown as DtcgColorValue : colorToDtcg(shadow.color),
+    offsetX: { value: shadow.offsetX, unit: "px" },
+    offsetY: { value: shadow.offsetY, unit: "px" },
+    blur: { value: shadow.blur, unit: "px" },
+    spread: { value: shadow.spread, unit: "px" },
+  };
+};
+
+export const teiknValueToDtcg = (value: any, type: string, refMap?: DtcgRefMap): DtcgValue => {
   if (isAlias(value)) {
     return value;
   }
 
-  const single = convertSingleValue(value);
+  const single = convertSingleValue(value, refMap);
   if (single !== null) {
     return single;
   }
 
   if (value instanceof TransitionList) {
-    return value.layers.map(transitionToDtcg) as unknown as DtcgValue;
+    return value.layers.map((t) => transitionToDtcg(t, refMap)) as unknown as DtcgValue;
   }
 
   if (value instanceof Transition) {
-    return transitionToDtcg(value) as DtcgValue;
+    return transitionToDtcg(value, refMap) as DtcgValue;
   }
 
   if (typeof value === "number") {
