@@ -5,7 +5,44 @@ import type { ModeValues, Token, TokenValue } from "../Token";
 import { isFirstClassValue } from "../type-classifiers";
 import type { Generator, GeneratorInfo } from "./Generator";
 import { Scss } from "./Scss";
-import { cssValue, stringifyWithRefs } from "./value-serializers";
+import { cssValue, stringifyWithRefs, valueDependencies } from "./value-serializers";
+
+const topoSort = (tokens: Token[], refMap: Map<unknown, string>): Token[] => {
+  const byName = new Map(tokens.map((t) => [t.name, t]));
+  const deps = new Map<string, string[]>();
+  for (const token of tokens) {
+    deps.set(token.name, valueDependencies(token.value, refMap));
+  }
+
+  const sorted: Token[] = [];
+  const visited = new Set<string>();
+  const visiting = new Set<string>();
+
+  const visit = (name: string) => {
+    if (visited.has(name)) {
+      return;
+    }
+    if (visiting.has(name)) {
+      return; // cycle — skip silently (shouldn't happen with identity refs)
+    }
+    visiting.add(name);
+    for (const dep of deps.get(name) ?? []) {
+      visit(dep);
+    }
+    visiting.delete(name);
+    visited.add(name);
+    const token = byName.get(name);
+    if (token) {
+      sorted.push(token);
+    }
+  };
+
+  for (const token of tokens) {
+    visit(token.name);
+  }
+
+  return sorted;
+};
 
 export class ScssVars extends Scss {
   #refMap: Map<unknown, string> = new Map();
@@ -17,6 +54,7 @@ export class ScssVars extends Scss {
 
   protected override prepareTokens(...args: Parameters<Generator['prepareTokens']>): Token[] {
     this.#refMap = this.buildReferenceMap(args[0]);
+    args[0] = topoSort(args[0], this.#refMap);
     return super.prepareTokens(...args);
   }
 

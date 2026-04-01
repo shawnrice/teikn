@@ -96,3 +96,27 @@ export const stringifyWithRefs = (value: TokenValue, ref: RefResolver): string =
   }
   return String(value);
 };
+
+/**
+ * Extract the set of token names that a value's components reference.
+ * Used for dependency ordering (SCSS topological sort).
+ */
+export const valueDependencies = (value: unknown, refMap: Map<unknown, string>): string[] => {
+  const deps: string[] = [];
+  const check = (v: unknown) => {
+    const name = refMap.get(v);
+    if (name) {
+      deps.push(name);
+    }
+  };
+  if (value instanceof Transition) {
+    check(value.duration);
+    check(value.timingFunction);
+    if (value.delay.amount !== 0) {
+      check(value.delay);
+    }
+  } else if (value instanceof BoxShadow) {
+    check(value.color);
+  }
+  return deps;
+};

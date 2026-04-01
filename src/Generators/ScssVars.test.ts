@@ -126,6 +126,26 @@ describe("SCSS Vars Generator tests", () => {
     expect(output).toContain("$colorSurface--dim: #333;");
   });
 
+  test("topologically sorts tokens so dependencies come first", () => {
+    const durations = group("duration", { "duration-fast": new Duration(100, "ms") });
+    const easings = group("timing", { "timing-standard": CubicBezier.standard });
+    const transitions = group("transition", {
+      "transition-fade": new Transition(durations["duration-fast"], easings["timing-standard"]),
+    });
+
+    // Intentionally reversed — transitions before their dependencies
+    const gen = new Generator(testOpts);
+    const output = gen.generate(tokens(transitions, easings, durations));
+
+    const fadeIdx = output.indexOf("$transition-fade:");
+    const fastIdx = output.indexOf("$duration-fast:");
+    const standardIdx = output.indexOf("$timing-standard:");
+
+    // Dependencies must appear before the token that references them
+    expect(fastIdx).toBeLessThan(fadeIdx);
+    expect(standardIdx).toBeLessThan(fadeIdx);
+  });
+
   test("Transition references duration and timing tokens by $variable", () => {
     const durations = group("duration", { "duration-fast": new Duration(100, "ms") });
     const easings = group("timing", { "timing-standard": CubicBezier.standard });
