@@ -79,16 +79,35 @@ const resolveCompositeInput = (name: string, input: CompositeTokenInput): Omit<T
  * });
  * ```
  */
-export const group = (type: string, entries: Record<string, TokenInput>): Token[] => {
+type ExtractTokenValue<T> = T extends [infer V, string]
+  ? V
+  : T extends { value: infer V }
+    ? V
+    : T;
+
+export type TokenGroup<E extends Record<string, TokenInput>> = Token[] & {
+  [K in keyof E]: ExtractTokenValue<E[K]>;
+};
+
+export const group = <E extends Record<string, TokenInput>>(
+  type: string,
+  entries: E,
+): TokenGroup<E> => {
   if (typeof entries !== "object" || entries === null || Array.isArray(entries)) {
     throw new TypeError(`group(): entries must be a plain object, got ${typeof entries}`);
   }
 
-  return Object.entries(entries).map(([name, input]) => ({
+  const result = Object.entries(entries).map(([name, input]) => ({
     ...resolveTokenInput(name, input),
     type,
     group: type,
   }));
+
+  for (const token of result) {
+    Object.defineProperty(result, token.name, { value: token.value, enumerable: false });
+  }
+
+  return result as TokenGroup<E>;
 };
 
 /**
