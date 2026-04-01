@@ -64,7 +64,7 @@ export class CssVars extends Generator<CssVarsOpts> {
     return stringifyWithRefs(value, (v) => this.#ref(v));
   }
 
-  protected override prepareTokens(...args: Parameters<Generator['prepareTokens']>): Token[] {
+  protected override prepareTokens(...args: Parameters<Generator["prepareTokens"]>): Token[] {
     this.#refMap = this.buildReferenceMap(args[0]);
     return super.prepareTokens(...args);
   }

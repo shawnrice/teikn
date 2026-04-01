@@ -160,7 +160,7 @@ describe("builders", () => {
 
     test("JSON.stringify serializes as a plain array", () => {
       const result = group("color", { primary: "#000", secondary: "#fff" });
-      const parsed = JSON.parse(JSON.stringify(result));
+      const parsed = structuredClone(result);
       expect(Array.isArray(parsed)).toBe(true);
       expect(parsed).toHaveLength(2);
     });

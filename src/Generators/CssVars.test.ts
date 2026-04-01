@@ -41,11 +41,11 @@ describe("CssVars Generator tests", () => {
 
   test("It generates themed tokens with modes", () => {
     const gen = new Generator(testOpts);
-    const tokens: Token[] = [
+    const testTokens: Token[] = [
       { name: "bg", type: "color", value: "#ffffff", modes: { dark: "#1a1a1a" } },
       { name: "text", type: "color", value: "#000000", modes: { dark: "#eeeeee" } },
     ];
-    const output = gen.generate(tokens);
+    const output = gen.generate(testTokens);
     expect(output).toContain(":root {");
     expect(output).toContain('[data-theme="dark"]');
     expect(output).toContain("--bg: #1a1a1a;");
@@ -64,10 +64,10 @@ describe("CssVars Generator tests", () => {
 
   test("useMediaQuery emits @media block for dark mode", () => {
     const gen = new Generator({ ...testOpts, useMediaQuery: true });
-    const tokens: Token[] = [
+    const testTokens: Token[] = [
       { name: "bg", type: "color", value: "#ffffff", modes: { dark: "#1a1a1a" } },
     ];
-    const output = gen.generate(tokens);
+    const output = gen.generate(testTokens);
     expect(output).toContain('[data-theme="dark"]');
     expect(output).toContain("@media (prefers-color-scheme: dark)");
     expect(output).toContain("--bg: #1a1a1a;");
@@ -78,10 +78,10 @@ describe("CssVars Generator tests", () => {
       ...testOpts,
       modeSelectors: { dark: ".dark" },
     });
-    const tokens: Token[] = [
+    const testTokens: Token[] = [
       { name: "bg", type: "color", value: "#ffffff", modes: { dark: "#1a1a1a" } },
     ];
-    const output = gen.generate(tokens);
+    const output = gen.generate(testTokens);
     expect(output).toContain(".dark {");
     expect(output).not.toContain('[data-theme="dark"]');
   });
@@ -91,10 +91,10 @@ describe("CssVars Generator tests", () => {
       ...testOpts,
       modeSelectors: { dark: "@media (prefers-color-scheme: dark)" },
     });
-    const tokens: Token[] = [
+    const testTokens: Token[] = [
       { name: "bg", type: "color", value: "#ffffff", modes: { dark: "#1a1a1a" } },
     ];
-    const output = gen.generate(tokens);
+    const output = gen.generate(testTokens);
     expect(output).toContain("@media (prefers-color-scheme: dark) {");
     expect(output).toContain("  :root {");
     expect(output).toContain("    --bg: #1a1a1a;");
@@ -108,10 +108,10 @@ describe("CssVars Generator tests", () => {
         dark: { atRule: "@media (prefers-color-scheme: dark)", selector: ".app" },
       },
     });
-    const tokens: Token[] = [
+    const testTokens: Token[] = [
       { name: "bg", type: "color", value: "#ffffff", modes: { dark: "#1a1a1a" } },
     ];
-    const output = gen.generate(tokens);
+    const output = gen.generate(testTokens);
     expect(output).toContain("@media (prefers-color-scheme: dark) {");
     expect(output).toContain("  .app {");
     expect(output).toContain("    --bg: #1a1a1a;");
@@ -125,10 +125,10 @@ describe("CssVars Generator tests", () => {
         dark: { atRule: "@media (prefers-color-scheme: dark)" },
       },
     });
-    const tokens: Token[] = [
+    const testTokens: Token[] = [
       { name: "bg", type: "color", value: "#ffffff", modes: { dark: "#1a1a1a" } },
     ];
-    const output = gen.generate(tokens);
+    const output = gen.generate(testTokens);
     expect(output).toContain("@media (prefers-color-scheme: dark) {");
     expect(output).toContain("  :root {");
     expect(output).toContain("    --bg: #1a1a1a;");
@@ -142,7 +142,7 @@ describe("CssVars Generator tests", () => {
         contrast: ".high-contrast",
       },
     });
-    const tokens: Token[] = [
+    const testTokens: Token[] = [
       {
         name: "bg",
         type: "color",
@@ -150,7 +150,7 @@ describe("CssVars Generator tests", () => {
         modes: { dark: "#1a1a1a", contrast: "#000000" },
       },
     ];
-    const output = gen.generate(tokens);
+    const output = gen.generate(testTokens);
     // at-rule gets :root wrapper
     expect(output).toContain("@media (prefers-color-scheme: dark) {");
     expect(output).toContain("  :root {");

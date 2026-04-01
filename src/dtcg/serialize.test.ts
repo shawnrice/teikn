@@ -287,7 +287,11 @@ describe("serializeDtcg", () => {
     const shadowColor = new Color(0, 0, 0, 0.12);
     const tokens: Token[] = [
       { name: "shadow-color", type: "color", value: shadowColor },
-      { name: "sm", type: "shadow", value: new BoxShadow({ offsetY: 1, blur: 2, color: shadowColor }) },
+      {
+        name: "sm",
+        type: "shadow",
+        value: new BoxShadow({ offsetY: 1, blur: 2, color: shadowColor }),
+      },
     ];
     const doc = serializeDtcg(tokens);
     const sm = doc.sm as any;

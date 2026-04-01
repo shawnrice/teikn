@@ -92,8 +92,7 @@ export class Transition {
     delay?: Duration | string,
     property?: string,
   );
-  constructor(input: TransitionInput);
-  constructor(css: Transition | string);
+  constructor(input: TransitionInput | Transition | string);
   constructor(
     first: Duration | string | Transition | TransitionInput,
     timingFunction?: CubicBezier | string,
@@ -230,7 +229,11 @@ export class Transition {
   // ─── Static presets ──────────────────────────────────────────
 
   static from(value: Transition | TransitionInput | string): Transition {
-    if (typeof value === "object" && !(value instanceof Transition) && !(value instanceof Duration)) {
+    if (
+      typeof value === "object" &&
+      !(value instanceof Transition) &&
+      !(value instanceof Duration)
+    ) {
       return new Transition(value as TransitionInput);
     }
     return new Transition(value as Transition | string);

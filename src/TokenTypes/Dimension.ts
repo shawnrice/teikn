@@ -168,8 +168,7 @@ export class Dimension {
   readonly #unit: DimensionUnit;
 
   constructor(value: number, unit: DimensionUnit);
-  constructor(input: DimensionInput);
-  constructor(css: Dimension | string);
+  constructor(input: DimensionInput | Dimension | string);
   constructor(first: number | string | Dimension | DimensionInput, unit?: DimensionUnit) {
     if (first instanceof Dimension) {
       this.#value = first.#value;

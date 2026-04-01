@@ -46,7 +46,12 @@ describe("Transition", () => {
   });
 
   it("constructs with Duration for both duration and delay", () => {
-    const t = new Transition(new Duration(300, "ms"), CubicBezier.standard, new Duration(50, "ms"), "transform");
+    const t = new Transition(
+      new Duration(300, "ms"),
+      CubicBezier.standard,
+      new Duration(50, "ms"),
+      "transform",
+    );
     expect(t.duration.toString()).toBe("300ms");
     expect(t.delay.toString()).toBe("50ms");
     expect(t.property).toBe("transform");

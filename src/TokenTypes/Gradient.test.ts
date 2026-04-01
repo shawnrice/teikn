@@ -299,7 +299,9 @@ describe("GradientList", () => {
   });
 
   it("from() accepts a CSS string", () => {
-    const list = GradientList.from("linear-gradient(90deg, red, blue), radial-gradient(circle, green, yellow)");
+    const list = GradientList.from(
+      "linear-gradient(90deg, red, blue), radial-gradient(circle, green, yellow)",
+    );
     expect(list.length).toBe(2);
   });
 

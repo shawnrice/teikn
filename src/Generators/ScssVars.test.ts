@@ -21,12 +21,12 @@ describe("SCSS Vars Generator tests", () => {
   });
 
   test("it generates group maps and functions when groups: true", () => {
-    const tokens: Token[] = [
+    const testTokens: Token[] = [
       { name: "colorPrimary", type: "color", value: "aliceblue" },
       { name: "colorSecondary", type: "color", value: "rgb(102, 205, 170)" },
       { name: "spacingSm", type: "spacing", value: "4px" },
     ];
-    expect(new Generator({ ...testOpts, groups: true }).generate(tokens)).toMatchSnapshot();
+    expect(new Generator({ ...testOpts, groups: true }).generate(testTokens)).toMatchSnapshot();
   });
 
   test("describe() returns format SCSS Variables", () => {
@@ -96,12 +96,12 @@ describe("SCSS Vars Generator tests", () => {
   });
 
   test("it emits mode-namespaced variables when tokens have modes", () => {
-    const tokens: Token[] = [
+    const testTokens: Token[] = [
       { name: "colorSurface", type: "color", value: "#ffffff", modes: { dark: "#1a1a1a" } },
       { name: "colorText", type: "color", value: "#000000", modes: { dark: "#e0e0e0" } },
       { name: "spacingSm", type: "spacing", value: "4px" },
     ];
-    const output = new Generator(testOpts).generate(tokens);
+    const output = new Generator(testOpts).generate(testTokens);
 
     expect(output).toContain("// Mode: dark");
     expect(output).toContain("$colorSurface--dark: #1a1a1a;");
@@ -109,18 +109,18 @@ describe("SCSS Vars Generator tests", () => {
   });
 
   test("it does not emit mode variables when no tokens have modes", () => {
-    const tokens: Token[] = [{ name: "colorPrimary", type: "color", value: "#ff0000" }];
-    const output = new Generator(testOpts).generate(tokens);
+    const testTokens: Token[] = [{ name: "colorPrimary", type: "color", value: "#ff0000" }];
+    const output = new Generator(testOpts).generate(testTokens);
 
     expect(output).not.toContain("// Mode:");
     expect(output).not.toContain("--");
   });
 
   test("it handles multiple modes", () => {
-    const tokens: Token[] = [
+    const testTokens: Token[] = [
       { name: "colorSurface", type: "color", value: "#fff", modes: { dark: "#111", dim: "#333" } },
     ];
-    const output = new Generator(testOpts).generate(tokens);
+    const output = new Generator(testOpts).generate(testTokens);
 
     expect(output).toContain("// Mode: dark");
     expect(output).toContain("$colorSurface--dark: #111;");

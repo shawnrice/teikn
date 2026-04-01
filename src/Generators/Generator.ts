@@ -215,6 +215,7 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
    * Used by reference-aware generators (CssVars, ScssVars) to emit
    * references instead of inlining values.
    */
+  // oxlint-disable-next-line class-methods-use-this
   protected buildReferenceMap(tokens: Token[]): Map<unknown, string> {
     const map = new Map<unknown, string>();
     for (const token of tokens) {

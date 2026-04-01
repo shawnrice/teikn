@@ -79,11 +79,8 @@ const resolveCompositeInput = (name: string, input: CompositeTokenInput): Omit<T
  * });
  * ```
  */
-type ExtractTokenValue<T> = T extends [infer V, string]
-  ? V
-  : T extends { value: infer V }
-    ? V
-    : T;
+type ExtractFromObject<T> = T extends { value: infer V } ? V : T;
+type ExtractTokenValue<T> = T extends [infer V, string] ? V : ExtractFromObject<T>;
 
 export type TokenGroup<E extends Record<string, TokenInput>> = Token[] & {
   [K in keyof E]: ExtractTokenValue<E[K]>;

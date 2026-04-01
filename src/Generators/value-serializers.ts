@@ -45,10 +45,7 @@ export type RefResolver = (value: unknown) => string | null;
 
 const fmtLength = (v: number): string => (v === 0 ? "0" : `${v}px`);
 
-export const stringifyTransitionWithRefs = (
-  t: Transition,
-  ref: RefResolver,
-): string => {
+export const stringifyTransitionWithRefs = (t: Transition, ref: RefResolver): string => {
   const parts: string[] = [];
   if (t.property !== "all") {
     parts.push(t.property);
@@ -67,10 +64,7 @@ export const stringifyTransitionWithRefs = (
   return parts.join(" ");
 };
 
-export const stringifyBoxShadowWithRefs = (
-  s: BoxShadow,
-  ref: RefResolver,
-): string => {
+export const stringifyBoxShadowWithRefs = (s: BoxShadow, ref: RefResolver): string => {
   const parts: string[] = [];
   if (s.inset) {
     parts.push("inset");

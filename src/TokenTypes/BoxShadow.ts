@@ -82,8 +82,7 @@ export class BoxShadow {
     color?: Color | string,
     inset?: boolean,
   );
-  constructor(value: BoxShadow | string);
-  constructor(options: BoxShadowOptions);
+  constructor(input: BoxShadow | BoxShadowOptions | string);
   constructor(
     first: number | string | BoxShadow | BoxShadowOptions,
     offsetY?: number,

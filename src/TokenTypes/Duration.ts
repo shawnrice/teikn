@@ -39,8 +39,7 @@ export class Duration {
   readonly #unit: DurationUnit;
 
   constructor(value: number, unit: DurationUnit);
-  constructor(input: DurationInput);
-  constructor(css: Duration | string);
+  constructor(input: DurationInput | Duration | string);
   constructor(first: number | string | Duration | DurationInput, unit?: DurationUnit) {
     if (first instanceof Duration) {
       this.#value = first.#value;

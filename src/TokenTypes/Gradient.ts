@@ -122,8 +122,7 @@ export class LinearGradient {
   readonly #stops: readonly GradientStop[];
 
   constructor(angle: number, stops: StopInput[]);
-  constructor(input: LinearGradientInput);
-  constructor(value: LinearGradient | string);
+  constructor(input: LinearGradientInput | LinearGradient | string);
   constructor(first: number | string | LinearGradient | LinearGradientInput, stops?: StopInput[]) {
     if (first instanceof LinearGradient) {
       this.#angle = first.#angle;

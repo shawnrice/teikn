@@ -82,8 +82,7 @@ export class CubicBezier {
   readonly #y2: number;
 
   constructor(x1: number, y1: number, x2: number, y2: number);
-  constructor(options: { x1: number; y1: number; x2: number; y2: number });
-  constructor(value: CubicBezier | string);
+  constructor(input: { x1: number; y1: number; x2: number; y2: number } | CubicBezier | string);
   constructor(
     first: number | string | CubicBezier | { x1: number; y1: number; x2: number; y2: number },
     y1?: number,
@@ -129,7 +128,9 @@ export class CubicBezier {
     this.#y2 = y2!;
   }
 
-  static from(value: CubicBezier | { x1: number; y1: number; x2: number; y2: number } | string): CubicBezier {
+  static from(
+    value: CubicBezier | { x1: number; y1: number; x2: number; y2: number } | string,
+  ): CubicBezier {
     if (typeof value === "object" && !(value instanceof CubicBezier)) {
       return new CubicBezier(value);
     }

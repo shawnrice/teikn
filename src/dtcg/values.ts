@@ -289,7 +289,9 @@ const transitionToDtcg = (t: Transition, refMap?: DtcgRefMap): Record<string, un
 const shadowToDtcgWithRefs = (shadow: BoxShadow, refMap?: DtcgRefMap): DtcgShadowValue => {
   const colorRef = refMap?.get(shadow.color);
   return {
-    color: colorRef ? dtcgAlias(colorRef) as unknown as DtcgColorValue : colorToDtcg(shadow.color),
+    color: colorRef
+      ? (dtcgAlias(colorRef) as unknown as DtcgColorValue)
+      : colorToDtcg(shadow.color),
     offsetX: { value: shadow.offsetX, unit: "px" },
     offsetY: { value: shadow.offsetY, unit: "px" },
     blur: { value: shadow.blur, unit: "px" },

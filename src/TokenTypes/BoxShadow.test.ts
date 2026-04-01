@@ -108,7 +108,14 @@ describe("BoxShadow", () => {
   // ─── Object constructor ──────────────────────────────────────
 
   it("creates from an options object with all fields", () => {
-    const s = new BoxShadow({ offsetX: 1, offsetY: 2, blur: 8, spread: 1, color: "#ff0000", inset: true });
+    const s = new BoxShadow({
+      offsetX: 1,
+      offsetY: 2,
+      blur: 8,
+      spread: 1,
+      color: "#ff0000",
+      inset: true,
+    });
     expect(s.offsetX).toBe(1);
     expect(s.offsetY).toBe(2);
     expect(s.blur).toBe(8);
