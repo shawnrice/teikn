@@ -84,6 +84,63 @@ describe("BoxShadow", () => {
     expect(b.spread).toBe(a.spread);
   });
 
+  // ─── from() ─────────────────────────────────────────────────
+
+  it("from() accepts a CSS string", () => {
+    const s = BoxShadow.from("0 2px 8px rgba(0,0,0,.12)");
+    expect(s.offsetY).toBe(2);
+    expect(s.blur).toBe(8);
+  });
+
+  it("from() accepts an options object", () => {
+    const s = BoxShadow.from({ offsetY: 4, blur: 12, color: "#000" });
+    expect(s.offsetY).toBe(4);
+    expect(s.blur).toBe(12);
+  });
+
+  it("from() accepts a BoxShadow instance", () => {
+    const a = new BoxShadow(0, 2, 4);
+    const b = BoxShadow.from(a);
+    expect(b.offsetY).toBe(2);
+    expect(b).not.toBe(a);
+  });
+
+  // ─── Object constructor ──────────────────────────────────────
+
+  it("creates from an options object with all fields", () => {
+    const s = new BoxShadow({ offsetX: 1, offsetY: 2, blur: 8, spread: 1, color: "#ff0000", inset: true });
+    expect(s.offsetX).toBe(1);
+    expect(s.offsetY).toBe(2);
+    expect(s.blur).toBe(8);
+    expect(s.spread).toBe(1);
+    expect(s.color.red).toBe(255);
+    expect(s.inset).toBe(true);
+  });
+
+  it("creates from an options object with defaults", () => {
+    const s = new BoxShadow({ offsetY: 4, blur: 12, color: "rgba(0,0,0,.2)" });
+    expect(s.offsetX).toBe(0);
+    expect(s.offsetY).toBe(4);
+    expect(s.blur).toBe(12);
+    expect(s.spread).toBe(0);
+    expect(s.inset).toBe(false);
+  });
+
+  it("creates from an options object with Color instance", () => {
+    const c = new Color(0, 128, 255);
+    const s = new BoxShadow({ offsetY: 2, blur: 4, color: c });
+    expect(s.color.blue).toBe(255);
+  });
+
+  it("creates from an empty options object", () => {
+    const s = new BoxShadow({});
+    expect(s.offsetX).toBe(0);
+    expect(s.offsetY).toBe(0);
+    expect(s.blur).toBe(0);
+    expect(s.spread).toBe(0);
+    expect(s.inset).toBe(false);
+  });
+
   // ─── .with() ───────────────────────────────────────────────
 
   it("with({ offsetX }) returns new instance", () => {
