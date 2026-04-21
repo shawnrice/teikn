@@ -6,10 +6,7 @@ import { isFirstClassValue } from "../type-classifiers";
 import { getDate } from "../utils";
 import type { GeneratorInfo, GeneratorOptions } from "./Generator";
 import { Generator } from "./Generator";
-
-const isValidIdentifier = (name: string): boolean => /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(name);
-
-const quoteKey = (name: string): string => (isValidIdentifier(name) ? name : `'${name}'`);
+import { quoteKey } from "./value-serializers";
 
 /**
  * Produce a TypeScript type annotation for a token value.
@@ -23,7 +20,10 @@ const quoteKey = (name: string): string => (isValidIdentifier(name) ? name : `'$
  * (`string`, `number`, `boolean`) — the legacy pre-alpha.11 behavior.
  */
 const toTypeAnnotation = (value: unknown, loose: boolean): string => {
-  if (typeof value === "object" && value !== null && !Array.isArray(value)) {
+  if (value === null) {
+    return "null";
+  }
+  if (typeof value === "object" && !Array.isArray(value)) {
     // First-class values (Color, Dimension, etc.) stringify to string.
     // By the time values reach the generator the top-level value should
     // already be a string; this branch handles any first-class object

@@ -101,6 +101,12 @@ describe("TypeScriptDeclarations: literal types (default)", () => {
     expect(output).toContain("readonly enabled: true;");
   });
 
+  test("null values become the literal null type", () => {
+    const output = gen.generate([{ name: "empty", type: "any", value: null as unknown as string }]);
+    expect(output).toContain("readonly empty: null;");
+    expect(output).not.toContain("readonly empty: object;");
+  });
+
   test("composite fields carry readonly", () => {
     const output = gen.generate([
       {
