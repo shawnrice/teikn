@@ -51,13 +51,14 @@ export class JavaScript extends Generator<JavaScriptOpts> {
 
   generateToken(token: Token): string {
     const { nameTransformer } = this.options;
+    const key = quoteKey(nameTransformer!(token.name));
 
     return [
       `  /**`,
       token.usage && `   *  ${token.usage}`,
       `   *  Type: ${token.type}`,
       `   */`,
-      `  ${nameTransformer!(token.name)}: ${maybeQuote(token.value)},`,
+      `  ${key}: ${maybeQuote(token.value)},`,
     ]
       .filter(Boolean)
       .join(EOL);

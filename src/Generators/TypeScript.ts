@@ -76,6 +76,7 @@ export class TypeScript extends Generator<TypeScriptOpts> {
 
   generateToken(token: Token): string {
     const { nameTransformer } = this.options;
+    const key = quoteKey(nameTransformer!(token.name));
 
     const typeAnnotation = toTypeAnnotation(token.value);
 
@@ -84,7 +85,7 @@ export class TypeScript extends Generator<TypeScriptOpts> {
       token.usage && `   *  ${token.usage}`,
       `   *  Type: ${token.type}`,
       `   */`,
-      `  ${nameTransformer!(token.name)}: ${typeAnnotation},`,
+      `  ${key}: ${typeAnnotation},`,
     ]
       .filter(Boolean)
       .join(EOL);

@@ -53,13 +53,14 @@ export class EsModule extends Generator<EsModuleOpts> {
 
   generateToken(token: Token): string {
     const { nameTransformer } = this.options;
+    const key = quoteKey(nameTransformer!(token.name));
 
     return [
       `  /**`,
       token.usage && `   *  ${token.usage}`,
       `   *  Type: ${token.type}`,
       `   */`,
-      `  ${nameTransformer!(token.name)}: ${maybeQuote(token.value)},`,
+      `  ${key}: ${maybeQuote(token.value)},`,
     ]
       .filter(Boolean)
       .join(EOL);

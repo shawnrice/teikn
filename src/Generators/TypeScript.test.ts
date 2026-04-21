@@ -69,4 +69,13 @@ describe("TypeScript generator tests", () => {
     const output = new Generator({ dateFn: fixedDate }).generate(tokens);
     expect(output).not.toContain("modes");
   });
+
+  test("quotes transformed keys that are not valid identifiers", () => {
+    const output = new Generator({
+      dateFn: fixedDate,
+      nameTransformer: (name: string) => name.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase(),
+    }).generate([{ name: "colorPrimary", type: "color", value: "#ffffff" }]);
+
+    expect(output).toContain("'color-primary': string");
+  });
 });
