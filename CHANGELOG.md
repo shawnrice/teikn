@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.0.0-alpha.10
+## 2.0.0-alpha.11
 
 ### Breaking Changes
 
@@ -28,14 +28,6 @@
   and every field carries `readonly` (top-level tokens, composite
   fields, modes map). Consumers reading the `.d.ts` directly may need
   to adapt; type-level consumers are unaffected.
-- **`Duration.amount` and `Dimension.amount` renamed to `.value`.** The
-  getter name now matches the `{ value, unit }` field names on the new
-  object constructors, eliminating the naming inconsistency.
-- **`Transition` getters return `Duration` instances.** `duration` and
-  `delay` getters previously returned strings; they now return `Duration`
-  objects. The constructor and setters still accept `Duration | string`
-  (backward compatible), but downstream code reading the getters must
-  call `.toString()` or use the `Duration` API directly.
 - **`composeTokenSetsAsModes` throws when a mode set introduces tokens
   missing from the base.** Previously these were added silently with
   `value: undefined`, producing a landmine for every downstream generator.
@@ -80,6 +72,44 @@
 - **`TypeScriptDeclarations.loose` option.** Restores widened
   primitive types (`string`, `number`, `boolean`) for consumers who
   need them. Default is `false` — literal narrow types.
+- **Group-aware reference resolution.** `{primary}` now resolves to
+  `color.primary` when a token's bare name is unambiguous across groups.
+  Ambiguous references throw with a diagnostic listing the candidates
+  (e.g. `Ambiguous token reference: {primary} matches color.primary, size.primary`)
+  so the user can rename one side of the clash. Works in
+  `resolveReferences`, `validate`, `theme(...)` overrides, and
+  `applyThemeLayers`.
+- **DTCG `$extensions.mode` parsing.** `parseDtcg` now reads mode
+  variants from `$extensions.mode` and converts each entry into a Teikn
+  mode value, preserving aliases verbatim. Lets DTCG documents with
+  theme-mode variants round-trip into Teikn without manual mode
+  reconstruction.
+
+### Fixed
+
+- **`JavaScript` and `TypeScriptDeclarations` quote transformed token
+  keys that are not valid identifiers.** A kebab-case `nameTransformer`
+  (e.g. converting `colorPrimary` → `color-primary`) previously produced
+  invalid JS/TS output like `color-primary: "#fff",`. The generators now
+  single-quote any key that is not a valid identifier. Originally shipped
+  across the pre-rename generators (`EsModule`, old CJS `JavaScript`,
+  old `TypeScript`); carried through to the merged/renamed classes.
+
+## 2.0.0-alpha.10
+
+### Breaking Changes
+
+- **`Duration.amount` and `Dimension.amount` renamed to `.value`.** The
+  getter name now matches the `{ value, unit }` field names on the new
+  object constructors, eliminating the naming inconsistency.
+- **`Transition` getters return `Duration` instances.** `duration` and
+  `delay` getters previously returned strings; they now return `Duration`
+  objects. The constructor and setters still accept `Duration | string`
+  (backward compatible), but downstream code reading the getters must
+  call `.toString()` or use the `Duration` API directly.
+
+### Added
+
 - **Consistent value-type API across `Color`, `Duration`, `Dimension`,
   `CubicBezier`, `LinearGradient`, `RadialGradient`, `BoxShadow`,
   `Transition`.** Every first-class value now supports the same surface:
@@ -123,18 +153,6 @@
   The ScssVars generator topologically sorts output so referenced tokens
   are declared before the tokens that reference them — SCSS variables
   resolve at compile time, so order matters.
-- **Group-aware reference resolution.** `{primary}` now resolves to
-  `color.primary` when a token's bare name is unambiguous across groups.
-  Ambiguous references throw with a diagnostic listing the candidates
-  (e.g. `Ambiguous token reference: {primary} matches color.primary, size.primary`)
-  so the user can rename one side of the clash. Works in
-  `resolveReferences`, `validate`, `theme(...)` overrides, and
-  `applyThemeLayers`.
-- **DTCG `$extensions.mode` parsing.** `parseDtcg` now reads mode
-  variants from `$extensions.mode` and converts each entry into a Teikn
-  mode value, preserving aliases verbatim. Lets DTCG documents with
-  theme-mode variants round-trip into Teikn without manual mode
-  reconstruction.
 - **Documentation rework.** Added `docs/getting-started.md` (five-step
   guide), `docs/concepts.md` (mental model), `docs/api/values.md` and
   `docs/api/builders.md` (API reference), and
@@ -144,13 +162,6 @@
 
 ### Fixed
 
-- **`JavaScript` and `TypeScriptDeclarations` quote transformed token
-  keys that are not valid identifiers.** A kebab-case `nameTransformer`
-  (e.g. converting `colorPrimary` → `color-primary`) previously produced
-  invalid JS/TS output like `color-primary: "#fff",`. The generators now
-  single-quote any key that is not a valid identifier. Originally shipped
-  across the pre-rename generators (`EsModule`, old CJS `JavaScript`,
-  old `TypeScript`); carried through to the merged/renamed classes.
 - **`group()` rejects `Array.prototype`-colliding names.** Naming a
   token `length`, `push`, `map`, etc. now throws instead of silently
   shadowing an array method on the returned `Token[]`.
