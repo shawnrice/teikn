@@ -47,12 +47,25 @@ export class TypeScript extends Generator<TypeScriptOpts> {
   #declarations: TypeScriptDeclarations;
 
   constructor(options: Partial<TypeScriptOpts> = {}) {
+    // `ext` has no meaningful value here — the runtime's extension is
+    // derived from `module` and the declarations always emit `.d.ts`.
+    // Reject it at construction so a caller's intent doesn't silently
+    // fail (passing `ext` previously affected only `this.file`, which
+    // is meaningless on a multi-file generator).
+    if ("ext" in options) {
+      throw new Error(
+        "TypeScript meta generator does not accept an `ext` option. " +
+          "Use `module` for the runtime format (esm or cjs), or construct " +
+          "`JavaScript` / `TypeScriptDeclarations` directly if you need per-file ext control.",
+      );
+    }
+
     super({ ...defaultOptions, ...options });
 
     // Forward only explicitly-set user options to each sub-generator,
     // letting each pick its own defaults for anything unset.
     // `module` is JavaScript-only; `loose` is TypeScriptDeclarations-only.
-    const { loose, module, ext: _ignoredExt, ...shared } = options;
+    const { loose, module, ...shared } = options;
     this.#javascript = new JavaScript({
       ...shared,
       ...(module !== undefined && { module }),

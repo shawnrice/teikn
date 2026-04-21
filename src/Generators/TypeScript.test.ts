@@ -81,4 +81,10 @@ describe("TypeScript meta generator", () => {
     expect(files.get("tokens.mjs")).toContain("export const color = (name)");
     expect(files.get("tokens.d.ts")).toContain("export declare const color:");
   });
+
+  test("throws at construction if given an ext option", () => {
+    expect(() => new TypeScript({ ext: "js" } as never)).toThrow(
+      "TypeScript meta generator does not accept an `ext` option",
+    );
+  });
 });

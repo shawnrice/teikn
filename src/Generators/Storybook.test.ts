@@ -7,6 +7,7 @@ import { tokenSet1 } from "../fixtures/tokenSet1";
 import type { Token } from "../Token";
 import { JavaScript } from "./JavaScript";
 import { Storybook } from "./Storybook";
+import { TypeScript } from "./TypeScript";
 
 const fixedDate = () => "Mon Jan 01 2024 12:00:00";
 
@@ -42,6 +43,17 @@ describe("Storybook generator", () => {
     const output = sb.generate(tokens);
 
     expect(output).toContain('from "./tokens"');
+  });
+
+  test("It detects TypeScript meta sibling and imports from the runtime base", () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: "test" });
+    const ts = new TypeScript({ filename: "design" });
+    sb.siblings = [sb, ts];
+
+    const tokens: Token[] = [{ name: "primary", type: "color", value: "#ff0000" }];
+    const output = sb.generate(tokens);
+
+    expect(output).toContain('from "./design"');
   });
 
   test("It uses custom importPath when provided", () => {

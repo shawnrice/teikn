@@ -29,6 +29,7 @@ import { getDate } from "../utils";
 import type { GeneratorInfo, GeneratorOptions } from "./Generator";
 import { Generator } from "./Generator";
 import { JavaScript } from "./JavaScript";
+import { TypeScript } from "./TypeScript";
 
 // ─── Options ─────────────────────────────────────────────────
 
@@ -206,8 +207,20 @@ export class Storybook extends Generator<StorybookOpts> {
     if (this.options.importPath) {
       return this.options.importPath;
     }
-    const sibling = this.siblings.find((g) => g instanceof JavaScript);
-    return sibling ? `./${sibling.file.replace(/\.[^.]+$/, "")}` : "./tokens";
+    for (const sibling of this.siblings) {
+      if (sibling instanceof JavaScript) {
+        return `./${sibling.file.replace(/\.[^.]+$/, "")}`;
+      }
+      if (sibling instanceof TypeScript) {
+        // TypeScript meta emits `<base>.mjs|.cjs` + `<base>.d.ts`; import from
+        // the runtime file's base so both JS and TS consumers resolve correctly.
+        const runtime = sibling.filenames().find((f) => /\.(mjs|cjs)$/.test(f));
+        if (runtime) {
+          return `./${runtime.replace(/\.[^.]+$/, "")}`;
+        }
+      }
+    }
+    return "./tokens";
   }
 
   private isTypeScript(): boolean {
