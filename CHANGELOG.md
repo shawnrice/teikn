@@ -2,21 +2,16 @@
 
 ## 2.0.0-alpha.10
 
-### Added
-
-- **Group-aware reference resolution.** `{primary}` now resolves to
-  `color.primary` when a token's bare name is unambiguous across groups.
-  Ambiguous references throw with a diagnostic listing the candidates
-  (e.g. `Ambiguous token reference: {primary} matches color.primary, size.primary`)
-  so the user can rename one side of the clash. Works in `resolveReferences`,
-  `validate`, `theme(...)` overrides, and `applyThemeLayers`.
-- **DTCG `$extensions.mode` parsing.** `parseDtcg` now reads mode variants
-  from `$extensions.mode` and converts each entry into a Teikn mode value,
-  preserving aliases verbatim. Lets DTCG documents with theme-mode variants
-  round-trip into Teikn without manual mode reconstruction.
-
 ### Breaking Changes
 
+- **`Duration.amount` and `Dimension.amount` renamed to `.value`.** The
+  getter name now matches the `{ value, unit }` field names on the new
+  object constructors, eliminating the naming inconsistency.
+- **`Transition` getters return `Duration` instances.** `duration` and
+  `delay` getters previously returned strings; they now return `Duration`
+  objects. The constructor and setters still accept `Duration | string`
+  (backward compatible), but downstream code reading the getters must
+  call `.toString()` or use the `Duration` API directly.
 - **`composeTokenSetsAsModes` throws when a mode set introduces tokens
   missing from the base.** Previously these were added silently with
   `value: undefined`, producing a landmine for every downstream generator.
@@ -28,6 +23,70 @@
   code that only passes the `ThemeLayer` through the rest of the pipeline
   is unaffected.
 
+### Added
+
+- **Consistent value-type API across `Color`, `Duration`, `Dimension`,
+  `CubicBezier`, `LinearGradient`, `RadialGradient`, `BoxShadow`,
+  `Transition`.** Every first-class value now supports the same surface:
+  `new T(positional)`, `new T({ named })`, `new T("css")`, and
+  `T.from(T | Options | string)`. List types (`BoxShadowList`,
+  `TransitionList`, `GradientList`) gained `from()` helpers.
+- **`Transition` math operations.** `scale(k)` uniformly dilates duration
+  and delay, `shift(Δ)` offsets the delay (useful for staggered entry),
+  `reverse()` reverses the easing curve, and `totalTime` returns
+  `duration + delay`. Transitions now store `Duration` objects
+  internally so these operations are exact, not string-reparsed.
+- **Named value access on `group()`.** `group()` still returns a
+  `Token[]`, but the returned array now carries non-enumerable properties
+  for each token's value, letting higher-level value types reference
+  values from other groups by identity:
+  ```ts
+  const durations = group("duration", { fast: new Duration(100, "ms") });
+  const easings   = group("timing",   { standard: CubicBezier.standard });
+  const transitions = group("transition", {
+    fade: new Transition(durations.fast, easings.standard),
+  });
+  ```
+  The hidden properties don't appear in `Object.keys`, `for...in`,
+  `JSON.stringify`, or array spread — iteration still sees only the
+  token array.
+- **Composed token values emit references in generator output.** When a
+  `Transition` or `BoxShadow` component matches another token by
+  identity, the CssVars, ScssVars, and DTCG generators now emit
+  references instead of inlining the value:
+  ```css
+  --transition-fade: var(--duration-fast) var(--timing-standard);
+  ```
+  ```scss
+  $transition-fade: $duration-fast $timing-standard;
+  ```
+  ```json
+  "transition-fade": {
+    "$value": { "duration": "{fast}", "timingFunction": "{standard}" }
+  }
+  ```
+  The ScssVars generator topologically sorts output so referenced tokens
+  are declared before the tokens that reference them — SCSS variables
+  resolve at compile time, so order matters.
+- **Group-aware reference resolution.** `{primary}` now resolves to
+  `color.primary` when a token's bare name is unambiguous across groups.
+  Ambiguous references throw with a diagnostic listing the candidates
+  (e.g. `Ambiguous token reference: {primary} matches color.primary, size.primary`)
+  so the user can rename one side of the clash. Works in
+  `resolveReferences`, `validate`, `theme(...)` overrides, and
+  `applyThemeLayers`.
+- **DTCG `$extensions.mode` parsing.** `parseDtcg` now reads mode
+  variants from `$extensions.mode` and converts each entry into a Teikn
+  mode value, preserving aliases verbatim. Lets DTCG documents with
+  theme-mode variants round-trip into Teikn without manual mode
+  reconstruction.
+- **Documentation rework.** Added `docs/getting-started.md` (five-step
+  guide), `docs/concepts.md` (mental model), `docs/api/values.md` and
+  `docs/api/builders.md` (API reference), and
+  `docs/recipes/composition.md` (shadow derivation, transition math,
+  staggered animations, reduced-motion recipes). The old
+  `docs/quick-start.md` is removed — superseded by the new structure.
+
 ### Fixed
 
 - **JS / TS / ESM generators quote transformed token keys that are not
@@ -35,6 +94,17 @@
   `colorPrimary` → `color-primary`) previously produced invalid JS/TS
   output like `color-primary: "#fff",`. The generators now single-quote
   any key that is not a valid identifier.
+- **`group()` rejects `Array.prototype`-colliding names.** Naming a
+  token `length`, `push`, `map`, etc. now throws instead of silently
+  shadowing an array method on the returned `Token[]`.
+- **Runtime guard on `Duration`/`Dimension` with missing unit.**
+  Calling `new Duration(100)` or `new Dimension(16)` from JavaScript
+  (where TypeScript's required-unit check doesn't apply) now throws
+  instead of producing a nonsensical `"100undefined"` string.
+- **DTCG serialization no longer double-aliases transition components.**
+  `transitionToDtcg` previously re-wrapped already-resolved references;
+  now it binds each component to a local variable before deciding
+  whether to emit an alias.
 
 ## 2.0.0-alpha.9
 
