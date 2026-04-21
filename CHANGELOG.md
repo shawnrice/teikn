@@ -1,5 +1,41 @@
 # Changelog
 
+## 2.0.0-alpha.10
+
+### Added
+
+- **Group-aware reference resolution.** `{primary}` now resolves to
+  `color.primary` when a token's bare name is unambiguous across groups.
+  Ambiguous references throw with a diagnostic listing the candidates
+  (e.g. `Ambiguous token reference: {primary} matches color.primary, size.primary`)
+  so the user can rename one side of the clash. Works in `resolveReferences`,
+  `validate`, `theme(...)` overrides, and `applyThemeLayers`.
+- **DTCG `$extensions.mode` parsing.** `parseDtcg` now reads mode variants
+  from `$extensions.mode` and converts each entry into a Teikn mode value,
+  preserving aliases verbatim. Lets DTCG documents with theme-mode variants
+  round-trip into Teikn without manual mode reconstruction.
+
+### Breaking Changes
+
+- **`composeTokenSetsAsModes` throws when a mode set introduces tokens
+  missing from the base.** Previously these were added silently with
+  `value: undefined`, producing a landmine for every downstream generator.
+  The new error message is
+  `composeTokenSetsAsModes(): missing base token "X" for mode "Y"`.
+- **`ThemeLayer.tokenNames` now stores qualified names** (e.g.
+  `color.background` instead of `background`) when tokens live inside a
+  group. Code that inspected `tokenNames` directly may need to adapt;
+  code that only passes the `ThemeLayer` through the rest of the pipeline
+  is unaffected.
+
+### Fixed
+
+- **JS / TS / ESM generators quote transformed token keys that are not
+  valid identifiers.** A kebab-case `nameTransformer` (e.g. converting
+  `colorPrimary` → `color-primary`) previously produced invalid JS/TS
+  output like `color-primary: "#fff",`. The generators now single-quote
+  any key that is not a valid identifier.
+
 ## 2.0.0-alpha.9
 
 ### Fixed
