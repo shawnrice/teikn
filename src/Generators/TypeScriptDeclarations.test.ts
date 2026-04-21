@@ -97,7 +97,12 @@ describe("TypeScriptDeclarations: literal types (default)", () => {
   });
 
   test("boolean values become literal boolean types", () => {
-    const output = gen.generate([{ name: "enabled", type: "boolean", value: true }]);
+    // `boolean` is not part of `TokenValue` (by design — design tokens are
+    // strings/numbers/first-class value objects). The generator handles it
+    // robustly anyway; cast to skip the type check for this edge case.
+    const output = gen.generate([
+      { name: "enabled", type: "boolean", value: true as unknown as string },
+    ]);
     expect(output).toContain("readonly enabled: true;");
   });
 
