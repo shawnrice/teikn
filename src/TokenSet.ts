@@ -42,7 +42,7 @@ export const composeTokenSets = (...sets: TokenSet[]): Token[] => {
 /**
  * Compose token sets into tokens with mode variants.
  * The base set provides default values. Additional sets become modes.
- * Tokens present in mode sets but absent from the base are added with modes only.
+ * Tokens present in mode sets must also exist in the base set.
  */
 export const composeTokenSetsAsModes = (
   base: TokenSet,
@@ -61,11 +61,9 @@ export const composeTokenSetsAsModes = (
       if (existing) {
         existing.modes = { ...existing.modes, [modeName]: modeToken.value };
       } else {
-        tokenMap.set(modeToken.name, {
-          ...modeToken,
-          value: undefined as unknown as Token["value"],
-          modes: { [modeName]: modeToken.value },
-        });
+        throw new Error(
+          `composeTokenSetsAsModes(): missing base token "${modeToken.name}" for mode "${modeName}"`,
+        );
       }
     }
   }

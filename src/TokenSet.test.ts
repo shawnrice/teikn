@@ -163,19 +163,14 @@ describe("TokenSet", () => {
       });
     });
 
-    test("tokens only in mode sets are added with modes", () => {
+    test("throws when mode sets introduce tokens missing from base", () => {
       const core = tokenSet("core", [makeToken("primary", "color", "#0066cc")]);
       const dark = tokenSet("dark", [
         makeToken("primary", "color", "#66aaff"),
         makeToken("accent", "color", "#ff00ff"),
       ]);
 
-      const result = composeTokenSetsAsModes(core, { dark });
-
-      expect(result).toHaveLength(2);
-      expect(result[1]!.name).toBe("accent");
-      expect(result[1]!.value).toBeUndefined();
-      expect(result[1]!.modes).toEqual({ dark: "#ff00ff" });
+      expect(() => composeTokenSetsAsModes(core, { dark })).toThrow('missing base token "accent"');
     });
 
     test("existing modes on base tokens are preserved", () => {
@@ -206,7 +201,7 @@ describe("TokenSet", () => {
       expect(original.modes).toBeUndefined();
     });
 
-    test("base token order is preserved with mode additions", () => {
+    test("throws when later mode sets add new tokens, even if order would otherwise be preserved", () => {
       const core = tokenSet("core", [
         makeToken("a", "color", "1"),
         makeToken("b", "color", "2"),
@@ -218,13 +213,7 @@ describe("TokenSet", () => {
         makeToken("d", "color", "40"),
       ]);
 
-      const result = composeTokenSetsAsModes(core, { dark });
-
-      expect(result.map((t) => t.name)).toEqual(["a", "b", "c", "d"]);
-      expect(result[0]!.modes).toEqual({ dark: "10" });
-      expect(result[1]!.modes).toBeUndefined();
-      expect(result[2]!.modes).toEqual({ dark: "30" });
-      expect(result[3]!.modes).toEqual({ dark: "40" });
+      expect(() => composeTokenSetsAsModes(core, { dark })).toThrow('missing base token "d"');
     });
   });
 });
