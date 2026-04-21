@@ -4,6 +4,30 @@
 
 ### Breaking Changes
 
+- **`EsModule` generator removed.** Use `JavaScript` instead, which now
+  defaults to ESM. For CommonJS output, pass `module: "cjs"`.
+- **`JavaScript` generator defaults to ESM (`.mjs`).** The previous
+  CJS-default behavior is still available via `new JavaScript({ module: "cjs" })`,
+  which emits `.cjs`. Consumers who relied on the old `.js` default
+  need to either accept `.mjs` or override `ext` explicitly.
+- **`TypeScript` generator is now a meta-generator that emits both
+  runtime and declarations.** The previous declarations-only behavior
+  moved to a new `TypeScriptDeclarations` generator. Users constructing
+  `new TypeScript()` previously got a single `.d.ts`; now they get a
+  `.mjs` runtime *and* a `.d.ts` from a single construction, which is
+  what the name suggests. To restore the old declarations-only output,
+  switch to `new TypeScriptDeclarations()`.
+- **`TypeScriptDeclarations` emits literal types by default.** Values
+  become their literal type (`readonly primary: "#0066cc"` instead of
+  `primary: string`). This enables exhaustive unions like
+  `type TokenColor = typeof tokens[keyof typeof tokens]`. To restore
+  the old widened-primitive output, pass `loose: true`.
+- **`TypeScriptDeclarations` emits `export declare const` with
+  `readonly` fields.** The previous `export const tokens: {...}`
+  ambient form is replaced with the explicit `export declare const`,
+  and every field carries `readonly` (top-level tokens, composite
+  fields, modes map). Consumers reading the `.d.ts` directly may need
+  to adapt; type-level consumers are unaffected.
 - **`Duration.amount` and `Dimension.amount` renamed to `.value`.** The
   getter name now matches the `{ value, unit }` field names on the new
   object constructors, eliminating the naming inconsistency.
@@ -25,6 +49,37 @@
 
 ### Added
 
+- **Multi-file generator emission.** Generators may now emit more than
+  one output file from a single construction via the new
+  `generateFiles()` contract on the `Generator` base class. Existing
+  single-file generators keep their current behavior through the
+  default implementation; only the new `TypeScript` meta-generator
+  opts into multiple files.
+- **`TypeScript` meta-generator.** A single construction produces both
+  a `JavaScript` runtime and a `TypeScriptDeclarations` output, wired
+  with matching filenames and name transforms:
+
+  ```ts
+  new Teikn.generators.TypeScript({ filename: "tokens" });
+  // → tokens.mjs + tokens.d.ts
+
+  new Teikn.generators.TypeScript({ module: "cjs" });
+  // → tokens.cjs + tokens.d.ts
+
+  new Teikn.generators.TypeScript({ loose: true });
+  // → tokens.mjs + tokens.d.ts (widened primitive types)
+  ```
+
+  Users who want runtime-only construct `JavaScript` directly; users
+  who want declarations-only construct `TypeScriptDeclarations`
+  directly.
+- **`JavaScript.module` option.** `"esm"` (default, emits `.mjs` with
+  `export const` / `export default`) or `"cjs"` (emits `.cjs` with
+  `module.exports`). File extension derives from the module system
+  but remains overrideable via `ext`.
+- **`TypeScriptDeclarations.loose` option.** Restores widened
+  primitive types (`string`, `number`, `boolean`) for consumers who
+  need them. Default is `false` — literal narrow types.
 - **Consistent value-type API across `Color`, `Duration`, `Dimension`,
   `CubicBezier`, `LinearGradient`, `RadialGradient`, `BoxShadow`,
   `Transition`.** Every first-class value now supports the same surface:

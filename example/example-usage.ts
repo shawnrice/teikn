@@ -19,7 +19,7 @@ const writer = new Teikn({
   generators: [
     // Code outputs
     new Teikn.generators.Json(),
-    new Teikn.generators.EsModule({ ext: 'js', groups: true }),
+    // Emits tokens.mjs + tokens.d.ts from a single construction
     new Teikn.generators.TypeScript({ groups: true }),
 
     // Stylesheets

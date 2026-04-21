@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Design Tokens — Teikn v1.0.0-alpha.6</title>
+<title>Design Tokens — Teikn v2.0.0-alpha.10</title>
 <style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:#fafafa;color:#333;line-height:1.5}
 .page-header{padding:2rem 2.5rem;border-bottom:1px solid #e0e0e0;background:#fff}
@@ -203,7 +203,7 @@ section h2{font-size:1.25rem;font-weight:600;margin-bottom:1rem;padding-bottom:0
 <body>
 <header class="page-header">
 <h1>Design Tokens</h1>
-<p class="meta">Teikn v1.0.0-alpha.6 · Generated Sun Feb 15 2026 0:13:48</p>
+<p class="meta">Teikn v2.0.0-alpha.10 · Generated Tue Apr 21 2026 13:05:34</p>
 </header>
 <div class="layout">
 <nav class="sidebar">
@@ -249,29 +249,16 @@ fetch('./tokens.json').then(r =&gt; r.json())</pre>
 </div>
 <div class="format-card">
 <div class="format-card-header">
-<span class="format-card-name">ES Module</span>
-<span class="format-card-file">tokens.js</span>
+<span class="format-card-name">TypeScript (runtime + declarations)</span>
+<span class="format-card-file">tokens.d.ts</span>
 </div>
-<pre class="format-card-code">import { tokens } from './tokens.js';
+<pre class="format-card-code">import { tokens } from './tokens.mjs';
 
 tokens.tokenName
 
 // Or use typed group accessors
-import { color } from './tokens.js';
+import { color } from './tokens.mjs';
 color('primary')</pre>
-</div>
-<div class="format-card">
-<div class="format-card-header">
-<span class="format-card-name">TypeScript Declarations</span>
-<span class="format-card-file">tokens.d.ts</span>
-</div>
-<pre class="format-card-code">import { tokens } from './tokens';
-
-// Pair with ES Module or CommonJS output for runtime values
-
-// Or use typed group accessors
-import { color } from './tokens';
-color('primary') // compile-time checked</pre>
 </div>
 <div class="format-card">
 <div class="format-card-header">
@@ -359,7 +346,7 @@ npx storybook dev</pre>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">color('primary')</code><button class="copy-btn" data-copy="color('primary')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">color('primary')</code><button class="copy-btn" data-copy="color('primary')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">color('primary')</code><button class="copy-btn" data-copy="color('primary')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--color-primary)</code><button class="copy-btn" data-copy="var(--color-primary)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.colorPrimary</code><button class="copy-btn" data-copy="tokens.colorPrimary">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">color('primary')</code><button class="copy-btn" data-copy="color('primary')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--color-primary)</code><button class="copy-btn" data-copy="var(--color-primary)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.colorPrimary</code><button class="copy-btn" data-copy="tokens.colorPrimary">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -405,7 +392,7 @@ npx storybook dev</pre>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">color('secondary')</code><button class="copy-btn" data-copy="color('secondary')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">color('secondary')</code><button class="copy-btn" data-copy="color('secondary')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">color('secondary')</code><button class="copy-btn" data-copy="color('secondary')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--color-secondary)</code><button class="copy-btn" data-copy="var(--color-secondary)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.colorSecondary</code><button class="copy-btn" data-copy="tokens.colorSecondary">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">color('secondary')</code><button class="copy-btn" data-copy="color('secondary')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--color-secondary)</code><button class="copy-btn" data-copy="var(--color-secondary)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.colorSecondary</code><button class="copy-btn" data-copy="tokens.colorSecondary">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -452,7 +439,7 @@ npx storybook dev</pre>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">color('success')</code><button class="copy-btn" data-copy="color('success')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">color('success')</code><button class="copy-btn" data-copy="color('success')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">color('success')</code><button class="copy-btn" data-copy="color('success')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--color-success)</code><button class="copy-btn" data-copy="var(--color-success)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.colorSuccess</code><button class="copy-btn" data-copy="tokens.colorSuccess">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">color('success')</code><button class="copy-btn" data-copy="color('success')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--color-success)</code><button class="copy-btn" data-copy="var(--color-success)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.colorSuccess</code><button class="copy-btn" data-copy="tokens.colorSuccess">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -499,7 +486,7 @@ npx storybook dev</pre>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">color('warning')</code><button class="copy-btn" data-copy="color('warning')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">color('warning')</code><button class="copy-btn" data-copy="color('warning')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">color('warning')</code><button class="copy-btn" data-copy="color('warning')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--color-warning)</code><button class="copy-btn" data-copy="var(--color-warning)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.colorWarning</code><button class="copy-btn" data-copy="tokens.colorWarning">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">color('warning')</code><button class="copy-btn" data-copy="color('warning')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--color-warning)</code><button class="copy-btn" data-copy="var(--color-warning)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.colorWarning</code><button class="copy-btn" data-copy="tokens.colorWarning">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -546,7 +533,7 @@ npx storybook dev</pre>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">color('error')</code><button class="copy-btn" data-copy="color('error')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">color('error')</code><button class="copy-btn" data-copy="color('error')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">color('error')</code><button class="copy-btn" data-copy="color('error')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--color-error)</code><button class="copy-btn" data-copy="var(--color-error)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.colorError</code><button class="copy-btn" data-copy="tokens.colorError">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">color('error')</code><button class="copy-btn" data-copy="color('error')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--color-error)</code><button class="copy-btn" data-copy="var(--color-error)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.colorError</code><button class="copy-btn" data-copy="tokens.colorError">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -562,7 +549,7 @@ npx storybook dev</pre>
 <div class="color-name">color-text-primary</div>
 <div class="color-values">
 <div class="color-value">#000000</div>
-<div class="color-value">rgba(0, 0, 0, 0.95)</div>
+<div class="color-value">rgb(0, 0, 0)</div>
 <div class="color-value">hsl(0, 0%, 0%)</div>
 </div>
 <div class="color-meta">
@@ -593,7 +580,7 @@ npx storybook dev</pre>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">color('textPrimary')</code><button class="copy-btn" data-copy="color('textPrimary')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">color('textPrimary')</code><button class="copy-btn" data-copy="color('textPrimary')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">color('text-primary')</code><button class="copy-btn" data-copy="color('text-primary')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--color-text-primary)</code><button class="copy-btn" data-copy="var(--color-text-primary)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.colorTextPrimary</code><button class="copy-btn" data-copy="tokens.colorTextPrimary">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">color('text-primary')</code><button class="copy-btn" data-copy="color('text-primary')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--color-text-primary)</code><button class="copy-btn" data-copy="var(--color-text-primary)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.colorTextPrimary</code><button class="copy-btn" data-copy="tokens.colorTextPrimary">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -609,7 +596,7 @@ npx storybook dev</pre>
 <div class="color-name">color-text-secondary</div>
 <div class="color-values">
 <div class="color-value">#000000</div>
-<div class="color-value">rgba(0, 0, 0, 0.54)</div>
+<div class="color-value">rgb(0, 0, 0)</div>
 <div class="color-value">hsl(0, 0%, 0%)</div>
 </div>
 <div class="color-meta">
@@ -639,7 +626,7 @@ npx storybook dev</pre>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">color('textSecondary')</code><button class="copy-btn" data-copy="color('textSecondary')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">color('textSecondary')</code><button class="copy-btn" data-copy="color('textSecondary')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">color('text-secondary')</code><button class="copy-btn" data-copy="color('text-secondary')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--color-text-secondary)</code><button class="copy-btn" data-copy="var(--color-text-secondary)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.colorTextSecondary</code><button class="copy-btn" data-copy="tokens.colorTextSecondary">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">color('text-secondary')</code><button class="copy-btn" data-copy="color('text-secondary')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--color-text-secondary)</code><button class="copy-btn" data-copy="var(--color-text-secondary)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.colorTextSecondary</code><button class="copy-btn" data-copy="tokens.colorTextSecondary">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -685,7 +672,7 @@ npx storybook dev</pre>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">color('link')</code><button class="copy-btn" data-copy="color('link')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">color('link')</code><button class="copy-btn" data-copy="color('link')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">color('link')</code><button class="copy-btn" data-copy="color('link')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--color-link)</code><button class="copy-btn" data-copy="var(--color-link)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.colorLink</code><button class="copy-btn" data-copy="tokens.colorLink">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">color('link')</code><button class="copy-btn" data-copy="color('link')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--color-link)</code><button class="copy-btn" data-copy="var(--color-link)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.colorLink</code><button class="copy-btn" data-copy="tokens.colorLink">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -726,12 +713,12 @@ npx storybook dev</pre>
 </div>
 </div>
 </div>
-<div class="mode-variants"><span class="mode-badge"><span class="mode-swatch" style="background:#1a1a1a"></span>dark: #1a1a1a</span></div></div>
+</div>
 </div>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">color('surface')</code><button class="copy-btn" data-copy="color('surface')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">color('surface')</code><button class="copy-btn" data-copy="color('surface')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">color('surface')</code><button class="copy-btn" data-copy="color('surface')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--color-surface)</code><button class="copy-btn" data-copy="var(--color-surface)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.colorSurface</code><button class="copy-btn" data-copy="tokens.colorSurface">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">color('surface')</code><button class="copy-btn" data-copy="color('surface')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--color-surface)</code><button class="copy-btn" data-copy="var(--color-surface)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.colorSurface</code><button class="copy-btn" data-copy="tokens.colorSurface">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -772,12 +759,12 @@ npx storybook dev</pre>
 </div>
 </div>
 </div>
-<div class="mode-variants"><span class="mode-badge"><span class="mode-swatch" style="background:#121212"></span>dark: #121212</span></div></div>
+</div>
 </div>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">color('background')</code><button class="copy-btn" data-copy="color('background')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">color('background')</code><button class="copy-btn" data-copy="color('background')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">color('background')</code><button class="copy-btn" data-copy="color('background')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--color-background)</code><button class="copy-btn" data-copy="var(--color-background)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.colorBackground</code><button class="copy-btn" data-copy="tokens.colorBackground">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">color('background')</code><button class="copy-btn" data-copy="color('background')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--color-background)</code><button class="copy-btn" data-copy="var(--color-background)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.colorBackground</code><button class="copy-btn" data-copy="tokens.colorBackground">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -793,7 +780,7 @@ npx storybook dev</pre>
 <div class="color-name">color-on-surface</div>
 <div class="color-values">
 <div class="color-value">#000000</div>
-<div class="color-value">rgba(0, 0, 0, 0.87)</div>
+<div class="color-value">rgb(0, 0, 0)</div>
 <div class="color-value">hsl(0, 0%, 0%)</div>
 </div>
 <div class="color-meta">
@@ -818,12 +805,12 @@ npx storybook dev</pre>
 </div>
 </div>
 </div>
-<div class="mode-variants"><span class="mode-badge"><span class="mode-swatch" style="background:#ffffff"></span>dark: #ffffff</span></div></div>
+</div>
 </div>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">color('onSurface')</code><button class="copy-btn" data-copy="color('onSurface')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">color('onSurface')</code><button class="copy-btn" data-copy="color('onSurface')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">color('on-surface')</code><button class="copy-btn" data-copy="color('on-surface')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--color-on-surface)</code><button class="copy-btn" data-copy="var(--color-on-surface)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.colorOnSurface</code><button class="copy-btn" data-copy="tokens.colorOnSurface">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">color('on-surface')</code><button class="copy-btn" data-copy="color('on-surface')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--color-on-surface)</code><button class="copy-btn" data-copy="var(--color-on-surface)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.colorOnSurface</code><button class="copy-btn" data-copy="tokens.colorOnSurface">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -869,7 +856,7 @@ npx storybook dev</pre>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">color('onPrimary')</code><button class="copy-btn" data-copy="color('onPrimary')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">color('onPrimary')</code><button class="copy-btn" data-copy="color('onPrimary')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">color('on-primary')</code><button class="copy-btn" data-copy="color('on-primary')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--color-on-primary)</code><button class="copy-btn" data-copy="var(--color-on-primary)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.colorOnPrimary</code><button class="copy-btn" data-copy="tokens.colorOnPrimary">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">color('on-primary')</code><button class="copy-btn" data-copy="color('on-primary')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--color-on-primary)</code><button class="copy-btn" data-copy="var(--color-on-primary)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.colorOnPrimary</code><button class="copy-btn" data-copy="tokens.colorOnPrimary">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -915,7 +902,7 @@ npx storybook dev</pre>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">color('onSecondary')</code><button class="copy-btn" data-copy="color('onSecondary')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">color('onSecondary')</code><button class="copy-btn" data-copy="color('onSecondary')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">color('on-secondary')</code><button class="copy-btn" data-copy="color('on-secondary')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--color-on-secondary)</code><button class="copy-btn" data-copy="var(--color-on-secondary)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.colorOnSecondary</code><button class="copy-btn" data-copy="tokens.colorOnSecondary">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">color('on-secondary')</code><button class="copy-btn" data-copy="color('on-secondary')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--color-on-secondary)</code><button class="copy-btn" data-copy="var(--color-on-secondary)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.colorOnSecondary</code><button class="copy-btn" data-copy="tokens.colorOnSecondary">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -961,7 +948,7 @@ npx storybook dev</pre>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">color('onSuccess')</code><button class="copy-btn" data-copy="color('onSuccess')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">color('onSuccess')</code><button class="copy-btn" data-copy="color('onSuccess')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">color('on-success')</code><button class="copy-btn" data-copy="color('on-success')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--color-on-success)</code><button class="copy-btn" data-copy="var(--color-on-success)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.colorOnSuccess</code><button class="copy-btn" data-copy="tokens.colorOnSuccess">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">color('on-success')</code><button class="copy-btn" data-copy="color('on-success')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--color-on-success)</code><button class="copy-btn" data-copy="var(--color-on-success)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.colorOnSuccess</code><button class="copy-btn" data-copy="tokens.colorOnSuccess">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -1007,7 +994,7 @@ npx storybook dev</pre>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">color('onError')</code><button class="copy-btn" data-copy="color('onError')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">color('onError')</code><button class="copy-btn" data-copy="color('onError')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">color('on-error')</code><button class="copy-btn" data-copy="color('on-error')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--color-on-error)</code><button class="copy-btn" data-copy="var(--color-on-error)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.colorOnError</code><button class="copy-btn" data-copy="tokens.colorOnError">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">color('on-error')</code><button class="copy-btn" data-copy="color('on-error')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--color-on-error)</code><button class="copy-btn" data-copy="var(--color-on-error)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.colorOnError</code><button class="copy-btn" data-copy="tokens.colorOnError">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -1049,7 +1036,7 @@ npx storybook dev</pre>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">fontFamily('body')</code><button class="copy-btn" data-copy="fontFamily('body')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">fontFamily('body')</code><button class="copy-btn" data-copy="fontFamily('body')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">font-family('body')</code><button class="copy-btn" data-copy="font-family('body')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--font-family-body)</code><button class="copy-btn" data-copy="var(--font-family-body)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.fontFamilyBody</code><button class="copy-btn" data-copy="tokens.fontFamilyBody">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">font-family('body')</code><button class="copy-btn" data-copy="font-family('body')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--font-family-body)</code><button class="copy-btn" data-copy="var(--font-family-body)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.fontFamilyBody</code><button class="copy-btn" data-copy="tokens.fontFamilyBody">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -1066,7 +1053,7 @@ npx storybook dev</pre>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">fontFamily('headers')</code><button class="copy-btn" data-copy="fontFamily('headers')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">fontFamily('headers')</code><button class="copy-btn" data-copy="fontFamily('headers')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">font-family('headers')</code><button class="copy-btn" data-copy="font-family('headers')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--font-family-headers)</code><button class="copy-btn" data-copy="var(--font-family-headers)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.fontFamilyHeaders</code><button class="copy-btn" data-copy="tokens.fontFamilyHeaders">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">font-family('headers')</code><button class="copy-btn" data-copy="font-family('headers')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--font-family-headers)</code><button class="copy-btn" data-copy="var(--font-family-headers)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.fontFamilyHeaders</code><button class="copy-btn" data-copy="tokens.fontFamilyHeaders">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -1082,7 +1069,7 @@ npx storybook dev</pre>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">fontFamily('mono')</code><button class="copy-btn" data-copy="fontFamily('mono')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">fontFamily('mono')</code><button class="copy-btn" data-copy="fontFamily('mono')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">font-family('mono')</code><button class="copy-btn" data-copy="font-family('mono')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--font-family-mono)</code><button class="copy-btn" data-copy="var(--font-family-mono)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.fontFamilyMono</code><button class="copy-btn" data-copy="tokens.fontFamilyMono">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">font-family('mono')</code><button class="copy-btn" data-copy="font-family('mono')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--font-family-mono)</code><button class="copy-btn" data-copy="var(--font-family-mono)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.fontFamilyMono</code><button class="copy-btn" data-copy="tokens.fontFamilyMono">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -1111,7 +1098,7 @@ npx storybook dev</pre>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">fontSize('100')</code><button class="copy-btn" data-copy="fontSize('100')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">fontSize('100')</code><button class="copy-btn" data-copy="fontSize('100')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">font-size('100')</code><button class="copy-btn" data-copy="font-size('100')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--font-size-100)</code><button class="copy-btn" data-copy="var(--font-size-100)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.fontSize100</code><button class="copy-btn" data-copy="tokens.fontSize100">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">font-size('100')</code><button class="copy-btn" data-copy="font-size('100')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--font-size-100)</code><button class="copy-btn" data-copy="var(--font-size-100)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.fontSize100</code><button class="copy-btn" data-copy="tokens.fontSize100">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -1127,7 +1114,7 @@ npx storybook dev</pre>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">fontSize('200')</code><button class="copy-btn" data-copy="fontSize('200')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">fontSize('200')</code><button class="copy-btn" data-copy="fontSize('200')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">font-size('200')</code><button class="copy-btn" data-copy="font-size('200')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--font-size-200)</code><button class="copy-btn" data-copy="var(--font-size-200)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.fontSize200</code><button class="copy-btn" data-copy="tokens.fontSize200">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">font-size('200')</code><button class="copy-btn" data-copy="font-size('200')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--font-size-200)</code><button class="copy-btn" data-copy="var(--font-size-200)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.fontSize200</code><button class="copy-btn" data-copy="tokens.fontSize200">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -1143,7 +1130,7 @@ npx storybook dev</pre>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">fontSize('300')</code><button class="copy-btn" data-copy="fontSize('300')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">fontSize('300')</code><button class="copy-btn" data-copy="fontSize('300')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">font-size('300')</code><button class="copy-btn" data-copy="font-size('300')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--font-size-300)</code><button class="copy-btn" data-copy="var(--font-size-300)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.fontSize300</code><button class="copy-btn" data-copy="tokens.fontSize300">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">font-size('300')</code><button class="copy-btn" data-copy="font-size('300')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--font-size-300)</code><button class="copy-btn" data-copy="var(--font-size-300)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.fontSize300</code><button class="copy-btn" data-copy="tokens.fontSize300">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -1159,7 +1146,7 @@ npx storybook dev</pre>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">fontSize('400')</code><button class="copy-btn" data-copy="fontSize('400')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">fontSize('400')</code><button class="copy-btn" data-copy="fontSize('400')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">font-size('400')</code><button class="copy-btn" data-copy="font-size('400')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--font-size-400)</code><button class="copy-btn" data-copy="var(--font-size-400)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.fontSize400</code><button class="copy-btn" data-copy="tokens.fontSize400">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">font-size('400')</code><button class="copy-btn" data-copy="font-size('400')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--font-size-400)</code><button class="copy-btn" data-copy="var(--font-size-400)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.fontSize400</code><button class="copy-btn" data-copy="tokens.fontSize400">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -1175,7 +1162,7 @@ npx storybook dev</pre>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">fontSize('500')</code><button class="copy-btn" data-copy="fontSize('500')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">fontSize('500')</code><button class="copy-btn" data-copy="fontSize('500')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">font-size('500')</code><button class="copy-btn" data-copy="font-size('500')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--font-size-500)</code><button class="copy-btn" data-copy="var(--font-size-500)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.fontSize500</code><button class="copy-btn" data-copy="tokens.fontSize500">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">font-size('500')</code><button class="copy-btn" data-copy="font-size('500')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--font-size-500)</code><button class="copy-btn" data-copy="var(--font-size-500)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.fontSize500</code><button class="copy-btn" data-copy="tokens.fontSize500">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -1191,7 +1178,7 @@ npx storybook dev</pre>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">fontSize('600')</code><button class="copy-btn" data-copy="fontSize('600')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">fontSize('600')</code><button class="copy-btn" data-copy="fontSize('600')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">font-size('600')</code><button class="copy-btn" data-copy="font-size('600')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--font-size-600)</code><button class="copy-btn" data-copy="var(--font-size-600)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.fontSize600</code><button class="copy-btn" data-copy="tokens.fontSize600">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">font-size('600')</code><button class="copy-btn" data-copy="font-size('600')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--font-size-600)</code><button class="copy-btn" data-copy="var(--font-size-600)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.fontSize600</code><button class="copy-btn" data-copy="tokens.fontSize600">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -1207,7 +1194,7 @@ npx storybook dev</pre>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">fontSize('700')</code><button class="copy-btn" data-copy="fontSize('700')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">fontSize('700')</code><button class="copy-btn" data-copy="fontSize('700')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">font-size('700')</code><button class="copy-btn" data-copy="font-size('700')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--font-size-700)</code><button class="copy-btn" data-copy="var(--font-size-700)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.fontSize700</code><button class="copy-btn" data-copy="tokens.fontSize700">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">font-size('700')</code><button class="copy-btn" data-copy="font-size('700')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--font-size-700)</code><button class="copy-btn" data-copy="var(--font-size-700)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.fontSize700</code><button class="copy-btn" data-copy="tokens.fontSize700">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -1223,7 +1210,7 @@ npx storybook dev</pre>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">fontSize('800')</code><button class="copy-btn" data-copy="fontSize('800')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">fontSize('800')</code><button class="copy-btn" data-copy="fontSize('800')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">font-size('800')</code><button class="copy-btn" data-copy="font-size('800')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--font-size-800)</code><button class="copy-btn" data-copy="var(--font-size-800)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.fontSize800</code><button class="copy-btn" data-copy="tokens.fontSize800">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">font-size('800')</code><button class="copy-btn" data-copy="font-size('800')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--font-size-800)</code><button class="copy-btn" data-copy="var(--font-size-800)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.fontSize800</code><button class="copy-btn" data-copy="tokens.fontSize800">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -1239,7 +1226,7 @@ npx storybook dev</pre>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">fontSize('900')</code><button class="copy-btn" data-copy="fontSize('900')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">fontSize('900')</code><button class="copy-btn" data-copy="fontSize('900')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">font-size('900')</code><button class="copy-btn" data-copy="font-size('900')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--font-size-900)</code><button class="copy-btn" data-copy="var(--font-size-900)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.fontSize900</code><button class="copy-btn" data-copy="tokens.fontSize900">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">font-size('900')</code><button class="copy-btn" data-copy="font-size('900')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--font-size-900)</code><button class="copy-btn" data-copy="var(--font-size-900)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.fontSize900</code><button class="copy-btn" data-copy="tokens.fontSize900">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -1274,7 +1261,7 @@ npx storybook dev</pre>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">fontWeight('regular')</code><button class="copy-btn" data-copy="fontWeight('regular')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">fontWeight('regular')</code><button class="copy-btn" data-copy="fontWeight('regular')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">font-weight('regular')</code><button class="copy-btn" data-copy="font-weight('regular')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--font-weight-regular)</code><button class="copy-btn" data-copy="var(--font-weight-regular)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.fontWeightRegular</code><button class="copy-btn" data-copy="tokens.fontWeightRegular">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">font-weight('regular')</code><button class="copy-btn" data-copy="font-weight('regular')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--font-weight-regular)</code><button class="copy-btn" data-copy="var(--font-weight-regular)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.fontWeightRegular</code><button class="copy-btn" data-copy="tokens.fontWeightRegular">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -1290,7 +1277,7 @@ npx storybook dev</pre>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">fontWeight('medium')</code><button class="copy-btn" data-copy="fontWeight('medium')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">fontWeight('medium')</code><button class="copy-btn" data-copy="fontWeight('medium')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">font-weight('medium')</code><button class="copy-btn" data-copy="font-weight('medium')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--font-weight-medium)</code><button class="copy-btn" data-copy="var(--font-weight-medium)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.fontWeightMedium</code><button class="copy-btn" data-copy="tokens.fontWeightMedium">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">font-weight('medium')</code><button class="copy-btn" data-copy="font-weight('medium')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--font-weight-medium)</code><button class="copy-btn" data-copy="var(--font-weight-medium)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.fontWeightMedium</code><button class="copy-btn" data-copy="tokens.fontWeightMedium">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -1306,7 +1293,7 @@ npx storybook dev</pre>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">fontWeight('bold')</code><button class="copy-btn" data-copy="fontWeight('bold')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">fontWeight('bold')</code><button class="copy-btn" data-copy="fontWeight('bold')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">font-weight('bold')</code><button class="copy-btn" data-copy="font-weight('bold')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--font-weight-bold)</code><button class="copy-btn" data-copy="var(--font-weight-bold)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.fontWeightBold</code><button class="copy-btn" data-copy="tokens.fontWeightBold">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">font-weight('bold')</code><button class="copy-btn" data-copy="font-weight('bold')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--font-weight-bold)</code><button class="copy-btn" data-copy="var(--font-weight-bold)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.fontWeightBold</code><button class="copy-btn" data-copy="tokens.fontWeightBold">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -1345,7 +1332,7 @@ npx storybook dev</pre>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">typography('body')</code><button class="copy-btn" data-copy="typography('body')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">typography('body')</code><button class="copy-btn" data-copy="typography('body')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">typography('body')</code><button class="copy-btn" data-copy="typography('body')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--typography-body)</code><button class="copy-btn" data-copy="var(--typography-body)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.typographyBody</code><button class="copy-btn" data-copy="tokens.typographyBody">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">typography('body')</code><button class="copy-btn" data-copy="typography('body')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--typography-body)</code><button class="copy-btn" data-copy="var(--typography-body)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.typographyBody</code><button class="copy-btn" data-copy="tokens.typographyBody">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -1371,7 +1358,7 @@ npx storybook dev</pre>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">typography('heading')</code><button class="copy-btn" data-copy="typography('heading')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">typography('heading')</code><button class="copy-btn" data-copy="typography('heading')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">typography('heading')</code><button class="copy-btn" data-copy="typography('heading')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--typography-heading)</code><button class="copy-btn" data-copy="var(--typography-heading)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.typographyHeading</code><button class="copy-btn" data-copy="tokens.typographyHeading">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">typography('heading')</code><button class="copy-btn" data-copy="typography('heading')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--typography-heading)</code><button class="copy-btn" data-copy="var(--typography-heading)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.typographyHeading</code><button class="copy-btn" data-copy="tokens.typographyHeading">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -1407,7 +1394,7 @@ letterSpacing: -0.02em</pre></td><td>typography</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">spacing('xs')</code><button class="copy-btn" data-copy="spacing('xs')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">spacing('xs')</code><button class="copy-btn" data-copy="spacing('xs')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">spacing('xs')</code><button class="copy-btn" data-copy="spacing('xs')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--spacing-xs)</code><button class="copy-btn" data-copy="var(--spacing-xs)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.spacingXs</code><button class="copy-btn" data-copy="tokens.spacingXs">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">spacing('xs')</code><button class="copy-btn" data-copy="spacing('xs')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--spacing-xs)</code><button class="copy-btn" data-copy="var(--spacing-xs)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.spacingXs</code><button class="copy-btn" data-copy="tokens.spacingXs">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -1423,7 +1410,7 @@ letterSpacing: -0.02em</pre></td><td>typography</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">spacing('sm')</code><button class="copy-btn" data-copy="spacing('sm')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">spacing('sm')</code><button class="copy-btn" data-copy="spacing('sm')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">spacing('sm')</code><button class="copy-btn" data-copy="spacing('sm')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--spacing-sm)</code><button class="copy-btn" data-copy="var(--spacing-sm)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.spacingSm</code><button class="copy-btn" data-copy="tokens.spacingSm">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">spacing('sm')</code><button class="copy-btn" data-copy="spacing('sm')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--spacing-sm)</code><button class="copy-btn" data-copy="var(--spacing-sm)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.spacingSm</code><button class="copy-btn" data-copy="tokens.spacingSm">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -1440,7 +1427,7 @@ letterSpacing: -0.02em</pre></td><td>typography</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">spacing('md')</code><button class="copy-btn" data-copy="spacing('md')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">spacing('md')</code><button class="copy-btn" data-copy="spacing('md')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">spacing('md')</code><button class="copy-btn" data-copy="spacing('md')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--spacing-md)</code><button class="copy-btn" data-copy="var(--spacing-md)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.spacingMd</code><button class="copy-btn" data-copy="tokens.spacingMd">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">spacing('md')</code><button class="copy-btn" data-copy="spacing('md')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--spacing-md)</code><button class="copy-btn" data-copy="var(--spacing-md)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.spacingMd</code><button class="copy-btn" data-copy="tokens.spacingMd">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -1456,7 +1443,7 @@ letterSpacing: -0.02em</pre></td><td>typography</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">spacing('lg')</code><button class="copy-btn" data-copy="spacing('lg')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">spacing('lg')</code><button class="copy-btn" data-copy="spacing('lg')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">spacing('lg')</code><button class="copy-btn" data-copy="spacing('lg')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--spacing-lg)</code><button class="copy-btn" data-copy="var(--spacing-lg)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.spacingLg</code><button class="copy-btn" data-copy="tokens.spacingLg">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">spacing('lg')</code><button class="copy-btn" data-copy="spacing('lg')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--spacing-lg)</code><button class="copy-btn" data-copy="var(--spacing-lg)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.spacingLg</code><button class="copy-btn" data-copy="tokens.spacingLg">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -1472,7 +1459,7 @@ letterSpacing: -0.02em</pre></td><td>typography</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">spacing('xl')</code><button class="copy-btn" data-copy="spacing('xl')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">spacing('xl')</code><button class="copy-btn" data-copy="spacing('xl')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">spacing('xl')</code><button class="copy-btn" data-copy="spacing('xl')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--spacing-xl)</code><button class="copy-btn" data-copy="var(--spacing-xl)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.spacingXl</code><button class="copy-btn" data-copy="tokens.spacingXl">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">spacing('xl')</code><button class="copy-btn" data-copy="spacing('xl')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--spacing-xl)</code><button class="copy-btn" data-copy="var(--spacing-xl)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.spacingXl</code><button class="copy-btn" data-copy="tokens.spacingXl">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -1488,7 +1475,7 @@ letterSpacing: -0.02em</pre></td><td>typography</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">spacing('xxl')</code><button class="copy-btn" data-copy="spacing('xxl')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">spacing('xxl')</code><button class="copy-btn" data-copy="spacing('xxl')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">spacing('xxl')</code><button class="copy-btn" data-copy="spacing('xxl')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--spacing-xxl)</code><button class="copy-btn" data-copy="var(--spacing-xxl)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.spacingXxl</code><button class="copy-btn" data-copy="tokens.spacingXxl">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">spacing('xxl')</code><button class="copy-btn" data-copy="spacing('xxl')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--spacing-xxl)</code><button class="copy-btn" data-copy="var(--spacing-xxl)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.spacingXxl</code><button class="copy-btn" data-copy="tokens.spacingXxl">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -1521,7 +1508,7 @@ letterSpacing: -0.02em</pre></td><td>typography</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">borderRadius('sharp')</code><button class="copy-btn" data-copy="borderRadius('sharp')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">borderRadius('sharp')</code><button class="copy-btn" data-copy="borderRadius('sharp')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">border-radius('sharp')</code><button class="copy-btn" data-copy="border-radius('sharp')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--border-radius-sharp)</code><button class="copy-btn" data-copy="var(--border-radius-sharp)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.borderRadiusSharp</code><button class="copy-btn" data-copy="tokens.borderRadiusSharp">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">border-radius('sharp')</code><button class="copy-btn" data-copy="border-radius('sharp')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--border-radius-sharp)</code><button class="copy-btn" data-copy="var(--border-radius-sharp)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.borderRadiusSharp</code><button class="copy-btn" data-copy="tokens.borderRadiusSharp">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -1538,7 +1525,7 @@ letterSpacing: -0.02em</pre></td><td>typography</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">borderRadius('subtle')</code><button class="copy-btn" data-copy="borderRadius('subtle')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">borderRadius('subtle')</code><button class="copy-btn" data-copy="borderRadius('subtle')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">border-radius('subtle')</code><button class="copy-btn" data-copy="border-radius('subtle')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--border-radius-subtle)</code><button class="copy-btn" data-copy="var(--border-radius-subtle)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.borderRadiusSubtle</code><button class="copy-btn" data-copy="tokens.borderRadiusSubtle">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">border-radius('subtle')</code><button class="copy-btn" data-copy="border-radius('subtle')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--border-radius-subtle)</code><button class="copy-btn" data-copy="var(--border-radius-subtle)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.borderRadiusSubtle</code><button class="copy-btn" data-copy="tokens.borderRadiusSubtle">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -1555,7 +1542,7 @@ letterSpacing: -0.02em</pre></td><td>typography</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">borderRadius('standard')</code><button class="copy-btn" data-copy="borderRadius('standard')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">borderRadius('standard')</code><button class="copy-btn" data-copy="borderRadius('standard')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">border-radius('standard')</code><button class="copy-btn" data-copy="border-radius('standard')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--border-radius-standard)</code><button class="copy-btn" data-copy="var(--border-radius-standard)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.borderRadiusStandard</code><button class="copy-btn" data-copy="tokens.borderRadiusStandard">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">border-radius('standard')</code><button class="copy-btn" data-copy="border-radius('standard')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--border-radius-standard)</code><button class="copy-btn" data-copy="var(--border-radius-standard)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.borderRadiusStandard</code><button class="copy-btn" data-copy="tokens.borderRadiusStandard">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -1572,7 +1559,7 @@ letterSpacing: -0.02em</pre></td><td>typography</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">borderRadius('round')</code><button class="copy-btn" data-copy="borderRadius('round')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">borderRadius('round')</code><button class="copy-btn" data-copy="borderRadius('round')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">border-radius('round')</code><button class="copy-btn" data-copy="border-radius('round')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--border-radius-round)</code><button class="copy-btn" data-copy="var(--border-radius-round)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.borderRadiusRound</code><button class="copy-btn" data-copy="tokens.borderRadiusRound">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">border-radius('round')</code><button class="copy-btn" data-copy="border-radius('round')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--border-radius-round)</code><button class="copy-btn" data-copy="var(--border-radius-round)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.borderRadiusRound</code><button class="copy-btn" data-copy="tokens.borderRadiusRound">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -1607,7 +1594,7 @@ letterSpacing: -0.02em</pre></td><td>typography</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">border('default')</code><button class="copy-btn" data-copy="border('default')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">border('default')</code><button class="copy-btn" data-copy="border('default')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">border('default')</code><button class="copy-btn" data-copy="border('default')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--border-default)</code><button class="copy-btn" data-copy="var(--border-default)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.borderDefault</code><button class="copy-btn" data-copy="tokens.borderDefault">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">border('default')</code><button class="copy-btn" data-copy="border('default')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--border-default)</code><button class="copy-btn" data-copy="var(--border-default)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.borderDefault</code><button class="copy-btn" data-copy="tokens.borderDefault">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -1628,7 +1615,7 @@ letterSpacing: -0.02em</pre></td><td>typography</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">border('focus')</code><button class="copy-btn" data-copy="border('focus')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">border('focus')</code><button class="copy-btn" data-copy="border('focus')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">border('focus')</code><button class="copy-btn" data-copy="border('focus')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--border-focus)</code><button class="copy-btn" data-copy="var(--border-focus)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.borderFocus</code><button class="copy-btn" data-copy="tokens.borderFocus">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">border('focus')</code><button class="copy-btn" data-copy="border('focus')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--border-focus)</code><button class="copy-btn" data-copy="var(--border-focus)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.borderFocus</code><button class="copy-btn" data-copy="tokens.borderFocus">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -1653,15 +1640,15 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="flip-front">
 <button class="flip-btn" title="Show usage">&lt;/&gt;</button>
 <div class="shadow-card">
-<div class="shadow-box" style="box-shadow:0 1px 2px rgba(0, 0, 0, 0.1)"></div>
+<div class="shadow-box" style="box-shadow:0 1px 2px rgba(0, 0, 0, 0.12)"></div>
 <div class="shadow-name">shadow-sm</div>
-<div class="shadow-value">0 1px 2px rgba(0, 0, 0, 0.1)</div>
+<div class="shadow-value">0 1px 2px rgba(0, 0, 0, 0.12)</div>
 </div>
 </div>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">shadow('sm')</code><button class="copy-btn" data-copy="shadow('sm')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">shadow('sm')</code><button class="copy-btn" data-copy="shadow('sm')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">shadow('sm')</code><button class="copy-btn" data-copy="shadow('sm')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--shadow-sm)</code><button class="copy-btn" data-copy="var(--shadow-sm)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.shadowSm</code><button class="copy-btn" data-copy="tokens.shadowSm">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">shadow('sm')</code><button class="copy-btn" data-copy="shadow('sm')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--shadow-sm)</code><button class="copy-btn" data-copy="var(--shadow-sm)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.shadowSm</code><button class="copy-btn" data-copy="tokens.shadowSm">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -1678,7 +1665,7 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">shadow('md')</code><button class="copy-btn" data-copy="shadow('md')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">shadow('md')</code><button class="copy-btn" data-copy="shadow('md')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">shadow('md')</code><button class="copy-btn" data-copy="shadow('md')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--shadow-md)</code><button class="copy-btn" data-copy="var(--shadow-md)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.shadowMd</code><button class="copy-btn" data-copy="tokens.shadowMd">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">shadow('md')</code><button class="copy-btn" data-copy="shadow('md')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--shadow-md)</code><button class="copy-btn" data-copy="var(--shadow-md)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.shadowMd</code><button class="copy-btn" data-copy="tokens.shadowMd">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -1687,15 +1674,32 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="flip-front">
 <button class="flip-btn" title="Show usage">&lt;/&gt;</button>
 <div class="shadow-card">
-<div class="shadow-box" style="box-shadow:0 4px 16px rgba(0, 0, 0, 0.15)"></div>
+<div class="shadow-box" style="box-shadow:0 4px 16px rgba(0, 0, 0, 0.12)"></div>
 <div class="shadow-name">shadow-lg</div>
-<div class="shadow-value">0 4px 16px rgba(0, 0, 0, 0.15)</div>
+<div class="shadow-value">0 4px 16px rgba(0, 0, 0, 0.12)</div>
 </div>
 </div>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">shadow('lg')</code><button class="copy-btn" data-copy="shadow('lg')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">shadow('lg')</code><button class="copy-btn" data-copy="shadow('lg')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">shadow('lg')</code><button class="copy-btn" data-copy="shadow('lg')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--shadow-lg)</code><button class="copy-btn" data-copy="var(--shadow-lg)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.shadowLg</code><button class="copy-btn" data-copy="tokens.shadowLg">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">shadow('lg')</code><button class="copy-btn" data-copy="shadow('lg')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--shadow-lg)</code><button class="copy-btn" data-copy="var(--shadow-lg)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.shadowLg</code><button class="copy-btn" data-copy="tokens.shadowLg">Copy</button></div></div>
+</div>
+</div>
+</div>
+<div class="flip-card">
+<div class="flip-inner">
+<div class="flip-front">
+<button class="flip-btn" title="Show usage">&lt;/&gt;</button>
+<div class="shadow-card">
+<div class="shadow-box" style="box-shadow:0 2px 4px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.08)"></div>
+<div class="shadow-name">shadow-elevated</div>
+<div class="shadow-value">0 2px 4px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.08)</div>
+</div>
+</div>
+<div class="flip-back">
+<button class="flip-close" title="Back to preview">&times;</button>
+<div class="flip-back-title">Usage</div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">shadow('elevated')</code><button class="copy-btn" data-copy="shadow('elevated')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--shadow-elevated)</code><button class="copy-btn" data-copy="var(--shadow-elevated)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.shadowElevated</code><button class="copy-btn" data-copy="tokens.shadowElevated">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -1703,9 +1707,10 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <table class="token-table">
 <thead><tr><th>Name</th><th>Value</th><th>Type</th><th>Usage</th></tr></thead>
 <tbody>
-<tr><td class="token-name">shadow-sm</td><td><code>0 1px 2px rgba(0, 0, 0, 0.1)</code></td><td>shadow</td><td></td></tr>
+<tr><td class="token-name">shadow-sm</td><td><code>0 1px 2px rgba(0, 0, 0, 0.12)</code></td><td>shadow</td><td></td></tr>
 <tr><td class="token-name">shadow-md</td><td><code>0 2px 8px rgba(0, 0, 0, 0.12)</code></td><td>shadow</td><td></td></tr>
-<tr><td class="token-name">shadow-lg</td><td><code>0 4px 16px rgba(0, 0, 0, 0.15)</code></td><td>shadow</td><td></td></tr>
+<tr><td class="token-name">shadow-lg</td><td><code>0 4px 16px rgba(0, 0, 0, 0.12)</code></td><td>shadow</td><td></td></tr>
+<tr><td class="token-name">shadow-elevated</td><td><code>0 2px 4px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.08)</code></td><td>shadow</td><td></td></tr>
 </tbody>
 </table>
 </section>
@@ -1719,10 +1724,10 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="duration-card anim-container">
 <div class="duration-header">
 <div class="duration-name">duration-fast</div>
-<div class="duration-val">0.1s</div>
+<div class="duration-val">100ms</div>
 </div>
 <div class="duration-bar">
-<div class="duration-fill" style="animation-duration:0.1s;animation-timing-function:ease"></div>
+<div class="duration-fill" style="animation-duration:100ms;animation-timing-function:ease"></div>
 </div>
 <button class="play-btn">&#9654; Play</button>
 </div>
@@ -1730,7 +1735,7 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">duration('fast')</code><button class="copy-btn" data-copy="duration('fast')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">duration('fast')</code><button class="copy-btn" data-copy="duration('fast')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">duration('fast')</code><button class="copy-btn" data-copy="duration('fast')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--duration-fast)</code><button class="copy-btn" data-copy="var(--duration-fast)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.durationFast</code><button class="copy-btn" data-copy="tokens.durationFast">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">duration('fast')</code><button class="copy-btn" data-copy="duration('fast')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--duration-fast)</code><button class="copy-btn" data-copy="var(--duration-fast)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.durationFast</code><button class="copy-btn" data-copy="tokens.durationFast">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -1741,10 +1746,10 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="duration-card anim-container">
 <div class="duration-header">
 <div class="duration-name">duration-normal</div>
-<div class="duration-val">0.2s</div>
+<div class="duration-val">200ms</div>
 </div>
 <div class="duration-bar">
-<div class="duration-fill" style="animation-duration:0.2s;animation-timing-function:ease"></div>
+<div class="duration-fill" style="animation-duration:200ms;animation-timing-function:ease"></div>
 </div>
 <button class="play-btn">&#9654; Play</button>
 </div>
@@ -1752,7 +1757,7 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">duration('normal')</code><button class="copy-btn" data-copy="duration('normal')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">duration('normal')</code><button class="copy-btn" data-copy="duration('normal')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">duration('normal')</code><button class="copy-btn" data-copy="duration('normal')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--duration-normal)</code><button class="copy-btn" data-copy="var(--duration-normal)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.durationNormal</code><button class="copy-btn" data-copy="tokens.durationNormal">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">duration('normal')</code><button class="copy-btn" data-copy="duration('normal')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--duration-normal)</code><button class="copy-btn" data-copy="var(--duration-normal)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.durationNormal</code><button class="copy-btn" data-copy="tokens.durationNormal">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -1763,10 +1768,10 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="duration-card anim-container">
 <div class="duration-header">
 <div class="duration-name">duration-slow</div>
-<div class="duration-val">0.3s</div>
+<div class="duration-val">300ms</div>
 </div>
 <div class="duration-bar">
-<div class="duration-fill" style="animation-duration:0.3s;animation-timing-function:ease"></div>
+<div class="duration-fill" style="animation-duration:300ms;animation-timing-function:ease"></div>
 </div>
 <button class="play-btn">&#9654; Play</button>
 </div>
@@ -1774,7 +1779,7 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">duration('slow')</code><button class="copy-btn" data-copy="duration('slow')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">duration('slow')</code><button class="copy-btn" data-copy="duration('slow')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">duration('slow')</code><button class="copy-btn" data-copy="duration('slow')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--duration-slow)</code><button class="copy-btn" data-copy="var(--duration-slow)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.durationSlow</code><button class="copy-btn" data-copy="tokens.durationSlow">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">duration('slow')</code><button class="copy-btn" data-copy="duration('slow')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--duration-slow)</code><button class="copy-btn" data-copy="var(--duration-slow)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.durationSlow</code><button class="copy-btn" data-copy="tokens.durationSlow">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -1782,9 +1787,9 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <table class="token-table">
 <thead><tr><th>Name</th><th>Value</th><th>Type</th><th>Usage</th></tr></thead>
 <tbody>
-<tr><td class="token-name">duration-fast</td><td><code>0.1s</code></td><td>duration</td><td></td></tr>
-<tr><td class="token-name">duration-normal</td><td><code>0.2s</code></td><td>duration</td><td></td></tr>
-<tr><td class="token-name">duration-slow</td><td><code>0.3s</code></td><td>duration</td><td></td></tr>
+<tr><td class="token-name">duration-fast</td><td><code>100ms</code></td><td>duration</td><td></td></tr>
+<tr><td class="token-name">duration-normal</td><td><code>200ms</code></td><td>duration</td><td></td></tr>
+<tr><td class="token-name">duration-slow</td><td><code>300ms</code></td><td>duration</td><td></td></tr>
 </tbody>
 </table>
 </section>
@@ -1818,7 +1823,7 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">timing('ease')</code><button class="copy-btn" data-copy="timing('ease')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">timing('ease')</code><button class="copy-btn" data-copy="timing('ease')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">timing('ease')</code><button class="copy-btn" data-copy="timing('ease')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--timing-ease)</code><button class="copy-btn" data-copy="var(--timing-ease)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.timingEase</code><button class="copy-btn" data-copy="tokens.timingEase">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">timing('ease')</code><button class="copy-btn" data-copy="timing('ease')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--timing-ease)</code><button class="copy-btn" data-copy="var(--timing-ease)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.timingEase</code><button class="copy-btn" data-copy="tokens.timingEase">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -1849,7 +1854,7 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">timing('accelerate')</code><button class="copy-btn" data-copy="timing('accelerate')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">timing('accelerate')</code><button class="copy-btn" data-copy="timing('accelerate')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">timing('accelerate')</code><button class="copy-btn" data-copy="timing('accelerate')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--timing-accelerate)</code><button class="copy-btn" data-copy="var(--timing-accelerate)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.timingAccelerate</code><button class="copy-btn" data-copy="tokens.timingAccelerate">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">timing('accelerate')</code><button class="copy-btn" data-copy="timing('accelerate')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--timing-accelerate)</code><button class="copy-btn" data-copy="var(--timing-accelerate)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.timingAccelerate</code><button class="copy-btn" data-copy="tokens.timingAccelerate">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -1880,7 +1885,7 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">timing('decelerate')</code><button class="copy-btn" data-copy="timing('decelerate')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">timing('decelerate')</code><button class="copy-btn" data-copy="timing('decelerate')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">timing('decelerate')</code><button class="copy-btn" data-copy="timing('decelerate')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--timing-decelerate)</code><button class="copy-btn" data-copy="var(--timing-decelerate)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.timingDecelerate</code><button class="copy-btn" data-copy="tokens.timingDecelerate">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">timing('decelerate')</code><button class="copy-btn" data-copy="timing('decelerate')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--timing-decelerate)</code><button class="copy-btn" data-copy="var(--timing-decelerate)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.timingDecelerate</code><button class="copy-btn" data-copy="tokens.timingDecelerate">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -1904,14 +1909,14 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="transition-card">
 <div class="transition-header">
 <div class="transition-name">transition-fade</div>
-<div class="transition-value">0.2s ease</div>
+<div class="transition-value">100ms cubic-bezier(0.4, 0, 0.2, 1)</div>
 </div>
 <dl class="transition-props"><dt>property</dt><dd>all</dd>
-<dt>duration</dt><dd>0.2s</dd>
-<dt>timing</dt><dd>ease</dd>
+<dt>duration</dt><dd>100ms</dd>
+<dt>timing</dt><dd>cubic-bezier(0.4, 0, 0.2, 1)</dd>
 <dt>delay</dt><dd>0s</dd></dl>
 <div class="transition-demo">
-<div class="transition-demo-box" style="transition: 0.2s ease" title="Hover to preview"></div>
+<div class="transition-demo-box" style="transition: 100ms cubic-bezier(0.4, 0, 0.2, 1)" title="Hover to preview"></div>
 <span style="font-size:0.75rem;color:#888">Hover to preview</span>
 </div>
 <div class="token-usage">Fade in/out elements</div>
@@ -1920,7 +1925,7 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">transition('fade')</code><button class="copy-btn" data-copy="transition('fade')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">transition('fade')</code><button class="copy-btn" data-copy="transition('fade')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">transition('fade')</code><button class="copy-btn" data-copy="transition('fade')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--transition-fade)</code><button class="copy-btn" data-copy="var(--transition-fade)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.transitionFade</code><button class="copy-btn" data-copy="tokens.transitionFade">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">transition('fade')</code><button class="copy-btn" data-copy="transition('fade')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--transition-fade)</code><button class="copy-btn" data-copy="var(--transition-fade)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.transitionFade</code><button class="copy-btn" data-copy="tokens.transitionFade">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -1931,14 +1936,14 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="transition-card">
 <div class="transition-header">
 <div class="transition-name">transition-slide</div>
-<div class="transition-value">0.3s cubic-bezier(0.4, 0, 0.2, 1)</div>
+<div class="transition-value">300ms cubic-bezier(0.4, 0, 0.2, 1)</div>
 </div>
 <dl class="transition-props"><dt>property</dt><dd>all</dd>
-<dt>duration</dt><dd>0.3s</dd>
+<dt>duration</dt><dd>300ms</dd>
 <dt>timing</dt><dd>cubic-bezier(0.4, 0, 0.2, 1)</dd>
 <dt>delay</dt><dd>0s</dd></dl>
 <div class="transition-demo">
-<div class="transition-demo-box" style="transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1)" title="Hover to preview"></div>
+<div class="transition-demo-box" style="transition: 300ms cubic-bezier(0.4, 0, 0.2, 1)" title="Hover to preview"></div>
 <span style="font-size:0.75rem;color:#888">Hover to preview</span>
 </div>
 <div class="token-usage">Slide animations</div>
@@ -1947,7 +1952,7 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">transition('slide')</code><button class="copy-btn" data-copy="transition('slide')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">transition('slide')</code><button class="copy-btn" data-copy="transition('slide')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">transition('slide')</code><button class="copy-btn" data-copy="transition('slide')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--transition-slide)</code><button class="copy-btn" data-copy="var(--transition-slide)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.transitionSlide</code><button class="copy-btn" data-copy="tokens.transitionSlide">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">transition('slide')</code><button class="copy-btn" data-copy="transition('slide')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--transition-slide)</code><button class="copy-btn" data-copy="var(--transition-slide)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.transitionSlide</code><button class="copy-btn" data-copy="tokens.transitionSlide">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -1958,14 +1963,14 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="transition-card">
 <div class="transition-header">
 <div class="transition-name">transition-quick</div>
-<div class="transition-value">0.1s ease</div>
+<div class="transition-value">100ms cubic-bezier(0.4, 0, 1, 1)</div>
 </div>
 <dl class="transition-props"><dt>property</dt><dd>all</dd>
-<dt>duration</dt><dd>0.1s</dd>
-<dt>timing</dt><dd>ease</dd>
+<dt>duration</dt><dd>100ms</dd>
+<dt>timing</dt><dd>cubic-bezier(0.4, 0, 1, 1)</dd>
 <dt>delay</dt><dd>0s</dd></dl>
 <div class="transition-demo">
-<div class="transition-demo-box" style="transition: 0.1s ease" title="Hover to preview"></div>
+<div class="transition-demo-box" style="transition: 100ms cubic-bezier(0.4, 0, 1, 1)" title="Hover to preview"></div>
 <span style="font-size:0.75rem;color:#888">Hover to preview</span>
 </div>
 </div>
@@ -1973,7 +1978,7 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">transition('quick')</code><button class="copy-btn" data-copy="transition('quick')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">transition('quick')</code><button class="copy-btn" data-copy="transition('quick')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">transition('quick')</code><button class="copy-btn" data-copy="transition('quick')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--transition-quick)</code><button class="copy-btn" data-copy="var(--transition-quick)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.transitionQuick</code><button class="copy-btn" data-copy="tokens.transitionQuick">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">transition('quick')</code><button class="copy-btn" data-copy="transition('quick')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--transition-quick)</code><button class="copy-btn" data-copy="var(--transition-quick)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.transitionQuick</code><button class="copy-btn" data-copy="tokens.transitionQuick">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -1984,14 +1989,14 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="transition-card">
 <div class="transition-header">
 <div class="transition-name">transition-custom</div>
-<div class="transition-value">opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1)</div>
+<div class="transition-value">opacity 200ms cubic-bezier(0.4, 0, 0.2, 1)</div>
 </div>
 <dl class="transition-props"><dt>property</dt><dd>opacity</dd>
-<dt>duration</dt><dd>0.4s</dd>
+<dt>duration</dt><dd>200ms</dd>
 <dt>timing</dt><dd>cubic-bezier(0.4, 0, 0.2, 1)</dd>
 <dt>delay</dt><dd>0s</dd></dl>
 <div class="transition-demo">
-<div class="transition-demo-box" style="transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1)" title="Hover to preview"></div>
+<div class="transition-demo-box" style="transition: opacity 200ms cubic-bezier(0.4, 0, 0.2, 1)" title="Hover to preview"></div>
 <span style="font-size:0.75rem;color:#888">Hover to preview</span>
 </div>
 </div>
@@ -1999,7 +2004,7 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">transition('custom')</code><button class="copy-btn" data-copy="transition('custom')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">transition('custom')</code><button class="copy-btn" data-copy="transition('custom')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">transition('custom')</code><button class="copy-btn" data-copy="transition('custom')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--transition-custom)</code><button class="copy-btn" data-copy="var(--transition-custom)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.transitionCustom</code><button class="copy-btn" data-copy="tokens.transitionCustom">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">transition('custom')</code><button class="copy-btn" data-copy="transition('custom')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--transition-custom)</code><button class="copy-btn" data-copy="var(--transition-custom)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.transitionCustom</code><button class="copy-btn" data-copy="tokens.transitionCustom">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -2007,10 +2012,10 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <table class="token-table">
 <thead><tr><th>Name</th><th>Value</th><th>Type</th><th>Usage</th></tr></thead>
 <tbody>
-<tr><td class="token-name">transition-fade</td><td><code>0.2s ease</code></td><td>transition</td><td>Fade in/out elements</td></tr>
-<tr><td class="token-name">transition-slide</td><td><code>0.3s cubic-bezier(0.4, 0, 0.2, 1)</code></td><td>transition</td><td>Slide animations</td></tr>
-<tr><td class="token-name">transition-quick</td><td><code>0.1s ease</code></td><td>transition</td><td></td></tr>
-<tr><td class="token-name">transition-custom</td><td><code>opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1)</code></td><td>transition</td><td></td></tr>
+<tr><td class="token-name">transition-fade</td><td><code>100ms cubic-bezier(0.4, 0, 0.2, 1)</code></td><td>transition</td><td>Fade in/out elements</td></tr>
+<tr><td class="token-name">transition-slide</td><td><code>300ms cubic-bezier(0.4, 0, 0.2, 1)</code></td><td>transition</td><td>Slide animations</td></tr>
+<tr><td class="token-name">transition-quick</td><td><code>100ms cubic-bezier(0.4, 0, 1, 1)</code></td><td>transition</td><td></td></tr>
+<tr><td class="token-name">transition-custom</td><td><code>opacity 200ms cubic-bezier(0.4, 0, 0.2, 1)</code></td><td>transition</td><td></td></tr>
 </tbody>
 </table>
 </section>
@@ -2038,7 +2043,7 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">gradient('brand')</code><button class="copy-btn" data-copy="gradient('brand')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">gradient('brand')</code><button class="copy-btn" data-copy="gradient('brand')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">gradient('brand')</code><button class="copy-btn" data-copy="gradient('brand')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--gradient-brand)</code><button class="copy-btn" data-copy="var(--gradient-brand)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.gradientBrand</code><button class="copy-btn" data-copy="tokens.gradientBrand">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">gradient('brand')</code><button class="copy-btn" data-copy="gradient('brand')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--gradient-brand)</code><button class="copy-btn" data-copy="var(--gradient-brand)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.gradientBrand</code><button class="copy-btn" data-copy="tokens.gradientBrand">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -2063,7 +2068,7 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">gradient('sunset')</code><button class="copy-btn" data-copy="gradient('sunset')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">gradient('sunset')</code><button class="copy-btn" data-copy="gradient('sunset')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">gradient('sunset')</code><button class="copy-btn" data-copy="gradient('sunset')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--gradient-sunset)</code><button class="copy-btn" data-copy="var(--gradient-sunset)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.gradientSunset</code><button class="copy-btn" data-copy="tokens.gradientSunset">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">gradient('sunset')</code><button class="copy-btn" data-copy="gradient('sunset')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--gradient-sunset)</code><button class="copy-btn" data-copy="var(--gradient-sunset)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.gradientSunset</code><button class="copy-btn" data-copy="tokens.gradientSunset">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -2088,7 +2093,7 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">gradient('ocean')</code><button class="copy-btn" data-copy="gradient('ocean')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">gradient('ocean')</code><button class="copy-btn" data-copy="gradient('ocean')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">gradient('ocean')</code><button class="copy-btn" data-copy="gradient('ocean')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--gradient-ocean)</code><button class="copy-btn" data-copy="var(--gradient-ocean)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.gradientOcean</code><button class="copy-btn" data-copy="tokens.gradientOcean">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">gradient('ocean')</code><button class="copy-btn" data-copy="gradient('ocean')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--gradient-ocean)</code><button class="copy-btn" data-copy="var(--gradient-ocean)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.gradientOcean</code><button class="copy-btn" data-copy="tokens.gradientOcean">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -2119,7 +2124,7 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">opacity('disabled')</code><button class="copy-btn" data-copy="opacity('disabled')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">opacity('disabled')</code><button class="copy-btn" data-copy="opacity('disabled')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">opacity('disabled')</code><button class="copy-btn" data-copy="opacity('disabled')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--opacity-disabled)</code><button class="copy-btn" data-copy="var(--opacity-disabled)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.opacityDisabled</code><button class="copy-btn" data-copy="tokens.opacityDisabled">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">opacity('disabled')</code><button class="copy-btn" data-copy="opacity('disabled')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--opacity-disabled)</code><button class="copy-btn" data-copy="var(--opacity-disabled)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.opacityDisabled</code><button class="copy-btn" data-copy="tokens.opacityDisabled">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -2137,7 +2142,7 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">opacity('hover')</code><button class="copy-btn" data-copy="opacity('hover')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">opacity('hover')</code><button class="copy-btn" data-copy="opacity('hover')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">opacity('hover')</code><button class="copy-btn" data-copy="opacity('hover')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--opacity-hover)</code><button class="copy-btn" data-copy="var(--opacity-hover)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.opacityHover</code><button class="copy-btn" data-copy="tokens.opacityHover">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">opacity('hover')</code><button class="copy-btn" data-copy="opacity('hover')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--opacity-hover)</code><button class="copy-btn" data-copy="var(--opacity-hover)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.opacityHover</code><button class="copy-btn" data-copy="tokens.opacityHover">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -2154,7 +2159,7 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">opacity('focus')</code><button class="copy-btn" data-copy="opacity('focus')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">opacity('focus')</code><button class="copy-btn" data-copy="opacity('focus')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">opacity('focus')</code><button class="copy-btn" data-copy="opacity('focus')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--opacity-focus)</code><button class="copy-btn" data-copy="var(--opacity-focus)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.opacityFocus</code><button class="copy-btn" data-copy="tokens.opacityFocus">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">opacity('focus')</code><button class="copy-btn" data-copy="opacity('focus')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--opacity-focus)</code><button class="copy-btn" data-copy="var(--opacity-focus)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.opacityFocus</code><button class="copy-btn" data-copy="tokens.opacityFocus">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -2172,7 +2177,7 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">opacity('overlay')</code><button class="copy-btn" data-copy="opacity('overlay')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">opacity('overlay')</code><button class="copy-btn" data-copy="opacity('overlay')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">opacity('overlay')</code><button class="copy-btn" data-copy="opacity('overlay')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--opacity-overlay)</code><button class="copy-btn" data-copy="var(--opacity-overlay)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.opacityOverlay</code><button class="copy-btn" data-copy="tokens.opacityOverlay">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">opacity('overlay')</code><button class="copy-btn" data-copy="opacity('overlay')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--opacity-overlay)</code><button class="copy-btn" data-copy="var(--opacity-overlay)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.opacityOverlay</code><button class="copy-btn" data-copy="tokens.opacityOverlay">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -2189,7 +2194,7 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">opacity('full')</code><button class="copy-btn" data-copy="opacity('full')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">opacity('full')</code><button class="copy-btn" data-copy="opacity('full')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">opacity('full')</code><button class="copy-btn" data-copy="opacity('full')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--opacity-full)</code><button class="copy-btn" data-copy="var(--opacity-full)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.opacityFull</code><button class="copy-btn" data-copy="tokens.opacityFull">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">opacity('full')</code><button class="copy-btn" data-copy="opacity('full')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--opacity-full)</code><button class="copy-btn" data-copy="var(--opacity-full)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.opacityFull</code><button class="copy-btn" data-copy="tokens.opacityFull">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -2221,7 +2226,7 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">lineHeight('tight')</code><button class="copy-btn" data-copy="lineHeight('tight')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">lineHeight('tight')</code><button class="copy-btn" data-copy="lineHeight('tight')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">line-height('tight')</code><button class="copy-btn" data-copy="line-height('tight')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--line-height-tight)</code><button class="copy-btn" data-copy="var(--line-height-tight)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.lineHeightTight</code><button class="copy-btn" data-copy="tokens.lineHeightTight">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">line-height('tight')</code><button class="copy-btn" data-copy="line-height('tight')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--line-height-tight)</code><button class="copy-btn" data-copy="var(--line-height-tight)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.lineHeightTight</code><button class="copy-btn" data-copy="tokens.lineHeightTight">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -2237,7 +2242,7 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">lineHeight('normal')</code><button class="copy-btn" data-copy="lineHeight('normal')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">lineHeight('normal')</code><button class="copy-btn" data-copy="lineHeight('normal')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">line-height('normal')</code><button class="copy-btn" data-copy="line-height('normal')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--line-height-normal)</code><button class="copy-btn" data-copy="var(--line-height-normal)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.lineHeightNormal</code><button class="copy-btn" data-copy="tokens.lineHeightNormal">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">line-height('normal')</code><button class="copy-btn" data-copy="line-height('normal')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--line-height-normal)</code><button class="copy-btn" data-copy="var(--line-height-normal)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.lineHeightNormal</code><button class="copy-btn" data-copy="tokens.lineHeightNormal">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -2253,7 +2258,7 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">lineHeight('relaxed')</code><button class="copy-btn" data-copy="lineHeight('relaxed')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">lineHeight('relaxed')</code><button class="copy-btn" data-copy="lineHeight('relaxed')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">line-height('relaxed')</code><button class="copy-btn" data-copy="line-height('relaxed')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--line-height-relaxed)</code><button class="copy-btn" data-copy="var(--line-height-relaxed)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.lineHeightRelaxed</code><button class="copy-btn" data-copy="tokens.lineHeightRelaxed">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">line-height('relaxed')</code><button class="copy-btn" data-copy="line-height('relaxed')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--line-height-relaxed)</code><button class="copy-btn" data-copy="var(--line-height-relaxed)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.lineHeightRelaxed</code><button class="copy-btn" data-copy="tokens.lineHeightRelaxed">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -2270,7 +2275,7 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">lineHeight('loose')</code><button class="copy-btn" data-copy="lineHeight('loose')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">lineHeight('loose')</code><button class="copy-btn" data-copy="lineHeight('loose')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">line-height('loose')</code><button class="copy-btn" data-copy="line-height('loose')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--line-height-loose)</code><button class="copy-btn" data-copy="var(--line-height-loose)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.lineHeightLoose</code><button class="copy-btn" data-copy="tokens.lineHeightLoose">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">line-height('loose')</code><button class="copy-btn" data-copy="line-height('loose')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--line-height-loose)</code><button class="copy-btn" data-copy="var(--line-height-loose)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.lineHeightLoose</code><button class="copy-btn" data-copy="tokens.lineHeightLoose">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -2301,7 +2306,7 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">letterSpacing('tight')</code><button class="copy-btn" data-copy="letterSpacing('tight')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">letterSpacing('tight')</code><button class="copy-btn" data-copy="letterSpacing('tight')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">letter-spacing('tight')</code><button class="copy-btn" data-copy="letter-spacing('tight')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--letter-spacing-tight)</code><button class="copy-btn" data-copy="var(--letter-spacing-tight)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.letterSpacingTight</code><button class="copy-btn" data-copy="tokens.letterSpacingTight">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">letter-spacing('tight')</code><button class="copy-btn" data-copy="letter-spacing('tight')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--letter-spacing-tight)</code><button class="copy-btn" data-copy="var(--letter-spacing-tight)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.letterSpacingTight</code><button class="copy-btn" data-copy="tokens.letterSpacingTight">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -2317,7 +2322,7 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">letterSpacing('normal')</code><button class="copy-btn" data-copy="letterSpacing('normal')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">letterSpacing('normal')</code><button class="copy-btn" data-copy="letterSpacing('normal')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">letter-spacing('normal')</code><button class="copy-btn" data-copy="letter-spacing('normal')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--letter-spacing-normal)</code><button class="copy-btn" data-copy="var(--letter-spacing-normal)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.letterSpacingNormal</code><button class="copy-btn" data-copy="tokens.letterSpacingNormal">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">letter-spacing('normal')</code><button class="copy-btn" data-copy="letter-spacing('normal')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--letter-spacing-normal)</code><button class="copy-btn" data-copy="var(--letter-spacing-normal)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.letterSpacingNormal</code><button class="copy-btn" data-copy="tokens.letterSpacingNormal">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -2333,7 +2338,7 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">letterSpacing('wide')</code><button class="copy-btn" data-copy="letterSpacing('wide')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">letterSpacing('wide')</code><button class="copy-btn" data-copy="letterSpacing('wide')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">letter-spacing('wide')</code><button class="copy-btn" data-copy="letter-spacing('wide')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--letter-spacing-wide)</code><button class="copy-btn" data-copy="var(--letter-spacing-wide)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.letterSpacingWide</code><button class="copy-btn" data-copy="tokens.letterSpacingWide">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">letter-spacing('wide')</code><button class="copy-btn" data-copy="letter-spacing('wide')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--letter-spacing-wide)</code><button class="copy-btn" data-copy="var(--letter-spacing-wide)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.letterSpacingWide</code><button class="copy-btn" data-copy="tokens.letterSpacingWide">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -2350,7 +2355,7 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">letterSpacing('wider')</code><button class="copy-btn" data-copy="letterSpacing('wider')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">letterSpacing('wider')</code><button class="copy-btn" data-copy="letterSpacing('wider')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">letter-spacing('wider')</code><button class="copy-btn" data-copy="letter-spacing('wider')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--letter-spacing-wider)</code><button class="copy-btn" data-copy="var(--letter-spacing-wider)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.letterSpacingWider</code><button class="copy-btn" data-copy="tokens.letterSpacingWider">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">letter-spacing('wider')</code><button class="copy-btn" data-copy="letter-spacing('wider')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--letter-spacing-wider)</code><button class="copy-btn" data-copy="var(--letter-spacing-wider)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.letterSpacingWider</code><button class="copy-btn" data-copy="tokens.letterSpacingWider">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -2382,7 +2387,7 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">breakpoint('sm')</code><button class="copy-btn" data-copy="breakpoint('sm')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">breakpoint('sm')</code><button class="copy-btn" data-copy="breakpoint('sm')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">breakpoint('sm')</code><button class="copy-btn" data-copy="breakpoint('sm')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--breakpoint-sm)</code><button class="copy-btn" data-copy="var(--breakpoint-sm)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.breakpointSm</code><button class="copy-btn" data-copy="tokens.breakpointSm">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">breakpoint('sm')</code><button class="copy-btn" data-copy="breakpoint('sm')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--breakpoint-sm)</code><button class="copy-btn" data-copy="var(--breakpoint-sm)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.breakpointSm</code><button class="copy-btn" data-copy="tokens.breakpointSm">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -2400,7 +2405,7 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">breakpoint('md')</code><button class="copy-btn" data-copy="breakpoint('md')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">breakpoint('md')</code><button class="copy-btn" data-copy="breakpoint('md')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">breakpoint('md')</code><button class="copy-btn" data-copy="breakpoint('md')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--breakpoint-md)</code><button class="copy-btn" data-copy="var(--breakpoint-md)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.breakpointMd</code><button class="copy-btn" data-copy="tokens.breakpointMd">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">breakpoint('md')</code><button class="copy-btn" data-copy="breakpoint('md')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--breakpoint-md)</code><button class="copy-btn" data-copy="var(--breakpoint-md)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.breakpointMd</code><button class="copy-btn" data-copy="tokens.breakpointMd">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -2418,7 +2423,7 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">breakpoint('lg')</code><button class="copy-btn" data-copy="breakpoint('lg')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">breakpoint('lg')</code><button class="copy-btn" data-copy="breakpoint('lg')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">breakpoint('lg')</code><button class="copy-btn" data-copy="breakpoint('lg')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--breakpoint-lg)</code><button class="copy-btn" data-copy="var(--breakpoint-lg)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.breakpointLg</code><button class="copy-btn" data-copy="tokens.breakpointLg">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">breakpoint('lg')</code><button class="copy-btn" data-copy="breakpoint('lg')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--breakpoint-lg)</code><button class="copy-btn" data-copy="var(--breakpoint-lg)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.breakpointLg</code><button class="copy-btn" data-copy="tokens.breakpointLg">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -2436,7 +2441,7 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">breakpoint('xl')</code><button class="copy-btn" data-copy="breakpoint('xl')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">breakpoint('xl')</code><button class="copy-btn" data-copy="breakpoint('xl')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">breakpoint('xl')</code><button class="copy-btn" data-copy="breakpoint('xl')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--breakpoint-xl)</code><button class="copy-btn" data-copy="var(--breakpoint-xl)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.breakpointXl</code><button class="copy-btn" data-copy="tokens.breakpointXl">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">breakpoint('xl')</code><button class="copy-btn" data-copy="breakpoint('xl')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--breakpoint-xl)</code><button class="copy-btn" data-copy="var(--breakpoint-xl)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.breakpointXl</code><button class="copy-btn" data-copy="tokens.breakpointXl">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -2468,7 +2473,7 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">size('icon-sm')</code><button class="copy-btn" data-copy="size('icon-sm')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">size('icon-sm')</code><button class="copy-btn" data-copy="size('icon-sm')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">size('icon-sm')</code><button class="copy-btn" data-copy="size('icon-sm')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--size-icon-sm)</code><button class="copy-btn" data-copy="var(--size-icon-sm)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.sizeIconSm</code><button class="copy-btn" data-copy="tokens.sizeIconSm">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">size('icon-sm')</code><button class="copy-btn" data-copy="size('icon-sm')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--size-icon-sm)</code><button class="copy-btn" data-copy="var(--size-icon-sm)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.sizeIconSm</code><button class="copy-btn" data-copy="tokens.sizeIconSm">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -2485,7 +2490,7 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">size('icon-md')</code><button class="copy-btn" data-copy="size('icon-md')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">size('icon-md')</code><button class="copy-btn" data-copy="size('icon-md')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">size('icon-md')</code><button class="copy-btn" data-copy="size('icon-md')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--size-icon-md)</code><button class="copy-btn" data-copy="var(--size-icon-md)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.sizeIconMd</code><button class="copy-btn" data-copy="tokens.sizeIconMd">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">size('icon-md')</code><button class="copy-btn" data-copy="size('icon-md')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--size-icon-md)</code><button class="copy-btn" data-copy="var(--size-icon-md)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.sizeIconMd</code><button class="copy-btn" data-copy="tokens.sizeIconMd">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -2502,7 +2507,7 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">size('icon-lg')</code><button class="copy-btn" data-copy="size('icon-lg')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">size('icon-lg')</code><button class="copy-btn" data-copy="size('icon-lg')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">size('icon-lg')</code><button class="copy-btn" data-copy="size('icon-lg')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--size-icon-lg)</code><button class="copy-btn" data-copy="var(--size-icon-lg)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.sizeIconLg</code><button class="copy-btn" data-copy="tokens.sizeIconLg">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">size('icon-lg')</code><button class="copy-btn" data-copy="size('icon-lg')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--size-icon-lg)</code><button class="copy-btn" data-copy="var(--size-icon-lg)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.sizeIconLg</code><button class="copy-btn" data-copy="tokens.sizeIconLg">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -2520,7 +2525,7 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">size('avatar-sm')</code><button class="copy-btn" data-copy="size('avatar-sm')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">size('avatar-sm')</code><button class="copy-btn" data-copy="size('avatar-sm')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">size('avatar-sm')</code><button class="copy-btn" data-copy="size('avatar-sm')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--size-avatar-sm)</code><button class="copy-btn" data-copy="var(--size-avatar-sm)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.sizeAvatarSm</code><button class="copy-btn" data-copy="tokens.sizeAvatarSm">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">size('avatar-sm')</code><button class="copy-btn" data-copy="size('avatar-sm')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--size-avatar-sm)</code><button class="copy-btn" data-copy="var(--size-avatar-sm)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.sizeAvatarSm</code><button class="copy-btn" data-copy="tokens.sizeAvatarSm">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -2537,7 +2542,7 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">size('avatar-md')</code><button class="copy-btn" data-copy="size('avatar-md')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">size('avatar-md')</code><button class="copy-btn" data-copy="size('avatar-md')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">size('avatar-md')</code><button class="copy-btn" data-copy="size('avatar-md')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--size-avatar-md)</code><button class="copy-btn" data-copy="var(--size-avatar-md)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.sizeAvatarMd</code><button class="copy-btn" data-copy="tokens.sizeAvatarMd">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">size('avatar-md')</code><button class="copy-btn" data-copy="size('avatar-md')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--size-avatar-md)</code><button class="copy-btn" data-copy="var(--size-avatar-md)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.sizeAvatarMd</code><button class="copy-btn" data-copy="tokens.sizeAvatarMd">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -2555,7 +2560,7 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">size('avatar-lg')</code><button class="copy-btn" data-copy="size('avatar-lg')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">size('avatar-lg')</code><button class="copy-btn" data-copy="size('avatar-lg')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">size('avatar-lg')</code><button class="copy-btn" data-copy="size('avatar-lg')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--size-avatar-lg)</code><button class="copy-btn" data-copy="var(--size-avatar-lg)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.sizeAvatarLg</code><button class="copy-btn" data-copy="tokens.sizeAvatarLg">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">size('avatar-lg')</code><button class="copy-btn" data-copy="size('avatar-lg')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--size-avatar-lg)</code><button class="copy-btn" data-copy="var(--size-avatar-lg)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.sizeAvatarLg</code><button class="copy-btn" data-copy="tokens.sizeAvatarLg">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -2589,7 +2594,7 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">aspectRatio('square')</code><button class="copy-btn" data-copy="aspectRatio('square')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">aspectRatio('square')</code><button class="copy-btn" data-copy="aspectRatio('square')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">aspect-ratio('square')</code><button class="copy-btn" data-copy="aspect-ratio('square')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--aspect-ratio-square)</code><button class="copy-btn" data-copy="var(--aspect-ratio-square)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.aspectRatioSquare</code><button class="copy-btn" data-copy="tokens.aspectRatioSquare">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">aspect-ratio('square')</code><button class="copy-btn" data-copy="aspect-ratio('square')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--aspect-ratio-square)</code><button class="copy-btn" data-copy="var(--aspect-ratio-square)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.aspectRatioSquare</code><button class="copy-btn" data-copy="tokens.aspectRatioSquare">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -2607,7 +2612,7 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">aspectRatio('video')</code><button class="copy-btn" data-copy="aspectRatio('video')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">aspectRatio('video')</code><button class="copy-btn" data-copy="aspectRatio('video')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">aspect-ratio('video')</code><button class="copy-btn" data-copy="aspect-ratio('video')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--aspect-ratio-video)</code><button class="copy-btn" data-copy="var(--aspect-ratio-video)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.aspectRatioVideo</code><button class="copy-btn" data-copy="tokens.aspectRatioVideo">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">aspect-ratio('video')</code><button class="copy-btn" data-copy="aspect-ratio('video')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--aspect-ratio-video)</code><button class="copy-btn" data-copy="var(--aspect-ratio-video)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.aspectRatioVideo</code><button class="copy-btn" data-copy="tokens.aspectRatioVideo">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -2625,7 +2630,7 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">aspectRatio('photo')</code><button class="copy-btn" data-copy="aspectRatio('photo')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">aspectRatio('photo')</code><button class="copy-btn" data-copy="aspectRatio('photo')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">aspect-ratio('photo')</code><button class="copy-btn" data-copy="aspect-ratio('photo')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--aspect-ratio-photo)</code><button class="copy-btn" data-copy="var(--aspect-ratio-photo)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.aspectRatioPhoto</code><button class="copy-btn" data-copy="tokens.aspectRatioPhoto">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">aspect-ratio('photo')</code><button class="copy-btn" data-copy="aspect-ratio('photo')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--aspect-ratio-photo)</code><button class="copy-btn" data-copy="var(--aspect-ratio-photo)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.aspectRatioPhoto</code><button class="copy-btn" data-copy="tokens.aspectRatioPhoto">Copy</button></div></div>
 </div>
 </div>
 </div>
@@ -2643,7 +2648,7 @@ color: steelblue</pre></td><td>border</td><td></td></tr>
 <div class="flip-back">
 <button class="flip-close" title="Back to preview">&times;</button>
 <div class="flip-back-title">Usage</div>
-<div class="usage-snippet"><div class="usage-format">ES Module</div><div class="usage-code-row"><code class="usage-code">aspectRatio('portrait')</code><button class="copy-btn" data-copy="aspectRatio('portrait')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">TypeScript Declarations</div><div class="usage-code-row"><code class="usage-code">aspectRatio('portrait')</code><button class="copy-btn" data-copy="aspectRatio('portrait')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">aspect-ratio('portrait')</code><button class="copy-btn" data-copy="aspect-ratio('portrait')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--aspect-ratio-portrait)</code><button class="copy-btn" data-copy="var(--aspect-ratio-portrait)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.aspectRatioPortrait</code><button class="copy-btn" data-copy="tokens.aspectRatioPortrait">Copy</button></div></div>
+<div class="usage-snippet"><div class="usage-format">SCSS Map</div><div class="usage-code-row"><code class="usage-code">aspect-ratio('portrait')</code><button class="copy-btn" data-copy="aspect-ratio('portrait')">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">CSS Custom Properties</div><div class="usage-code-row"><code class="usage-code">var(--aspect-ratio-portrait)</code><button class="copy-btn" data-copy="var(--aspect-ratio-portrait)">Copy</button></div></div><div class="usage-snippet"><div class="usage-format">Storybook</div><div class="usage-code-row"><code class="usage-code">tokens.aspectRatioPortrait</code><button class="copy-btn" data-copy="tokens.aspectRatioPortrait">Copy</button></div></div>
 </div>
 </div>
 </div>

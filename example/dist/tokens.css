@@ -1,6 +1,6 @@
 /**
- * Teikn v1.0.0-alpha.6
- * Generated Sun Feb 15 2026 0:13:48
+ * Teikn v2.0.0-alpha.10
+ * Generated Tue Apr 21 2026 13:05:34
  *
  * This file is generated and should be committed to source control
  */
@@ -57,21 +57,22 @@
   --border-radius-round: 100%;
   --border-default: 1px solid #e0e0e0;
   --border-focus: 2px solid steelblue;
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.1);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.12);
   --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.12);
-  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.15);
-  --duration-fast: 0.1s;
-  --duration-normal: 0.2s;
-  --duration-slow: 0.3s;
+  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.12);
+  --shadow-elevated: 0 2px 4px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.08);
+  --duration-fast: 100ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
   --timing-ease: cubic-bezier(0.4, 0, 0.2, 1);
   --timing-accelerate: cubic-bezier(0.4, 0, 1, 1);
   --timing-decelerate: cubic-bezier(0, 0, 0.2, 1);
   /* Fade in/out elements */
-  --transition-fade: 0.2s ease;
+  --transition-fade: var(--duration-fast) var(--timing-ease);
   /* Slide animations */
-  --transition-slide: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-quick: 0.1s ease;
-  --transition-custom: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slide: var(--duration-slow) var(--timing-ease);
+  --transition-quick: var(--duration-fast) var(--timing-accelerate);
+  --transition-custom: opacity var(--duration-normal) var(--timing-ease);
   --gradient-brand: linear-gradient(to bottom right, rgb(70, 130, 180) 0%, rgb(220, 20, 60) 100%);
   --gradient-sunset: linear-gradient(to right, rgb(255, 107, 53) 0%, rgb(247, 197, 159) 50%, rgb(239, 239, 208) 100%);
   --gradient-ocean: radial-gradient(circle, rgb(0, 119, 182) 0%, rgb(0, 180, 216) 50%, rgb(144, 224, 239) 100%);
@@ -125,10 +126,4 @@
   /* For darkening the background and emphasizing visual focus */
   --z-layer-overlay: 4000;
   --z-layer-modal: 5000;
-}
-
-[data-theme="dark"] {
-  --color-surface: #1a1a1a;
-  --color-background: #121212;
-  --color-on-surface: rgba(255, 255, 255, .87);
 }

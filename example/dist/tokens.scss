@@ -1,6 +1,6 @@
 ///
-/// Teikn v1.0.0-alpha.6
-/// Generated Sun Feb 15 2026 0:13:48
+/// Teikn v2.0.0-alpha.10
+/// Generated Tue Apr 21 2026 13:05:34
 ///
 /// This file is generated and should be commited to source control
 ///
@@ -60,21 +60,22 @@ $token-values: (
   border-radius-round: 100%,
   border-default: 1px solid #e0e0e0,
   border-focus: 2px solid steelblue,
-  shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.1),
+  shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.12),
   shadow-md: 0 2px 8px rgba(0, 0, 0, 0.12),
-  shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.15),
-  duration-fast: 0.1s,
-  duration-normal: 0.2s,
-  duration-slow: 0.3s,
+  shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.12),
+  shadow-elevated: 0 2px 4px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.08),
+  duration-fast: 100ms,
+  duration-normal: 200ms,
+  duration-slow: 300ms,
   timing-ease: cubic-bezier(0.4, 0, 0.2, 1),
   timing-accelerate: cubic-bezier(0.4, 0, 1, 1),
   timing-decelerate: cubic-bezier(0, 0, 0.2, 1),
   /// Fade in/out elements
-  transition-fade: 0.2s ease,
+  transition-fade: 100ms cubic-bezier(0.4, 0, 0.2, 1),
   /// Slide animations
-  transition-slide: 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-  transition-quick: 0.1s ease,
-  transition-custom: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+  transition-slide: 300ms cubic-bezier(0.4, 0, 0.2, 1),
+  transition-quick: 100ms cubic-bezier(0.4, 0, 1, 1),
+  transition-custom: opacity 200ms cubic-bezier(0.4, 0, 0.2, 1),
   gradient-brand: linear-gradient(to bottom right, rgb(70, 130, 180) 0%, rgb(220, 20, 60) 100%),
   gradient-sunset: linear-gradient(to right, rgb(255, 107, 53) 0%, rgb(247, 197, 159) 50%, rgb(239, 239, 208) 100%),
   gradient-ocean: radial-gradient(circle, rgb(0, 119, 182) 0%, rgb(0, 180, 216) 50%, rgb(144, 224, 239) 100%),
@@ -129,15 +130,6 @@ $token-values: (
   z-layer-overlay: 4000,
   z-layer-modal: 5000,
 );
-
-// prettier-ignore
-$modes: (
-  dark: (
-    color-surface: #1a1a1a,
-    color-background: #121212,
-    color-on-surface: rgba(255, 255, 255, .87),
-  ),
-) !default;
 
 /// Use "get-token" to access tokens by name
 @function get-token($name) {
@@ -275,6 +267,7 @@ $shadow-values: (
   sm: map-get($token-values, shadow-sm),
   md: map-get($token-values, shadow-md),
   lg: map-get($token-values, shadow-lg),
+  elevated: map-get($token-values, shadow-elevated),
 );
 
 @function shadow($name) {

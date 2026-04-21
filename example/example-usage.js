@@ -9,9 +9,8 @@ const Writer = new Teikn({
   generators: [
     // Create the tokens.scss with the SCSS maps and the getter
     new Teikn.generators.Scss(),
-    // Create a JS version of tokens. It defaults to `.mjs`, but, we can change it to `.js` here
-    new Teikn.generators.EsModule({ ext: 'js' }),
-    // Create the TypeScript types
+    // Emit a TypeScript runtime (.mjs) + ambient declarations (.d.ts)
+    // from one construction. Add `module: "cjs"` for CommonJS instead.
     new Teikn.generators.TypeScript(),
     // Create a JSON version of the tokens
     new Teikn.generators.Json(),

@@ -1,433 +1,456 @@
 /**
- * Teikn v1.0.0-alpha.6
- * Generated Sun Feb 15 2026 0:13:48
+ * Teikn v2.0.0-alpha.10
+ * Generated Tue Apr 21 2026 13:05:34
  *
- * This file is generated and should be commited to source control
- *
+ * This file is generated and should be committed to source control
  */
 
 
 /**
  * Design tokens
  */
-export const tokens: {
+export declare const tokens: {
   /**
    *  Primary branding color
    *  Type: color
    */
-  colorPrimary: string,
+  readonly colorPrimary: "rgba(70, 130, 180, 1)";
   /**
    *  Type: color
    */
-  colorSecondary: string,
+  readonly colorSecondary: "rgba(220, 20, 60, 1)";
   /**
    *  Use for success states
    *  Type: color
    */
-  colorSuccess: string,
+  readonly colorSuccess: "rgba(34, 139, 34, 1)";
   /**
    *  Use for warning states
    *  Type: color
    */
-  colorWarning: string,
+  readonly colorWarning: "rgba(218, 165, 32, 1)";
   /**
    *  Use for error states
    *  Type: color
    */
-  colorError: string,
+  readonly colorError: "rgba(255, 0, 0, 1)";
   /**
    *  Use for prominent text
    *  Type: color
    */
-  colorTextPrimary: string,
+  readonly colorTextPrimary: "rgba(0, 0, 0, 0.95)";
   /**
    *  Type: color
    */
-  colorTextSecondary: string,
+  readonly colorTextSecondary: "rgba(0, 0, 0, 0.54)";
   /**
    *  Type: color
    */
-  colorLink: string,
+  readonly colorLink: "rgba(70, 130, 180, 1)";
   /**
    *  Type: color
    */
-  colorSurface: string,
+  readonly colorSurface: "rgba(255, 255, 255, 1)";
   /**
    *  Type: color
    */
-  colorBackground: string,
+  readonly colorBackground: "rgba(250, 250, 250, 1)";
   /**
    *  Type: color
    */
-  colorOnSurface: string,
+  readonly colorOnSurface: "rgba(0, 0, 0, 0.87)";
   /**
    *  Type: color
    */
-  colorOnPrimary: string,
+  readonly colorOnPrimary: "rgba(255, 255, 255, 1)";
   /**
    *  Type: color
    */
-  colorOnSecondary: string,
+  readonly colorOnSecondary: "rgba(255, 255, 255, 1)";
   /**
    *  Type: color
    */
-  colorOnSuccess: string,
+  readonly colorOnSuccess: "rgba(255, 255, 255, 1)";
   /**
    *  Type: color
    */
-  colorOnError: string,
+  readonly colorOnError: "rgba(255, 255, 255, 1)";
   /**
    *  All body fonts
    *  Type: font-family
    */
-  fontFamilyBody: string,
+  readonly fontFamilyBody: "\"Roboto Condensed\", sans-serif";
   /**
    *  All header fonts
    *  Type: font-family
    */
-  fontFamilyHeaders: string,
+  readonly fontFamilyHeaders: "Arial, Helvetica, sans-serif";
   /**
    *  Type: font-family
    */
-  fontFamilyMono: string,
+  readonly fontFamilyMono: "\"Roboto Mono\", monospace";
   /**
    *  Type: font-size
    */
-  fontSize100: string,
+  readonly fontSize100: "0.625rem";
   /**
    *  Type: font-size
    */
-  fontSize200: string,
+  readonly fontSize200: "0.75rem";
   /**
    *  Type: font-size
    */
-  fontSize300: string,
+  readonly fontSize300: "0.875rem";
   /**
    *  Type: font-size
    */
-  fontSize400: string,
+  readonly fontSize400: "1rem";
   /**
    *  Type: font-size
    */
-  fontSize500: string,
+  readonly fontSize500: "1.125rem";
   /**
    *  Type: font-size
    */
-  fontSize600: string,
+  readonly fontSize600: "1.25rem";
   /**
    *  Type: font-size
    */
-  fontSize700: string,
+  readonly fontSize700: "1.5rem";
   /**
    *  Type: font-size
    */
-  fontSize800: string,
+  readonly fontSize800: "2.25rem";
   /**
    *  Type: font-size
    */
-  fontSize900: string,
+  readonly fontSize900: "3rem";
   /**
    *  Type: font-weight
    */
-  fontWeightRegular: number,
+  readonly fontWeightRegular: 400;
   /**
    *  Type: font-weight
    */
-  fontWeightMedium: number,
+  readonly fontWeightMedium: 500;
   /**
    *  Type: font-weight
    */
-  fontWeightBold: number,
+  readonly fontWeightBold: 700;
   /**
    *  Type: typography
    */
-  typographyBody: object,
+  readonly typographyBody: { readonly fontFamily: "\"Roboto Condensed\", sans-serif"; readonly fontSize: string; readonly fontWeight: 400; readonly lineHeight: 1.5; readonly letterSpacing: "normal" };
   /**
    *  Type: typography
    */
-  typographyHeading: object,
+  readonly typographyHeading: { readonly fontFamily: "Arial, Helvetica, sans-serif"; readonly fontSize: string; readonly fontWeight: 700; readonly lineHeight: 1.2; readonly letterSpacing: "-0.02em" };
   /**
    *  Type: spacing
    */
-  spacingXs: string,
+  readonly spacingXs: "0.25rem";
   /**
    *  Type: spacing
    */
-  spacingSm: string,
+  readonly spacingSm: "0.5rem";
   /**
    *  Standard spacing
    *  Type: spacing
    */
-  spacingMd: string,
+  readonly spacingMd: "1rem";
   /**
    *  Type: spacing
    */
-  spacingLg: string,
+  readonly spacingLg: "1.5rem";
   /**
    *  Type: spacing
    */
-  spacingXl: string,
+  readonly spacingXl: "2rem";
   /**
    *  Type: spacing
    */
-  spacingXxl: string,
+  readonly spacingXxl: "3rem";
   /**
    *  Type: border-radius
    */
-  borderRadiusSharp: string,
+  readonly borderRadiusSharp: "0.125rem";
   /**
    *  Type: border-radius
    */
-  borderRadiusSubtle: string,
+  readonly borderRadiusSubtle: "0.25rem";
   /**
    *  Type: border-radius
    */
-  borderRadiusStandard: string,
+  readonly borderRadiusStandard: "0.5rem";
   /**
    *  Type: border-radius
    */
-  borderRadiusRound: string,
+  readonly borderRadiusRound: "100%";
   /**
    *  Type: border
    */
-  borderDefault: object,
+  readonly borderDefault: { readonly width: "1px"; readonly style: "solid"; readonly color: "#e0e0e0" };
   /**
    *  Type: border
    */
-  borderFocus: object,
+  readonly borderFocus: { readonly width: "2px"; readonly style: "solid"; readonly color: "steelblue" };
   /**
    *  Type: shadow
    */
-  shadowSm: string,
+  readonly shadowSm: "0 1px 2px rgba(0, 0, 0, 0.12)";
   /**
    *  Type: shadow
    */
-  shadowMd: string,
+  readonly shadowMd: "0 2px 8px rgba(0, 0, 0, 0.12)";
   /**
    *  Type: shadow
    */
-  shadowLg: string,
+  readonly shadowLg: "0 4px 16px rgba(0, 0, 0, 0.12)";
+  /**
+   *  Type: shadow
+   */
+  readonly shadowElevated: "0 2px 4px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.08)";
   /**
    *  Type: duration
    */
-  durationFast: string,
+  readonly durationFast: "100ms";
   /**
    *  Type: duration
    */
-  durationNormal: string,
+  readonly durationNormal: "200ms";
   /**
    *  Type: duration
    */
-  durationSlow: string,
+  readonly durationSlow: "300ms";
   /**
    *  Type: timing
    */
-  timingEase: string,
+  readonly timingEase: "cubic-bezier(0.4, 0, 0.2, 1)";
   /**
    *  Type: timing
    */
-  timingAccelerate: string,
+  readonly timingAccelerate: "cubic-bezier(0.4, 0, 1, 1)";
   /**
    *  Type: timing
    */
-  timingDecelerate: string,
+  readonly timingDecelerate: "cubic-bezier(0, 0, 0.2, 1)";
   /**
    *  Fade in/out elements
    *  Type: transition
    */
-  transitionFade: string,
+  readonly transitionFade: "100ms cubic-bezier(0.4, 0, 0.2, 1)";
   /**
    *  Slide animations
    *  Type: transition
    */
-  transitionSlide: string,
+  readonly transitionSlide: "300ms cubic-bezier(0.4, 0, 0.2, 1)";
   /**
    *  Type: transition
    */
-  transitionQuick: string,
+  readonly transitionQuick: "100ms cubic-bezier(0.4, 0, 1, 1)";
   /**
    *  Type: transition
    */
-  transitionCustom: string,
+  readonly transitionCustom: "opacity 200ms cubic-bezier(0.4, 0, 0.2, 1)";
   /**
    *  Type: gradient
    */
-  gradientBrand: string,
+  readonly gradientBrand: "linear-gradient(to bottom right, rgb(70, 130, 180) 0%, rgb(220, 20, 60) 100%)";
   /**
    *  Type: gradient
    */
-  gradientSunset: string,
+  readonly gradientSunset: "linear-gradient(to right, rgb(255, 107, 53) 0%, rgb(247, 197, 159) 50%, rgb(239, 239, 208) 100%)";
   /**
    *  Type: gradient
    */
-  gradientOcean: string,
+  readonly gradientOcean: "radial-gradient(circle, rgb(0, 119, 182) 0%, rgb(0, 180, 216) 50%, rgb(144, 224, 239) 100%)";
   /**
    *  Disabled UI elements
    *  Type: opacity
    */
-  opacityDisabled: number,
+  readonly opacityDisabled: 0.38;
   /**
    *  Hover overlay
    *  Type: opacity
    */
-  opacityHover: number,
+  readonly opacityHover: 0.08;
   /**
    *  Type: opacity
    */
-  opacityFocus: number,
+  readonly opacityFocus: 0.12;
   /**
    *  Modal backdrop overlay
    *  Type: opacity
    */
-  opacityOverlay: number,
+  readonly opacityOverlay: 0.5;
   /**
    *  Type: opacity
    */
-  opacityFull: number,
+  readonly opacityFull: 1;
   /**
    *  Headings and compact text
    *  Type: line-height
    */
-  lineHeightTight: number,
+  readonly lineHeightTight: 1.2;
   /**
    *  Type: line-height
    */
-  lineHeightNormal: number,
+  readonly lineHeightNormal: 1.5;
   /**
    *  Type: line-height
    */
-  lineHeightRelaxed: number,
+  readonly lineHeightRelaxed: 1.75;
   /**
    *  Spacious body copy
    *  Type: line-height
    */
-  lineHeightLoose: number,
+  readonly lineHeightLoose: 2;
   /**
    *  Headings
    *  Type: letter-spacing
    */
-  letterSpacingTight: string,
+  readonly letterSpacingTight: "-0.02em";
   /**
    *  Type: letter-spacing
    */
-  letterSpacingNormal: string,
+  readonly letterSpacingNormal: "0";
   /**
    *  Type: letter-spacing
    */
-  letterSpacingWide: string,
+  readonly letterSpacingWide: "0.05em";
   /**
    *  Uppercase labels and captions
    *  Type: letter-spacing
    */
-  letterSpacingWider: string,
+  readonly letterSpacingWider: "0.1em";
   /**
    *  Small devices
    *  Type: breakpoint
    */
-  breakpointSm: string,
+  readonly breakpointSm: "640px";
   /**
    *  Medium devices
    *  Type: breakpoint
    */
-  breakpointMd: string,
+  readonly breakpointMd: "768px";
   /**
    *  Large devices
    *  Type: breakpoint
    */
-  breakpointLg: string,
+  readonly breakpointLg: "1024px";
   /**
    *  Extra large devices
    *  Type: breakpoint
    */
-  breakpointXl: string,
+  readonly breakpointXl: "1280px";
   /**
    *  Small icons
    *  Type: size
    */
-  sizeIconSm: string,
+  readonly sizeIconSm: "16px";
   /**
    *  Type: size
    */
-  sizeIconMd: string,
+  readonly sizeIconMd: "24px";
   /**
    *  Type: size
    */
-  sizeIconLg: string,
+  readonly sizeIconLg: "32px";
   /**
    *  Small avatar
    *  Type: size
    */
-  sizeAvatarSm: string,
+  readonly sizeAvatarSm: "32px";
   /**
    *  Type: size
    */
-  sizeAvatarMd: string,
+  readonly sizeAvatarMd: "48px";
   /**
    *  Large avatar
    *  Type: size
    */
-  sizeAvatarLg: string,
+  readonly sizeAvatarLg: "64px";
   /**
    *  Perfect square
    *  Type: aspect-ratio
    */
-  aspectRatioSquare: string,
+  readonly aspectRatioSquare: "1/1";
   /**
    *  Widescreen video
    *  Type: aspect-ratio
    */
-  aspectRatioVideo: string,
+  readonly aspectRatioVideo: "16/9";
   /**
    *  Standard photo
    *  Type: aspect-ratio
    */
-  aspectRatioPhoto: string,
+  readonly aspectRatioPhoto: "4/3";
   /**
    *  Portrait orientation
    *  Type: aspect-ratio
    */
-  aspectRatioPortrait: string,
+  readonly aspectRatioPortrait: "3/4";
   /**
    *  Type: z-layer
    */
-  zLayerDropdown: number,
+  readonly zLayerDropdown: 1000;
   /**
    *  Type: z-layer
    */
-  zLayerSticky: number,
+  readonly zLayerSticky: 1100;
   /**
    *  For darkening the background and emphasizing visual focus
    *  Type: z-layer
    */
-  zLayerOverlay: number,
+  readonly zLayerOverlay: 4000;
   /**
    *  Type: z-layer
    */
-  zLayerModal: number
-}
+  readonly zLayerModal: 5000;
+};
 
-export const color: (name: 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'textPrimary' | 'textSecondary' | 'link' | 'surface' | 'background' | 'onSurface' | 'onPrimary' | 'onSecondary' | 'onSuccess' | 'onError') => string;
-export const fontFamily: (name: 'body' | 'headers' | 'mono') => string;
-export const fontSize: (name: '100' | '200' | '300' | '400' | '500' | '600' | '700' | '800' | '900') => string;
-export const fontWeight: (name: 'regular' | 'medium' | 'bold') => string;
-export const typography: (name: 'body' | 'heading') => string;
-export const spacing: (name: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl') => string;
-export const borderRadius: (name: 'sharp' | 'subtle' | 'standard' | 'round') => string;
-export const border: (name: 'default' | 'focus') => string;
-export const shadow: (name: 'sm' | 'md' | 'lg') => string;
-export const duration: (name: 'fast' | 'normal' | 'slow') => string;
-export const timing: (name: 'ease' | 'accelerate' | 'decelerate') => string;
-export const transition: (name: 'fade' | 'slide' | 'quick' | 'custom') => string;
-export const gradient: (name: 'brand' | 'sunset' | 'ocean') => string;
-export const opacity: (name: 'disabled' | 'hover' | 'focus' | 'overlay' | 'full') => string;
-export const lineHeight: (name: 'tight' | 'normal' | 'relaxed' | 'loose') => string;
-export const letterSpacing: (name: 'tight' | 'normal' | 'wide' | 'wider') => string;
-export const breakpoint: (name: 'sm' | 'md' | 'lg' | 'xl') => string;
-export const size: (name: 'icon-sm' | 'icon-md' | 'icon-lg' | 'avatar-sm' | 'avatar-md' | 'avatar-lg') => string;
-export const aspectRatio: (name: 'square' | 'video' | 'photo' | 'portrait') => string;
-export const zLayer: (name: 'dropdown' | 'sticky' | 'overlay' | 'modal') => string;
+export type TokenNames = {
+  Color: 'colorPrimary' | 'colorSecondary' | 'colorSuccess' | 'colorWarning' | 'colorError' | 'colorTextPrimary' | 'colorTextSecondary' | 'colorLink' | 'colorSurface' | 'colorBackground' | 'colorOnSurface' | 'colorOnPrimary' | 'colorOnSecondary' | 'colorOnSuccess' | 'colorOnError';
+  FontFamily: 'fontFamilyBody' | 'fontFamilyHeaders' | 'fontFamilyMono';
+  FontSize: 'fontSize100' | 'fontSize200' | 'fontSize300' | 'fontSize400' | 'fontSize500' | 'fontSize600' | 'fontSize700' | 'fontSize800' | 'fontSize900';
+  FontWeight: 'fontWeightRegular' | 'fontWeightMedium' | 'fontWeightBold';
+  Typography: 'typographyBody' | 'typographyHeading';
+  Spacing: 'spacingXs' | 'spacingSm' | 'spacingMd' | 'spacingLg' | 'spacingXl' | 'spacingXxl';
+  BorderRadius: 'borderRadiusSharp' | 'borderRadiusSubtle' | 'borderRadiusStandard' | 'borderRadiusRound';
+  Border: 'borderDefault' | 'borderFocus';
+  Shadow: 'shadowSm' | 'shadowMd' | 'shadowLg' | 'shadowElevated';
+  Duration: 'durationFast' | 'durationNormal' | 'durationSlow';
+  Timing: 'timingEase' | 'timingAccelerate' | 'timingDecelerate';
+  Transition: 'transitionFade' | 'transitionSlide' | 'transitionQuick' | 'transitionCustom';
+  Gradient: 'gradientBrand' | 'gradientSunset' | 'gradientOcean';
+  Opacity: 'opacityDisabled' | 'opacityHover' | 'opacityFocus' | 'opacityOverlay' | 'opacityFull';
+  LineHeight: 'lineHeightTight' | 'lineHeightNormal' | 'lineHeightRelaxed' | 'lineHeightLoose';
+  LetterSpacing: 'letterSpacingTight' | 'letterSpacingNormal' | 'letterSpacingWide' | 'letterSpacingWider';
+  Breakpoint: 'breakpointSm' | 'breakpointMd' | 'breakpointLg' | 'breakpointXl';
+  Size: 'sizeIconSm' | 'sizeIconMd' | 'sizeIconLg' | 'sizeAvatarSm' | 'sizeAvatarMd' | 'sizeAvatarLg';
+  AspectRatio: 'aspectRatioSquare' | 'aspectRatioVideo' | 'aspectRatioPhoto' | 'aspectRatioPortrait';
+  ZLayer: 'zLayerDropdown' | 'zLayerSticky' | 'zLayerOverlay' | 'zLayerModal';
+  All: TokenNames['Color'] | TokenNames['FontFamily'] | TokenNames['FontSize'] | TokenNames['FontWeight'] | TokenNames['Typography'] | TokenNames['Spacing'] | TokenNames['BorderRadius'] | TokenNames['Border'] | TokenNames['Shadow'] | TokenNames['Duration'] | TokenNames['Timing'] | TokenNames['Transition'] | TokenNames['Gradient'] | TokenNames['Opacity'] | TokenNames['LineHeight'] | TokenNames['LetterSpacing'] | TokenNames['Breakpoint'] | TokenNames['Size'] | TokenNames['AspectRatio'] | TokenNames['ZLayer'];
+};
 
-export const modes: {
-  dark: Partial<typeof tokens>;
-}
+export declare const color: (name: 'primary' | 'secondary' | 'success' | 'warning' | 'error' | 'textPrimary' | 'textSecondary' | 'link' | 'surface' | 'background' | 'onSurface' | 'onPrimary' | 'onSecondary' | 'onSuccess' | 'onError') => string;
+export declare const fontFamily: (name: 'body' | 'headers' | 'mono') => string;
+export declare const fontSize: (name: '100' | '200' | '300' | '400' | '500' | '600' | '700' | '800' | '900') => string;
+export declare const fontWeight: (name: 'regular' | 'medium' | 'bold') => string;
+export declare const typography: (name: 'body' | 'heading') => string;
+export declare const spacing: (name: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl') => string;
+export declare const borderRadius: (name: 'sharp' | 'subtle' | 'standard' | 'round') => string;
+export declare const border: (name: 'default' | 'focus') => string;
+export declare const shadow: (name: 'sm' | 'md' | 'lg' | 'elevated') => string;
+export declare const duration: (name: 'fast' | 'normal' | 'slow') => string;
+export declare const timing: (name: 'ease' | 'accelerate' | 'decelerate') => string;
+export declare const transition: (name: 'fade' | 'slide' | 'quick' | 'custom') => string;
+export declare const gradient: (name: 'brand' | 'sunset' | 'ocean') => string;
+export declare const opacity: (name: 'disabled' | 'hover' | 'focus' | 'overlay' | 'full') => string;
+export declare const lineHeight: (name: 'tight' | 'normal' | 'relaxed' | 'loose') => string;
+export declare const letterSpacing: (name: 'tight' | 'normal' | 'wide' | 'wider') => string;
+export declare const breakpoint: (name: 'sm' | 'md' | 'lg' | 'xl') => string;
+export declare const size: (name: 'icon-sm' | 'icon-md' | 'icon-lg' | 'avatar-sm' | 'avatar-md' | 'avatar-lg') => string;
+export declare const aspectRatio: (name: 'square' | 'video' | 'photo' | 'portrait') => string;
+export declare const zLayer: (name: 'dropdown' | 'sticky' | 'overlay' | 'modal') => string;
 export default tokens;

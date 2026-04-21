@@ -1,5 +1,5 @@
 {
-  "colorPrimary": {
+  "color-primary": {
     "$value": {
       "colorSpace": "srgb",
       "components": [
@@ -11,7 +11,7 @@
     "$type": "color",
     "$description": "Primary branding color"
   },
-  "colorSecondary": {
+  "color-secondary": {
     "$value": {
       "colorSpace": "srgb",
       "components": [
@@ -22,7 +22,7 @@
     },
     "$type": "color"
   },
-  "colorSuccess": {
+  "color-success": {
     "$value": {
       "colorSpace": "srgb",
       "components": [
@@ -34,7 +34,7 @@
     "$type": "color",
     "$description": "Use for success states"
   },
-  "colorWarning": {
+  "color-warning": {
     "$value": {
       "colorSpace": "srgb",
       "components": [
@@ -46,7 +46,7 @@
     "$type": "color",
     "$description": "Use for warning states"
   },
-  "colorError": {
+  "color-error": {
     "$value": {
       "colorSpace": "srgb",
       "components": [
@@ -58,7 +58,7 @@
     "$type": "color",
     "$description": "Use for error states"
   },
-  "colorTextPrimary": {
+  "color-textPrimary": {
     "$value": {
       "colorSpace": "srgb",
       "components": [
@@ -71,7 +71,7 @@
     "$type": "color",
     "$description": "Use for prominent text"
   },
-  "colorTextSecondary": {
+  "color-textSecondary": {
     "$value": {
       "colorSpace": "srgb",
       "components": [
@@ -83,7 +83,7 @@
     },
     "$type": "color"
   },
-  "colorLink": {
+  "color-link": {
     "$value": {
       "colorSpace": "srgb",
       "components": [
@@ -94,7 +94,7 @@
     },
     "$type": "color"
   },
-  "colorSurface": {
+  "color-surface": {
     "$value": {
       "colorSpace": "srgb",
       "components": [
@@ -103,21 +103,9 @@
         1
       ]
     },
-    "$type": "color",
-    "$extensions": {
-      "mode": {
-        "dark": {
-          "colorSpace": "srgb",
-          "components": [
-            0.10196078431372549,
-            0.10196078431372549,
-            0.10196078431372549
-          ]
-        }
-      }
-    }
+    "$type": "color"
   },
-  "colorBackground": {
+  "color-background": {
     "$value": {
       "colorSpace": "srgb",
       "components": [
@@ -126,21 +114,9 @@
         0.9803921568627451
       ]
     },
-    "$type": "color",
-    "$extensions": {
-      "mode": {
-        "dark": {
-          "colorSpace": "srgb",
-          "components": [
-            0.07058823529411765,
-            0.07058823529411765,
-            0.07058823529411765
-          ]
-        }
-      }
-    }
+    "$type": "color"
   },
-  "colorOnSurface": {
+  "color-onSurface": {
     "$value": {
       "colorSpace": "srgb",
       "components": [
@@ -150,22 +126,9 @@
       ],
       "alpha": 0.87
     },
-    "$type": "color",
-    "$extensions": {
-      "mode": {
-        "dark": {
-          "colorSpace": "srgb",
-          "components": [
-            1,
-            1,
-            1
-          ],
-          "alpha": 0.87
-        }
-      }
-    }
+    "$type": "color"
   },
-  "colorOnPrimary": {
+  "color-onPrimary": {
     "$value": {
       "colorSpace": "srgb",
       "components": [
@@ -176,7 +139,7 @@
     },
     "$type": "color"
   },
-  "colorOnSecondary": {
+  "color-onSecondary": {
     "$value": {
       "colorSpace": "srgb",
       "components": [
@@ -187,7 +150,7 @@
     },
     "$type": "color"
   },
-  "colorOnSuccess": {
+  "color-onSuccess": {
     "$value": {
       "colorSpace": "srgb",
       "components": [
@@ -198,7 +161,7 @@
     },
     "$type": "color"
   },
-  "colorOnError": {
+  "color-onError": {
     "$value": {
       "colorSpace": "srgb",
       "components": [
@@ -209,96 +172,96 @@
     },
     "$type": "color"
   },
-  "fontFamilyBody": {
+  "font-family-body": {
     "$value": "\"Roboto Condensed\", sans-serif",
     "$type": "fontFamily",
     "$description": "All body fonts"
   },
-  "fontFamilyHeaders": {
+  "font-family-headers": {
     "$value": "Arial, Helvetica, sans-serif",
     "$type": "fontFamily",
     "$description": "All header fonts"
   },
-  "fontFamilyMono": {
+  "font-family-mono": {
     "$value": "\"Roboto Mono\", monospace",
     "$type": "fontFamily"
   },
-  "fontSize100": {
+  "font-size-100": {
     "$value": {
       "value": 0.625,
       "unit": "rem"
     },
     "$type": "dimension"
   },
-  "fontSize200": {
+  "font-size-200": {
     "$value": {
       "value": 0.75,
       "unit": "rem"
     },
     "$type": "dimension"
   },
-  "fontSize300": {
+  "font-size-300": {
     "$value": {
       "value": 0.875,
       "unit": "rem"
     },
     "$type": "dimension"
   },
-  "fontSize400": {
+  "font-size-400": {
     "$value": {
       "value": 1,
       "unit": "rem"
     },
     "$type": "dimension"
   },
-  "fontSize500": {
+  "font-size-500": {
     "$value": {
       "value": 1.125,
       "unit": "rem"
     },
     "$type": "dimension"
   },
-  "fontSize600": {
+  "font-size-600": {
     "$value": {
       "value": 1.25,
       "unit": "rem"
     },
     "$type": "dimension"
   },
-  "fontSize700": {
+  "font-size-700": {
     "$value": {
       "value": 1.5,
       "unit": "rem"
     },
     "$type": "dimension"
   },
-  "fontSize800": {
+  "font-size-800": {
     "$value": {
       "value": 2.25,
       "unit": "rem"
     },
     "$type": "dimension"
   },
-  "fontSize900": {
+  "font-size-900": {
     "$value": {
       "value": 3,
       "unit": "rem"
     },
     "$type": "dimension"
   },
-  "fontWeightRegular": {
+  "font-weight-regular": {
     "$value": 400,
     "$type": "fontWeight"
   },
-  "fontWeightMedium": {
+  "font-weight-medium": {
     "$value": 500,
     "$type": "fontWeight"
   },
-  "fontWeightBold": {
+  "font-weight-bold": {
     "$value": 700,
     "$type": "fontWeight"
   },
-  "typographyBody": {
+  "typography-body": {
     "$value": {
       "fontFamily": "\"Roboto Condensed\", sans-serif",
       "fontSize": {
@@ -311,7 +274,7 @@
     },
     "$type": "typography"
   },
-  "typographyHeading": {
+  "typography-heading": {
     "$value": {
       "fontFamily": "Arial, Helvetica, sans-serif",
       "fontSize": {
@@ -324,21 +287,21 @@
     },
     "$type": "typography"
   },
-  "spacingXs": {
+  "spacing-xs": {
     "$value": {
       "value": 0.25,
       "unit": "rem"
     },
     "$type": "dimension"
   },
-  "spacingSm": {
+  "spacing-sm": {
     "$value": {
       "value": 0.5,
       "unit": "rem"
     },
     "$type": "dimension"
   },
-  "spacingMd": {
+  "spacing-md": {
     "$value": {
       "value": 1,
       "unit": "rem"
@@ -346,53 +309,53 @@
     "$type": "dimension",
     "$description": "Standard spacing"
   },
-  "spacingLg": {
+  "spacing-lg": {
     "$value": {
       "value": 1.5,
       "unit": "rem"
     },
     "$type": "dimension"
   },
-  "spacingXl": {
+  "spacing-xl": {
     "$value": {
       "value": 2,
       "unit": "rem"
     },
     "$type": "dimension"
   },
-  "spacingXxl": {
+  "spacing-xxl": {
     "$value": {
       "value": 3,
       "unit": "rem"
     },
     "$type": "dimension"
   },
-  "borderRadiusSharp": {
+  "border-radius-sharp": {
     "$value": {
       "value": 0.125,
       "unit": "rem"
     },
     "$type": "dimension"
   },
-  "borderRadiusSubtle": {
+  "border-radius-subtle": {
     "$value": {
       "value": 0.25,
       "unit": "rem"
     },
     "$type": "dimension"
   },
-  "borderRadiusStandard": {
+  "border-radius-standard": {
     "$value": {
       "value": 0.5,
       "unit": "rem"
     },
     "$type": "dimension"
   },
-  "borderRadiusRound": {
+  "border-radius-round": {
     "$value": "100%",
     "$type": "dimension"
   },
-  "borderDefault": {
+  "border-default": {
     "$value": {
       "width": {
         "value": 1,
@@ -403,7 +366,7 @@
     },
     "$type": "border"
   },
-  "borderFocus": {
+  "border-focus": {
     "$value": {
       "width": {
         "value": 2,
@@ -414,7 +377,7 @@
     },
     "$type": "border"
   },
-  "shadowSm": {
+  "shadow-sm": {
     "$value": {
       "color": {
         "colorSpace": "srgb",
@@ -423,7 +386,7 @@
           0,
           0
         ],
-        "alpha": 0.1
+        "alpha": 0.12
       },
       "offsetX": {
         "value": 0,
@@ -444,7 +407,7 @@
     },
     "$type": "shadow"
   },
-  "shadowMd": {
+  "shadow-md": {
     "$value": {
       "color": {
         "colorSpace": "srgb",
@@ -474,7 +437,7 @@
     },
     "$type": "shadow"
   },
-  "shadowLg": {
+  "shadow-lg": {
     "$value": {
       "color": {
         "colorSpace": "srgb",
@@ -483,7 +446,7 @@
           0,
           0
         ],
-        "alpha": 0.15
+        "alpha": 0.12
       },
       "offsetX": {
         "value": 0,
@@ -504,28 +467,87 @@
     },
     "$type": "shadow"
   },
-  "durationFast": {
+  "shadow-elevated": {
+    "$value": [
+      {
+        "color": {
+          "colorSpace": "srgb",
+          "components": [
+            0,
+            0,
+            0
+          ],
+          "alpha": 0.1
+        },
+        "offsetX": {
+          "value": 0,
+          "unit": "px"
+        },
+        "offsetY": {
+          "value": 2,
+          "unit": "px"
+        },
+        "blur": {
+          "value": 4,
+          "unit": "px"
+        },
+        "spread": {
+          "value": 0,
+          "unit": "px"
+        }
+      },
+      {
+        "color": {
+          "colorSpace": "srgb",
+          "components": [
+            0,
+            0,
+            0
+          ],
+          "alpha": 0.08
+        },
+        "offsetX": {
+          "value": 0,
+          "unit": "px"
+        },
+        "offsetY": {
+          "value": 8,
+          "unit": "px"
+        },
+        "blur": {
+          "value": 16,
+          "unit": "px"
+        },
+        "spread": {
+          "value": 0,
+          "unit": "px"
+        }
+      }
+    ],
+    "$type": "shadow"
+  },
+  "duration-fast": {
     "$value": {
-      "value": 0.1,
-      "unit": "s"
+      "value": 100,
+      "unit": "ms"
     },
     "$type": "duration"
   },
-  "durationNormal": {
+  "duration-normal": {
     "$value": {
-      "value": 0.2,
-      "unit": "s"
+      "value": 200,
+      "unit": "ms"
     },
     "$type": "duration"
   },
-  "durationSlow": {
+  "duration-slow": {
     "$value": {
-      "value": 0.3,
-      "unit": "s"
+      "value": 300,
+      "unit": "ms"
     },
     "$type": "duration"
   },
-  "timingEase": {
+  "timing-ease": {
     "$value": [
       0.4,
       0,
@@ -534,7 +556,7 @@
     ],
     "$type": "cubicBezier"
   },
-  "timingAccelerate": {
+  "timing-accelerate": {
     "$value": [
       0.4,
       0,
@@ -543,7 +565,7 @@
     ],
     "$type": "cubicBezier"
   },
-  "timingDecelerate": {
+  "timing-decelerate": {
     "$value": [
       0,
       0,
@@ -552,70 +574,38 @@
     ],
     "$type": "cubicBezier"
   },
-  "transitionFade": {
+  "transition-fade": {
     "$value": {
-      "duration": {
-        "value": 0.2,
-        "unit": "s"
-      },
-      "timingFunction": [
-        0.25,
-        0.1,
-        0.25,
-        1
-      ]
+      "duration": "{duration-fast}",
+      "timingFunction": "{timing-ease}"
     },
     "$type": "transition",
     "$description": "Fade in/out elements"
   },
-  "transitionSlide": {
+  "transition-slide": {
     "$value": {
-      "duration": {
-        "value": 0.3,
-        "unit": "s"
-      },
-      "timingFunction": [
-        0.4,
-        0,
-        0.2,
-        1
-      ]
+      "duration": "{duration-slow}",
+      "timingFunction": "{timing-ease}"
     },
     "$type": "transition",
     "$description": "Slide animations"
   },
-  "transitionQuick": {
+  "transition-quick": {
     "$value": {
-      "duration": {
-        "value": 0.1,
-        "unit": "s"
-      },
-      "timingFunction": [
-        0.25,
-        0.1,
-        0.25,
-        1
-      ]
+      "duration": "{duration-fast}",
+      "timingFunction": "{timing-accelerate}"
     },
     "$type": "transition"
   },
-  "transitionCustom": {
+  "transition-custom": {
     "$value": {
-      "duration": {
-        "value": 0.4,
-        "unit": "s"
-      },
-      "timingFunction": [
-        0.4,
-        0,
-        0.2,
-        1
-      ],
+      "duration": "{duration-normal}",
+      "timingFunction": "{timing-ease}",
       "property": "opacity"
     },
     "$type": "transition"
   },
-  "gradientBrand": {
+  "gradient-brand": {
     "$value": [
       {
         "color": {
@@ -642,7 +632,7 @@
     ],
     "$type": "gradient"
   },
-  "gradientSunset": {
+  "gradient-sunset": {
     "$value": [
       {
         "color": {
@@ -680,7 +670,7 @@
     ],
     "$type": "gradient"
   },
-  "gradientOcean": {
+  "gradient-ocean": {
     "$value": [
       {
         "color": {
@@ -718,66 +708,66 @@
     ],
     "$type": "gradient"
   },
-  "opacityDisabled": {
+  "opacity-disabled": {
     "$value": 0.38,
     "$type": "number",
     "$description": "Disabled UI elements"
   },
-  "opacityHover": {
+  "opacity-hover": {
     "$value": 0.08,
     "$type": "number",
     "$description": "Hover overlay"
   },
-  "opacityFocus": {
+  "opacity-focus": {
     "$value": 0.12,
     "$type": "number"
   },
-  "opacityOverlay": {
+  "opacity-overlay": {
     "$value": 0.5,
     "$type": "number",
     "$description": "Modal backdrop overlay"
   },
-  "opacityFull": {
+  "opacity-full": {
     "$value": 1,
     "$type": "number"
   },
-  "lineHeightTight": {
+  "line-height-tight": {
     "$value": 1.2,
     "$type": "dimension",
     "$description": "Headings and compact text"
   },
-  "lineHeightNormal": {
+  "line-height-normal": {
     "$value": 1.5,
     "$type": "dimension"
   },
-  "lineHeightRelaxed": {
+  "line-height-relaxed": {
     "$value": 1.75,
     "$type": "dimension"
   },
-  "lineHeightLoose": {
+  "line-height-loose": {
     "$value": 2,
     "$type": "dimension",
     "$description": "Spacious body copy"
   },
-  "letterSpacingTight": {
+  "letter-spacing-tight": {
     "$value": "-0.02em",
     "$type": "dimension",
     "$description": "Headings"
   },
-  "letterSpacingNormal": {
+  "letter-spacing-normal": {
     "$value": "0",
     "$type": "dimension"
   },
-  "letterSpacingWide": {
+  "letter-spacing-wide": {
     "$value": "0.05em",
     "$type": "dimension"
   },
-  "letterSpacingWider": {
+  "letter-spacing-wider": {
     "$value": "0.1em",
     "$type": "dimension",
     "$description": "Uppercase labels and captions"
   },
-  "breakpointSm": {
+  "breakpoint-sm": {
     "$value": {
       "value": 640,
       "unit": "px"
@@ -785,7 +775,7 @@
     "$type": "dimension",
     "$description": "Small devices"
   },
-  "breakpointMd": {
+  "breakpoint-md": {
     "$value": {
       "value": 768,
       "unit": "px"
@@ -793,7 +783,7 @@
     "$type": "dimension",
     "$description": "Medium devices"
   },
-  "breakpointLg": {
+  "breakpoint-lg": {
     "$value": {
       "value": 1024,
       "unit": "px"
@@ -801,7 +791,7 @@
     "$type": "dimension",
     "$description": "Large devices"
   },
-  "breakpointXl": {
+  "breakpoint-xl": {
     "$value": {
       "value": 1280,
       "unit": "px"
@@ -809,7 +799,7 @@
     "$type": "dimension",
     "$description": "Extra large devices"
   },
-  "sizeIcon-sm": {
+  "size-icon-sm": {
     "$value": {
       "value": 16,
       "unit": "px"
@@ -817,21 +807,21 @@
     "$type": "dimension",
     "$description": "Small icons"
   },
-  "sizeIcon-md": {
+  "size-icon-md": {
     "$value": {
       "value": 24,
       "unit": "px"
     },
     "$type": "dimension"
   },
-  "sizeIcon-lg": {
+  "size-icon-lg": {
     "$value": {
       "value": 32,
       "unit": "px"
     },
     "$type": "dimension"
   },
-  "sizeAvatar-sm": {
+  "size-avatar-sm": {
     "$value": {
       "value": 32,
       "unit": "px"
@@ -839,14 +829,14 @@
     "$type": "dimension",
     "$description": "Small avatar"
   },
-  "sizeAvatar-md": {
+  "size-avatar-md": {
     "$value": {
       "value": 48,
       "unit": "px"
     },
     "$type": "dimension"
   },
-  "sizeAvatar-lg": {
+  "size-avatar-lg": {
     "$value": {
       "value": 64,
       "unit": "px"
@@ -854,40 +844,40 @@
     "$type": "dimension",
     "$description": "Large avatar"
   },
-  "aspectRatioSquare": {
+  "aspect-ratio-square": {
     "$value": "1/1",
     "$type": "aspect-ratio",
     "$description": "Perfect square"
   },
-  "aspectRatioVideo": {
+  "aspect-ratio-video": {
     "$value": "16/9",
     "$type": "aspect-ratio",
     "$description": "Widescreen video"
   },
-  "aspectRatioPhoto": {
+  "aspect-ratio-photo": {
     "$value": "4/3",
     "$type": "aspect-ratio",
     "$description": "Standard photo"
   },
-  "aspectRatioPortrait": {
+  "aspect-ratio-portrait": {
     "$value": "3/4",
     "$type": "aspect-ratio",
     "$description": "Portrait orientation"
   },
-  "zLayerDropdown": {
+  "z-layer-dropdown": {
     "$value": 1000,
     "$type": "number"
   },
-  "zLayerSticky": {
+  "z-layer-sticky": {
     "$value": 1100,
     "$type": "number"
   },
-  "zLayerOverlay": {
+  "z-layer-overlay": {
     "$value": 4000,
     "$type": "number",
     "$description": "For darkening the background and emphasizing visual focus"
   },
-  "zLayerModal": {
+  "z-layer-modal": {
     "$value": 5000,
     "$type": "number"
   }
