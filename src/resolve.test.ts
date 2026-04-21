@@ -66,6 +66,27 @@ describe("resolveReferences", () => {
     expect(() => resolveReferences(tokens)).toThrow("Ambiguous token reference");
   });
 
+  test("qualified reference disambiguates an otherwise-ambiguous bare name", () => {
+    const tokens: Token[] = [
+      { name: "primary", type: "color", group: "color", value: "#0066cc" },
+      { name: "primary", type: "size", group: "size", value: "16px" },
+      { name: "link", type: "color", value: "{color.primary}" },
+    ];
+
+    const resolved = resolveReferences(tokens);
+    expect(resolved[2]!.value).toBe("#0066cc");
+  });
+
+  test("qualified reference works even when the bare name is unique", () => {
+    const tokens: Token[] = [
+      { name: "primary", type: "color", group: "color", value: "#0066cc" },
+      { name: "link", type: "color", value: "{color.primary}" },
+    ];
+
+    const resolved = resolveReferences(tokens);
+    expect(resolved[1]!.value).toBe("#0066cc");
+  });
+
   test("does not mutate original tokens", () => {
     const tokens: Token[] = [
       { name: "primary", type: "color", value: "#0066cc" },

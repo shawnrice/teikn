@@ -1,5 +1,6 @@
 import type { CompositeValue, Token } from "./Token";
 import { Color } from "./TokenTypes/Color";
+import type { KeyAliasIndex } from "./token-keys";
 import { ambiguousKeyMessage, buildKeyAliasIndex, resolveKey, tokenKey } from "./token-keys";
 import { isFirstClassValue } from "./type-classifiers";
 
@@ -79,7 +80,7 @@ const validateValue = (
   value: unknown,
   token: Token,
   label: string,
-  tokenKeys: ReturnType<typeof buildKeyAliasIndex>,
+  tokenKeys: KeyAliasIndex,
   issue: (severity: ValidationSeverity, tokenName: string, message: string) => void,
 ): void => {
   // Check for empty string values

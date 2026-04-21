@@ -543,6 +543,17 @@ describe("builders", () => {
         }),
       ).toThrow('ambiguous token name "primary"');
     });
+
+    test("qualified override key disambiguates across groups", () => {
+      const colors = group("color", { primary: "#0066cc" });
+      const sizing = group("size", { primary: "16px" });
+      const allTokens = tokens(colors, sizing);
+
+      const dark = theme("dark", allTokens, {
+        "color.primary": "#3399ff",
+      });
+      expect(dark.overrides.primary).toBe("#3399ff");
+    });
   });
 
   describe("ref", () => {

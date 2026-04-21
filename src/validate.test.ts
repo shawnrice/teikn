@@ -87,6 +87,18 @@ describe("validate", () => {
     expect(result.issues.some((i) => i.message.includes("Ambiguous token reference"))).toBe(true);
   });
 
+  test("qualified reference is accepted even when bare name is ambiguous", () => {
+    const tokens: Token[] = [
+      { name: "primary", type: "color", group: "color", value: "#0066cc" },
+      { name: "primary", type: "size", group: "size", value: "16px" },
+      { name: "link", type: "color", value: "{color.primary}" },
+    ];
+
+    const result = validate(tokens);
+    expect(result.valid).toBe(true);
+    expect(result.issues.filter((i) => i.severity === "error")).toHaveLength(0);
+  });
+
   test("detects circular references", () => {
     const tokens: Token[] = [
       { name: "a", type: "color", value: "{b}" },

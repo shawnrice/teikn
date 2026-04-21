@@ -1,4 +1,5 @@
 import type { Token } from "./Token";
+import type { KeyAliasIndex } from "./token-keys";
 import { ambiguousKeyMessage, buildKeyAliasIndex, resolveKey, tokenKey } from "./token-keys";
 import { isFirstClassValue } from "./type-classifiers";
 
@@ -13,7 +14,7 @@ const isCompositeValue = (value: unknown): value is Record<string, any> =>
 const resolveValue = (
   value: any,
   tokenMap: Map<string, Token>,
-  tokenKeys: ReturnType<typeof buildKeyAliasIndex>,
+  tokenKeys: KeyAliasIndex,
   seen: Set<string>,
   currentName: string,
 ): any => {
@@ -44,11 +45,9 @@ const resolveValue = (
     throw new Error(`Circular reference detected: ${currentName} -> ${refName}`);
   }
 
-  const referenced = tokenMap.get(resolved.key);
-  if (!referenced) {
-    throw new Error(`Unresolved reference: {${refName}} in token "${currentName}"`);
-  }
-
+  // The resolved key came from tokenKeys, which was built from tokenMap.keys(),
+  // so the lookup is guaranteed to hit.
+  const referenced = tokenMap.get(resolved.key)!;
   seen.add(resolved.key);
   return resolveValue(referenced.value, tokenMap, tokenKeys, seen, referenced.name);
 };
@@ -56,7 +55,7 @@ const resolveValue = (
 const resolveModes = (
   modes: Record<string, any>,
   tokenMap: Map<string, Token>,
-  tokenKeys: ReturnType<typeof buildKeyAliasIndex>,
+  tokenKeys: KeyAliasIndex,
   tokenName: string,
 ): Record<string, any> => {
   const resolved: Record<string, any> = {};

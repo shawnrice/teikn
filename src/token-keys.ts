@@ -5,7 +5,8 @@ export type KeyResolution =
   | { status: "missing" }
   | { status: "ambiguous"; candidates: string[] };
 
-type KeyAliasIndex = {
+export type KeyAliasIndex = {
+  fullKeys: Set<string>;
   uniqueBare: Map<string, string>;
   ambiguousBare: Map<string, string[]>;
 };
@@ -25,12 +26,14 @@ const bareKey = (key: string): string => {
 };
 
 export const buildKeyAliasIndex = (keys: string[]): KeyAliasIndex => {
+  const fullKeys = new Set<string>();
   const byBare = new Map<string, string[]>();
 
   for (const key of keys) {
     if (!key) {
       continue;
     }
+    fullKeys.add(key);
     const bare = bareKey(key);
     const list = byBare.get(bare) ?? [];
     list.push(key);
@@ -48,10 +51,24 @@ export const buildKeyAliasIndex = (keys: string[]): KeyAliasIndex => {
     }
   }
 
-  return { uniqueBare, ambiguousBare };
+  return { fullKeys, uniqueBare, ambiguousBare };
 };
 
+/**
+ * Resolve a reference value against the index.
+ *
+ * Resolution order:
+ * 1. Full qualified key match (e.g. `{color.primary}` → `color.primary`).
+ *    This lets users disambiguate across groups by writing the full path.
+ * 2. Bare name match (`{primary}` → `color.primary` when unique).
+ * 3. Bare name that collides across groups → `ambiguous`.
+ * 4. Otherwise → `missing`.
+ */
 export const resolveKey = (value: string, index: KeyAliasIndex): KeyResolution => {
+  if (index.fullKeys.has(value)) {
+    return { status: "ok", key: value, bare: bareKey(value) };
+  }
+
   const ambiguous = index.ambiguousBare.get(value);
   if (ambiguous) {
     return { status: "ambiguous", candidates: ambiguous };
