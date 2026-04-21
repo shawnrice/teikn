@@ -189,7 +189,7 @@ export class Teikn {
     this.options = options;
     this.generators = generators ?? [new Teikn.generators.Json()];
 
-    const filenames = this.generators.map((g) => g.file);
+    const filenames = this.generators.flatMap((g) => g.filenames());
     const dupes = filenames.filter((f, i) => filenames.indexOf(f) !== i);
     if (dupes.length > 0) {
       throw new Error(
@@ -257,7 +257,9 @@ export class Teikn {
 
     const results = new Map<string, string>();
     for (const generator of this.generators) {
-      results.set(generator.file, generator.generate(named, this.plugins));
+      for (const [filename, content] of generator.generateFiles(named, this.plugins)) {
+        results.set(filename, content);
+      }
     }
     return results;
   }

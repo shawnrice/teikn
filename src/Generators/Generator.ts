@@ -282,4 +282,25 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
       .join(EOL)
       .trim();
   }
+
+  /**
+   * The set of filenames this generator will emit. Single-file generators
+   * return [this.file]; multi-file generators (e.g. TypeScript meta)
+   * override to list every file they produce.
+   *
+   * Called at Teikn construction time for duplicate-filename detection,
+   * so it must not depend on tokens.
+   */
+  filenames(): string[] {
+    return [this.file];
+  }
+
+  /**
+   * Produce the full set of generated files keyed by filename. Default
+   * implementation emits a single file at {@link file} with the output of
+   * {@link generate}. Generators that emit multiple files override this.
+   */
+  generateFiles(tokens: Token[], plugins: Plugin[] = []): Map<string, string> {
+    return new Map([[this.file, this.generate(tokens, plugins)]]);
+  }
 }

@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 
 import { group, theme, tokens } from "./builders";
 import { Json } from "./Generators";
+import { Generator } from "./Generators/Generator";
 import { PrefixTypePlugin, StripTypePrefixPlugin } from "./Plugins";
 import { Teikn } from "./Teikn";
 
@@ -221,6 +222,70 @@ describe("Teikn", () => {
 
       writer.generateToStrings(colors);
       expect(colors[0]!.name).toBe("bg");
+    });
+  });
+
+  describe("multi-file generator integration", () => {
+    class MultiFile extends Generator {
+      constructor(opts = {}) {
+        super({ ext: "txt", ...opts });
+      }
+      generateToken(): string {
+        return "";
+      }
+      // oxlint-disable-next-line class-methods-use-this
+      combinator(): string {
+        return "";
+      }
+      override filenames(): string[] {
+        const base = this.options.filename ?? "tokens";
+        return [`${base}.mjs`, `${base}.d.ts`];
+      }
+      override generateFiles(): Map<string, string> {
+        const base = this.options.filename ?? "tokens";
+        return new Map([
+          [`${base}.mjs`, "runtime"],
+          [`${base}.d.ts`, "types"],
+        ]);
+      }
+    }
+
+    test("generateToStrings() includes every file a multi-file generator emits", () => {
+      const writer = new Teikn({ generators: [new MultiFile()] });
+      const output = writer.generateToStrings([]);
+      expect([...output.keys()].toSorted()).toEqual(["tokens.d.ts", "tokens.mjs"]);
+      expect(output.get("tokens.mjs")).toBe("runtime");
+      expect(output.get("tokens.d.ts")).toBe("types");
+    });
+
+    test("duplicate-filename detection walks multi-file generator filenames", () => {
+      class RivalMjs extends Generator {
+        constructor() {
+          super({ ext: "mjs", filename: "tokens" });
+        }
+        generateToken(): string {
+          return "";
+        }
+        // oxlint-disable-next-line class-methods-use-this
+        combinator(): string {
+          return "";
+        }
+      }
+
+      expect(
+        () =>
+          new Teikn({
+            generators: [new MultiFile(), new RivalMjs()],
+          }),
+      ).toThrow("Duplicate generator output filenames");
+    });
+
+    test("multi-file generators coexist with single-file generators", () => {
+      const writer = new Teikn({
+        generators: [new MultiFile(), new Json({ filename: "extra" })],
+      });
+      const output = writer.generateToStrings([]);
+      expect([...output.keys()].toSorted()).toEqual(["extra.json", "tokens.d.ts", "tokens.mjs"]);
     });
   });
 });
