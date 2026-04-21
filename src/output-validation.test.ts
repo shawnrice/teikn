@@ -555,33 +555,59 @@ describe("output-validation: JavaScript (ESM)", () => {
   });
 });
 
-// ─── TypeScript ──────────────────────────────────────────────
+// ─── TypeScriptDeclarations ──────────────────────────────────
 
-describe("output-validation: TypeScript", () => {
-  const ts = generateOutput(Teikn.generators.TypeScript, "tokens.d.ts");
+describe("output-validation: TypeScriptDeclarations (narrow default)", () => {
+  const ts = generateOutput(Teikn.generators.TypeScriptDeclarations, "tokens.d.ts");
 
   test("output is non-empty", () => {
     expect(ts.length).toBeGreaterThan(0);
   });
 
-  test("has type declarations", () => {
-    expect(ts).toContain("export const tokens: {");
+  test("uses `export declare const` ambient declaration", () => {
+    expect(ts).toContain("export declare const tokens: {");
   });
 
-  test("composite types have the right fields", () => {
-    // Typography should produce an inline shape type
-    expect(ts).toContain(
-      "typographyDisplayLg: { fontFamily: string; fontSize: string; fontWeight: number; lineHeight: number }",
-    );
+  test("top-level fields are readonly", () => {
+    expect(ts).toMatch(/readonly \S+:/);
+  });
+
+  test("composite fields carry readonly on each key", () => {
+    // Typography has nested fontFamily / fontSize / fontWeight / lineHeight
+    expect(ts).toContain("readonly fontFamily:");
+    expect(ts).toContain("readonly fontSize:");
+    expect(ts).toContain("readonly fontWeight:");
+    expect(ts).toContain("readonly lineHeight:");
+  });
+
+  test("literal string types instead of widened string", () => {
+    // Narrow default emits `"1rem"`, not `string`, for dimension values
+    expect(ts).toContain('"1rem"');
   });
 
   test("mode type should be Partial<...>", () => {
-    expect(ts).toContain("export const modes: {");
+    expect(ts).toContain("export declare const modes: {");
     expect(ts).toContain("Partial<typeof tokens>");
   });
 
   test("export default tokens", () => {
     expect(ts).toContain("export default tokens;");
+  });
+});
+
+describe("output-validation: TypeScriptDeclarations (loose mode)", () => {
+  const ts = generateOutputFrom(
+    () => new Teikn.generators.TypeScriptDeclarations({ ...genOpts, loose: true }),
+    "tokens.d.ts",
+  );
+
+  test("widens to primitive types", () => {
+    expect(ts).toContain("readonly fontFamily: string");
+    expect(ts).toContain("readonly fontWeight: number");
+  });
+
+  test("does not emit literal string types", () => {
+    expect(ts).not.toContain('"1rem"');
   });
 });
 

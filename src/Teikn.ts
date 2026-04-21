@@ -12,7 +12,7 @@ import {
   Scss,
   ScssVars,
   Storybook,
-  TypeScript,
+  TypeScriptDeclarations,
 } from "./Generators";
 import type { AuditIssue } from "./Plugins";
 import {
@@ -131,7 +131,7 @@ const BuiltInGenerators: {
   Scss: typeof Scss;
   ScssVars: typeof ScssVars;
   Storybook: typeof Storybook;
-  TypeScript: typeof TypeScript;
+  TypeScriptDeclarations: typeof TypeScriptDeclarations;
 } = {
   CssVars,
   Dtcg: DtcgGenerator,
@@ -141,7 +141,7 @@ const BuiltInGenerators: {
   Scss,
   ScssVars,
   Storybook,
-  TypeScript,
+  TypeScriptDeclarations,
 };
 
 export type TeiknOptions = {

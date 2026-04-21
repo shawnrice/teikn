@@ -1,6 +1,6 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`TypeScript generator tests It matches the TypeScript snapshot 1`] = `
+exports[`TypeScriptDeclarations generator It matches the snapshot 1`] = `
 "/**
  * Teikn vtest
  * Generated null
@@ -12,23 +12,23 @@ exports[`TypeScript generator tests It matches the TypeScript snapshot 1`] = `
 /**
  * Design tokens
  */
-export const tokens: {
+export declare const tokens: {
   /**
    *  Use for body fonts
    *  Type: font-family
    */
-  body: string,
+  readonly body: "\\"Roboto Condensed\\", Arial, sans";
   /**
    *  the primary branding color
    *  Type: color
    */
-  primary: string,
+  readonly primary: "aliceblue";
   /**
    *  the secondary branding color
    *  Type: color
    */
-  secondary: string
-}
+  readonly secondary: "rgb(102, 205, 170)";
+};
 
 export type TokenNames = {
   FontFamily: 'body';
@@ -38,7 +38,7 @@ export type TokenNames = {
 export default tokens;"
 `;
 
-exports[`TypeScript generator tests it generates group type declarations when groups: true 1`] = `
+exports[`TypeScriptDeclarations generator it generates group type declarations when groups: true 1`] = `
 "/**
  * Teikn vtest
  * Generated null
@@ -50,20 +50,20 @@ exports[`TypeScript generator tests it generates group type declarations when gr
 /**
  * Design tokens
  */
-export const tokens: {
+export declare const tokens: {
   /**
    *  Type: color
    */
-  colorPrimary: string,
+  readonly colorPrimary: "aliceblue";
   /**
    *  Type: color
    */
-  colorSecondary: string,
+  readonly colorSecondary: "rgb(102, 205, 170)";
   /**
    *  Type: spacing
    */
-  spacingSm: string
-}
+  readonly spacingSm: "4px";
+};
 
 export type TokenNames = {
   Color: 'colorPrimary' | 'colorSecondary';
@@ -71,7 +71,7 @@ export type TokenNames = {
   All: TokenNames['Color'] | TokenNames['Spacing'];
 };
 
-export const color: (name: 'primary' | 'secondary') => string;
-export const spacing: (name: 'sm') => string;
+export declare const color: (name: 'primary' | 'secondary') => string;
+export declare const spacing: (name: 'sm') => string;
 export default tokens;"
 `;

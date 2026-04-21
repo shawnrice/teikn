@@ -112,8 +112,8 @@ const generatorConfigs = [
     file: "tokens.cjs",
   },
   {
-    name: "TypeScript",
-    make: () => new Teikn.generators.TypeScript(testOpts),
+    name: "TypeScriptDeclarations",
+    make: () => new Teikn.generators.TypeScriptDeclarations(testOpts),
     file: "tokens.d.ts",
   },
 ] as const;
@@ -156,7 +156,7 @@ describe("integration: full pipeline", () => {
         expect(emptyLines).toEqual([]);
       });
 
-      if (name !== "TypeScript") {
+      if (name !== "TypeScriptDeclarations") {
         test("contains Dimension values from dp()", () => {
           // dp(16) = 1rem, dp(8) = 0.5rem
           expect(content).toContain("1rem");

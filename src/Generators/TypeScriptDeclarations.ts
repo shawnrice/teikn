@@ -11,16 +11,39 @@ const isValidIdentifier = (name: string): boolean => /^[a-zA-Z_$][a-zA-Z0-9_$]*$
 
 const quoteKey = (name: string): string => (isValidIdentifier(name) ? name : `'${name}'`);
 
-const toTypeAnnotation = (value: unknown): string => {
+/**
+ * Produce a TypeScript type annotation for a token value.
+ *
+ * When `loose` is false (default), values become their literal type
+ * (`"#0066cc"`, `16`, `true`), so `tokens.primary` has the narrow type
+ * `"#0066cc"` rather than `string`. This enables exhaustive unions
+ * like `type TokenColor = typeof tokens[keyof typeof tokens]`.
+ *
+ * When `loose` is true, values widen to their primitive type family
+ * (`string`, `number`, `boolean`) — the legacy pre-alpha.11 behavior.
+ */
+const toTypeAnnotation = (value: unknown, loose: boolean): string => {
   if (typeof value === "object" && value !== null && !Array.isArray(value)) {
-    // First-class values (Color, Dimension, etc.) stringify to string
+    // First-class values (Color, Dimension, etc.) stringify to string.
+    // By the time values reach the generator the top-level value should
+    // already be a string; this branch handles any first-class object
+    // surfaced inside a composite field.
     if (isFirstClassValue(value)) {
       return "string";
     }
     const fields = Object.entries(value as Record<string, unknown>)
-      .map(([k, v]) => `${quoteKey(k)}: ${toTypeAnnotation(v)}`)
+      .map(([k, v]) => `readonly ${quoteKey(k)}: ${toTypeAnnotation(v, loose)}`)
       .join("; ");
     return `{ ${fields} }`;
+  }
+  if (loose) {
+    return typeof value;
+  }
+  if (typeof value === "string") {
+    return JSON.stringify(value);
+  }
+  if (typeof value === "number" || typeof value === "boolean") {
+    return String(value);
   }
   return typeof value;
 };
@@ -31,32 +54,37 @@ const defaultOptions = {
   dateFn: getDate,
 };
 
-export type TypeScriptOpts = {
-  /**
-   * The function to get the build date
-   */
+export type TypeScriptDeclarationsOpts = {
   dateFn?: () => string | null;
-  /**
-   * The function to transform the name of the token
-   *
-   * default: `camelCase`
-   */
   nameTransformer?: (name: string) => string;
+  /**
+   * When true, emit widened types (`string`, `number`, `boolean`) instead
+   * of literal types. Default: `false`.
+   *
+   * Narrow literal types enable exhaustive unions like
+   * `type TokenColor = typeof tokens[keyof typeof tokens]`.
+   */
+  loose?: boolean;
 } & GeneratorOptions;
 
-export class TypeScript extends Generator<TypeScriptOpts> {
-  constructor(options = {}) {
-    super(Object.assign({}, defaultOptions, options));
+/**
+ * Emit TypeScript ambient declarations (`.d.ts`) for tokens. Pair with
+ * `JavaScript` for runtime output, or use the `TypeScript` meta
+ * generator to produce both at once from a single construction.
+ */
+export class TypeScriptDeclarations extends Generator<TypeScriptDeclarationsOpts> {
+  constructor(options: Partial<TypeScriptDeclarationsOpts> = {}) {
+    super({ ...defaultOptions, ...options });
   }
 
-  override describe(): GeneratorInfo | null {
+  override describe(): GeneratorInfo {
     const base = this.options.filename ?? "tokens";
     const groupUsage = this.options.groups
       ? `\n\n// Or use typed group accessors\nimport { color } from './${base}';\ncolor('primary') // compile-time checked`
       : "";
     return {
       format: "TypeScript Declarations",
-      usage: `import { tokens } from './${base}';\n\n// Pair with ES Module or CommonJS output for runtime values${groupUsage}`,
+      usage: `import { tokens } from './${base}';\n\n// Pair with JavaScript runtime output, or use the TypeScript meta generator${groupUsage}`,
     };
   }
 
@@ -75,17 +103,16 @@ export class TypeScript extends Generator<TypeScriptOpts> {
   }
 
   generateToken(token: Token): string {
-    const { nameTransformer } = this.options;
+    const { nameTransformer, loose } = this.options;
     const key = quoteKey(nameTransformer!(token.name));
-
-    const typeAnnotation = toTypeAnnotation(token.value);
+    const typeAnnotation = toTypeAnnotation(token.value, loose ?? false);
 
     return [
       `  /**`,
       token.usage && `   *  ${token.usage}`,
       `   *  Type: ${token.type}`,
       `   */`,
-      `  ${key}: ${typeAnnotation},`,
+      `  readonly ${key}: ${typeAnnotation};`,
     ]
       .filter(Boolean)
       .join(EOL);
@@ -93,15 +120,8 @@ export class TypeScript extends Generator<TypeScriptOpts> {
 
   combinator(tokens: Token[]): string {
     const values = tokens.map((t) => this.generateToken(t));
-    const parts = [
-      "export const tokens: {",
-      values
-        .map((token, index, arr) => (index === arr.length - 1 ? token.slice(0, -1) : token))
-        .join(EOL),
-      "}",
-    ];
+    const parts = ["export declare const tokens: {", values.join(EOL), "};"];
 
-    // Token name union types grouped under a single namespace type
     const groups = this.tokenGroups(tokens);
     if (groups.length > 0) {
       const { nameTransformer } = this.options;
@@ -123,7 +143,7 @@ export class TypeScript extends Generator<TypeScriptOpts> {
     if (this.options.groups) {
       const groupDecls = groups.map(({ groupName, entries }) => {
         const union = entries.map(({ shortName }) => `'${shortName}'`).join(" | ");
-        return `export const ${groupName}: (name: ${union}) => string;`;
+        return `export declare const ${groupName}: (name: ${union}) => string;`;
       });
       parts.push("", ...groupDecls);
     }
@@ -139,9 +159,9 @@ export class TypeScript extends Generator<TypeScriptOpts> {
 
     if (modeNames.size > 0) {
       const modeEntries = [...modeNames].map(
-        (mode) => `  ${quoteKey(mode)}: Partial<typeof tokens>;`,
+        (mode) => `  readonly ${quoteKey(mode)}: Partial<typeof tokens>;`,
       );
-      parts.push("", `export const modes: {`, ...modeEntries, `}`);
+      parts.push("", `export declare const modes: {`, ...modeEntries, `};`);
     }
 
     return parts.join(EOL);
