@@ -236,6 +236,24 @@ describe("parseDtcg", () => {
     expect(tokens[0]!.type).toBe("font-style");
   });
 
+  test("parses mode values from $extensions.mode", () => {
+    const doc: DtcgDocument = {
+      surface: {
+        $value: { colorSpace: "srgb", components: [1, 1, 1] },
+        $type: "color",
+        $extensions: {
+          mode: {
+            dark: { colorSpace: "srgb", components: [0.1, 0.1, 0.1] },
+          },
+        },
+      },
+    };
+
+    const tokens = parseDtcg(doc);
+    expect(tokens[0]!.modes).toBeDefined();
+    expect(tokens[0]!.modes!.dark).toBeInstanceOf(Color);
+  });
+
   test("shadow composite values are converted to BoxShadow", () => {
     const doc: DtcgDocument = {
       elevation: {

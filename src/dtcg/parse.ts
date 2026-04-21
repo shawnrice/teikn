@@ -1,4 +1,4 @@
-import type { Token } from "../Token";
+import type { CompositeValue, ModeValues, Token, TokenValue } from "../Token";
 import type { DtcgDocument, DtcgGroup, DtcgToken } from "./types";
 import { dtcgTypeToTeikn, dtcgValueToTeikn } from "./values";
 
@@ -51,6 +51,17 @@ const walk = (
         value,
         type: teiknType,
       };
+
+      const rawModes = child.$extensions?.mode;
+      if (rawModes && typeof rawModes === "object") {
+        const modes: ModeValues = {};
+        for (const [mode, modeValue] of Object.entries(rawModes)) {
+          modes[mode] = isAlias(modeValue)
+            ? (modeValue as TokenValue)
+            : (dtcgValueToTeikn(modeValue as any, dtcgType) as TokenValue | CompositeValue);
+        }
+        token.modes = modes;
+      }
 
       // Preserve $description as usage, prepending [DEPRECATED] if needed
       const deprecated = child.$deprecated;
