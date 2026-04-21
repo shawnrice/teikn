@@ -7,4 +7,5 @@ export * from "./Json";
 export * from "./Scss";
 export * from "./ScssVars";
 export * from "./Storybook";
+export * from "./TypeScript";
 export * from "./TypeScriptDeclarations";

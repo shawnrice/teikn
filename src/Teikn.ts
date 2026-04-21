@@ -12,6 +12,7 @@ import {
   Scss,
   ScssVars,
   Storybook,
+  TypeScript,
   TypeScriptDeclarations,
 } from "./Generators";
 import type { AuditIssue } from "./Plugins";
@@ -131,6 +132,7 @@ const BuiltInGenerators: {
   Scss: typeof Scss;
   ScssVars: typeof ScssVars;
   Storybook: typeof Storybook;
+  TypeScript: typeof TypeScript;
   TypeScriptDeclarations: typeof TypeScriptDeclarations;
 } = {
   CssVars,
@@ -141,6 +143,7 @@ const BuiltInGenerators: {
   Scss,
   ScssVars,
   Storybook,
+  TypeScript,
   TypeScriptDeclarations,
 };
 

@@ -235,6 +235,47 @@ describe("integration: JSON output structure", () => {
   });
 });
 
+// ─── TypeScript meta generator ──────────────────────────────
+
+describe("integration: TypeScript meta generator", () => {
+  const writer = new Teikn({
+    generators: [new Teikn.generators.TypeScript(testOpts)],
+    themes: [dark],
+    plugins: [new Teikn.plugins.NameConventionPlugin({ convention: "kebab-case" })],
+  });
+  const output = writer.generateToStrings(allTokens);
+
+  test("emits both runtime and declaration files from a single construction", () => {
+    expect(output.has("tokens.mjs")).toBe(true);
+    expect(output.has("tokens.d.ts")).toBe(true);
+  });
+
+  test("runtime output is a valid ES module with tokens export", () => {
+    const mjs = output.get("tokens.mjs")!;
+    expect(mjs).toContain("export const tokens = {");
+    expect(mjs).toContain("export default tokens;");
+    expect(mjs).not.toContain("[object Object]");
+  });
+
+  test("declaration output is ambient and narrow-typed", () => {
+    const dts = output.get("tokens.d.ts")!;
+    expect(dts).toContain("export declare const tokens: {");
+    expect(dts).toContain("readonly");
+  });
+
+  test("duplicate construction with same filename errors at Teikn construction", () => {
+    expect(
+      () =>
+        new Teikn({
+          generators: [
+            new Teikn.generators.TypeScript({ filename: "tokens" }),
+            new Teikn.generators.TypeScriptDeclarations({ filename: "tokens" }),
+          ],
+        }),
+    ).toThrow("Duplicate generator output filenames");
+  });
+});
+
 // ─── CSS output assertions ──────────────────────────────────
 
 describe("integration: CSS output", () => {
