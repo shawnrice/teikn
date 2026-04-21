@@ -161,11 +161,11 @@ describe("cli: --plugins flag", () => {
 describe("cli: multiple generators", () => {
   const multiOutDir = path.join(tmpDir, "multi-gen-out");
 
-  test("generates CssVars, Json, and EsModule output files", () => {
+  test("generates CssVars, Json, and JavaScript output files", () => {
     const { stdout, code } = run(
       "example/raw-tokens.ts",
       `--outDir=${multiOutDir}`,
-      '--generators="CssVars,Json,EsModule"',
+      '--generators="CssVars,Json,JavaScript"',
     );
     expect(code).toBe(0);
     expect(stdout).toContain("Tokens generated successfully!");

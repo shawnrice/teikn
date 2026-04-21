@@ -97,20 +97,32 @@ describe("integration: validate", () => {
 // ─── Full pipeline per generator ────────────────────────────
 
 const generatorConfigs = [
-  { name: "CssVars", Gen: Teikn.generators.CssVars, file: "tokens.css" },
-  { name: "Scss", Gen: Teikn.generators.Scss, file: "tokens.scss" },
-  { name: "ScssVars", Gen: Teikn.generators.ScssVars, file: "tokens.scss" },
-  { name: "Json", Gen: Teikn.generators.Json, file: "tokens.json" },
-  { name: "JavaScript", Gen: Teikn.generators.JavaScript, file: "tokens.js" },
-  { name: "EsModule", Gen: Teikn.generators.EsModule, file: "tokens.mjs" },
-  { name: "TypeScript", Gen: Teikn.generators.TypeScript, file: "tokens.d.ts" },
+  { name: "CssVars", make: () => new Teikn.generators.CssVars(testOpts), file: "tokens.css" },
+  { name: "Scss", make: () => new Teikn.generators.Scss(testOpts), file: "tokens.scss" },
+  { name: "ScssVars", make: () => new Teikn.generators.ScssVars(testOpts), file: "tokens.scss" },
+  { name: "Json", make: () => new Teikn.generators.Json(testOpts), file: "tokens.json" },
+  {
+    name: "JavaScript (ESM)",
+    make: () => new Teikn.generators.JavaScript(testOpts),
+    file: "tokens.mjs",
+  },
+  {
+    name: "JavaScript (CJS)",
+    make: () => new Teikn.generators.JavaScript({ ...testOpts, module: "cjs" }),
+    file: "tokens.cjs",
+  },
+  {
+    name: "TypeScript",
+    make: () => new Teikn.generators.TypeScript(testOpts),
+    file: "tokens.d.ts",
+  },
 ] as const;
 
 describe("integration: full pipeline", () => {
-  for (const { name, Gen, file } of generatorConfigs) {
+  for (const { name, make, file } of generatorConfigs) {
     describe(name, () => {
       const writer = new Teikn({
-        generators: [new Gen(testOpts)],
+        generators: [make()],
         themes: [dark],
         plugins: [new Teikn.plugins.NameConventionPlugin({ convention: "kebab-case" })],
       });
@@ -264,7 +276,7 @@ describe("integration: multi-generator output", () => {
     generators: [
       new Teikn.generators.CssVars(testOpts),
       new Teikn.generators.Json(),
-      new Teikn.generators.EsModule(testOpts),
+      new Teikn.generators.JavaScript(testOpts),
     ],
     themes: [dark],
     plugins: [

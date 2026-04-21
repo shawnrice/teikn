@@ -50,7 +50,7 @@ describe("cli: list", () => {
     expect(stdout).toContain("CssVars");
     expect(stdout).toContain("Scss");
     expect(stdout).toContain("Json");
-    expect(stdout).toContain("EsModule");
+    expect(stdout).toContain("JavaScript");
   });
 
   test("list plugins shows available plugins", () => {

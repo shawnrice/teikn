@@ -1,6 +1,5 @@
 export * from "./CssVars";
 export * from "./Dtcg";
-export * from "./EsModule";
 export * from "./Generator";
 export * from "./Html";
 export * from "./JavaScript";

@@ -7,30 +7,53 @@ import type { GeneratorInfo, GeneratorOptions } from "./Generator";
 import { Generator } from "./Generator";
 import { maybeQuote, quoteKey } from "./value-serializers";
 
-const defaultOptions = {
-  ext: "js",
-  nameTransformer: camelCase,
-  dateFn: getDate,
-};
+export type JavaScriptModule = "esm" | "cjs";
 
 export type JavaScriptOpts = {
   dateFn?: () => string | null;
   nameTransformer?: (name: string) => string;
+  /**
+   * Module system for the emitted runtime.
+   *
+   * - `"esm"` (default) → `export const tokens = {...}` with `.mjs` extension
+   * - `"cjs"` → `module.exports = { tokens, ... }` with `.cjs` extension
+   */
+  module?: JavaScriptModule;
 } & GeneratorOptions;
 
+const defaultExt = (module: JavaScriptModule): string => (module === "cjs" ? "cjs" : "mjs");
+
+/**
+ * Emit tokens as a JavaScript module. Defaults to ESM (`.mjs`); pass
+ * `module: "cjs"` for CommonJS (`.cjs`). Extensions are derived from
+ * the module system but can be overridden via `ext`.
+ */
 export class JavaScript extends Generator<JavaScriptOpts> {
-  constructor(options = {}) {
-    const opts = Object.assign({}, defaultOptions, options);
-    super(opts);
+  constructor(options: Partial<JavaScriptOpts> = {}) {
+    const module = options.module ?? "esm";
+    super({
+      nameTransformer: camelCase,
+      dateFn: getDate,
+      module,
+      ext: defaultExt(module),
+      ...options,
+    });
   }
 
-  override describe(): GeneratorInfo | null {
-    const base = `const { tokens } = require('./${this.file}');\n\ntokens.tokenName`;
+  override describe(): GeneratorInfo {
+    const isCjs = this.options.module === "cjs";
+    const importStmt = isCjs
+      ? `const { tokens } = require('./${this.file}');`
+      : `import { tokens } from './${this.file}';`;
+    const base = `${importStmt}\n\ntokens.tokenName`;
+    const groupImport = isCjs
+      ? `const { color } = require('./${this.file}');`
+      : `import { color } from './${this.file}';`;
     const groupUsage = this.options.groups
-      ? `\n\n// Or use typed group accessors\nconst { color } = require('./${this.file}');\ncolor('primary')`
+      ? `\n\n// Or use typed group accessors\n${groupImport}\ncolor('primary')`
       : "";
     return {
-      format: "CommonJS",
+      format: isCjs ? "CommonJS" : "ES Module",
       usage: base + groupUsage,
     };
   }
@@ -65,15 +88,12 @@ export class JavaScript extends Generator<JavaScriptOpts> {
   }
 
   combinator(tokens: Token[]): string {
-    const { nameTransformer, groups } = this.options;
+    const { nameTransformer, groups, module } = this.options;
+    const isCjs = module === "cjs";
+    const decl = isCjs ? "const" : "export const";
+
     const values = tokens.map((t) => this.generateToken(t));
-    const parts = [
-      "const tokens = {",
-      values
-        .map((token, index, arr) => (index === arr.length - 1 ? token.slice(0, -1) : token))
-        .join(EOL),
-      "};",
-    ];
+    const parts = [`${decl} tokens = {`, values.join(EOL), "};"];
 
     const exportNames = ["tokens"];
 
@@ -90,7 +110,7 @@ export class JavaScript extends Generator<JavaScriptOpts> {
           `const _${groupName} = {`,
           mapEntries,
           `};`,
-          `const ${groupName} = (name) => {`,
+          `${decl} ${groupName} = (name) => {`,
           `  if (!(name in _${groupName})) throw new Error(\`Unknown ${groupName} token: \${name}\`);`,
           `  return _${groupName}[name];`,
           `};`,
@@ -105,12 +125,17 @@ export class JavaScript extends Generator<JavaScriptOpts> {
       const modeEntries = [...modeMap.entries()].map(([mode, entries]) =>
         [`  ${quoteKey(mode)}: {`, ...entries, `  },`].join(EOL),
       );
-      parts.push("", `const modes = {`, ...modeEntries, `};`);
+      parts.push("", `${decl} modes = {`, ...modeEntries, `};`);
       exportNames.push("modes");
     }
 
-    const exportsStr = exportNames.map((n) => `${n}: ${n}`).join(", ");
-    parts.push("", `module.exports = { ${exportsStr}, default: tokens };`);
+    if (isCjs) {
+      const exportsStr = exportNames.map((n) => `${n}: ${n}`).join(", ");
+      parts.push("", `module.exports = { ${exportsStr}, default: tokens };`);
+    } else {
+      parts.push("", `export default tokens;`);
+    }
+
     return parts.join(EOL);
   }
 }

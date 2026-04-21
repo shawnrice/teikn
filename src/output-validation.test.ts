@@ -134,9 +134,11 @@ const dark = theme("dark", colors, {
 
 const genOpts = testOpts;
 
-const generateOutput = (Gen: any, file: string) => {
+const generateOutput = (Gen: any, file: string) => generateOutputFrom(() => new Gen(genOpts), file);
+
+const generateOutputFrom = (make: () => any, file: string) => {
   const writer = new Teikn({
-    generators: [new Gen(genOpts)],
+    generators: [make()],
     themes: [dark],
     plugins: [new Teikn.plugins.NameConventionPlugin({ convention: "kebab-case" })],
   });
@@ -455,10 +457,13 @@ describe("output-validation: Json", () => {
   });
 });
 
-// ─── JavaScript ──────────────────────────────────────────────
+// ─── JavaScript (CJS) ────────────────────────────────────────
 
-describe("output-validation: JavaScript", () => {
-  const js = generateOutput(Teikn.generators.JavaScript, "tokens.js");
+describe("output-validation: JavaScript (CJS)", () => {
+  const js = generateOutputFrom(
+    () => new Teikn.generators.JavaScript({ ...genOpts, module: "cjs" }),
+    "tokens.cjs",
+  );
 
   test("output is non-empty", () => {
     expect(js.length).toBeGreaterThan(0);
@@ -508,17 +513,17 @@ describe("output-validation: JavaScript", () => {
   });
 });
 
-// ─── EsModule ────────────────────────────────────────────────
+// ─── JavaScript (ESM) ────────────────────────────────────────
 
-describe("output-validation: EsModule", () => {
-  const esm = generateOutput(Teikn.generators.EsModule, "tokens.mjs");
+describe("output-validation: JavaScript (ESM)", () => {
+  const esm = generateOutput(Teikn.generators.JavaScript, "tokens.mjs");
 
   test("output is non-empty", () => {
     expect(esm.length).toBeGreaterThan(0);
   });
 
   test("contains no garbage values", () => {
-    assertNoGarbage(esm, "EsModule");
+    assertNoGarbage(esm, "JavaScript (ESM)");
   });
 
   test("has export const tokens", () => {
@@ -774,7 +779,7 @@ describe("output-validation: cross-generator consistency", () => {
     generators: [
       new Teikn.generators.CssVars(genOpts),
       new Teikn.generators.Json(),
-      new Teikn.generators.EsModule(genOpts),
+      new Teikn.generators.JavaScript(genOpts),
     ],
     themes: [dark],
     plugins: [new Teikn.plugins.NameConventionPlugin({ convention: "kebab-case" })],
@@ -799,7 +804,7 @@ describe("output-validation: cross-generator consistency", () => {
     expect(json.spacingXs.value).toBe("0.25rem");
   });
 
-  test("spacing token values agree across EsModule and JSON", () => {
+  test("spacing token values agree across JavaScript and JSON", () => {
     expect(esm).toContain("'1rem'");
     expect(json.spacingMd.value).toBe("1rem");
 
@@ -818,7 +823,7 @@ describe("output-validation: cross-generator consistency", () => {
     expect(json.durationSlow.value).toBe("500ms");
   });
 
-  test("duration token values agree across EsModule and JSON", () => {
+  test("duration token values agree across JavaScript and JSON", () => {
     expect(esm).toContain("'150ms'");
     expect(json.durationFast.value).toBe("150ms");
 

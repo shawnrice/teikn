@@ -5,7 +5,6 @@ import { ensureDirectory } from "./ensure-directory";
 import {
   CssVars,
   DtcgGenerator,
-  EsModule,
   Generator,
   Html,
   JavaScript,
@@ -126,7 +125,6 @@ const BuiltInPlugins: {
 const BuiltInGenerators: {
   CssVars: typeof CssVars;
   Dtcg: typeof DtcgGenerator;
-  EsModule: typeof EsModule;
   Html: typeof Html;
   JavaScript: typeof JavaScript;
   Json: typeof Json;
@@ -137,7 +135,6 @@ const BuiltInGenerators: {
 } = {
   CssVars,
   Dtcg: DtcgGenerator,
-  EsModule,
   Html,
   JavaScript,
   Json,

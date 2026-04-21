@@ -21,7 +21,7 @@ export const cssValue = (value: unknown): string => {
 };
 
 // ─── JS value serialization ─────────────────────────────────────
-// Shared by JavaScript and EsModule generators.
+// Shared by the JavaScript generator (both ESM and CJS modes).
 
 export const maybeQuote = (val: unknown): string => {
   if (typeof val === "string") {

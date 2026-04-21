@@ -5,7 +5,6 @@ import { CubicBezier } from "../TokenTypes/CubicBezier";
 import { LinearGradient } from "../TokenTypes/Gradient";
 import { tokenSet1 } from "../fixtures/tokenSet1";
 import type { Token } from "../Token";
-import { EsModule } from "./EsModule";
 import { JavaScript } from "./JavaScript";
 import { Storybook } from "./Storybook";
 
@@ -23,10 +22,10 @@ describe("Storybook generator", () => {
     expect(gen.file).toBe("tokens.stories.tsx");
   });
 
-  test("It detects EsModule sibling import path", () => {
+  test("It detects JavaScript (ESM) sibling import path", () => {
     const sb = new Storybook({ dateFn: fixedDate, version: "test" });
-    const es = new EsModule({ ext: "js" });
-    sb.siblings = [sb, es];
+    const js = new JavaScript();
+    sb.siblings = [sb, js];
 
     const tokens: Token[] = [{ name: "primary", type: "color", value: "#ff0000" }];
     const output = sb.generate(tokens);
@@ -34,9 +33,9 @@ describe("Storybook generator", () => {
     expect(output).toContain('from "./tokens"');
   });
 
-  test("It detects JavaScript sibling import path", () => {
+  test("It detects JavaScript (CJS) sibling import path", () => {
     const sb = new Storybook({ dateFn: fixedDate, version: "test" });
-    const js = new JavaScript();
+    const js = new JavaScript({ module: "cjs" });
     sb.siblings = [sb, js];
 
     const tokens: Token[] = [{ name: "primary", type: "color", value: "#ff0000" }];
