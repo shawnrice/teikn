@@ -73,6 +73,37 @@ const validateCompositeShape = (type: string, value: CompositeValue): string | n
 };
 
 /**
+ * Check a reference string against the alias index and report any
+ * missing / ambiguous issue. The switch ensures we handle every
+ * `KeyResolution` status explicitly.
+ */
+const checkRef = (
+  refValue: string,
+  tokenKeys: KeyAliasIndex,
+  tokenName: string,
+  missingDescription: string,
+  labelPrefix: string,
+  issue: (severity: ValidationSeverity, tokenName: string, message: string) => void,
+): void => {
+  const refName = refValue.match(REF_PATTERN)![1]!;
+  const resolved = resolveKey(refName, tokenKeys);
+  switch (resolved.status) {
+    case "ok":
+      return;
+    case "missing":
+      issue("error", tokenName, `${labelPrefix}${missingDescription}: {${refName}}`);
+      return;
+    case "ambiguous":
+      issue(
+        "error",
+        tokenName,
+        `${labelPrefix}${ambiguousKeyMessage(refName, resolved.candidates)}`,
+      );
+      return;
+  }
+};
+
+/**
  * Validate a single value (main or mode) for common issues.
  * Factored out so both token.value and token.modes[x] use the same checks.
  */
@@ -100,14 +131,7 @@ const validateValue = (
 
   // Check references
   if (isRef(value)) {
-    const refName = value.match(REF_PATTERN)![1]!;
-    const resolved = resolveKey(refName, tokenKeys);
-    if (resolved.status === "missing") {
-      issue("error", token.name, `${label}Unresolved reference: {${refName}}`);
-    }
-    if (resolved.status === "ambiguous") {
-      issue("error", token.name, `${label}${ambiguousKeyMessage(refName, resolved.candidates)}`);
-    }
+    checkRef(value, tokenKeys, token.name, "Unresolved reference", label, issue);
   }
 
   // Check composite shapes
@@ -118,26 +142,18 @@ const validateValue = (
     }
   }
 
-  // Check for references in composite values
+  // Check for references inside composite field values
   if (isComposite(value)) {
     for (const [field, fieldValue] of Object.entries(value as CompositeValue)) {
       if (isRef(fieldValue)) {
-        const refName = (fieldValue as string).match(REF_PATTERN)![1]!;
-        const resolved = resolveKey(refName, tokenKeys);
-        if (resolved.status === "missing") {
-          issue(
-            "error",
-            token.name,
-            `${label}Unresolved reference in field "${field}": {${refName}}`,
-          );
-        }
-        if (resolved.status === "ambiguous") {
-          issue(
-            "error",
-            token.name,
-            `${label}${ambiguousKeyMessage(refName, resolved.candidates)}`,
-          );
-        }
+        checkRef(
+          fieldValue,
+          tokenKeys,
+          token.name,
+          `Unresolved reference in field "${field}"`,
+          label,
+          issue,
+        );
       }
     }
   }
