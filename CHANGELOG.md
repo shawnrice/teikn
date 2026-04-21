@@ -144,11 +144,13 @@
 
 ### Fixed
 
-- **JS / TS / ESM generators quote transformed token keys that are not
-  valid identifiers.** A kebab-case `nameTransformer` (e.g. converting
-  `colorPrimary` → `color-primary`) previously produced invalid JS/TS
-  output like `color-primary: "#fff",`. The generators now single-quote
-  any key that is not a valid identifier.
+- **`JavaScript` and `TypeScriptDeclarations` quote transformed token
+  keys that are not valid identifiers.** A kebab-case `nameTransformer`
+  (e.g. converting `colorPrimary` → `color-primary`) previously produced
+  invalid JS/TS output like `color-primary: "#fff",`. The generators now
+  single-quote any key that is not a valid identifier. Originally shipped
+  across the pre-rename generators (`EsModule`, old CJS `JavaScript`,
+  old `TypeScript`); carried through to the merged/renamed classes.
 - **`group()` rejects `Array.prototype`-colliding names.** Naming a
   token `length`, `push`, `map`, etc. now throws instead of silently
   shadowing an array method on the returned `Token[]`.
