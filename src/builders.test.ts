@@ -406,7 +406,7 @@ describe("builders", () => {
       });
 
       expect(dark.name).toBe("dark");
-      expect(dark.tokenNames).toEqual(["background", "text", "primary"]);
+      expect(dark.tokenNames).toEqual(["color.background", "color.text", "color.primary"]);
       expect(dark.overrides).toEqual({
         background: "#1a1a1a",
         text: "#eee",
@@ -444,7 +444,11 @@ describe("builders", () => {
       });
 
       expect(colorblindDark.name).toBe("colorblind-dark");
-      expect(colorblindDark.tokenNames).toEqual(["background", "text", "primary"]);
+      expect(colorblindDark.tokenNames).toEqual([
+        "color.background",
+        "color.text",
+        "color.primary",
+      ]);
       // Merges parent overrides with own
       expect(colorblindDark.overrides).toEqual({
         background: "#1a1a1a",
@@ -504,7 +508,12 @@ describe("builders", () => {
       });
 
       expect(dark.name).toBe("dark");
-      expect(dark.tokenNames).toEqual(["background", "textPrimary", "sm", "md"]);
+      expect(dark.tokenNames).toEqual([
+        "color.background",
+        "color.textPrimary",
+        "spacing.sm",
+        "spacing.md",
+      ]);
       expect(dark.overrides).toEqual({
         background: "#1a1a1a",
         textPrimary: "#eee",
@@ -521,6 +530,18 @@ describe("builders", () => {
           nonexistent: "#red",
         } as any),
       ).toThrow('unknown token "nonexistent"');
+    });
+
+    test("throws on ambiguous bare token names across groups", () => {
+      const colors = group("color", { primary: "#0066cc" });
+      const sizing = group("size", { primary: "16px" });
+      const allTokens = tokens(colors, sizing);
+
+      expect(() =>
+        theme("dark", allTokens, {
+          primary: "#3399ff",
+        }),
+      ).toThrow('ambiguous token name "primary"');
     });
   });
 

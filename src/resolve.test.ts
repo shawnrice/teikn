@@ -56,6 +56,16 @@ describe("resolveReferences", () => {
     expect(() => resolveReferences(tokens)).toThrow("Unresolved reference");
   });
 
+  test("throws on ambiguous bare references across groups", () => {
+    const tokens: Token[] = [
+      { name: "primary", type: "color", group: "color", value: "#0066cc" },
+      { name: "primary", type: "size", group: "size", value: "16px" },
+      { name: "link", type: "color", value: "{primary}" },
+    ];
+
+    expect(() => resolveReferences(tokens)).toThrow("Ambiguous token reference");
+  });
+
   test("does not mutate original tokens", () => {
     const tokens: Token[] = [
       { name: "primary", type: "color", value: "#0066cc" },

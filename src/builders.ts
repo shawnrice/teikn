@@ -3,6 +3,7 @@ import { Dimension, allUnits } from "./TokenTypes/Dimension";
 import type { DimensionUnit } from "./TokenTypes/Dimension";
 import { Duration, durationUnits } from "./TokenTypes/Duration";
 import type { DurationUnit } from "./TokenTypes/Duration";
+import { buildKeyAliasIndex, resolveKey, tokenKey } from "./token-keys";
 import { isFirstClassValue } from "./type-classifiers";
 import type {
   CompositeInput,
@@ -348,18 +349,28 @@ export const theme = (
   overrides: Record<string, TokenValue>,
 ): ThemeLayer => {
   const isTokenArray = Array.isArray(source);
-  const tokenNames = isTokenArray ? source.map((t) => t.name) : source.tokenNames;
-  const validNames = new Set(tokenNames);
+  const tokenNames = isTokenArray ? source.map((token) => tokenKey(token)) : source.tokenNames;
+  const keyIndex = buildKeyAliasIndex(tokenNames);
+  const resolvedOverrides: Record<string, TokenValue> = {};
 
   for (const key of Object.keys(overrides)) {
-    if (!validNames.has(key)) {
+    const resolved = resolveKey(key, keyIndex);
+    if (resolved.status === "missing") {
       throw new Error(
         `Theme "${name}": unknown token "${key}". Available: ${tokenNames.join(", ")}`,
       );
     }
+
+    if (resolved.status === "ambiguous") {
+      throw new Error(
+        `Theme "${name}": ambiguous token name "${key}". Matches: ${resolved.candidates.join(", ")}. Rename one of the tokens to remove the clash.`,
+      );
+    }
+
+    resolvedOverrides[resolved.bare] = overrides[key]!;
   }
 
-  const merged = isTokenArray ? overrides : { ...source.overrides, ...overrides };
+  const merged = isTokenArray ? resolvedOverrides : { ...source.overrides, ...resolvedOverrides };
   return { name, tokenNames, overrides: merged };
 };
 

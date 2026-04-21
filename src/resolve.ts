@@ -1,4 +1,5 @@
 import type { Token } from "./Token";
+import { ambiguousKeyMessage, buildKeyAliasIndex, resolveKey, tokenKey } from "./token-keys";
 import { isFirstClassValue } from "./type-classifiers";
 
 const REF_PATTERN = /^\{([^}]+)\}$/;
@@ -12,13 +13,14 @@ const isCompositeValue = (value: unknown): value is Record<string, any> =>
 const resolveValue = (
   value: any,
   tokenMap: Map<string, Token>,
+  tokenKeys: ReturnType<typeof buildKeyAliasIndex>,
   seen: Set<string>,
   currentName: string,
 ): any => {
   if (isCompositeValue(value)) {
     const resolved: Record<string, any> = {};
     for (const [k, v] of Object.entries(value)) {
-      resolved[k] = resolveValue(v, tokenMap, seen, currentName);
+      resolved[k] = resolveValue(v, tokenMap, tokenKeys, seen, currentName);
     }
     return resolved;
   }
@@ -28,28 +30,38 @@ const resolveValue = (
   }
 
   const refName = value.match(REF_PATTERN)![1]!;
+  const resolved = resolveKey(refName, tokenKeys);
 
-  if (seen.has(refName)) {
+  if (resolved.status === "ambiguous") {
+    throw new Error(ambiguousKeyMessage(refName, resolved.candidates));
+  }
+
+  if (resolved.status === "missing") {
+    throw new Error(`Unresolved reference: {${refName}} in token "${currentName}"`);
+  }
+
+  if (seen.has(resolved.key)) {
     throw new Error(`Circular reference detected: ${currentName} -> ${refName}`);
   }
 
-  const referenced = tokenMap.get(refName);
+  const referenced = tokenMap.get(resolved.key);
   if (!referenced) {
     throw new Error(`Unresolved reference: {${refName}} in token "${currentName}"`);
   }
 
-  seen.add(refName);
-  return resolveValue(referenced.value, tokenMap, seen, refName);
+  seen.add(resolved.key);
+  return resolveValue(referenced.value, tokenMap, tokenKeys, seen, referenced.name);
 };
 
 const resolveModes = (
   modes: Record<string, any>,
   tokenMap: Map<string, Token>,
+  tokenKeys: ReturnType<typeof buildKeyAliasIndex>,
   tokenName: string,
 ): Record<string, any> => {
   const resolved: Record<string, any> = {};
   for (const [mode, value] of Object.entries(modes)) {
-    resolved[mode] = resolveValue(value, tokenMap, new Set([tokenName]), tokenName);
+    resolved[mode] = resolveValue(value, tokenMap, tokenKeys, new Set([tokenName]), tokenName);
   }
   return resolved;
 };
@@ -62,12 +74,25 @@ const resolveModes = (
 export const resolveReferences = (tokens: Token[]): Token[] => {
   const tokenMap = new Map<string, Token>();
   for (const token of tokens) {
-    tokenMap.set(token.name, token);
+    const key = tokenKey(token);
+    if (!key) {
+      continue;
+    }
+    tokenMap.set(key, token);
   }
+  const tokenKeys = buildKeyAliasIndex([...tokenMap.keys()]);
 
   return tokens.map((token) => {
-    const resolvedValue = resolveValue(token.value, tokenMap, new Set([token.name]), token.name);
-    const resolvedModes = token.modes ? resolveModes(token.modes, tokenMap, token.name) : undefined;
+    const resolvedValue = resolveValue(
+      token.value,
+      tokenMap,
+      tokenKeys,
+      new Set([tokenKey(token)]),
+      token.name,
+    );
+    const resolvedModes = token.modes
+      ? resolveModes(token.modes, tokenMap, tokenKeys, tokenKey(token))
+      : undefined;
 
     if (resolvedValue === token.value && resolvedModes === undefined) {
       return token;

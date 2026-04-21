@@ -1,5 +1,6 @@
 import type { CompositeValue, Token } from "./Token";
 import { Color } from "./TokenTypes/Color";
+import { ambiguousKeyMessage, buildKeyAliasIndex, resolveKey, tokenKey } from "./token-keys";
 import { isFirstClassValue } from "./type-classifiers";
 
 export type ValidationSeverity = "error" | "warning";
@@ -78,7 +79,7 @@ const validateValue = (
   value: unknown,
   token: Token,
   label: string,
-  tokenMap: Map<string, Token>,
+  tokenKeys: ReturnType<typeof buildKeyAliasIndex>,
   issue: (severity: ValidationSeverity, tokenName: string, message: string) => void,
 ): void => {
   // Check for empty string values
@@ -99,8 +100,12 @@ const validateValue = (
   // Check references
   if (isRef(value)) {
     const refName = value.match(REF_PATTERN)![1]!;
-    if (!tokenMap.has(refName)) {
+    const resolved = resolveKey(refName, tokenKeys);
+    if (resolved.status === "missing") {
       issue("error", token.name, `${label}Unresolved reference: {${refName}}`);
+    }
+    if (resolved.status === "ambiguous") {
+      issue("error", token.name, `${label}${ambiguousKeyMessage(refName, resolved.candidates)}`);
     }
   }
 
@@ -117,11 +122,19 @@ const validateValue = (
     for (const [field, fieldValue] of Object.entries(value as CompositeValue)) {
       if (isRef(fieldValue)) {
         const refName = (fieldValue as string).match(REF_PATTERN)![1]!;
-        if (!tokenMap.has(refName)) {
+        const resolved = resolveKey(refName, tokenKeys);
+        if (resolved.status === "missing") {
           issue(
             "error",
             token.name,
             `${label}Unresolved reference in field "${field}": {${refName}}`,
+          );
+        }
+        if (resolved.status === "ambiguous") {
+          issue(
+            "error",
+            token.name,
+            `${label}${ambiguousKeyMessage(refName, resolved.candidates)}`,
           );
         }
       }
@@ -173,15 +186,17 @@ export const validate = (tokens: Token[]): ValidationResult => {
     }
 
     if (token.name) {
-      const qualifiedName = token.group ? `${token.group}/${token.name}` : token.name;
+      const qualifiedName = tokenKey(token);
       const count = (names.get(qualifiedName) ?? 0) + 1;
       names.set(qualifiedName, count);
       if (count === 2) {
         issue("warning", token.name, "Duplicate token name");
       }
-      tokenMap.set(token.name, token);
+      tokenMap.set(qualifiedName, token);
     }
   }
+
+  const tokenKeys = buildKeyAliasIndex([...tokenMap.keys()]);
 
   // Validate values (main + modes)
   for (const token of tokens) {
@@ -189,11 +204,11 @@ export const validate = (tokens: Token[]): ValidationResult => {
       continue;
     }
 
-    validateValue(token.value, token, "", tokenMap, issue);
+    validateValue(token.value, token, "", tokenKeys, issue);
 
     if (token.modes) {
       for (const [mode, modeValue] of Object.entries(token.modes)) {
-        validateValue(modeValue, token, `[mode "${mode}"] `, tokenMap, issue);
+        validateValue(modeValue, token, `[mode "${mode}"] `, tokenKeys, issue);
       }
     }
   }
@@ -209,18 +224,23 @@ export const validate = (tokens: Token[]): ValidationResult => {
     }
 
     const refName = (value as string).match(REF_PATTERN)![1]!;
-    if (visited.has(refName)) {
+    const resolved = resolveKey(refName, tokenKeys);
+    if (resolved.status !== "ok") {
+      return false;
+    }
+
+    if (visited.has(resolved.key)) {
       issue("error", originName, `Circular reference: ${[...visited, refName].join(" -> ")}`);
       return true;
     }
 
-    const referenced = tokenMap.get(refName);
+    const referenced = tokenMap.get(resolved.key);
     if (!referenced) {
       return false;
     }
 
     const next = new Set(visited);
-    next.add(refName);
+    next.add(resolved.key);
 
     if (checkCircularValue(referenced.value, originName, next)) {
       return true;
@@ -242,7 +262,7 @@ export const validate = (tokens: Token[]): ValidationResult => {
     if (!token.name) {
       continue;
     }
-    const visited = new Set([token.name]);
+    const visited = new Set([tokenKey(token)]);
 
     if (isRef(token.value)) {
       checkCircularValue(token.value, token.name, visited);

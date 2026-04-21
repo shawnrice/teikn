@@ -75,6 +75,18 @@ describe("validate", () => {
     expect(result.issues.some((i) => i.message.includes("Unresolved reference"))).toBe(true);
   });
 
+  test("detects ambiguous bare references across groups", () => {
+    const tokens: Token[] = [
+      { name: "primary", type: "color", group: "color", value: "#0066cc" },
+      { name: "primary", type: "size", group: "size", value: "16px" },
+      { name: "link", type: "color", value: "{primary}" },
+    ];
+
+    const result = validate(tokens);
+    expect(result.valid).toBe(false);
+    expect(result.issues.some((i) => i.message.includes("Ambiguous token reference"))).toBe(true);
+  });
+
   test("detects circular references", () => {
     const tokens: Token[] = [
       { name: "a", type: "color", value: "{b}" },

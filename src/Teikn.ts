@@ -36,6 +36,7 @@ import {
   TouchTargetPlugin,
 } from "./Plugins";
 import { resolveReferences } from "./resolve";
+import { buildKeyAliasIndex, resolveKey, tokenKey } from "./token-keys";
 import type { ThemeLayer, Token, TokenValue } from "./Token";
 import type { ValidationResult } from "./validate";
 import { validate } from "./validate";
@@ -58,18 +59,24 @@ const applyThemes = (themes: ThemeLayer[], tokens: Token[]): Token[] => {
     return tokens;
   }
 
+  const tokenKeys = buildKeyAliasIndex(tokens.map((token) => tokenKey(token)).filter(Boolean));
   const modeUpdates = new Map<string, Record<string, TokenValue>>();
   for (const layer of themes) {
     for (const [name, value] of Object.entries(layer.overrides)) {
-      if (!modeUpdates.has(name)) {
-        modeUpdates.set(name, {});
+      const resolved = resolveKey(name, tokenKeys);
+      if (resolved.status !== "ok") {
+        throw new Error(`Theme "${layer.name}" could not resolve token "${name}" during apply`);
       }
-      modeUpdates.get(name)![layer.name] = value;
+
+      if (!modeUpdates.has(resolved.key)) {
+        modeUpdates.set(resolved.key, {});
+      }
+      modeUpdates.get(resolved.key)![layer.name] = value;
     }
   }
 
   return tokens.map((token) => {
-    const updates = modeUpdates.get(token.name);
+    const updates = modeUpdates.get(tokenKey(token));
     if (!updates) {
       return token;
     }
