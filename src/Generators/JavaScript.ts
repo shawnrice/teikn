@@ -30,12 +30,12 @@ const defaultExt = (module: JavaScriptModule): string => (module === "cjs" ? "cj
  */
 export class JavaScript extends Generator<JavaScriptOpts> {
   constructor(options: Partial<JavaScriptOpts> = {}) {
-    const module = options.module ?? "esm";
+    const moduleKind = options.module ?? "esm";
     super({
       nameTransformer: camelCase,
       dateFn: getDate,
-      module,
-      ext: defaultExt(module),
+      module: moduleKind,
+      ext: defaultExt(moduleKind),
       ...options,
     });
   }
@@ -88,8 +88,8 @@ export class JavaScript extends Generator<JavaScriptOpts> {
   }
 
   combinator(tokens: Token[]): string {
-    const { nameTransformer, groups, module } = this.options;
-    const isCjs = module === "cjs";
+    const { nameTransformer, groups, module: moduleKind } = this.options;
+    const isCjs = moduleKind === "cjs";
     const decl = isCjs ? "const" : "export const";
 
     const values = tokens.map((t) => this.generateToken(t));

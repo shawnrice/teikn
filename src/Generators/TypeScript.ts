@@ -65,10 +65,10 @@ export class TypeScript extends Generator<TypeScriptOpts> {
     // Forward only explicitly-set user options to each sub-generator,
     // letting each pick its own defaults for anything unset.
     // `module` is JavaScript-only; `loose` is TypeScriptDeclarations-only.
-    const { loose, module, ...shared } = options;
+    const { loose, module: moduleKind, ...shared } = options;
     this.#javascript = new JavaScript({
       ...shared,
-      ...(module !== undefined && { module }),
+      ...(moduleKind !== undefined && { module: moduleKind }),
     });
     this.#declarations = new TypeScriptDeclarations({
       ...shared,
