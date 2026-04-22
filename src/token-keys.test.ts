@@ -73,8 +73,7 @@ describe("buildKeyAliasIndex + resolveKey", () => {
   test("empty input returns an empty index", () => {
     const index = buildKeyAliasIndex([]);
     expect(index.fullKeys.size).toBe(0);
-    expect(index.uniqueBare.size).toBe(0);
-    expect(index.ambiguousBare.size).toBe(0);
+    expect(index.bareLookup.size).toBe(0);
     expect(resolveKey("anything", index).status).toBe("missing");
   });
 });

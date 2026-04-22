@@ -5,10 +5,22 @@ export type KeyResolution =
   | { status: "missing" }
   | { status: "ambiguous"; candidates: string[] };
 
+/**
+ * Internal value stored for each bare name in the index. A bare name is
+ * either `unique` (points at one full key) or `ambiguous` (lists all
+ * colliding full keys). The discriminated-union shape collapses the
+ * prior two-Map arrangement, eliminating the "bare appears in exactly
+ * one of the two maps" cross-field invariant.
+ */
+type BareLookup = { status: "unique"; key: string } | { status: "ambiguous"; candidates: string[] };
+
+/**
+ * Readonly view of the resolution index. Built by `buildKeyAliasIndex`;
+ * consumers should treat it as opaque and use `resolveKey` for lookups.
+ */
 export type KeyAliasIndex = {
-  fullKeys: Set<string>;
-  uniqueBare: Map<string, string>;
-  ambiguousBare: Map<string, string[]>;
+  readonly fullKeys: ReadonlySet<string>;
+  readonly bareLookup: ReadonlyMap<string, BareLookup>;
 };
 
 const KEY_SEPARATOR = ".";
@@ -43,18 +55,17 @@ export const buildKeyAliasIndex = (keys: string[]): KeyAliasIndex => {
     byBare.set(bare, list);
   }
 
-  const uniqueBare = new Map<string, string>();
-  const ambiguousBare = new Map<string, string[]>();
-
+  const bareLookup = new Map<string, BareLookup>();
   for (const [bare, matches] of byBare) {
-    if (matches.length === 1) {
-      uniqueBare.set(bare, matches[0]!);
-    } else {
-      ambiguousBare.set(bare, matches);
-    }
+    bareLookup.set(
+      bare,
+      matches.length === 1
+        ? { status: "unique", key: matches[0]! }
+        : { status: "ambiguous", candidates: matches },
+    );
   }
 
-  return { fullKeys, uniqueBare, ambiguousBare };
+  return { fullKeys, bareLookup };
 };
 
 /**
@@ -72,17 +83,14 @@ export const resolveKey = (value: string, index: KeyAliasIndex): KeyResolution =
     return { status: "ok", key: value, bare: bareKey(value) };
   }
 
-  const ambiguous = index.ambiguousBare.get(value);
-  if (ambiguous) {
-    return { status: "ambiguous", candidates: ambiguous };
+  const bare = index.bareLookup.get(value);
+  if (!bare) {
+    return { status: "missing" };
   }
-
-  const match = index.uniqueBare.get(value);
-  if (match) {
-    return { status: "ok", key: match, bare: value };
+  if (bare.status === "ambiguous") {
+    return { status: "ambiguous", candidates: bare.candidates };
   }
-
-  return { status: "missing" };
+  return { status: "ok", key: bare.key, bare: value };
 };
 
 export const ambiguousKeyMessage = (value: string, candidates: string[]): string =>
