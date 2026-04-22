@@ -51,7 +51,7 @@ export class ScssVars extends Scss {
     return name ? `$${name}` : null;
   }
 
-  protected override prepareTokens(...args: Parameters<Generator["prepareTokens"]>): Token[] {
+  override prepareTokens(...args: Parameters<Generator["prepareTokens"]>): Token[] {
     this.#refMap = this.buildReferenceMap(args[0]);
     args[0] = topoSort(args[0], this.#refMap);
     return super.prepareTokens(...args);

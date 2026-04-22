@@ -235,7 +235,7 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
     return String(value);
   }
 
-  protected prepareTokens(tokens: Token[], plugins: Plugin[]): Token[] {
+  prepareTokens(tokens: Token[], plugins: Plugin[]): Token[] {
     const sorted = sortPlugins(plugins);
     return tokens
       .map((t) => this.stringifyValues(t))

@@ -88,11 +88,7 @@ describe("TypeScript meta generator", () => {
     );
   });
 
-  // PHASE 0 — bug demonstrator. Plugins with `outputType: "mjs"` transform
-  // only the runtime in the meta; the declarations file gets the pre-transform
-  // literal value. Result: `.mjs` emits `rgba(...)` but `.d.ts` declares
-  // `readonly primary: "#ff0000"`, breaking strict-mode TS consumers.
-  test.skip("plugin targeting .mjs applies consistently to both runtime and declarations in meta", () => {
+  test("plugin targeting .mjs applies consistently to both runtime and declarations in meta", () => {
     const uppercasePlugin = {
       tokenType: "color",
       outputType: "mjs",
