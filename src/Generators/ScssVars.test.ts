@@ -66,11 +66,12 @@ describe("SCSS Vars Generator tests", () => {
     expect(result).not.toContain("[object Object]");
   });
 
-  test("generateToken with a generic composite value emits JSON", () => {
-    // Unknown-shape composites (anything other than border) are now
-    // serialized as JSON so they're clearly not-a-CSS-shorthand at a
-    // glance, rather than field-order-dependent `Object.values().join(" ")`
-    // which accidentally matched no real CSS shorthand for any shape.
+  test("generateToken with a generic composite value produces space-separated values", () => {
+    // cssValue emits composite shapes as space-joined values for use in
+    // CSS shorthand contexts (`font:` etc.). The ScssVars output is an
+    // SCSS variable declaration, not a map-entry, so an internal comma
+    // won't collide with map parsing — this generator doesn't need the
+    // paren-wrapping that Scss does.
     const gen = new Generator();
     const token: Token = {
       name: "typographyBody",
@@ -78,7 +79,7 @@ describe("SCSS Vars Generator tests", () => {
       value: { fontFamily: "Arial", fontSize: "1rem" },
     };
     const result = gen.generateToken(token);
-    expect(result).toContain('{"fontFamily":"Arial","fontSize":"1rem"}');
+    expect(result).toContain("Arial 1rem");
   });
 
   test("generateToken includes usage comment when present", () => {

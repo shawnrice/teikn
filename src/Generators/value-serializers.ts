@@ -18,13 +18,35 @@ export const cssValue = (value: unknown): string => {
     // border shorthand: width style color
     return [obj.width, obj.style, obj.color].filter(Boolean).join(" ");
   }
-  // Unknown composite shape. The previous implementation joined
-  // Object.values with a space — producing field-order-dependent output
-  // that accidentally matched no CSS shorthand for any shape other than
-  // border. Emit as JSON instead so users see at a glance that the token
-  // isn't a valid CSS value and should be consumed through a structured
-  // generator (JSON / JavaScript / DTCG).
-  return JSON.stringify(value);
+  // Unknown composite shape: space-join the values. This matches CSS
+  // shorthand order for typography (`font:` shorthand) when field order
+  // is roughly family, size, weight, line-height — fragile but usable
+  // in a CSS property-value context. SCSS contexts that put this in a
+  // map entry need to wrap the output in parens themselves to keep
+  // internal commas from being parsed as map-entry separators; see
+  // `cssMapValue` below.
+  return Object.values(obj).join(" ");
+};
+
+/**
+ * Serialize a value for use as an SCSS map-entry value. Wraps compound
+ * objects whose serialization contains a top-level comma in parens so
+ * SCSS parses them as a single nested list — otherwise the comma inside
+ * a typography composite's fontFamily (or similar) would be treated as
+ * a map-entry separator and mangle the map.
+ *
+ * Scalars like `rgb(1, 2, 3)` also contain commas but don't need
+ * wrapping — the parens are part of the function-call syntax, which
+ * SCSS's parser already treats as one token.
+ */
+export const cssMapValue = (value: unknown): string => {
+  const serialized = cssValue(value);
+  const isCompositeObject =
+    typeof value === "object" &&
+    value !== null &&
+    !Array.isArray(value) &&
+    !isFirstClassValue(value);
+  return isCompositeObject && serialized.includes(",") ? `(${serialized})` : serialized;
 };
 
 // ─── JS value serialization ─────────────────────────────────────

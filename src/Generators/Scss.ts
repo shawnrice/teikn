@@ -6,7 +6,7 @@ import type { Token } from "../Token";
 import { getDate } from "../utils";
 import type { GeneratorInfo, GeneratorOptions } from "./Generator";
 import { Generator } from "./Generator";
-import { cssValue } from "./value-serializers";
+import { cssMapValue } from "./value-serializers";
 
 const defaultOptions = {
   ext: "scss",
@@ -56,7 +56,7 @@ export class Scss extends Generator<ScssOpts> {
     // prettier-ignore
     return [
       usage && `  /// ${usage}`,
-      `  ${key}: ${cssValue(value)},`,
+      `  ${key}: ${cssMapValue(value)},`,
     ]
       .filter(Boolean)
       .join(EOL);
@@ -66,7 +66,7 @@ export class Scss extends Generator<ScssOpts> {
     const values = tokens.map((token) => this.generateToken(token));
     const lines = [`// prettier-ignore`, `$token-values: (`, values.join(EOL), `);`];
 
-    const modeMap = this.buildModeMap(tokens, (key, val) => `    ${key}: ${cssValue(val)},`);
+    const modeMap = this.buildModeMap(tokens, (key, val) => `    ${key}: ${cssMapValue(val)},`);
 
     if (modeMap.size > 0) {
       lines.push("");

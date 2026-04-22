@@ -73,4 +73,31 @@ describe("Scss Generator tests", () => {
     expect(output).toContain("dark: (");
     expect(output).toContain("dim: (");
   });
+
+  test("composite values with internal commas are wrapped in parens (SCSS map safety)", () => {
+    // Typography with a comma-containing fontFamily (a common, correct form)
+    // used to leak the comma at the top of the SCSS map entry, making the
+    // parser treat it as a map-entry separator and mangling the whole map.
+    // Wrapping the compound value in `( ... )` groups it as a single list.
+    const tokens: Token[] = [
+      {
+        name: "typographyDisplayLg",
+        type: "typography",
+        value: {
+          fontFamily: '"Quicksand", sans-serif',
+          fontSize: "2.25rem",
+          fontWeight: 700,
+          lineHeight: 1.2,
+        },
+      },
+    ];
+    const output = new Generator(testOpts).generate(tokens);
+
+    // The entry is wrapped in parens and does not emit raw JSON.
+    expect(output).toMatch(/typography-display-lg:\s*\(/);
+    // The fontFamily is preserved inside.
+    expect(output).toContain('"Quicksand", sans-serif');
+    // No JSON blob leaked through.
+    expect(output).not.toContain('{"fontFamily"');
+  });
 });
