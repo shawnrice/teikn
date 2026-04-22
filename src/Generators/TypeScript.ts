@@ -24,10 +24,8 @@ export type TypeScriptOpts = {
 } & GeneratorOptions;
 
 const defaultOptions = {
-  // `ext` is inert for this meta generator — it never emits a single
-  // file and `filenames()` / `generateFiles()` are overridden. Kept
-  // as `d.ts` so the seldom-used `this.file` accessor returns
-  // something coherent with one of the actual outputs.
+  // `ext` is inert — the meta never emits a single file. `filenames()`
+  // and `generateFiles()` are overridden to enumerate the real outputs.
   ext: "d.ts",
   nameTransformer: camelCase,
   dateFn: getDate,
@@ -47,11 +45,9 @@ export class TypeScript extends Generator<TypeScriptOpts> {
   #declarations: TypeScriptDeclarations;
 
   constructor(options: Partial<TypeScriptOpts> = {}) {
-    // `ext` has no meaningful value here — the runtime's extension is
-    // derived from `module` and the declarations always emit `.d.ts`.
-    // Reject it at construction so a caller's intent doesn't silently
-    // fail (passing `ext` previously affected only `this.file`, which
-    // is meaningless on a multi-file generator).
+    // ext is meaningless here: runtime ext derives from module, and
+    // declarations are always .d.ts. Reject explicitly so a caller's
+    // intent doesn't silently no-op.
     if (options.ext !== undefined) {
       throw new Error(
         "TypeScript meta generator does not accept an `ext` option. " +
@@ -62,9 +58,8 @@ export class TypeScript extends Generator<TypeScriptOpts> {
 
     super({ ...defaultOptions, ...options });
 
-    // Forward only explicitly-set user options to each sub-generator,
-    // letting each pick its own defaults for anything unset.
-    // `module` is JavaScript-only; `loose` is TypeScriptDeclarations-only.
+    // `module` is JavaScript-only, `loose` is TypeScriptDeclarations-only;
+    // strip before forwarding shared opts.
     const { loose, module: moduleKind, ...shared } = options;
     this.#javascript = new JavaScript({
       ...shared,
@@ -84,7 +79,6 @@ export class TypeScript extends Generator<TypeScriptOpts> {
     };
   }
 
-  // Meta generator has no emission of its own; generateFiles() delegates.
   // oxlint-disable-next-line class-methods-use-this
   generateToken(): string {
     return "";

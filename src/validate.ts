@@ -72,11 +72,6 @@ const validateCompositeShape = (type: string, value: CompositeValue): string | n
   }
 };
 
-/**
- * Check a reference string against the alias index and report any
- * missing / ambiguous issue. The switch ensures we handle every
- * `KeyResolution` status explicitly.
- */
 const checkRef = (
   refValue: string,
   tokenKeys: KeyAliasIndex,
@@ -103,10 +98,7 @@ const checkRef = (
   }
 };
 
-/**
- * Validate a single value (main or mode) for common issues.
- * Factored out so both token.value and token.modes[x] use the same checks.
- */
+/** Applied to both `token.value` and each `token.modes[x]`. */
 const validateValue = (
   value: unknown,
   token: Token,
@@ -114,12 +106,10 @@ const validateValue = (
   tokenKeys: KeyAliasIndex,
   issue: (severity: ValidationSeverity, tokenName: string, message: string) => void,
 ): void => {
-  // Check for empty string values
   if (value === "") {
     issue("warning", token.name, `${label}Empty string value`);
   }
 
-  // Check color parseability
   if (
     COLOR_TYPES.has(token.type) &&
     typeof value === "string" &&
@@ -129,12 +119,10 @@ const validateValue = (
     issue("warning", token.name, `${label}Color value "${value}" could not be parsed`);
   }
 
-  // Check references
   if (isRef(value)) {
     checkRef(value, tokenKeys, token.name, "Unresolved reference", label, issue);
   }
 
-  // Check composite shapes
   if (COMPOSITE_TYPES.has(token.type) && isComposite(value)) {
     const shapeError = validateCompositeShape(token.type, value as CompositeValue);
     if (shapeError) {
@@ -142,7 +130,6 @@ const validateValue = (
     }
   }
 
-  // Check for references inside composite field values
   if (isComposite(value)) {
     for (const [field, fieldValue] of Object.entries(value as CompositeValue)) {
       if (isRef(fieldValue)) {
@@ -230,8 +217,8 @@ export const validate = (tokens: Token[]): ValidationResult => {
     }
   }
 
-  // Check for circular references. Walks refs (follow the chain),
-  // composites (visit each field), and modes of referenced tokens.
+  // Walks refs (follow the chain), composites (visit each field),
+  // and modes of referenced tokens.
   const checkCircularValue = (
     value: unknown,
     originName: string,
@@ -261,8 +248,7 @@ export const validate = (tokens: Token[]): ValidationResult => {
       return true;
     }
 
-    // The resolved key came from tokenKeys, which was built from tokenMap.keys(),
-    // so the lookup is guaranteed to hit.
+    // invariant: tokenKeys mirrors tokenMap
     const referenced = tokenMap.get(resolved.key)!;
     const next = new Set(visited);
     next.add(resolved.key);
@@ -271,7 +257,6 @@ export const validate = (tokens: Token[]): ValidationResult => {
       return true;
     }
 
-    // Check modes of the referenced token for cycles back
     if (referenced.modes) {
       for (const modeVal of Object.values(referenced.modes)) {
         if (checkCircularValue(modeVal, originName, next)) {

@@ -9,15 +9,10 @@ import { Generator } from "./Generator";
 import { quoteKey } from "./value-serializers";
 
 /**
- * Produce a TypeScript type annotation for a token value.
- *
- * When `loose` is false (default), values become their literal type
- * (`"#0066cc"`, `16`, `true`), so `tokens.primary` has the narrow type
- * `"#0066cc"` rather than `string`. This enables exhaustive unions
- * like `type TokenColor = typeof tokens[keyof typeof tokens]`.
- *
- * When `loose` is true, values widen to their primitive type family
- * (`string`, `number`, `boolean`) — the legacy pre-alpha.11 behavior.
+ * Produce a TypeScript type annotation for a token value. Narrow by
+ * default (literal types like `"#0066cc"`, `16`, `true`); widened to
+ * the primitive type family (`string`, `number`, `boolean`) when
+ * `loose` is true.
  */
 const toTypeAnnotation = (value: unknown, loose: boolean): string => {
   if (value === null) {
@@ -25,9 +20,6 @@ const toTypeAnnotation = (value: unknown, loose: boolean): string => {
   }
   if (typeof value === "object" && !Array.isArray(value)) {
     // First-class values (Color, Dimension, etc.) stringify to string.
-    // By the time values reach the generator the top-level value should
-    // already be a string; this branch handles any first-class object
-    // surfaced inside a composite field.
     if (isFirstClassValue(value)) {
       return "string";
     }

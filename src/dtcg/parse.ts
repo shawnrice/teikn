@@ -78,7 +78,6 @@ const walk = (
         token.modes = modes;
       }
 
-      // Preserve $description as usage, prepending [DEPRECATED] if needed
       const deprecated = child.$deprecated;
       const description = child.$description;
 

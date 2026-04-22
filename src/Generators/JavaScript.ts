@@ -25,8 +25,7 @@ const defaultExt = (module: JavaScriptModule): string => (module === "cjs" ? "cj
 
 /**
  * Emit tokens as a JavaScript module. Defaults to ESM (`.mjs`); pass
- * `module: "cjs"` for CommonJS (`.cjs`). Extensions are derived from
- * the module system but can be overridden via `ext`.
+ * `module: "cjs"` for CommonJS (`.cjs`).
  */
 export class JavaScript extends Generator<JavaScriptOpts> {
   constructor(options: Partial<JavaScriptOpts> = {}) {
