@@ -56,9 +56,7 @@ const createResolver = (tokenMap: Map<string, Token>, tokenKeys: KeyAliasIndex) 
     }
 
     if (seen.has(resolved.key)) {
-      throw new Error(
-        `Circular reference detected: ${[...seen, refName].join(" -> ")}`,
-      );
+      throw new Error(`Circular reference detected: ${[...seen, refName].join(" -> ")}`);
     }
 
     // The resolved key came from tokenKeys, which was built from tokenMap.keys(),

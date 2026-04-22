@@ -56,11 +56,7 @@ describe("Storybook generator", () => {
     expect(output).toContain('from "./design"');
   });
 
-  // PHASE 0 — bug demonstrator. detectImportSource iterates siblings and
-  // returns on the first `instanceof JavaScript` match, even when a
-  // TypeScript meta sibling exists later in the list. The meta should win
-  // because it owns more of the consumer-facing emission (.mjs + .d.ts).
-  test.skip("It prefers TypeScript meta sibling over a standalone JavaScript when both are present", () => {
+  test("It prefers TypeScript meta sibling over a standalone JavaScript when both are present", () => {
     const sb = new Storybook({ dateFn: fixedDate, version: "test" });
     const js = new JavaScript({ filename: "js-only" });
     const ts = new TypeScript({ filename: "meta" });

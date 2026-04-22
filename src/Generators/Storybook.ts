@@ -207,18 +207,20 @@ export class Storybook extends Generator<StorybookOpts> {
     if (this.options.importPath) {
       return this.options.importPath;
     }
-    for (const sibling of this.siblings) {
-      if (sibling instanceof JavaScript) {
-        return `./${sibling.file.replace(/\.[^.]+$/, "")}`;
+    // Prefer TypeScript meta siblings over plain JavaScript siblings: the
+    // meta owns more of the consumer surface (.mjs + .d.ts pair) and a user
+    // who constructed both almost certainly intends the meta to be the
+    // canonical import target.
+    const meta = this.siblings.find((g): g is TypeScript => g instanceof TypeScript);
+    if (meta) {
+      const runtime = meta.filenames().find((f) => /\.(mjs|cjs)$/.test(f));
+      if (runtime) {
+        return `./${runtime.replace(/\.[^.]+$/, "")}`;
       }
-      if (sibling instanceof TypeScript) {
-        // TypeScript meta emits `<base>.mjs|.cjs` + `<base>.d.ts`; import from
-        // the runtime file's base so both JS and TS consumers resolve correctly.
-        const runtime = sibling.filenames().find((f) => /\.(mjs|cjs)$/.test(f));
-        if (runtime) {
-          return `./${runtime.replace(/\.[^.]+$/, "")}`;
-        }
-      }
+    }
+    const js = this.siblings.find((g): g is JavaScript => g instanceof JavaScript);
+    if (js) {
+      return `./${js.file.replace(/\.[^.]+$/, "")}`;
     }
     return "./tokens";
   }

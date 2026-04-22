@@ -254,10 +254,7 @@ describe("parseDtcg", () => {
     expect(tokens[0]!.modes!.dark).toBeInstanceOf(Color);
   });
 
-  // PHASE 0 — bug demonstrator. `null` is commonly used in $extensions.mode to
-  // mean "no override in this mode". The parser currently passes null through
-  // dtcgValueToTeikn which crashes on `value.components`.
-  test.skip("$extensions.mode value of null does not crash the parser", () => {
+  test("$extensions.mode value of null does not crash the parser", () => {
     const doc: DtcgDocument = {
       surface: {
         $value: { colorSpace: "srgb", components: [1, 1, 1] },
