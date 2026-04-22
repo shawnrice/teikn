@@ -30,7 +30,10 @@ type ResolveModesArgs = {
 const createResolver = (tokenMap: Map<string, Token>, tokenKeys: KeyAliasIndex) => {
   const resolveValue = ({ value, seen, currentName }: ResolveArgs): any => {
     if (isCompositeValue(value)) {
-      const resolved: Record<string, any> = {};
+      // Use a null-prototype object so a field literally named `__proto__`
+      // (possible from JSON-parsed input) is stored as a data property
+      // rather than invoking the setter and changing the result's prototype.
+      const resolved: Record<string, any> = Object.create(null);
       for (const [k, v] of Object.entries(value)) {
         resolved[k] = resolveValue({ value: v, seen, currentName });
       }
@@ -53,26 +56,41 @@ const createResolver = (tokenMap: Map<string, Token>, tokenKeys: KeyAliasIndex) 
     }
 
     if (seen.has(resolved.key)) {
-      throw new Error(`Circular reference detected: ${currentName} -> ${refName}`);
+      throw new Error(
+        `Circular reference detected: ${[...seen, refName].join(" -> ")}`,
+      );
     }
 
     // The resolved key came from tokenKeys, which was built from tokenMap.keys(),
     // so the lookup is guaranteed to hit.
     const referenced = tokenMap.get(resolved.key)!;
-    // Immutably extend `seen` so that sibling composite fields referencing
-    // the same ancestor don't see each other's resolution state — which
-    // would spuriously trigger "circular reference detected".
+    // Fresh Set per branch: sibling composite fields resolving the same
+    // ancestor must not share visited state (false positive cycle).
     const next = new Set(seen);
     next.add(resolved.key);
-    return resolveValue({ value: referenced.value, seen: next, currentName: referenced.name });
+    return resolveValue({
+      value: referenced.value,
+      seen: next,
+      currentName: tokenKey(referenced),
+    });
   };
 
-  const resolveModes = ({ modes, tokenName }: ResolveModesArgs): Record<string, any> => {
+  const resolveModes = ({
+    modes,
+    tokenName,
+  }: ResolveModesArgs): Record<string, any> | undefined => {
     const resolved: Record<string, any> = {};
+    let changed = false;
     for (const [mode, value] of Object.entries(modes)) {
-      resolved[mode] = resolveValue({ value, seen: new Set([tokenName]), currentName: tokenName });
+      const next = resolveValue({ value, seen: new Set([tokenName]), currentName: tokenName });
+      resolved[mode] = next;
+      if (next !== value) {
+        changed = true;
+      }
     }
-    return resolved;
+    // Return undefined when nothing changed so the caller's identity
+    // short-circuit can skip the shallow clone for literal-only modes.
+    return changed ? resolved : undefined;
   };
 
   return { resolveValue, resolveModes };
@@ -99,7 +117,7 @@ export const resolveReferences = (tokens: Token[]): Token[] => {
     const resolvedValue = resolveValue({
       value: token.value,
       seen: new Set([tokenKey(token)]),
-      currentName: token.name,
+      currentName: tokenKey(token),
     });
     const resolvedModes = token.modes
       ? resolveModes({ modes: token.modes, tokenName: tokenKey(token) })

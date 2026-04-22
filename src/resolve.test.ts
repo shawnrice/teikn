@@ -50,10 +50,7 @@ describe("resolveReferences", () => {
     expect(() => resolveReferences(tokens)).toThrow("Circular reference");
   });
 
-  // PHASE 0 — bug demonstrator. Currently the error contains only the last hop
-  // (`c -> a`) instead of the full walked chain (`a -> b -> c -> a`).
-  // validate.ts:260 builds the right chain; resolve.ts should match.
-  test.skip("circular reference error includes the full chain, not just the last hop", () => {
+  test("circular reference error includes the full chain, not just the last hop", () => {
     const tokens: Token[] = [
       { name: "a", type: "color", value: "{b}" },
       { name: "b", type: "color", value: "{c}" },
@@ -63,10 +60,7 @@ describe("resolveReferences", () => {
     expect(() => resolveReferences(tokens)).toThrow(/a\s*->\s*b\s*->\s*c\s*->\s*a/);
   });
 
-  // PHASE 0 — bug demonstrator. resolve.ts:67 passes `referenced.name` (bare)
-  // as the recursive currentName. For chained refs through grouped tokens, an
-  // error deep in the chain reports the bare name instead of the qualified key.
-  test.skip("chained-ref unresolved error reports the qualified name of the source token", () => {
+  test("chained-ref unresolved error reports the qualified name of the source token", () => {
     const tokens: Token[] = [
       { name: "primary", type: "color", group: "color", value: "{missing}" },
       { name: "link", type: "color", value: "{color.primary}" },
@@ -112,11 +106,7 @@ describe("resolveReferences", () => {
     expect(resolved[1]!.value).toBe("#0066cc");
   });
 
-  // PHASE 0 — bug demonstrator. resolveModes always returns a fresh object,
-  // so resolveReferences always clones tokens that have modes, even when no
-  // refs needed resolution. Breaks the "return input unchanged when nothing
-  // changed" identity contract used by downstream stage gates.
-  test.skip("tokens with only literal modes preserve object identity through resolveReferences", () => {
+  test("tokens with only literal modes preserve object identity through resolveReferences", () => {
     const tokens: Token[] = [
       {
         name: "surface",
@@ -130,13 +120,7 @@ describe("resolveReferences", () => {
     expect(result[0]).toBe(tokens[0]);
   });
 
-  // PHASE 0 — bug demonstrator. resolveValue builds composite output via
-  // `const resolved: Record<string, any> = {}`, which has Object.prototype.
-  // A composite field literally named `__proto__` (possible from JSON.parse
-  // input) triggers the `__proto__` setter and changes the resolved object's
-  // prototype. The field value is lost (not a data property), and the
-  // resolved object inherits the attacker-controlled prototype.
-  test.skip("composite __proto__ field is stored as a data property, not a prototype setter", () => {
+  test("composite __proto__ field is stored as a data property, not a prototype setter", () => {
     const payload = JSON.parse('{"__proto__": {"polluted": true}}');
     const tokens: Token[] = [{ name: "obj", type: "composite", value: payload }];
     const result = resolveReferences(tokens);
