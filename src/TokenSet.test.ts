@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 
 import type { Token } from "./Token";
 import { composeTokenSets, composeTokenSetsAsModes, tokenSet } from "./TokenSet";
+import { validate } from "./validate";
 
 const makeToken = (name: string, type: string, value: any): Token => ({ name, type, value });
 
@@ -269,6 +270,48 @@ describe("TokenSet", () => {
       expect(() => composeTokenSetsAsModes(core, { dark })).toThrow(
         'missing base token "size.primary"',
       );
+    });
+
+    test("composite mode values compose and pass validate", () => {
+      const lightTypography: Token = {
+        name: "heading",
+        type: "typography",
+        value: {
+          fontFamily: "Inter",
+          fontSize: "1rem",
+          fontWeight: 400,
+          lineHeight: 1.2,
+        },
+      };
+      const darkTypography: Token = {
+        name: "heading",
+        type: "typography",
+        value: {
+          fontFamily: "Inter",
+          fontSize: "1.125rem",
+          fontWeight: 400,
+          lineHeight: 1.2,
+        },
+      };
+
+      const result = composeTokenSetsAsModes(tokenSet("light", [lightTypography]), {
+        dark: tokenSet("dark", [darkTypography]),
+      });
+
+      expect(result[0]!.modes!.dark).toEqual(darkTypography.value);
+
+      const validation = validate(result);
+      expect(validation.valid).toBe(true);
+    });
+  });
+
+  describe("zero-input edge cases", () => {
+    test("composeTokenSets() with no sets returns an empty array", () => {
+      expect(composeTokenSets()).toEqual([]);
+    });
+
+    test("composeTokenSets called only with empty sets returns []", () => {
+      expect(composeTokenSets(tokenSet("a"), tokenSet("b"))).toEqual([]);
     });
   });
 });

@@ -87,4 +87,37 @@ describe("TypeScript meta generator", () => {
       "TypeScript meta generator does not accept an `ext` option",
     );
   });
+
+  // PHASE 0 — bug demonstrator. Plugins with `outputType: "mjs"` transform
+  // only the runtime in the meta; the declarations file gets the pre-transform
+  // literal value. Result: `.mjs` emits `rgba(...)` but `.d.ts` declares
+  // `readonly primary: "#ff0000"`, breaking strict-mode TS consumers.
+  test.skip("plugin targeting .mjs applies consistently to both runtime and declarations in meta", () => {
+    const uppercasePlugin = {
+      tokenType: "color",
+      outputType: "mjs",
+      runAfter: [],
+      transform(token: Token): Token {
+        return { ...token, value: (token.value as string).toUpperCase() };
+      },
+    } as unknown as never;
+
+    const files = new TypeScript({ dateFn: fixedDate }).generateFiles(
+      [{ name: "primary", type: "color", value: "#ff0000" }],
+      [uppercasePlugin],
+    );
+    const mjs = files.get("tokens.mjs")!;
+    const dts = files.get("tokens.d.ts")!;
+
+    // If the runtime transformed `#ff0000` to `#FF0000`, the declarations
+    // literal type must match. Otherwise TS consumers see a type mismatch.
+    const runtimeHasUpper = mjs.includes("#FF0000");
+    const declHasUpper = dts.includes('"#FF0000"');
+    expect(runtimeHasUpper).toBe(declHasUpper);
+  });
+
+  // NOTE: M1 (`TypeScriptDeclarations.ts:129` double-applies nameTransformer)
+  // requires a name-mutating plugin upstream (e.g. NameConventionPlugin) for
+  // the bug to manifest. Triggering it via .generateFiles() alone is
+  // insufficient. Will exercise via the Teikn pipeline in Phase 1.
 });

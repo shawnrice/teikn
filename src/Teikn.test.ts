@@ -287,5 +287,61 @@ describe("Teikn", () => {
       const output = writer.generateToStrings([]);
       expect([...output.keys()].toSorted()).toEqual(["extra.json", "tokens.d.ts", "tokens.mjs"]);
     });
+
+    test("two multi-file generators with overlapping filenames throws at construction", () => {
+      expect(
+        () =>
+          new Teikn({
+            generators: [
+              new MultiFile({ filename: "tokens" }),
+              new MultiFile({ filename: "tokens" }),
+            ],
+          }),
+      ).toThrow("Duplicate generator output filenames");
+    });
+  });
+
+  describe("applyThemes (gap coverage)", () => {
+    test("theme override using a qualified ref value resolves through the pipeline", () => {
+      const colors = group("color", {
+        accent: "#ff0000",
+        bg: "#ffffff",
+      });
+
+      const dark = theme("dark", colors, {
+        // Override value is itself a reference to another token.
+        bg: "{color.accent}" as never,
+      });
+
+      const writer = new Teikn({
+        generators: [new Json()],
+        themes: [dark],
+      });
+
+      const json = JSON.parse(writer.generateToStrings(colors).get("tokens.json")!);
+      // After resolveReferences, the dark mode value should be the resolved
+      // accent (#ff0000), not the literal `"{color.accent}"` string.
+      // Json output keys are post-prefixTokenNames + camelCase: "color-bg" → "colorBg".
+      expect(json.colorBg.modes.dark).toBe("#ff0000");
+    });
+
+    // NOTE: The "applyThemes error distinguishes missing from ambiguous" case
+    // is real (silent-failure-hunter SF-3) but hard to trigger via the normal
+    // flow because theme() qualifies keys at construction. Will fix the
+    // message shape directly in Phase 1 alongside SF-3.
+
+    test("applyThemes error fires when token universe drifts from theme", () => {
+      const colors = group("color", { primary: "#0066cc" });
+      const dark = theme("dark", colors, { primary: "#3399ff" });
+
+      const writer = new Teikn({
+        generators: [new Json()],
+        themes: [dark],
+      });
+
+      // Pass an empty token list — the theme's stored override key
+      // ("color.primary") can no longer resolve.
+      expect(() => writer.generateToStrings([])).toThrow(/could not resolve/);
+    });
   });
 });

@@ -14,6 +14,10 @@ describe("tokenKey", () => {
   test("returns empty string when name is missing", () => {
     expect(tokenKey({ name: "", group: "color" })).toBe("");
   });
+
+  test("treats empty-string group as missing (returns bare name)", () => {
+    expect(tokenKey({ name: "primary", group: "" })).toBe("primary");
+  });
 });
 
 describe("buildKeyAliasIndex + resolveKey", () => {
@@ -64,5 +68,13 @@ describe("buildKeyAliasIndex + resolveKey", () => {
     const index = buildKeyAliasIndex(["", "color.primary", ""]);
     expect(resolveKey("primary", index).status).toBe("ok");
     expect(resolveKey("", index).status).toBe("missing");
+  });
+
+  test("empty input returns an empty index", () => {
+    const index = buildKeyAliasIndex([]);
+    expect(index.fullKeys.size).toBe(0);
+    expect(index.uniqueBare.size).toBe(0);
+    expect(index.ambiguousBare.size).toBe(0);
+    expect(resolveKey("anything", index).status).toBe("missing");
   });
 });
