@@ -33,6 +33,18 @@
   `value: undefined`, producing a landmine for every downstream generator.
   The new error message is
   `composeTokenSetsAsModes(): missing base token "X" for mode "Y"`.
+- **`composeTokenSets` and `composeTokenSetsAsModes` key tokens by
+  qualified name (`group.name`).** Two grouped tokens with the same
+  short name in different groups (e.g. `color.primary` and `size.primary`)
+  now coexist instead of silently collapsing last-wins. Override matching
+  in `composeTokenSets` and mode matching in `composeTokenSetsAsModes`
+  both use qualified keys; the latter's missing-base error message now
+  reports the qualified name.
+- **`TypeScript` meta generator throws if given an `ext` option.** The
+  meta emits `.mjs`/`.cjs` (from `module`) plus `.d.ts`; an `ext` option
+  has no meaningful target and previously was silently ignored. Use
+  `module` to switch the runtime extension, or construct `JavaScript` /
+  `TypeScriptDeclarations` directly for per-file `ext` control.
 - **`ThemeLayer.tokenNames` now stores qualified names** (e.g.
   `color.background` instead of `background`) when tokens live inside a
   group. Code that inspected `tokenNames` directly may need to adapt;
@@ -72,13 +84,21 @@
 - **`TypeScriptDeclarations.loose` option.** Restores widened
   primitive types (`string`, `number`, `boolean`) for consumers who
   need them. Default is `false` — literal narrow types.
-- **Group-aware reference resolution.** `{primary}` now resolves to
+- **Group-aware reference resolution.** `{primary}` resolves to
   `color.primary` when a token's bare name is unambiguous across groups.
-  Ambiguous references throw with a diagnostic listing the candidates
-  (e.g. `Ambiguous token reference: {primary} matches color.primary, size.primary`)
-  so the user can rename one side of the clash. Works in
-  `resolveReferences`, `validate`, `theme(...)` overrides, and
-  `applyThemeLayers`.
+  When ambiguous, you can disambiguate by writing the qualified
+  reference: `{color.primary}` resolves directly to that token regardless
+  of how many other groups share the bare name. Ambiguous bare references
+  still throw with a diagnostic listing the candidates
+  (e.g. `Ambiguous token reference: {primary} matches color.primary, size.primary`).
+  Works in `resolveReferences`, `validate`, `theme(...)` overrides, and
+  `applyThemeLayers`. The `theme()` `overrides` map also accepts
+  qualified keys (`{ "color.primary": "#3399ff" }`) for the same
+  disambiguation reason.
+- **`KeyAliasIndex` type exported from `token-keys.ts`.** Previously
+  consumers had to use `ReturnType<typeof buildKeyAliasIndex>`; the
+  named type is now part of the public surface for anyone writing
+  custom resolvers.
 - **DTCG `$extensions.mode` parsing.** `parseDtcg` now reads mode
   variants from `$extensions.mode` and converts each entry into a Teikn
   mode value, preserving aliases verbatim. Lets DTCG documents with
@@ -94,6 +114,14 @@
   single-quote any key that is not a valid identifier. Originally shipped
   across the pre-rename generators (`EsModule`, old CJS `JavaScript`,
   old `TypeScript`); carried through to the merged/renamed classes.
+- **Storybook detects a `TypeScript` meta sibling for import-path
+  resolution.** Previously only `instanceof JavaScript` was checked, so
+  a pipeline of `[Storybook, TypeScript]` always fell back to
+  `./tokens` even when the meta's filename was customized. Storybook
+  now reads the runtime base from the meta's `filenames()` list.
+- **`TypeScriptDeclarations` emits `null` for null values** instead of
+  `object` (which is what `typeof null` returns). Edge case — null
+  isn't a valid `TokenValue` — but the previous output was misleading.
 
 ## 2.0.0-alpha.10
 
