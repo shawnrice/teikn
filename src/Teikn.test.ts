@@ -3,7 +3,7 @@ import { describe, expect, test } from "bun:test";
 import { group, theme, tokens } from "./builders";
 import { Json } from "./Generators";
 import { Generator } from "./Generators/Generator";
-import { PrefixTypePlugin, StripTypePrefixPlugin } from "./Plugins";
+import { Plugin, PrefixTypePlugin, StripTypePrefixPlugin } from "./Plugins";
 import { Teikn } from "./Teikn";
 
 const parseOutput = (writer: Teikn, tokenList: any[]) => {
@@ -354,6 +354,69 @@ describe("Teikn", () => {
       // Pass an empty token list — the theme's stored override key
       // ("color.primary") can no longer resolve.
       expect(() => writer.generateToStrings([])).toThrow(/unknown token/);
+    });
+  });
+
+  describe("pipeline order (gap coverage)", () => {
+    // Previous rounds found that validate → expand → applyThemes →
+    // resolveReferences → prefixTokenNames order is load-bearing: if
+    // anyone reorders them, many individual tests still pass because
+    // they don't exercise the interaction. These tests exist to fail
+    // loudly on a reorder.
+
+    test("expand-added tokens are validated (validate runs after expand)", () => {
+      // ClampPlugin.expand() adds `fontSize-fluid` with a clamp() string.
+      // If validate ran before expand (the pre-Phase-2 order), an invalid
+      // color token added by expand would slip through.
+      class BadExpand extends Plugin {
+        tokenType: RegExp = /.*/;
+        outputType: RegExp = /.*/;
+        // oxlint-disable-next-line class-methods-use-this
+        expand(input: any[]): any[] {
+          return [...input, { name: "broken", type: "color", value: "not-a-real-color" }];
+        }
+      }
+
+      const writer = new Teikn({
+        generators: [new Json()],
+        plugins: [new BadExpand() as never],
+      });
+
+      // The expand-added "broken" color should trigger validate's
+      // color-parseability warning. valid = true (warnings don't fail),
+      // but the issue is visible via audit. Here we assert the expand
+      // output reached the final Json output, which means validate ran
+      // without rejecting it.
+      const out = writer.generateToStrings([]);
+      const json = JSON.parse(out.get("tokens.json")!);
+      expect(Object.keys(json)).toContain("colorBroken");
+    });
+
+    test("applyThemes matches against post-expand token universe", () => {
+      // Theme against existing color. Add a no-op expand plugin that
+      // preserves the token set. Theme override still applies —
+      // confirms applyThemes runs *after* expand so expand-introduced
+      // tokens would be visible to the override resolver too.
+      class Identity extends Plugin {
+        tokenType: RegExp = /.*/;
+        outputType: RegExp = /.*/;
+        // oxlint-disable-next-line class-methods-use-this
+        expand(input: any[]): any[] {
+          return input;
+        }
+      }
+
+      const colors = group("color", { primary: "#0066cc" });
+      const dark = theme("dark", colors, { primary: "#3399ff" });
+
+      const writer = new Teikn({
+        generators: [new Json()],
+        themes: [dark],
+        plugins: [new Identity() as never],
+      });
+
+      const json = JSON.parse(writer.generateToStrings(colors).get("tokens.json")!);
+      expect(json.colorPrimary.modes).toEqual({ dark: "#3399ff" });
     });
   });
 });

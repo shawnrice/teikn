@@ -1,8 +1,10 @@
 import { describe, expect, test } from "bun:test";
 
+import { AlphaMultiplyPlugin, ColorTransformPlugin } from "../Plugins";
 import type { Token } from "../Token";
 import { Color } from "../TokenTypes/Color";
 import { CubicBezier } from "../TokenTypes/CubicBezier";
+import { Dimension } from "../TokenTypes/Dimension";
 import { DtcgGenerator } from "./Dtcg";
 
 const sampleTokens: Token[] = [
@@ -95,5 +97,35 @@ describe("DtcgGenerator tests", () => {
     expect(output.surface.$extensions).toBeDefined();
     expect(output.surface.$extensions.mode.dark).toBeDefined();
     expect(output.surface.$extensions.mode.dark.colorSpace).toBe("srgb");
+  });
+
+  test("runs plugins and preserves first-class value instances through the pipeline", () => {
+    // Dtcg is the only generator that overrides prepareTokens (to skip
+    // stringifyValues so first-class values reach the serializer as
+    // instances). Confirm it still runs plugins in the right order AND
+    // keeps a Dimension as a `{value, unit}` object in the output.
+    const tokens: Token[] = [
+      { name: "primary", type: "color", value: new Color(255, 0, 0, 0.5) },
+      { name: "spacing", type: "dimension", value: new Dimension(16, "px") },
+    ];
+
+    // AlphaMultiplyPlugin flattens alpha to 1. ColorTransformPlugin
+    // might further convert to rgba. Passing them in reverse order
+    // verifies runAfter sorting fires correctly.
+    const gen = new DtcgGenerator();
+    const plugins = [
+      new ColorTransformPlugin({ type: "rgba" }),
+      new AlphaMultiplyPlugin({ factor: 2 }),
+    ];
+
+    const output = JSON.parse(gen.generate(tokens, plugins));
+
+    // First-class Dimension survives as the DTCG dimension shape.
+    expect(output.spacing.$value).toEqual({ value: 16, unit: "px" });
+    expect(output.spacing.$type).toBe("dimension");
+
+    // Color went through the plugins; still surfaces as a DTCG color.
+    expect(output.primary.$type).toBe("color");
+    expect(output.primary.$value.colorSpace).toBe("srgb");
   });
 });

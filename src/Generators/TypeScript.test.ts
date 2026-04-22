@@ -16,6 +16,25 @@ describe("TypeScript meta generator", () => {
     expect([...files.keys()].toSorted()).toEqual(["tokens.d.ts", "tokens.mjs"]);
   });
 
+  test("combined output matches snapshot (catches structural drift)", () => {
+    // Single snapshot over both emitted files — catches reorder / dedup /
+    // header-placement regressions that per-line `toContain` misses.
+    const files = new TypeScript({
+      dateFn: fixedDate,
+      version: "test",
+      groups: true,
+    }).generateFiles([
+      { name: "primary", type: "color", value: "#0066cc", group: "color" },
+      { name: "accent", type: "color", value: "#ff6600", group: "color" },
+      { name: "sm", type: "spacing", value: "0.5rem", group: "spacing" },
+    ]);
+    const combined = [...files.entries()]
+      .toSorted(([a], [b]) => a.localeCompare(b))
+      .map(([filename, content]) => `=== ${filename} ===\n${content}`)
+      .join("\n\n");
+    expect(combined).toMatchSnapshot();
+  });
+
   test("filenames() reports both files without running a generation pass", () => {
     expect(new TypeScript().filenames().toSorted()).toEqual(["tokens.d.ts", "tokens.mjs"]);
   });
