@@ -54,7 +54,11 @@ const createResolver = (tokenMap: Map<string, Token>, tokenKeys: KeyAliasIndex) 
         throw new Error(`Unresolved reference: {${refName}} in token "${currentName}"`);
       case "ok": {
         if (seen.has(resolved.key)) {
-          throw new Error(`Circular reference detected: ${[...seen, refName].join(" -> ")}`);
+          // `seen` holds qualified keys; use `resolved.key` (also qualified)
+          // rather than the user-provided `refName` so the chain is uniformly
+          // reported (e.g. `color.a -> color.b -> color.a`, not mixing
+          // qualified and bare segments).
+          throw new Error(`Circular reference detected: ${[...seen, resolved.key].join(" -> ")}`);
         }
         // invariant: tokenKeys mirrors tokenMap
         const referenced = tokenMap.get(resolved.key)!;

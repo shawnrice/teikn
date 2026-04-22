@@ -3,7 +3,7 @@ import type { Token } from "./Token";
 export type KeyResolution =
   | { status: "ok"; key: string; bare: string }
   | { status: "missing" }
-  | { status: "ambiguous"; candidates: string[] };
+  | { status: "ambiguous"; candidates: readonly string[] };
 
 /**
  * Internal value stored for each bare name in the index. A bare name is
@@ -12,7 +12,9 @@ export type KeyResolution =
  * prior two-Map arrangement, eliminating the "bare appears in exactly
  * one of the two maps" cross-field invariant.
  */
-type BareLookup = { status: "unique"; key: string } | { status: "ambiguous"; candidates: string[] };
+type BareLookup =
+  | { status: "unique"; key: string }
+  | { status: "ambiguous"; candidates: readonly string[] };
 
 /**
  * Readonly view of the resolution index. Built by `buildKeyAliasIndex`;
@@ -93,6 +95,6 @@ export const resolveKey = (value: string, index: KeyAliasIndex): KeyResolution =
   return { status: "ok", key: bare.key, bare: value };
 };
 
-export const ambiguousKeyMessage = (value: string, candidates: string[]): string =>
+export const ambiguousKeyMessage = (value: string, candidates: readonly string[]): string =>
   `Ambiguous token reference: {${value}} matches ${candidates.join(", ")}. ` +
   `Use a qualified reference like {${candidates[0]}} to disambiguate, or rename one of the tokens.`;

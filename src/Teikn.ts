@@ -71,6 +71,10 @@ const applyThemes = (themes: ThemeLayer[], tokens: Token[]): Token[] => {
               `The token may have been removed from the token set after the theme was created.`,
           );
         case "ambiguous":
+          // Unreachable via `theme()` (which qualifies keys at construction
+          // so they hit `fullKeys` here), but kept for consumers who hand-build
+          // a `ThemeLayer` literal with bare override keys against an ambiguous
+          // token universe.
           throw new Error(
             `Theme "${layer.name}" override key "${name}" is ambiguous during apply. ` +
               `Matches: ${resolved.candidates.join(", ")}.`,
