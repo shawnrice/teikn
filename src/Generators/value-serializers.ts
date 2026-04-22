@@ -15,9 +15,16 @@ export const cssValue = (value: unknown): string => {
   }
   const obj = value as Record<string, unknown>;
   if ("width" in obj && "style" in obj && "color" in obj) {
+    // border shorthand: width style color
     return [obj.width, obj.style, obj.color].filter(Boolean).join(" ");
   }
-  return Object.values(obj).join(" ");
+  // Unknown composite shape. The previous implementation joined
+  // Object.values with a space — producing field-order-dependent output
+  // that accidentally matched no CSS shorthand for any shape other than
+  // border. Emit as JSON instead so users see at a glance that the token
+  // isn't a valid CSS value and should be consumed through a structured
+  // generator (JSON / JavaScript / DTCG).
+  return JSON.stringify(value);
 };
 
 // ─── JS value serialization ─────────────────────────────────────

@@ -66,7 +66,11 @@ describe("SCSS Vars Generator tests", () => {
     expect(result).not.toContain("[object Object]");
   });
 
-  test("generateToken with generic object value produces space-separated values", () => {
+  test("generateToken with a generic composite value emits JSON", () => {
+    // Unknown-shape composites (anything other than border) are now
+    // serialized as JSON so they're clearly not-a-CSS-shorthand at a
+    // glance, rather than field-order-dependent `Object.values().join(" ")`
+    // which accidentally matched no real CSS shorthand for any shape.
     const gen = new Generator();
     const token: Token = {
       name: "typographyBody",
@@ -74,7 +78,7 @@ describe("SCSS Vars Generator tests", () => {
       value: { fontFamily: "Arial", fontSize: "1rem" },
     };
     const result = gen.generateToken(token);
-    expect(result).toContain("Arial 1rem");
+    expect(result).toContain('{"fontFamily":"Arial","fontSize":"1rem"}');
   });
 
   test("generateToken includes usage comment when present", () => {

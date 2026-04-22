@@ -205,9 +205,12 @@ describe("output-validation: CssVars", () => {
   });
 
   test("custom property count in :root matches token count", () => {
-    // Extract the :root block
+    // Extract the :root block. Match the closing brace on its own line
+    // so we don't trip on `}` characters embedded in JSON-serialized
+    // composite values (e.g. typography tokens).
     const rootStart = css.indexOf(":root {");
-    const rootEnd = css.indexOf("}", rootStart);
+    const rootEndMatch = css.slice(rootStart).match(/\n\}/);
+    const rootEnd = rootEndMatch ? rootStart + rootEndMatch.index! : css.length;
     const rootBlock = css.slice(rootStart, rootEnd);
     const varLines = rootBlock.split("\n").filter((l) => l.trim().startsWith("--"));
     expect(varLines.length).toBe(TOTAL_TOKEN_COUNT);
@@ -858,9 +861,11 @@ describe("output-validation: cross-generator consistency", () => {
   });
 
   test("token count is consistent across generators", () => {
-    // CSS: count --var lines in :root
+    // CSS: count --var lines in :root (match `\n}` so we don't trip on
+    // `}` characters inside JSON-serialized composite values).
     const rootStart = css.indexOf(":root {");
-    const rootEnd = css.indexOf("}", rootStart);
+    const rootEndMatch = css.slice(rootStart).match(/\n\}/);
+    const rootEnd = rootEndMatch ? rootStart + rootEndMatch.index! : css.length;
     const rootBlock = css.slice(rootStart, rootEnd);
     const cssCount = rootBlock.split("\n").filter((l) => l.trim().startsWith("--")).length;
 
