@@ -299,6 +299,18 @@ describe("Teikn", () => {
           }),
       ).toThrow("Duplicate generator output filenames");
     });
+
+    test("duplicate-filename detection is case-insensitive", () => {
+      // On case-insensitive filesystems (macOS, Windows), `Tokens.json` and
+      // `tokens.json` target the same physical file; writing both would
+      // silently overwrite. Caught at construction.
+      expect(
+        () =>
+          new Teikn({
+            generators: [new Json({ filename: "tokens" }), new Json({ filename: "Tokens" })],
+          }),
+      ).toThrow("Duplicate generator output filenames");
+    });
   });
 
   describe("applyThemes (gap coverage)", () => {
@@ -341,7 +353,7 @@ describe("Teikn", () => {
 
       // Pass an empty token list — the theme's stored override key
       // ("color.primary") can no longer resolve.
-      expect(() => writer.generateToStrings([])).toThrow(/could not resolve/);
+      expect(() => writer.generateToStrings([])).toThrow(/unknown token/);
     });
   });
 });

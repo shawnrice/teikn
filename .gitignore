@@ -11,3 +11,4 @@ example/dist
 .playwright-mcp
 .tsc_d
 examples
+.claude/scheduled_tasks.lock

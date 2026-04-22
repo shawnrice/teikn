@@ -92,7 +92,7 @@
   still throw with a diagnostic listing the candidates
   (e.g. `Ambiguous token reference: {primary} matches color.primary, size.primary`).
   Works in `resolveReferences`, `validate`, `theme(...)` overrides, and
-  `applyThemeLayers`. The `theme()` `overrides` map also accepts
+  internal theme application. The `theme()` `overrides` map also accepts
   qualified keys (`{ "color.primary": "#3399ff" }`) for the same
   disambiguation reason.
 - **`KeyAliasIndex` type exported from `token-keys.ts`.** Previously

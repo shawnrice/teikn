@@ -64,14 +64,24 @@ const applyThemes = (themes: ThemeLayer[], tokens: Token[]): Token[] => {
   for (const layer of themes) {
     for (const [name, value] of Object.entries(layer.overrides)) {
       const resolved = resolveKey(name, tokenKeys);
-      if (resolved.status !== "ok") {
-        throw new Error(`Theme "${layer.name}" could not resolve token "${name}" during apply`);
+      switch (resolved.status) {
+        case "missing":
+          throw new Error(
+            `Theme "${layer.name}" references unknown token "${name}" during apply. ` +
+              `The token may have been removed from the token set after the theme was created.`,
+          );
+        case "ambiguous":
+          throw new Error(
+            `Theme "${layer.name}" override key "${name}" is ambiguous during apply. ` +
+              `Matches: ${resolved.candidates.join(", ")}.`,
+          );
+        case "ok":
+          if (!modeUpdates.has(resolved.key)) {
+            modeUpdates.set(resolved.key, {});
+          }
+          modeUpdates.get(resolved.key)![layer.name] = value;
+          break;
       }
-
-      if (!modeUpdates.has(resolved.key)) {
-        modeUpdates.set(resolved.key, {});
-      }
-      modeUpdates.get(resolved.key)![layer.name] = value;
     }
   }
 
@@ -190,7 +200,20 @@ export class Teikn {
     this.generators = generators ?? [new Teikn.generators.Json()];
 
     const filenames = this.generators.flatMap((g) => g.filenames());
-    const dupes = filenames.filter((f, i) => filenames.indexOf(f) !== i);
+    // Compare case-insensitively so pairs like `Tokens.mjs` / `tokens.mjs`
+    // are caught on case-insensitive filesystems (macOS, Windows) where
+    // both writes would target the same underlying file.
+    const seen = new Map<string, string>();
+    const dupes: string[] = [];
+    for (const filename of filenames) {
+      const key = filename.toLowerCase();
+      const prior = seen.get(key);
+      if (prior !== undefined) {
+        dupes.push(prior === filename ? filename : `${prior} / ${filename}`);
+      } else {
+        seen.set(key, filename);
+      }
+    }
     if (dupes.length > 0) {
       throw new Error(
         `Duplicate generator output filenames: ${[...new Set(dupes)].join(", ")}. Use the "filename" option to differentiate.`,
