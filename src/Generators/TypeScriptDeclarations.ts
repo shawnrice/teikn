@@ -105,7 +105,7 @@ export class TypeScriptDeclarations extends Generator<TypeScriptDeclarationsOpts
   generateToken(token: Token): string {
     const { nameTransformer, loose } = this.options;
     const key = quoteKey(nameTransformer!(token.name));
-    const typeAnnotation = toTypeAnnotation(token.value, loose ?? false);
+    const typeAnnotation = toTypeAnnotation(token.value, loose || false);
 
     return [
       `  /**`,
