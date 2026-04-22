@@ -11,58 +11,71 @@ const isRef = (value: unknown): value is string =>
 const isCompositeValue = (value: unknown): value is Record<string, any> =>
   typeof value === "object" && value !== null && !Array.isArray(value) && !isFirstClassValue(value);
 
-const resolveValue = (
-  value: any,
-  tokenMap: Map<string, Token>,
-  tokenKeys: KeyAliasIndex,
-  seen: Set<string>,
-  currentName: string,
-): any => {
-  if (isCompositeValue(value)) {
-    const resolved: Record<string, any> = {};
-    for (const [k, v] of Object.entries(value)) {
-      resolved[k] = resolveValue(v, tokenMap, tokenKeys, seen, currentName);
-    }
-    return resolved;
-  }
-
-  if (!isRef(value)) {
-    return value;
-  }
-
-  const refName = value.match(REF_PATTERN)![1]!;
-  const resolved = resolveKey(refName, tokenKeys);
-
-  if (resolved.status === "ambiguous") {
-    throw new Error(ambiguousKeyMessage(refName, resolved.candidates));
-  }
-
-  if (resolved.status === "missing") {
-    throw new Error(`Unresolved reference: {${refName}} in token "${currentName}"`);
-  }
-
-  if (seen.has(resolved.key)) {
-    throw new Error(`Circular reference detected: ${currentName} -> ${refName}`);
-  }
-
-  // The resolved key came from tokenKeys, which was built from tokenMap.keys(),
-  // so the lookup is guaranteed to hit.
-  const referenced = tokenMap.get(resolved.key)!;
-  seen.add(resolved.key);
-  return resolveValue(referenced.value, tokenMap, tokenKeys, seen, referenced.name);
+type ResolveCall = {
+  value: any;
+  seen: Set<string>;
+  currentName: string;
 };
 
-const resolveModes = (
-  modes: Record<string, any>,
-  tokenMap: Map<string, Token>,
-  tokenKeys: KeyAliasIndex,
-  tokenName: string,
-): Record<string, any> => {
-  const resolved: Record<string, any> = {};
-  for (const [mode, value] of Object.entries(modes)) {
-    resolved[mode] = resolveValue(value, tokenMap, tokenKeys, new Set([tokenName]), tokenName);
-  }
-  return resolved;
+type ResolveModesCall = {
+  modes: Record<string, any>;
+  tokenName: string;
+};
+
+/**
+ * Build a resolver closure bound to a specific token universe. The
+ * returned `resolveValue` / `resolveModes` capture `tokenMap` and
+ * `tokenKeys`, leaving callers with single-argument entry points.
+ */
+const createResolver = (tokenMap: Map<string, Token>, tokenKeys: KeyAliasIndex) => {
+  const resolveValue = ({ value, seen, currentName }: ResolveCall): any => {
+    if (isCompositeValue(value)) {
+      const resolved: Record<string, any> = {};
+      for (const [k, v] of Object.entries(value)) {
+        resolved[k] = resolveValue({ value: v, seen, currentName });
+      }
+      return resolved;
+    }
+
+    if (!isRef(value)) {
+      return value;
+    }
+
+    const refName = value.match(REF_PATTERN)![1]!;
+    const resolved = resolveKey(refName, tokenKeys);
+
+    if (resolved.status === "ambiguous") {
+      throw new Error(ambiguousKeyMessage(refName, resolved.candidates));
+    }
+
+    if (resolved.status === "missing") {
+      throw new Error(`Unresolved reference: {${refName}} in token "${currentName}"`);
+    }
+
+    if (seen.has(resolved.key)) {
+      throw new Error(`Circular reference detected: ${currentName} -> ${refName}`);
+    }
+
+    // The resolved key came from tokenKeys, which was built from tokenMap.keys(),
+    // so the lookup is guaranteed to hit.
+    const referenced = tokenMap.get(resolved.key)!;
+    // Immutably extend `seen` so that sibling composite fields referencing
+    // the same ancestor don't see each other's resolution state — which
+    // would spuriously trigger "circular reference detected".
+    const next = new Set(seen);
+    next.add(resolved.key);
+    return resolveValue({ value: referenced.value, seen: next, currentName: referenced.name });
+  };
+
+  const resolveModes = ({ modes, tokenName }: ResolveModesCall): Record<string, any> => {
+    const resolved: Record<string, any> = {};
+    for (const [mode, value] of Object.entries(modes)) {
+      resolved[mode] = resolveValue({ value, seen: new Set([tokenName]), currentName: tokenName });
+    }
+    return resolved;
+  };
+
+  return { resolveValue, resolveModes };
 };
 
 /**
@@ -80,17 +93,16 @@ export const resolveReferences = (tokens: Token[]): Token[] => {
     tokenMap.set(key, token);
   }
   const tokenKeys = buildKeyAliasIndex([...tokenMap.keys()]);
+  const { resolveValue, resolveModes } = createResolver(tokenMap, tokenKeys);
 
   return tokens.map((token) => {
-    const resolvedValue = resolveValue(
-      token.value,
-      tokenMap,
-      tokenKeys,
-      new Set([tokenKey(token)]),
-      token.name,
-    );
+    const resolvedValue = resolveValue({
+      value: token.value,
+      seen: new Set([tokenKey(token)]),
+      currentName: token.name,
+    });
     const resolvedModes = token.modes
-      ? resolveModes(token.modes, tokenMap, tokenKeys, tokenKey(token))
+      ? resolveModes({ modes: token.modes, tokenName: tokenKey(token) })
       : undefined;
 
     if (resolvedValue === token.value && resolvedModes === undefined) {

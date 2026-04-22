@@ -87,6 +87,29 @@ describe("resolveReferences", () => {
     expect(resolved[1]!.value).toBe("#0066cc");
   });
 
+  test("composite fields can reference the same token without spurious circular error", () => {
+    const tokens: Token[] = [
+      { name: "primary", type: "color", value: "#0066cc" },
+      {
+        name: "banner",
+        type: "typography",
+        value: {
+          fontFamily: "Inter",
+          fontSize: "1rem",
+          fontWeight: 400,
+          lineHeight: 1.2,
+          color: "{primary}",
+          background: "{primary}",
+        },
+      },
+    ];
+
+    const resolved = resolveReferences(tokens);
+    const banner = resolved[1]!.value as Record<string, unknown>;
+    expect(banner.color).toBe("#0066cc");
+    expect(banner.background).toBe("#0066cc");
+  });
+
   test("does not mutate original tokens", () => {
     const tokens: Token[] = [
       { name: "primary", type: "color", value: "#0066cc" },
