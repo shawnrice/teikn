@@ -52,7 +52,7 @@ export class TypeScript extends Generator<TypeScriptOpts> {
     // Reject it at construction so a caller's intent doesn't silently
     // fail (passing `ext` previously affected only `this.file`, which
     // is meaningless on a multi-file generator).
-    if ("ext" in options) {
+    if (options.ext !== undefined) {
       throw new Error(
         "TypeScript meta generator does not accept an `ext` option. " +
           "Use `module` for the runtime format (esm or cjs), or construct " +

@@ -41,7 +41,8 @@ export class JavaScript extends Generator<JavaScriptOpts> {
   }
 
   override describe(): GeneratorInfo {
-    const isCjs = this.options.module === "cjs";
+    const { module: moduleKind } = this.options;
+    const isCjs = moduleKind === "cjs";
     const importStmt = isCjs
       ? `const { tokens } = require('./${this.file}');`
       : `import { tokens } from './${this.file}';`;

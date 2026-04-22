@@ -363,7 +363,8 @@ export const theme = (
 
     if (resolved.status === "ambiguous") {
       throw new Error(
-        `Theme "${name}": ambiguous token name "${key}". Matches: ${resolved.candidates.join(", ")}. Rename one of the tokens to remove the clash.`,
+        `Theme "${name}": ambiguous token name "${key}". Matches: ${resolved.candidates.join(", ")}. ` +
+          `Use the qualified name (e.g. "${resolved.candidates[0]}") to disambiguate, or rename one of the tokens.`,
       );
     }
 

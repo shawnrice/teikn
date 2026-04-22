@@ -261,11 +261,9 @@ export const validate = (tokens: Token[]): ValidationResult => {
       return true;
     }
 
-    const referenced = tokenMap.get(resolved.key);
-    if (!referenced) {
-      return false;
-    }
-
+    // The resolved key came from tokenKeys, which was built from tokenMap.keys(),
+    // so the lookup is guaranteed to hit.
+    const referenced = tokenMap.get(resolved.key)!;
     const next = new Set(visited);
     next.add(resolved.key);
 

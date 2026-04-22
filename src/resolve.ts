@@ -11,13 +11,13 @@ const isRef = (value: unknown): value is string =>
 const isCompositeValue = (value: unknown): value is Record<string, any> =>
   typeof value === "object" && value !== null && !Array.isArray(value) && !isFirstClassValue(value);
 
-type ResolveCall = {
+type ResolveArgs = {
   value: any;
   seen: Set<string>;
   currentName: string;
 };
 
-type ResolveModesCall = {
+type ResolveModesArgs = {
   modes: Record<string, any>;
   tokenName: string;
 };
@@ -28,7 +28,7 @@ type ResolveModesCall = {
  * `tokenKeys`, leaving callers with single-argument entry points.
  */
 const createResolver = (tokenMap: Map<string, Token>, tokenKeys: KeyAliasIndex) => {
-  const resolveValue = ({ value, seen, currentName }: ResolveCall): any => {
+  const resolveValue = ({ value, seen, currentName }: ResolveArgs): any => {
     if (isCompositeValue(value)) {
       const resolved: Record<string, any> = {};
       for (const [k, v] of Object.entries(value)) {
@@ -67,7 +67,7 @@ const createResolver = (tokenMap: Map<string, Token>, tokenKeys: KeyAliasIndex) 
     return resolveValue({ value: referenced.value, seen: next, currentName: referenced.name });
   };
 
-  const resolveModes = ({ modes, tokenName }: ResolveModesCall): Record<string, any> => {
+  const resolveModes = ({ modes, tokenName }: ResolveModesArgs): Record<string, any> => {
     const resolved: Record<string, any> = {};
     for (const [mode, value] of Object.entries(modes)) {
       resolved[mode] = resolveValue({ value, seen: new Set([tokenName]), currentName: tokenName });

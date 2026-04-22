@@ -86,4 +86,5 @@ export const resolveKey = (value: string, index: KeyAliasIndex): KeyResolution =
 };
 
 export const ambiguousKeyMessage = (value: string, candidates: string[]): string =>
-  `Ambiguous token reference: {${value}} matches ${candidates.join(", ")}. Rename one of the tokens to remove the clash.`;
+  `Ambiguous token reference: {${value}} matches ${candidates.join(", ")}. ` +
+  `Use a qualified reference like {${candidates[0]}} to disambiguate, or rename one of the tokens.`;
