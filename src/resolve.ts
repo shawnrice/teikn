@@ -1,4 +1,4 @@
-import type { Token } from "./Token";
+import type { CompositeValue, ModeValues, Token, TokenValue } from "./Token";
 import type { KeyAliasIndex } from "./token-keys";
 import { ambiguousKeyMessage, buildKeyAliasIndex, resolveKey, tokenKey } from "./token-keys";
 import { isFirstClassValue } from "./type-classifiers";
@@ -8,17 +8,17 @@ const REF_PATTERN = /^\{([^}]+)\}$/;
 const isRef = (value: unknown): value is string =>
   typeof value === "string" && REF_PATTERN.test(value);
 
-const isCompositeValue = (value: unknown): value is Record<string, any> =>
+const isCompositeValue = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value) && !isFirstClassValue(value);
 
 type ResolveArgs = {
-  value: any;
+  value: unknown;
   seen: Set<string>;
   currentName: string;
 };
 
 type ResolveModesArgs = {
-  modes: Record<string, any>;
+  modes: ModeValues;
   tokenName: string;
 };
 
@@ -28,12 +28,12 @@ type ResolveModesArgs = {
  * `tokenKeys`, leaving callers with single-argument entry points.
  */
 const createResolver = (tokenMap: Map<string, Token>, tokenKeys: KeyAliasIndex) => {
-  const resolveValue = ({ value, seen, currentName }: ResolveArgs): any => {
+  const resolveValue = ({ value, seen, currentName }: ResolveArgs): unknown => {
     if (isCompositeValue(value)) {
       // Use a null-prototype object so a field literally named `__proto__`
       // (possible from JSON-parsed input) is stored as a data property
       // rather than invoking the setter and changing the result's prototype.
-      const resolved: Record<string, any> = Object.create(null);
+      const resolved: Record<string, unknown> = Object.create(null);
       for (const [k, v] of Object.entries(value)) {
         resolved[k] = resolveValue({ value: v, seen, currentName });
       }
@@ -76,8 +76,8 @@ const createResolver = (tokenMap: Map<string, Token>, tokenKeys: KeyAliasIndex) 
   const resolveModes = ({
     modes,
     tokenName,
-  }: ResolveModesArgs): Record<string, any> | undefined => {
-    const resolved: Record<string, any> = {};
+  }: ResolveModesArgs): Record<string, unknown> | undefined => {
+    const resolved: Record<string, unknown> = {};
     let changed = false;
     for (const [mode, value] of Object.entries(modes)) {
       const next = resolveValue({ value, seen: new Set([tokenName]), currentName: tokenName });
@@ -125,9 +125,13 @@ export const resolveReferences = (tokens: Token[]): Token[] => {
       return token;
     }
 
-    const result = { ...token, value: resolvedValue };
+    // Cast at the boundary: resolveValue / resolveModes internally work
+    // in `unknown` for composite flexibility, but the Token contract is
+    // `TokenValue | CompositeValue`. Verified by the surrounding pipeline
+    // (validate runs before this) that the shapes conform.
+    const result: Token = { ...token, value: resolvedValue as TokenValue | CompositeValue };
     if (resolvedModes) {
-      result.modes = resolvedModes;
+      result.modes = resolvedModes as ModeValues;
     }
     return result;
   });
