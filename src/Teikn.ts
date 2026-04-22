@@ -259,8 +259,13 @@ export class Teikn {
   }
 
   generateToStrings(tokens: Token[]): Map<string, string> {
+    const expanded = this.expand(tokens);
+
+    // Validate after expand so plugin-added tokens are also covered.
+    // If expand plugins are disabled or add no tokens, `expanded` equals
+    // the input and behavior is unchanged.
     if (this.options.validate !== false) {
-      const result = validate(tokens);
+      const result = validate(expanded);
       const errors = result.issues.filter((i) => i.severity === "error");
       if (errors.length > 0) {
         throw new Error(
@@ -269,7 +274,6 @@ export class Teikn {
       }
     }
 
-    const expanded = this.expand(tokens);
     const withThemes = applyThemes(this.themes, expanded);
     const resolved = resolveReferences(withThemes);
     const named = prefixTokenNames(resolved);

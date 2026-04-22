@@ -47,30 +47,26 @@ const createResolver = (tokenMap: Map<string, Token>, tokenKeys: KeyAliasIndex) 
     const refName = value.match(REF_PATTERN)![1]!;
     const resolved = resolveKey(refName, tokenKeys);
 
-    if (resolved.status === "ambiguous") {
-      throw new Error(ambiguousKeyMessage(refName, resolved.candidates));
+    switch (resolved.status) {
+      case "ambiguous":
+        throw new Error(ambiguousKeyMessage(refName, resolved.candidates));
+      case "missing":
+        throw new Error(`Unresolved reference: {${refName}} in token "${currentName}"`);
+      case "ok": {
+        if (seen.has(resolved.key)) {
+          throw new Error(`Circular reference detected: ${[...seen, refName].join(" -> ")}`);
+        }
+        // invariant: tokenKeys mirrors tokenMap
+        const referenced = tokenMap.get(resolved.key)!;
+        const next = new Set(seen);
+        next.add(resolved.key);
+        return resolveValue({
+          value: referenced.value,
+          seen: next,
+          currentName: tokenKey(referenced),
+        });
+      }
     }
-
-    if (resolved.status === "missing") {
-      throw new Error(`Unresolved reference: {${refName}} in token "${currentName}"`);
-    }
-
-    if (seen.has(resolved.key)) {
-      throw new Error(`Circular reference detected: ${[...seen, refName].join(" -> ")}`);
-    }
-
-    // The resolved key came from tokenKeys, which was built from tokenMap.keys(),
-    // so the lookup is guaranteed to hit.
-    const referenced = tokenMap.get(resolved.key)!;
-    // Fresh Set per branch: sibling composite fields resolving the same
-    // ancestor must not share visited state (false positive cycle).
-    const next = new Set(seen);
-    next.add(resolved.key);
-    return resolveValue({
-      value: referenced.value,
-      seen: next,
-      currentName: tokenKey(referenced),
-    });
   };
 
   const resolveModes = ({
