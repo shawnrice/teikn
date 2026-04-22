@@ -13,7 +13,7 @@ import { testOpts } from "../fixtures/testOpts";
 // ─── Helpers ─────────────────────────────────────────────────
 
 const htmlOpts = testOpts;
-const sbOpts = testOpts;
+const sbOpts = { ...testOpts, importPath: "./tokens" };
 
 // ─── Dimension tokens ───────────────────────────────────────
 

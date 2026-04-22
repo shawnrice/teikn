@@ -222,7 +222,13 @@ export class Storybook extends Generator<StorybookOpts> {
     if (js) {
       return `./${js.file.replace(/\.[^.]+$/, "")}`;
     }
-    return "./tokens";
+    throw new Error(
+      "Storybook: the generated stories file needs to import a runtime token module, " +
+        "but no `JavaScript` / `TypeScript` sibling generator was found in the same Teikn, " +
+        "and no `importPath` option was provided. Either add a runtime generator " +
+        "(e.g. `new JavaScript()` or `new TypeScript()`) to the same Teikn, or pass " +
+        "`new Storybook({ importPath: '...' })` pointing at where the tokens are built.",
+    );
   }
 
   private isTypeScript(): boolean {
