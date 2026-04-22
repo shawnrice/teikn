@@ -280,8 +280,8 @@ describe("misuse patterns", () => {
       const spacing = scale("spacing", { md: dp(16) });
       const compact = theme("compact", spacing, { md: dp(8) });
       // GOOD: dp() works in overrides — theme accepts TokenValue
-      expect(compact.overrides.md).toBeInstanceOf(Dimension);
-      expect(compact.overrides.md.toString()).toBe("0.5rem");
+      expect(compact.overrides["spacing.md"]).toBeInstanceOf(Dimension);
+      expect((compact.overrides["spacing.md"] as Dimension).toString()).toBe("0.5rem");
     });
   });
 

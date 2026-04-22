@@ -367,7 +367,7 @@ export const theme = (
       );
     }
 
-    resolvedOverrides[resolved.bare] = overrides[key]!;
+    resolvedOverrides[resolved.key] = overrides[key]!;
   }
 
   const merged = isTokenArray ? resolvedOverrides : { ...source.overrides, ...resolvedOverrides };

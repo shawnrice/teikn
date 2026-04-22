@@ -104,8 +104,8 @@ describe("builders edge cases: first-class value types", () => {
       primary: new Color("#fff"),
     });
 
-    expect(dark.overrides.primary).toBeInstanceOf(Color);
-    expect((dark.overrides.primary as Color).red).toBe(255);
+    expect(dark.overrides["color.primary"]).toBeInstanceOf(Color);
+    expect((dark.overrides["color.primary"] as Color).red).toBe(255);
   });
 
   test("mixed first-class and string values in same group", () => {
