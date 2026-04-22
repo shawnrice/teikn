@@ -30,7 +30,10 @@ export const buildKeyAliasIndex = (keys: string[]): KeyAliasIndex => {
   const byBare = new Map<string, string[]>();
 
   for (const key of keys) {
-    if (!key) {
+    if (!key || fullKeys.has(key)) {
+      // Skip empty keys and duplicates — duplicates would otherwise
+      // pollute `byBare` and produce a false-ambiguity report like
+      // `matches primary, primary`.
       continue;
     }
     fullKeys.add(key);
