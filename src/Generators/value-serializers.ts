@@ -23,9 +23,25 @@ export const cssValue = (value: unknown): string => {
 // ─── JS value serialization ─────────────────────────────────────
 // Shared by the JavaScript generator (both ESM and CJS modes).
 
+// U+2028 LINE SEPARATOR and U+2029 PARAGRAPH SEPARATOR are valid JSON
+// but are LineTerminators in ECMAScript string literals — they break
+// single-quoted / double-quoted source strings at parse time. Build
+// the regex via String.fromCharCode so the source file itself doesn't
+// contain literal line terminators.
+const JS_LINE_SEPARATORS = new RegExp(`[${String.fromCharCode(0x2028, 0x2029)}]`, "g");
+
 export const maybeQuote = (val: unknown): string => {
   if (typeof val === "string") {
-    return `'${val.replace(/\\/g, "\\\\").replace(/'/g, "\\'").replace(/\n/g, "\\n")}'`;
+    // JSON.stringify covers \n, \r, \t, NUL, and other control chars.
+    // Strip the surrounding double-quote, unescape \" (our wrapper is
+    // single-quoted so double quotes don't need escaping), hand-escape
+    // U+2028 / U+2029, and escape single quotes.
+    const escaped = JSON.stringify(val)
+      .slice(1, -1)
+      .replace(/\\"/g, '"')
+      .replace(JS_LINE_SEPARATORS, (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, "0")}`)
+      .replace(/'/g, "\\'");
+    return `'${escaped}'`;
   }
   if (typeof val === "object" && val !== null) {
     return JSON.stringify(val);
