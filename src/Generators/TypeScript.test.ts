@@ -88,7 +88,33 @@ describe("TypeScript meta generator", () => {
     );
   });
 
-  test("plugin targeting .mjs applies consistently to both runtime and declarations in meta", () => {
+  test("plugin targeting .d.ts applies to the declarations file in meta", () => {
+    const dtsOnlyPlugin = {
+      tokenType: "color",
+      outputType: "d.ts",
+      runAfter: [],
+      transform(token: Token): Token {
+        return { ...token, usage: "DTS-ANNOTATED" };
+      },
+    } as unknown as never;
+
+    const files = new TypeScript({ dateFn: fixedDate }).generateFiles(
+      [{ name: "primary", type: "color", value: "#ff0000" }],
+      [dtsOnlyPlugin],
+    );
+    const dts = files.get("tokens.d.ts")!;
+
+    // `usage` flows to the JSDoc comment in declarations. If d.ts-targeted
+    // plugins are dropped (Phase 1 regression), the annotation is missing.
+    expect(dts).toContain("DTS-ANNOTATED");
+  });
+
+  test("plugin targeting .mjs applies only to the runtime, not declarations", () => {
+    // Each sub-generator filters plugins by its own ext. A plugin that
+    // specifies `outputType: "mjs"` transforms the runtime file but does
+    // not apply to the `.d.ts`. Consumers who want consistent behavior
+    // across both files should use a broader `outputType` (e.g. `/.*/`)
+    // or attach the transform at the expand / resolve layer.
     const uppercasePlugin = {
       tokenType: "color",
       outputType: "mjs",
@@ -105,15 +131,9 @@ describe("TypeScript meta generator", () => {
     const mjs = files.get("tokens.mjs")!;
     const dts = files.get("tokens.d.ts")!;
 
-    // If the runtime transformed `#ff0000` to `#FF0000`, the declarations
-    // literal type must match. Otherwise TS consumers see a type mismatch.
-    const runtimeHasUpper = mjs.includes("#FF0000");
-    const declHasUpper = dts.includes('"#FF0000"');
-    expect(runtimeHasUpper).toBe(declHasUpper);
+    expect(mjs).toContain("#FF0000");
+    // Declarations see the pre-plugin literal.
+    expect(dts).toContain('"#ff0000"');
+    expect(dts).not.toContain("#FF0000");
   });
-
-  // NOTE: M1 (`TypeScriptDeclarations.ts:129` double-applies nameTransformer)
-  // requires a name-mutating plugin upstream (e.g. NameConventionPlugin) for
-  // the bug to manifest. Triggering it via .generateFiles() alone is
-  // insufficient. Will exercise via the Teikn pipeline in Phase 1.
 });

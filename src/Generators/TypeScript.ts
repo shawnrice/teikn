@@ -94,17 +94,16 @@ export class TypeScript extends Generator<TypeScriptOpts> {
   }
 
   override generateFiles(tokens: Token[], plugins: Plugin[] = []): Map<string, string> {
-    // Run plugin preparation once through the JavaScript sub-generator so
-    // plugins targeting the runtime ext (e.g. `outputType: "mjs"`) apply
-    // consistently to the declarations as well — otherwise the `.d.ts`
-    // literal types would lock to the pre-plugin values while the `.mjs`
-    // emitted the transformed runtime, silently diverging.
-    const prepared = this.#javascript.prepareTokens(tokens, plugins);
+    // Each sub-generator filters plugins by its own ext in prepareTokens,
+    // so let each prepare its own view. Plugins targeting `.mjs` (or
+    // `.cjs`) apply to the runtime; plugins targeting `.d.ts` apply to
+    // the declarations. Plugins that want to apply to both can declare
+    // a regex or `*` outputType.
     const merged = new Map<string, string>();
-    for (const [filename, content] of this.#javascript.generateFiles(prepared, [])) {
+    for (const [filename, content] of this.#javascript.generateFiles(tokens, plugins)) {
       merged.set(filename, content);
     }
-    for (const [filename, content] of this.#declarations.generateFiles(prepared, [])) {
+    for (const [filename, content] of this.#declarations.generateFiles(tokens, plugins)) {
       merged.set(filename, content);
     }
     return merged;
