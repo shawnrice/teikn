@@ -120,6 +120,33 @@ describe("TokenSet", () => {
       expect(composeTokenSets(empty, core)).toHaveLength(1);
       expect(composeTokenSets(core, empty)).toHaveLength(1);
     });
+
+    test("same bare name in different groups coexist instead of colliding", () => {
+      const core = tokenSet("core", [
+        { name: "primary", type: "color", group: "color", value: "#0066cc" },
+        { name: "primary", type: "size", group: "size", value: "16px" },
+      ]);
+
+      const result = composeTokenSets(core);
+      expect(result).toHaveLength(2);
+      expect(result.find((t) => t.group === "color")?.value).toBe("#0066cc");
+      expect(result.find((t) => t.group === "size")?.value).toBe("16px");
+    });
+
+    test("override matches by qualified key, not bare name", () => {
+      const core = tokenSet("core", [
+        { name: "primary", type: "color", group: "color", value: "#0066cc" },
+        { name: "primary", type: "size", group: "size", value: "16px" },
+      ]);
+      const dark = tokenSet("dark", [
+        { name: "primary", type: "color", group: "color", value: "#3399ff" },
+      ]);
+
+      const result = composeTokenSets(core, dark);
+      expect(result).toHaveLength(2);
+      expect(result.find((t) => t.group === "color")?.value).toBe("#3399ff");
+      expect(result.find((t) => t.group === "size")?.value).toBe("16px");
+    });
   });
 
   describe("composeTokenSetsAsModes", () => {
@@ -214,6 +241,34 @@ describe("TokenSet", () => {
       ]);
 
       expect(() => composeTokenSetsAsModes(core, { dark })).toThrow('missing base token "d"');
+    });
+
+    test("matches mode tokens to base tokens by qualified key, not bare name", () => {
+      const core = tokenSet("core", [
+        { name: "primary", type: "color", group: "color", value: "#0066cc" },
+        { name: "primary", type: "size", group: "size", value: "16px" },
+      ]);
+      const dark = tokenSet("dark", [
+        { name: "primary", type: "color", group: "color", value: "#3399ff" },
+      ]);
+
+      const result = composeTokenSetsAsModes(core, { dark });
+      expect(result).toHaveLength(2);
+      expect(result.find((t) => t.group === "color")?.modes?.dark).toBe("#3399ff");
+      expect(result.find((t) => t.group === "size")?.modes).toBeUndefined();
+    });
+
+    test("missing-base error reports the qualified key, not the bare name", () => {
+      const core = tokenSet("core", [
+        { name: "primary", type: "color", group: "color", value: "#0066cc" },
+      ]);
+      const dark = tokenSet("dark", [
+        { name: "primary", type: "size", group: "size", value: "20px" },
+      ]);
+
+      expect(() => composeTokenSetsAsModes(core, { dark })).toThrow(
+        'missing base token "size.primary"',
+      );
     });
   });
 });

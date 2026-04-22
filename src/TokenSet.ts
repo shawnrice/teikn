@@ -1,4 +1,5 @@
 import type { Token } from "./Token";
+import { tokenKey } from "./token-keys";
 
 export type TokenSet = {
   name: string;
@@ -23,16 +24,18 @@ export const tokenSet = (name: string, ...groups: Token[][]): TokenSet => ({
 
 /**
  * Compose multiple token sets into a single token array.
- * Later sets override earlier ones by token name.
- * Tokens from later sets fully replace tokens from earlier sets with the same name.
- * Token order is preserved: overridden tokens appear at the position of the first occurrence.
+ * Later sets override earlier ones by qualified key (`group.name`),
+ * so two tokens with the same short name in different groups (e.g.
+ * `color.primary` and `size.primary`) coexist instead of colliding.
+ * Token order is preserved: overridden tokens appear at the position
+ * of the first occurrence.
  */
 export const composeTokenSets = (...sets: TokenSet[]): Token[] => {
   const tokenMap = new Map<string, Token>();
 
   for (const set of sets) {
     for (const token of set.tokens) {
-      tokenMap.set(token.name, token);
+      tokenMap.set(tokenKey(token), token);
     }
   }
 
@@ -42,7 +45,8 @@ export const composeTokenSets = (...sets: TokenSet[]): Token[] => {
 /**
  * Compose token sets into tokens with mode variants.
  * The base set provides default values. Additional sets become modes.
- * Tokens present in mode sets must also exist in the base set.
+ * Tokens present in mode sets must also exist in the base set, matched
+ * by qualified key (`group.name`).
  */
 export const composeTokenSetsAsModes = (
   base: TokenSet,
@@ -51,18 +55,19 @@ export const composeTokenSetsAsModes = (
   const tokenMap = new Map<string, Token>();
 
   for (const token of base.tokens) {
-    tokenMap.set(token.name, { ...token });
+    tokenMap.set(tokenKey(token), { ...token });
   }
 
   for (const [modeName, modeSet] of Object.entries(modeSets)) {
     for (const modeToken of modeSet.tokens) {
-      const existing = tokenMap.get(modeToken.name);
+      const key = tokenKey(modeToken);
+      const existing = tokenMap.get(key);
 
       if (existing) {
         existing.modes = { ...existing.modes, [modeName]: modeToken.value };
       } else {
         throw new Error(
-          `composeTokenSetsAsModes(): missing base token "${modeToken.name}" for mode "${modeName}"`,
+          `composeTokenSetsAsModes(): missing base token "${key}" for mode "${modeName}"`,
         );
       }
     }
