@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { buildKeyAliasIndex, resolveKey, tokenKey } from "./token-keys";
+import { ambiguousKeyMessage, buildKeyAliasIndex, resolveKey, tokenKey } from "./token-keys";
 
 describe("tokenKey", () => {
   test("returns qualified key when group is present", () => {
@@ -75,5 +75,18 @@ describe("buildKeyAliasIndex + resolveKey", () => {
     expect(index.fullKeys.size).toBe(0);
     expect(index.bareLookup.size).toBe(0);
     expect(resolveKey("anything", index).status).toBe("missing");
+  });
+});
+
+describe("ambiguousKeyMessage shape", () => {
+  test("pins the remediation text so rewording is intentional", () => {
+    // Pin both the "matches <candidates>" enumeration and the remediation
+    // sentence. Prior rounds found the message was vague ("Rename one of
+    // the tokens...") and gained the qualified-reference hint in Phase 2.
+    const msg = ambiguousKeyMessage("primary", ["color.primary", "size.primary"]);
+    expect(msg).toContain("Ambiguous token reference: {primary}");
+    expect(msg).toContain("matches color.primary, size.primary");
+    expect(msg).toContain("Use a qualified reference like {color.primary} to disambiguate");
+    expect(msg).toContain("rename one of the tokens");
   });
 });
