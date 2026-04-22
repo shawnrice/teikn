@@ -11,6 +11,14 @@ import { matches } from "../utils";
 export const applyPlugin = (plugin: Plugin, token: Token): Token => {
   const transformed = plugin.transform(token);
 
+  if (!transformed || typeof transformed !== "object" || !transformed.name || !transformed.type) {
+    throw new Error(
+      `Plugin \`${plugin.constructor.name}\` returned a malformed token ` +
+        `for "${token.name}": result must have \`name\` and \`type\`. ` +
+        `Check the plugin's transform() return value.`,
+    );
+  }
+
   if (!token.modes) {
     return transformed;
   }

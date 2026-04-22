@@ -78,6 +78,15 @@ describe("JavaScript generator (ESM default)", () => {
     ]);
     expect(output).toContain('{"fontFamily":"Arial"}');
   });
+
+  test("throws at construction on unknown module value", () => {
+    // `module` previously fell through `?? "esm"`, so any non-"cjs" value
+    // (typos like "commonjs", "mjs") silently produced ESM output.
+    expect(() => new JavaScript({ module: "commonjs" as never })).toThrow(
+      /Expected "esm" or "cjs"/,
+    );
+    expect(() => new JavaScript({ module: "mjs" as never })).toThrow(/Expected "esm" or "cjs"/);
+  });
 });
 
 describe("JavaScript generator (CJS mode)", () => {

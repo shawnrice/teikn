@@ -30,6 +30,12 @@ const defaultExt = (module: JavaScriptModule): string => (module === "cjs" ? "cj
 export class JavaScript extends Generator<JavaScriptOpts> {
   constructor(options: Partial<JavaScriptOpts> = {}) {
     const moduleKind = options.module ?? "esm";
+    if (moduleKind !== "esm" && moduleKind !== "cjs") {
+      throw new Error(
+        `JavaScript: invalid \`module\` value ${JSON.stringify(moduleKind)}. ` +
+          `Expected "esm" or "cjs".`,
+      );
+    }
     super({
       nameTransformer: camelCase,
       dateFn: getDate,

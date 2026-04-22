@@ -38,7 +38,15 @@ export abstract class Plugin<Options extends Record<string, unknown> = Record<st
 export const sortPlugins = (plugins: Plugin[]): Plugin[] => {
   const nameMap = new Map<string, Plugin>();
   for (const p of plugins) {
-    nameMap.set(p.constructor.name, p);
+    const { name } = p.constructor;
+    if (nameMap.has(name)) {
+      throw new Error(
+        `Duplicate plugin instance: two instances of \`${name}\` were passed. ` +
+          `The runAfter / sort machinery keys by class name, so duplicates can't coexist. ` +
+          `Merge their configuration into a single instance.`,
+      );
+    }
+    nameMap.set(name, p);
   }
 
   const sorted: Plugin[] = [];

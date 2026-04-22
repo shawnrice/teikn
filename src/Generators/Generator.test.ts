@@ -1,6 +1,8 @@
 import { describe, expect, test } from "bun:test";
 
-import { Generator } from "./Generator";
+import { Plugin } from "../Plugins/Plugin";
+import type { Token } from "../Token";
+import { applyPlugin, Generator } from "./Generator";
 
 describe("Generator base class tests", () => {
   test("It throws when the extension is not set in options", () => {
@@ -107,5 +109,36 @@ describe("Generator multi-file emission contract", () => {
       ["tokens.mjs", "runtime"],
       ["tokens.d.ts", "types"],
     ]);
+  });
+});
+
+describe("applyPlugin return-value validation", () => {
+  const token: Token = { name: "primary", type: "color", value: "#000" };
+
+  test("throws when a plugin returns undefined", () => {
+    class BadPlugin extends Plugin {
+      tokenType: RegExp = /.*/;
+      outputType: RegExp = /.*/;
+      override transform(): Token {
+        return undefined as unknown as Token;
+      }
+    }
+    expect(() => applyPlugin(new BadPlugin(), token)).toThrow(
+      /BadPlugin.*returned a malformed token.*primary/,
+    );
+  });
+
+  test("throws when a plugin returns a token missing `type`", () => {
+    class DropsType extends Plugin {
+      tokenType: RegExp = /.*/;
+      outputType: RegExp = /.*/;
+      override transform(t: Token): Token {
+        const { type: _type, ...rest } = t;
+        return rest as Token;
+      }
+    }
+    expect(() => applyPlugin(new DropsType(), token)).toThrow(
+      /DropsType.*returned a malformed token/,
+    );
   });
 });
