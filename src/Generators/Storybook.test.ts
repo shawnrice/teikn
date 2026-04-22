@@ -56,6 +56,23 @@ describe("Storybook generator", () => {
     expect(output).toContain('from "./design"');
   });
 
+  test("composite mode values are preserved as objects, not stringified to '[object Object]'", () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: "test" });
+    const tokens: Token[] = [
+      {
+        name: "heading",
+        type: "typography",
+        value: { fontFamily: "Inter", fontSize: "1rem" },
+        modes: { dark: { fontFamily: "Inter", fontSize: "1.125rem" } as unknown as string },
+      },
+    ];
+    const output = sb.generate(tokens);
+    expect(output).not.toContain("[object Object]");
+    // The mode's composite fields should survive into the output as JSON.
+    expect(output).toContain("Inter");
+    expect(output).toContain("1.125rem");
+  });
+
   test("It prefers TypeScript meta sibling over a standalone JavaScript when both are present", () => {
     const sb = new Storybook({ dateFn: fixedDate, version: "test" });
     const js = new JavaScript({ filename: "js-only" });

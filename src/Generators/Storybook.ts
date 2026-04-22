@@ -273,14 +273,17 @@ export class Storybook extends Generator<StorybookOpts> {
 
     // Modes data
     if (hasModes) {
-      lines.push(`const modesData${ts ? ": Record<string, Record<string, string>>" : ""} = {`);
+      lines.push(`const modesData${ts ? ": Record<string, Record<string, unknown>>" : ""} = {`);
       for (const token of tokens) {
         if (!token.modes || Object.keys(token.modes).length === 0) {
           continue;
         }
         const key = nameTransformer!(token.name);
+        // Preserve composite mode values as JSON objects; `String(val)`
+        // would collapse them to "[object Object]". Scalars round-trip
+        // through JSON.stringify unchanged (strings get quoted).
         const modeEntries = Object.entries(token.modes)
-          .map(([mode, val]) => `    '${mode}': ${JSON.stringify(String(val))}`)
+          .map(([mode, val]) => `    '${mode}': ${JSON.stringify(val)}`)
           .join(`,${EOL}`);
         lines.push(`  '${key}': {`);
         lines.push(modeEntries);
