@@ -230,17 +230,27 @@ export const validate = (tokens: Token[]): ValidationResult => {
     }
   }
 
-  // Check for circular references
+  // Check for circular references. Walks refs (follow the chain),
+  // composites (visit each field), and modes of referenced tokens.
   const checkCircularValue = (
     value: unknown,
     originName: string,
     visited: Set<string>,
   ): boolean => {
+    if (isComposite(value)) {
+      for (const fieldValue of Object.values(value as CompositeValue)) {
+        if (checkCircularValue(fieldValue, originName, visited)) {
+          return true;
+        }
+      }
+      return false;
+    }
+
     if (!isRef(value)) {
       return false;
     }
 
-    const refName = (value as string).match(REF_PATTERN)![1]!;
+    const refName = value.match(REF_PATTERN)![1]!;
     const resolved = resolveKey(refName, tokenKeys);
     if (resolved.status !== "ok") {
       return false;
@@ -281,9 +291,7 @@ export const validate = (tokens: Token[]): ValidationResult => {
     }
     const visited = new Set([tokenKey(token)]);
 
-    if (isRef(token.value)) {
-      checkCircularValue(token.value, token.name, visited);
-    }
+    checkCircularValue(token.value, token.name, visited);
 
     if (token.modes) {
       for (const modeVal of Object.values(token.modes)) {

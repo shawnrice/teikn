@@ -109,6 +109,42 @@ describe("validate", () => {
     expect(result.issues.some((i) => i.message.includes("Circular"))).toBe(true);
   });
 
+  test("detects circular references inside composite field values", () => {
+    const tokens: Token[] = [
+      {
+        name: "heading",
+        type: "typography",
+        value: {
+          fontFamily: "Inter",
+          fontSize: "{sizeRef}",
+          fontWeight: 400,
+          lineHeight: 1.2,
+        },
+      },
+      { name: "sizeRef", type: "dimension", value: "{heading}" },
+    ];
+
+    const result = validate(tokens);
+    expect(result.issues.some((i) => i.message.includes("Circular"))).toBe(true);
+  });
+
+  test("detects circular references inside composite mode values", () => {
+    const tokens: Token[] = [
+      {
+        name: "surface",
+        type: "color",
+        value: "#fff",
+        modes: {
+          dark: { fontFamily: "Inter", fontSize: "{loopback}" } as unknown as string,
+        },
+      },
+      { name: "loopback", type: "color", value: "{surface}" },
+    ];
+
+    const result = validate(tokens);
+    expect(result.issues.some((i) => i.message.includes("Circular"))).toBe(true);
+  });
+
   test("validates composite token shapes", () => {
     const tokens: Token[] = [
       {
