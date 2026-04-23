@@ -1,0 +1,77 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`TypeScriptDeclarations generator It matches the snapshot 1`] = `
+"/**
+ * Teikn vtest
+ * Generated null
+ *
+ * This file is generated and should be committed to source control
+ */
+
+
+/**
+ * Design tokens
+ */
+export declare const tokens: {
+  /**
+   *  Use for body fonts
+   *  Type: font-family
+   */
+  readonly body: "\\"Roboto Condensed\\", Arial, sans";
+  /**
+   *  the primary branding color
+   *  Type: color
+   */
+  readonly primary: "aliceblue";
+  /**
+   *  the secondary branding color
+   *  Type: color
+   */
+  readonly secondary: "rgb(102, 205, 170)";
+};
+
+export type TokenNames = {
+  FontFamily: 'body';
+  Color: 'primary' | 'secondary';
+  All: TokenNames['FontFamily'] | TokenNames['Color'];
+};
+export default tokens;"
+`;
+
+exports[`TypeScriptDeclarations generator it generates group type declarations when groups: true 1`] = `
+"/**
+ * Teikn vtest
+ * Generated null
+ *
+ * This file is generated and should be committed to source control
+ */
+
+
+/**
+ * Design tokens
+ */
+export declare const tokens: {
+  /**
+   *  Type: color
+   */
+  readonly colorPrimary: "aliceblue";
+  /**
+   *  Type: color
+   */
+  readonly colorSecondary: "rgb(102, 205, 170)";
+  /**
+   *  Type: spacing
+   */
+  readonly spacingSm: "4px";
+};
+
+export type TokenNames = {
+  Color: 'colorPrimary' | 'colorSecondary';
+  Spacing: 'spacingSm';
+  All: TokenNames['Color'] | TokenNames['Spacing'];
+};
+
+export declare const color: (name: 'primary' | 'secondary') => string;
+export declare const spacing: (name: 'sm') => string;
+export default tokens;"
+`;

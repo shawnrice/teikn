@@ -126,3 +126,26 @@ $color-values: (
   @return map-get($color-values, $name);
 }"
 `;
+
+exports[`Scss Generator tests composite values with internal commas produce valid SCSS map output 1`] = `
+"///
+/// Teikn vtest
+/// Generated null
+///
+/// This file is generated and should be commited to source control
+///
+
+
+// prettier-ignore
+$token-values: (
+  typography-display-lg: ("Quicksand", sans-serif 2.25rem 700 1.2),
+);
+
+/// Use "get-token" to access tokens by name
+@function get-token($name) {
+  @if (not map-has-key($token-values, $name)) {
+    @error "Token '#{$name}' does not exist.";
+  }
+  @return map-get($token-values, $name);
+}"
+`;

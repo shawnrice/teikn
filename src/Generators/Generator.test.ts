@@ -1,6 +1,8 @@
 import { describe, expect, test } from "bun:test";
 
-import { Generator } from "./Generator";
+import { Plugin } from "../Plugins/Plugin";
+import type { Token } from "../Token";
+import { applyPlugin, Generator } from "./Generator";
 
 describe("Generator base class tests", () => {
   test("It throws when the extension is not set in options", () => {
@@ -46,5 +48,97 @@ describe("Generator base class tests", () => {
   test("It handles filename with custom name and no extension", () => {
     // @ts-ignore: this is an error test
     expect(new Generator({ ext: "css", filename: "variables" }).file).toBe("variables.css");
+  });
+});
+
+describe("Generator multi-file emission contract", () => {
+  class SingleFile extends Generator {
+    constructor(opts = {}) {
+      super({ ext: "txt", ...opts });
+    }
+    generateToken(): string {
+      return "";
+    }
+    // oxlint-disable-next-line class-methods-use-this
+    combinator(): string {
+      return "body";
+    }
+  }
+
+  class MultiFile extends Generator {
+    constructor(opts = {}) {
+      super({ ext: "txt", ...opts });
+    }
+    generateToken(): string {
+      return "";
+    }
+    // oxlint-disable-next-line class-methods-use-this
+    combinator(): string {
+      return "";
+    }
+    override filenames(): string[] {
+      const base = this.options.filename ?? "tokens";
+      return [`${base}.mjs`, `${base}.d.ts`];
+    }
+    override generateFiles(): Map<string, string> {
+      const base = this.options.filename ?? "tokens";
+      return new Map([
+        [`${base}.mjs`, "runtime"],
+        [`${base}.d.ts`, "types"],
+      ]);
+    }
+  }
+
+  test("default filenames() returns [this.file]", () => {
+    expect(new SingleFile().filenames()).toEqual(["tokens.txt"]);
+  });
+
+  test("default generateFiles() returns a single-entry map keyed by this.file", () => {
+    const files = new SingleFile().generateFiles([]);
+    expect([...files.keys()]).toEqual(["tokens.txt"]);
+    expect(files.get("tokens.txt")).toBe("body");
+  });
+
+  test("multi-file generators can report multiple filenames", () => {
+    expect(new MultiFile().filenames()).toEqual(["tokens.mjs", "tokens.d.ts"]);
+  });
+
+  test("multi-file generators can emit multiple files", () => {
+    const files = new MultiFile().generateFiles([]);
+    expect([...files.entries()]).toEqual([
+      ["tokens.mjs", "runtime"],
+      ["tokens.d.ts", "types"],
+    ]);
+  });
+});
+
+describe("applyPlugin return-value validation", () => {
+  const token: Token = { name: "primary", type: "color", value: "#000" };
+
+  test("throws when a plugin returns undefined", () => {
+    class BadPlugin extends Plugin {
+      tokenType: RegExp = /.*/;
+      outputType: RegExp = /.*/;
+      override transform(): Token {
+        return undefined as unknown as Token;
+      }
+    }
+    expect(() => applyPlugin(new BadPlugin(), token)).toThrow(
+      /BadPlugin.*returned a malformed token.*primary/,
+    );
+  });
+
+  test("throws when a plugin returns a token missing `type`", () => {
+    class DropsType extends Plugin {
+      tokenType: RegExp = /.*/;
+      outputType: RegExp = /.*/;
+      override transform(t: Token): Token {
+        const { type: _type, ...rest } = t;
+        return rest as Token;
+      }
+    }
+    expect(() => applyPlugin(new DropsType(), token)).toThrow(
+      /DropsType.*returned a malformed token/,
+    );
   });
 });

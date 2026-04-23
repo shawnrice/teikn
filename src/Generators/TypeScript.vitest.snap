@@ -1,9 +1,10 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`TypeScript generator tests > It matches the TypeScript snapshot 1`] = `
-"/**
+exports[`TypeScript meta generator > combined output matches snapshot (catches structural drift) 1`] = `
+"=== tokens.d.ts ===
+/**
  * Teikn vtest
- * Generated null
+ * Generated Mon Jan 01 2024 12:00:00
  *
  * This file is generated and should be committed to source control
  */
@@ -12,66 +13,68 @@ exports[`TypeScript generator tests > It matches the TypeScript snapshot 1`] = `
 /**
  * Design tokens
  */
-export const tokens: {
-  /**
-   *  Use for body fonts
-   *  Type: font-family
-   */
-  body: string,
-  /**
-   *  the primary branding color
-   *  Type: color
-   */
-  primary: string,
-  /**
-   *  the secondary branding color
-   *  Type: color
-   */
-  secondary: string
-}
-
-export type TokenNames = {
-  FontFamily: 'body';
-  Color: 'primary' | 'secondary';
-  All: TokenNames['FontFamily'] | TokenNames['Color'];
-};
-export default tokens;"
-`;
-
-exports[`TypeScript generator tests > it generates group type declarations when groups: true 1`] = `
-"/**
- * Teikn vtest
- * Generated null
- *
- * This file is generated and should be committed to source control
- */
-
-
-/**
- * Design tokens
- */
-export const tokens: {
+export declare const tokens: {
   /**
    *  Type: color
    */
-  colorPrimary: string,
+  readonly primary: "#0066cc";
   /**
    *  Type: color
    */
-  colorSecondary: string,
+  readonly accent: "#ff6600";
   /**
    *  Type: spacing
    */
-  spacingSm: string
-}
+  readonly sm: "0.5rem";
+};
 
 export type TokenNames = {
-  Color: 'colorPrimary' | 'colorSecondary';
-  Spacing: 'spacingSm';
+  Color: 'primary' | 'accent';
+  Spacing: 'sm';
   All: TokenNames['Color'] | TokenNames['Spacing'];
 };
 
-export const color: (name: 'primary' | 'secondary') => string;
-export const spacing: (name: 'sm') => string;
+export declare const color: (name: 'primary' | 'accent') => string;
+export declare const spacing: (name: 'sm') => string;
+export default tokens;
+
+=== tokens.mjs ===
+/**
+ * Teikn vtest
+ * Generated Mon Jan 01 2024 12:00:00
+ *
+ * This file is generated and should be committed to source control
+ */
+export const tokens = {
+  /**
+   *  Type: color
+   */
+  primary: '#0066cc',
+  /**
+   *  Type: color
+   */
+  accent: '#ff6600',
+  /**
+   *  Type: spacing
+   */
+  sm: '0.5rem',
+};
+
+const _color = {
+  primary: tokens.primary,
+  accent: tokens.accent,
+};
+export const color = (name) => {
+  if (!(name in _color)) throw new Error(\`Unknown color token: \${name}\`);
+  return _color[name];
+};
+const _spacing = {
+  sm: tokens.sm,
+};
+export const spacing = (name) => {
+  if (!(name in _spacing)) throw new Error(\`Unknown spacing token: \${name}\`);
+  return _spacing[name];
+};
+
 export default tokens;"
 `;

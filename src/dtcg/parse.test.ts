@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
+import { resolveReferences } from "../resolve";
 import { BoxShadow } from "../TokenTypes/BoxShadow";
 import { Color } from "../TokenTypes/Color";
 import { CubicBezier } from "../TokenTypes/CubicBezier";
@@ -236,6 +237,40 @@ describe("parseDtcg", () => {
     expect(tokens[0]!.type).toBe("font-style");
   });
 
+  test("parses mode values from $extensions.mode", () => {
+    const doc: DtcgDocument = {
+      surface: {
+        $value: { colorSpace: "srgb", components: [1, 1, 1] },
+        $type: "color",
+        $extensions: {
+          mode: {
+            dark: { colorSpace: "srgb", components: [0.1, 0.1, 0.1] },
+          },
+        },
+      },
+    };
+
+    const tokens = parseDtcg(doc);
+    expect(tokens[0]!.modes).toBeDefined();
+    expect(tokens[0]!.modes!.dark).toBeInstanceOf(Color);
+  });
+
+  test("$extensions.mode value of null does not crash the parser", () => {
+    const doc: DtcgDocument = {
+      surface: {
+        $value: { colorSpace: "srgb", components: [1, 1, 1] },
+        $type: "color",
+        $extensions: {
+          mode: {
+            dark: null as never,
+          },
+        },
+      },
+    };
+
+    expect(() => parseDtcg(doc)).not.toThrow();
+  });
+
   test("shadow composite values are converted to BoxShadow", () => {
     const doc: DtcgDocument = {
       elevation: {
@@ -405,5 +440,34 @@ describe("parseDtcg", () => {
     } as DtcgDocument;
     const tokens = parseDtcg(doc);
     expect(tokens).toHaveLength(1);
+  });
+
+  test("DTCG-flattened dotted names resolve as fully-qualified alias targets", () => {
+    // parseDtcg flattens nested groups into dotted names like
+    // `color.brand.primary`. Such a name has no `group` field but IS a
+    // valid full-key in `tokenKey`'s output, and `resolveKey` should
+    // resolve `{color.brand.primary}` to it via the fullKeys check.
+    const doc: DtcgDocument = {
+      color: {
+        brand: {
+          primary: {
+            $value: { colorSpace: "srgb", components: [1, 0, 0] },
+            $type: "color",
+          },
+        },
+      },
+      link: {
+        $value: "{color.brand.primary}",
+        $type: "color",
+      },
+    };
+
+    const tokens = parseDtcg(doc);
+    const resolved = resolveReferences(tokens);
+
+    // The link token should now point at the same Color value as the
+    // brand primary — proving the dotted name resolved through the
+    // alias index without ambiguity.
+    expect(resolved[1]!.value).toBe(resolved[0]!.value);
   });
 });

@@ -1,5 +1,207 @@
 # Changelog
 
+## 2.0.0-alpha.11
+
+### Breaking Changes
+
+- **`EsModule` generator removed.** Use `JavaScript` instead, which now
+  defaults to ESM. For CommonJS output, pass `module: "cjs"`.
+- **`JavaScript` generator defaults to ESM (`.mjs`).** The previous
+  CJS-default behavior is still available via `new JavaScript({ module: "cjs" })`,
+  which emits `.cjs`. Consumers who relied on the old `.js` default
+  need to either accept `.mjs` or override `ext` explicitly.
+- **`TypeScript` generator is now a meta-generator that emits both
+  runtime and declarations.** The previous declarations-only behavior
+  moved to a new `TypeScriptDeclarations` generator. Users constructing
+  `new TypeScript()` previously got a single `.d.ts`; now they get a
+  `.mjs` runtime *and* a `.d.ts` from a single construction, which is
+  what the name suggests. To restore the old declarations-only output,
+  switch to `new TypeScriptDeclarations()`.
+- **`TypeScriptDeclarations` emits literal types by default.** Values
+  become their literal type (`readonly primary: "#0066cc"` instead of
+  `primary: string`). This enables exhaustive unions like
+  `type TokenColor = typeof tokens[keyof typeof tokens]`. To restore
+  the old widened-primitive output, pass `loose: true`.
+- **`TypeScriptDeclarations` emits `export declare const` with
+  `readonly` fields.** The previous `export const tokens: {...}`
+  ambient form is replaced with the explicit `export declare const`,
+  and every field carries `readonly` (top-level tokens, composite
+  fields, modes map). Consumers reading the `.d.ts` directly may need
+  to adapt; type-level consumers are unaffected.
+- **`composeTokenSetsAsModes` throws when a mode set introduces tokens
+  missing from the base.** Previously these were added silently with
+  `value: undefined`, producing a landmine for every downstream generator.
+  The new error message is
+  `composeTokenSetsAsModes(): missing base token "X" for mode "Y"`.
+- **`composeTokenSets` and `composeTokenSetsAsModes` key tokens by
+  qualified name (`group.name`).** Two grouped tokens with the same
+  short name in different groups (e.g. `color.primary` and `size.primary`)
+  now coexist instead of silently collapsing last-wins. Override matching
+  in `composeTokenSets` and mode matching in `composeTokenSetsAsModes`
+  both use qualified keys; the latter's missing-base error message now
+  reports the qualified name.
+- **`TypeScript` meta generator throws if given an `ext` option.** The
+  meta emits `.mjs`/`.cjs` (from `module`) plus `.d.ts`; an `ext` option
+  has no meaningful target and previously was silently ignored. Use
+  `module` to switch the runtime extension, or construct `JavaScript` /
+  `TypeScriptDeclarations` directly for per-file `ext` control.
+- **`ThemeLayer.tokenNames` now stores qualified names** (e.g.
+  `color.background` instead of `background`) when tokens live inside a
+  group. Code that inspected `tokenNames` directly may need to adapt;
+  code that only passes the `ThemeLayer` through the rest of the pipeline
+  is unaffected.
+
+### Added
+
+- **Multi-file generator emission.** Generators may now emit more than
+  one output file from a single construction via the new
+  `generateFiles()` contract on the `Generator` base class. Existing
+  single-file generators keep their current behavior through the
+  default implementation; only the new `TypeScript` meta-generator
+  opts into multiple files.
+- **`TypeScript` meta-generator.** A single construction produces both
+  a `JavaScript` runtime and a `TypeScriptDeclarations` output, wired
+  with matching filenames and name transforms:
+
+  ```ts
+  new Teikn.generators.TypeScript({ filename: "tokens" });
+  // → tokens.mjs + tokens.d.ts
+
+  new Teikn.generators.TypeScript({ module: "cjs" });
+  // → tokens.cjs + tokens.d.ts
+
+  new Teikn.generators.TypeScript({ loose: true });
+  // → tokens.mjs + tokens.d.ts (widened primitive types)
+  ```
+
+  Users who want runtime-only construct `JavaScript` directly; users
+  who want declarations-only construct `TypeScriptDeclarations`
+  directly.
+- **`JavaScript.module` option.** `"esm"` (default, emits `.mjs` with
+  `export const` / `export default`) or `"cjs"` (emits `.cjs` with
+  `module.exports`). File extension derives from the module system
+  but remains overrideable via `ext`.
+- **`TypeScriptDeclarations.loose` option.** Restores widened
+  primitive types (`string`, `number`, `boolean`) for consumers who
+  need them. Default is `false` — literal narrow types.
+- **Group-aware reference resolution.** `{primary}` resolves to
+  `color.primary` when a token's bare name is unambiguous across groups.
+  When ambiguous, you can disambiguate by writing the qualified
+  reference: `{color.primary}` resolves directly to that token regardless
+  of how many other groups share the bare name. Ambiguous bare references
+  still throw with a diagnostic listing the candidates
+  (e.g. `Ambiguous token reference: {primary} matches color.primary, size.primary`).
+  Works in `resolveReferences`, `validate`, `theme(...)` overrides, and
+  internal theme application. The `theme()` `overrides` map also accepts
+  qualified keys (`{ "color.primary": "#3399ff" }`) for the same
+  disambiguation reason.
+- **`KeyAliasIndex` type exported from `token-keys.ts`.** Previously
+  consumers had to use `ReturnType<typeof buildKeyAliasIndex>`; the
+  named type is now part of the public surface for anyone writing
+  custom resolvers.
+- **DTCG `$extensions.mode` parsing.** `parseDtcg` now reads mode
+  variants from `$extensions.mode` and converts each entry into a Teikn
+  mode value, preserving aliases verbatim. Lets DTCG documents with
+  theme-mode variants round-trip into Teikn without manual mode
+  reconstruction.
+
+### Fixed
+
+- **`JavaScript` and `TypeScriptDeclarations` quote transformed token
+  keys that are not valid identifiers.** A kebab-case `nameTransformer`
+  (e.g. converting `colorPrimary` → `color-primary`) previously produced
+  invalid JS/TS output like `color-primary: "#fff",`. The generators now
+  single-quote any key that is not a valid identifier. Originally shipped
+  across the pre-rename generators (`EsModule`, old CJS `JavaScript`,
+  old `TypeScript`); carried through to the merged/renamed classes.
+- **Storybook detects a `TypeScript` meta sibling for import-path
+  resolution.** Previously only `instanceof JavaScript` was checked, so
+  a pipeline of `[Storybook, TypeScript]` always fell back to
+  `./tokens` even when the meta's filename was customized. Storybook
+  now reads the runtime base from the meta's `filenames()` list.
+- **`TypeScriptDeclarations` emits `null` for null values** instead of
+  `object` (which is what `typeof null` returns). Edge case — null
+  isn't a valid `TokenValue` — but the previous output was misleading.
+
+## 2.0.0-alpha.10
+
+### Breaking Changes
+
+- **`Duration.amount` and `Dimension.amount` renamed to `.value`.** The
+  getter name now matches the `{ value, unit }` field names on the new
+  object constructors, eliminating the naming inconsistency.
+- **`Transition` getters return `Duration` instances.** `duration` and
+  `delay` getters previously returned strings; they now return `Duration`
+  objects. The constructor and setters still accept `Duration | string`
+  (backward compatible), but downstream code reading the getters must
+  call `.toString()` or use the `Duration` API directly.
+
+### Added
+
+- **Consistent value-type API across `Color`, `Duration`, `Dimension`,
+  `CubicBezier`, `LinearGradient`, `RadialGradient`, `BoxShadow`,
+  `Transition`.** Every first-class value now supports the same surface:
+  `new T(positional)`, `new T({ named })`, `new T("css")`, and
+  `T.from(T | Options | string)`. List types (`BoxShadowList`,
+  `TransitionList`, `GradientList`) gained `from()` helpers.
+- **`Transition` math operations.** `scale(k)` uniformly dilates duration
+  and delay, `shift(Δ)` offsets the delay (useful for staggered entry),
+  `reverse()` reverses the easing curve, and `totalTime` returns
+  `duration + delay`. Transitions now store `Duration` objects
+  internally so these operations are exact, not string-reparsed.
+- **Named value access on `group()`.** `group()` still returns a
+  `Token[]`, but the returned array now carries non-enumerable properties
+  for each token's value, letting higher-level value types reference
+  values from other groups by identity:
+  ```ts
+  const durations = group("duration", { fast: new Duration(100, "ms") });
+  const easings   = group("timing",   { standard: CubicBezier.standard });
+  const transitions = group("transition", {
+    fade: new Transition(durations.fast, easings.standard),
+  });
+  ```
+  The hidden properties don't appear in `Object.keys`, `for...in`,
+  `JSON.stringify`, or array spread — iteration still sees only the
+  token array.
+- **Composed token values emit references in generator output.** When a
+  `Transition` or `BoxShadow` component matches another token by
+  identity, the CssVars, ScssVars, and DTCG generators now emit
+  references instead of inlining the value:
+  ```css
+  --transition-fade: var(--duration-fast) var(--timing-standard);
+  ```
+  ```scss
+  $transition-fade: $duration-fast $timing-standard;
+  ```
+  ```json
+  "transition-fade": {
+    "$value": { "duration": "{fast}", "timingFunction": "{standard}" }
+  }
+  ```
+  The ScssVars generator topologically sorts output so referenced tokens
+  are declared before the tokens that reference them — SCSS variables
+  resolve at compile time, so order matters.
+- **Documentation rework.** Added `docs/getting-started.md` (five-step
+  guide), `docs/concepts.md` (mental model), `docs/api/values.md` and
+  `docs/api/builders.md` (API reference), and
+  `docs/recipes/composition.md` (shadow derivation, transition math,
+  staggered animations, reduced-motion recipes). The old
+  `docs/quick-start.md` is removed — superseded by the new structure.
+
+### Fixed
+
+- **`group()` rejects `Array.prototype`-colliding names.** Naming a
+  token `length`, `push`, `map`, etc. now throws instead of silently
+  shadowing an array method on the returned `Token[]`.
+- **Runtime guard on `Duration`/`Dimension` with missing unit.**
+  Calling `new Duration(100)` or `new Dimension(16)` from JavaScript
+  (where TypeScript's required-unit check doesn't apply) now throws
+  instead of producing a nonsensical `"100undefined"` string.
+- **DTCG serialization no longer double-aliases transition components.**
+  `transitionToDtcg` previously re-wrapped already-resolved references;
+  now it binds each component to a local variable before deciding
+  whether to emit an alias.
+
 ## 2.0.0-alpha.9
 
 ### Fixed

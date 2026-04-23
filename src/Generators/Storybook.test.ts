@@ -5,16 +5,18 @@ import { CubicBezier } from "../TokenTypes/CubicBezier";
 import { LinearGradient } from "../TokenTypes/Gradient";
 import { tokenSet1 } from "../fixtures/tokenSet1";
 import type { Token } from "../Token";
-import { EsModule } from "./EsModule";
 import { JavaScript } from "./JavaScript";
 import { Storybook } from "./Storybook";
+import { TypeScript } from "./TypeScript";
 
 const fixedDate = () => "Mon Jan 01 2024 12:00:00";
 
 describe("Storybook generator", () => {
   test("It generates the full token set", () => {
     expect(
-      new Storybook({ dateFn: fixedDate, version: "test" }).generate(tokenSet1),
+      new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" }).generate(
+        tokenSet1,
+      ),
     ).toMatchSnapshot();
   });
 
@@ -23,18 +25,7 @@ describe("Storybook generator", () => {
     expect(gen.file).toBe("tokens.stories.tsx");
   });
 
-  test("It detects EsModule sibling import path", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test" });
-    const es = new EsModule({ ext: "js" });
-    sb.siblings = [sb, es];
-
-    const tokens: Token[] = [{ name: "primary", type: "color", value: "#ff0000" }];
-    const output = sb.generate(tokens);
-
-    expect(output).toContain('from "./tokens"');
-  });
-
-  test("It detects JavaScript sibling import path", () => {
+  test("It detects JavaScript (ESM) sibling import path", () => {
     const sb = new Storybook({ dateFn: fixedDate, version: "test" });
     const js = new JavaScript();
     sb.siblings = [sb, js];
@@ -43,6 +34,57 @@ describe("Storybook generator", () => {
     const output = sb.generate(tokens);
 
     expect(output).toContain('from "./tokens"');
+  });
+
+  test("It detects JavaScript (CJS) sibling import path", () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: "test" });
+    const js = new JavaScript({ module: "cjs" });
+    sb.siblings = [sb, js];
+
+    const tokens: Token[] = [{ name: "primary", type: "color", value: "#ff0000" }];
+    const output = sb.generate(tokens);
+
+    expect(output).toContain('from "./tokens"');
+  });
+
+  test("It detects TypeScript meta sibling and imports from the runtime base", () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: "test" });
+    const ts = new TypeScript({ filename: "design" });
+    sb.siblings = [sb, ts];
+
+    const tokens: Token[] = [{ name: "primary", type: "color", value: "#ff0000" }];
+    const output = sb.generate(tokens);
+
+    expect(output).toContain('from "./design"');
+  });
+
+  test("composite mode values are preserved as objects, not stringified to '[object Object]'", () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
+    const tokens: Token[] = [
+      {
+        name: "heading",
+        type: "typography",
+        value: { fontFamily: "Inter", fontSize: "1rem" },
+        modes: { dark: { fontFamily: "Inter", fontSize: "1.125rem" } as unknown as string },
+      },
+    ];
+    const output = sb.generate(tokens);
+    expect(output).not.toContain("[object Object]");
+    // The mode's composite fields should survive into the output as JSON.
+    expect(output).toContain("Inter");
+    expect(output).toContain("1.125rem");
+  });
+
+  test("It prefers TypeScript meta sibling over a standalone JavaScript when both are present", () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: "test" });
+    const js = new JavaScript({ filename: "js-only" });
+    const ts = new TypeScript({ filename: "meta" });
+    sb.siblings = [sb, js, ts];
+
+    const tokens: Token[] = [{ name: "primary", type: "color", value: "#ff0000" }];
+    const output = sb.generate(tokens);
+
+    expect(output).toContain('from "./meta"');
   });
 
   test("It uses custom importPath when provided", () => {
@@ -54,17 +96,13 @@ describe("Storybook generator", () => {
     expect(output).toContain('from "@design/tokens"');
   });
 
-  test("It falls back to ./tokens when no sibling found", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test" });
-
-    const tokens: Token[] = [{ name: "primary", type: "color", value: "#ff0000" }];
-    const output = sb.generate(tokens);
-
-    expect(output).toContain('from "./tokens"');
-  });
-
   test("It uses custom storyTitle", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test", storyTitle: "Brand Tokens" });
+    const sb = new Storybook({
+      dateFn: fixedDate,
+      version: "test",
+      importPath: "./tokens",
+      storyTitle: "Brand Tokens",
+    });
     const tokens: Token[] = [{ name: "primary", type: "color", value: "#ff0000" }];
     const output = sb.generate(tokens);
 
@@ -72,7 +110,7 @@ describe("Storybook generator", () => {
   });
 
   test("It renders color stories with Swatch", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test" });
+    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
     const tokens: Token[] = [
       { name: "colorPrimary", type: "color", value: "#ff0000" },
       { name: "colorSecondary", type: "color", value: "#00ff00" },
@@ -85,7 +123,7 @@ describe("Storybook generator", () => {
   });
 
   test("It renders spacing stories with SpacingBar", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test" });
+    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
     const tokens: Token[] = [
       { name: "spacingSm", type: "spacing", value: "8px" },
       { name: "spacingMd", type: "spacing", value: "16px" },
@@ -98,7 +136,7 @@ describe("Storybook generator", () => {
   });
 
   test("It renders font-size stories with FontSample", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test" });
+    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
     const tokens: Token[] = [{ name: "fontSizeBase", type: "font-size", value: "1rem" }];
     const output = sb.generate(tokens);
 
@@ -108,7 +146,7 @@ describe("Storybook generator", () => {
   });
 
   test("It renders font-family stories with correct styleProp", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test" });
+    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
     const tokens: Token[] = [
       { name: "fontFamilyBody", type: "font-family", value: "Arial, sans-serif" },
     ];
@@ -119,7 +157,7 @@ describe("Storybook generator", () => {
   });
 
   test("It renders font-weight stories with correct styleProp", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test" });
+    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
     const tokens: Token[] = [{ name: "fontWeightBold", type: "font-weight", value: "700" }];
     const output = sb.generate(tokens);
 
@@ -128,7 +166,7 @@ describe("Storybook generator", () => {
   });
 
   test("It renders typography stories with TypographyBlock", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test" });
+    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
     const tokens: Token[] = [
       {
         name: "typographyBody",
@@ -144,7 +182,7 @@ describe("Storybook generator", () => {
   });
 
   test("It renders shadow stories with ShadowBox", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test" });
+    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
     const tokens: Token[] = [
       { name: "shadowMd", type: "shadow", value: new BoxShadow(0, 2, 8, 0, "rgba(0,0,0,.12)") },
     ];
@@ -155,7 +193,7 @@ describe("Storybook generator", () => {
   });
 
   test("It renders duration stories with DurationBar", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test" });
+    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
     const tokens: Token[] = [{ name: "durationFast", type: "duration", value: "0.1s" }];
     const output = sb.generate(tokens);
 
@@ -164,7 +202,7 @@ describe("Storybook generator", () => {
   });
 
   test("It renders timing stories with TimingDemo", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test" });
+    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
     const tokens: Token[] = [{ name: "timingEase", type: "timing", value: CubicBezier.standard }];
     const output = sb.generate(tokens);
 
@@ -173,7 +211,7 @@ describe("Storybook generator", () => {
   });
 
   test("It renders border-radius stories with RadiusBox", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test" });
+    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
     const tokens: Token[] = [{ name: "borderRadiusStandard", type: "border-radius", value: "8px" }];
     const output = sb.generate(tokens);
 
@@ -182,7 +220,7 @@ describe("Storybook generator", () => {
   });
 
   test("It renders border stories with BorderDemo", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test" });
+    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
     const tokens: Token[] = [
       {
         name: "borderDefault",
@@ -197,7 +235,7 @@ describe("Storybook generator", () => {
   });
 
   test("It renders gradient stories with GradientSwatch", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test" });
+    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
     const tokens: Token[] = [
       {
         name: "gradientBrand",
@@ -215,7 +253,7 @@ describe("Storybook generator", () => {
   });
 
   test("It renders opacity stories with OpacityDemo", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test" });
+    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
     const tokens: Token[] = [{ name: "opacityDisabled", type: "opacity", value: 0.38 }];
     const output = sb.generate(tokens);
 
@@ -224,7 +262,7 @@ describe("Storybook generator", () => {
   });
 
   test("It renders line-height stories with LineHeightSample", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test" });
+    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
     const tokens: Token[] = [{ name: "lineHeightTight", type: "line-height", value: 1.2 }];
     const output = sb.generate(tokens);
 
@@ -233,7 +271,7 @@ describe("Storybook generator", () => {
   });
 
   test("It renders letter-spacing stories with LetterSpacingSample", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test" });
+    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
     const tokens: Token[] = [
       { name: "letterSpacingWide", type: "letter-spacing", value: "0.05em" },
     ];
@@ -244,7 +282,7 @@ describe("Storybook generator", () => {
   });
 
   test("It renders breakpoint stories with BreakpointBar", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test" });
+    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
     const tokens: Token[] = [{ name: "breakpointMd", type: "breakpoint", value: "768px" }];
     const output = sb.generate(tokens);
 
@@ -253,7 +291,7 @@ describe("Storybook generator", () => {
   });
 
   test("It renders size stories with SizeBox", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test" });
+    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
     const tokens: Token[] = [{ name: "sizeIconSm", type: "size", value: "16px" }];
     const output = sb.generate(tokens);
 
@@ -262,7 +300,7 @@ describe("Storybook generator", () => {
   });
 
   test("It renders aspect-ratio stories with RatioBox", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test" });
+    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
     const tokens: Token[] = [{ name: "aspectRatioVideo", type: "aspect-ratio", value: "16/9" }];
     const output = sb.generate(tokens);
 
@@ -271,7 +309,7 @@ describe("Storybook generator", () => {
   });
 
   test("It renders z-layer stories with ZLayerStack", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test" });
+    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
     const tokens: Token[] = [
       { name: "zLayerModal", type: "z-layer", value: 5000 },
       { name: "zLayerDropdown", type: "z-layer", value: 1000 },
@@ -283,7 +321,7 @@ describe("Storybook generator", () => {
   });
 
   test("It renders unknown types with TokenTable fallback", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test" });
+    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
     const tokens: Token[] = [{ name: "customThing", type: "custom-type", value: "some-value" }];
     const output = sb.generate(tokens);
 
@@ -292,7 +330,7 @@ describe("Storybook generator", () => {
   });
 
   test("It emits CSF 3.0 meta structure", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test" });
+    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
     const tokens: Token[] = [{ name: "primary", type: "color", value: "#ff0000" }];
     const output = sb.generate(tokens);
 
@@ -308,7 +346,12 @@ describe("Storybook generator", () => {
   });
 
   test("It generates valid JSX when ext is stories.jsx", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test", ext: "stories.jsx" });
+    const sb = new Storybook({
+      dateFn: fixedDate,
+      version: "test",
+      ext: "stories.jsx",
+      importPath: "./tokens",
+    });
     const tokens: Token[] = [
       { name: "primary", type: "color", value: "#ff0000" },
       {
@@ -336,7 +379,7 @@ describe("Storybook generator", () => {
   });
 
   test("It only imports components needed by present token types", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test" });
+    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
     const tokens: Token[] = [{ name: "primary", type: "color", value: "#ff0000" }];
     const output = sb.generate(tokens);
 
@@ -370,6 +413,7 @@ describe("Storybook generator", () => {
       dateFn: fixedDate,
       version: "test",
       nameTransformer: (name: string) => name.toUpperCase(),
+      importPath: "./tokens",
     });
     const tokens: Token[] = [{ name: "primary", type: "color", value: "#ff0000" }];
     const output = sb.generate(tokens);
@@ -385,7 +429,7 @@ describe("Storybook generator", () => {
   });
 
   test("Multiple types produce multiple stories", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test" });
+    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
     const tokens: Token[] = [
       { name: "primary", type: "color", value: "#ff0000" },
       { name: "spacingSm", type: "spacing", value: "8px" },
@@ -403,7 +447,7 @@ describe("Storybook generator", () => {
   });
 
   test("It includes header with signature and date", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test" });
+    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
     const tokens: Token[] = [{ name: "primary", type: "color", value: "#ff0000" }];
     const output = sb.generate(tokens);
 
@@ -415,7 +459,7 @@ describe("Storybook generator", () => {
   // ── Breakpoint bar ────────────────────────────────────────
 
   test("It imports BreakpointBar for breakpoint stories", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test" });
+    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
     const tokens: Token[] = [
       { name: "sm", type: "breakpoint", value: "640px" },
       { name: "md", type: "breakpoint", value: "48rem" },
@@ -430,7 +474,7 @@ describe("Storybook generator", () => {
   // ── Mode variants ─────────────────────────────────────────
 
   test("It emits modesData and ModeTable when tokens have modes", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test" });
+    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
     const tokens: Token[] = [
       { name: "colorSurface", type: "color", value: "#ffffff", modes: { dark: "#1a1a1a" } },
     ];
@@ -444,7 +488,7 @@ describe("Storybook generator", () => {
   });
 
   test("It does not emit modesData when no tokens have modes", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test" });
+    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
     const tokens: Token[] = [{ name: "primary", type: "color", value: "#ff0000" }];
     const output = sb.generate(tokens);
 
@@ -453,7 +497,7 @@ describe("Storybook generator", () => {
   });
 
   test("It only shows ModeTable in stories with mode tokens", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test" });
+    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
     const tokens: Token[] = [
       { name: "colorSurface", type: "color", value: "#fff", modes: { dark: "#111" } },
       { name: "spacingSm", type: "spacing", value: "4px" },

@@ -73,4 +73,55 @@ describe("Scss Generator tests", () => {
     expect(output).toContain("dark: (");
     expect(output).toContain("dim: (");
   });
+
+  test("composite values with internal commas produce valid SCSS map output", () => {
+    // Typography with a comma-containing fontFamily (a common, correct
+    // form) historically leaked the comma at the top of the SCSS map
+    // entry, making the parser treat it as a map-entry separator and
+    // mangling the whole map. A second iteration of this bug produced
+    // a JSON blob (`{"fontFamily": ...}`) inside the map, which is also
+    // invalid SCSS syntax.
+    //
+    // Snapshot the full output so any future regression — a re-leaked
+    // comma, a reintroduced JSON blob, a different map mangling — fails
+    // loudly and forces a human to re-bless.
+    const tokens: Token[] = [
+      {
+        name: "typographyDisplayLg",
+        type: "typography",
+        value: {
+          fontFamily: '"Quicksand", sans-serif',
+          fontSize: "2.25rem",
+          fontWeight: 700,
+          lineHeight: 1.2,
+        },
+      },
+    ];
+    expect(new Generator(testOpts).generate(tokens)).toMatchSnapshot();
+  });
+
+  test("scalar values with commas (e.g. rgb()) are not wrapped in cssMapValue", () => {
+    const tokens: Token[] = [{ name: "colorPrimary", type: "color", value: "rgb(255, 0, 0)" }];
+    const output = new Generator(testOpts).generate(tokens);
+    // `rgb(...)` already has its own parens — no double-wrap.
+    expect(output).not.toContain("(rgb(255, 0, 0))");
+  });
+
+  test("composite mode values are paren-wrapped inside $modes", () => {
+    const tokens: Token[] = [
+      {
+        name: "typographyBody",
+        type: "typography",
+        value: { fontFamily: "Inter", fontSize: "1rem" },
+        modes: {
+          dark: { fontFamily: '"Quicksand", sans-serif', fontSize: "1rem" } as unknown as string,
+        },
+      },
+    ];
+    const output = new Generator(testOpts).generate(tokens);
+    // The composite mode override needs the same paren-wrap as the
+    // top-level composite — $modes has the same map-entry-comma
+    // parsing hazard as $token-values.
+    expect(output).toContain('typography-body: ("Quicksand", sans-serif 1rem)');
+  });
 });

@@ -1,13 +1,13 @@
 // Bun Snapshot v1, https://bun.sh/docs/test/snapshots
 
-exports[`es5 tests it generates things 1`] = `
+exports[`JavaScript generator (ESM default) it generates tokens as an ES module by default 1`] = `
 "/**
  * Teikn vtest
  * Generated null
  *
  * This file is generated and should be committed to source control
  */
-const tokens = {
+export const tokens = {
   /**
    *  Use for body fonts
    *  Type: font-family
@@ -22,20 +22,20 @@ const tokens = {
    *  the secondary branding color
    *  Type: color
    */
-  secondary: 'rgb(102, 205, 170)'
+  secondary: 'rgb(102, 205, 170)',
 };
 
-module.exports = { tokens: tokens, default: tokens };"
+export default tokens;"
 `;
 
-exports[`es5 tests it generates group accessors when groups: true 1`] = `
+exports[`JavaScript generator (ESM default) it generates group accessors when groups: true 1`] = `
 "/**
  * Teikn vtest
  * Generated null
  *
  * This file is generated and should be committed to source control
  */
-const tokens = {
+export const tokens = {
   /**
    *  Type: color
    */
@@ -47,24 +47,24 @@ const tokens = {
   /**
    *  Type: spacing
    */
-  spacingSm: '4px'
+  spacingSm: '4px',
 };
 
 const _color = {
   primary: tokens.colorPrimary,
   secondary: tokens.colorSecondary,
 };
-const color = (name) => {
+export const color = (name) => {
   if (!(name in _color)) throw new Error(\`Unknown color token: \${name}\`);
   return _color[name];
 };
 const _spacing = {
   sm: tokens.spacingSm,
 };
-const spacing = (name) => {
+export const spacing = (name) => {
   if (!(name in _spacing)) throw new Error(\`Unknown spacing token: \${name}\`);
   return _spacing[name];
 };
 
-module.exports = { tokens: tokens, color: color, spacing: spacing, default: tokens };"
+export default tokens;"
 `;

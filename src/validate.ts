@@ -1,5 +1,7 @@
 import type { CompositeValue, Token } from "./Token";
 import { Color } from "./TokenTypes/Color";
+import type { KeyAliasIndex } from "./token-keys";
+import { ambiguousKeyMessage, buildKeyAliasIndex, resolveKey, tokenKey } from "./token-keys";
 import { isFirstClassValue } from "./type-classifiers";
 
 export type ValidationSeverity = "error" | "warning";
@@ -70,23 +72,44 @@ const validateCompositeShape = (type: string, value: CompositeValue): string | n
   }
 };
 
-/**
- * Validate a single value (main or mode) for common issues.
- * Factored out so both token.value and token.modes[x] use the same checks.
- */
+const checkRef = (
+  refValue: string,
+  tokenKeys: KeyAliasIndex,
+  tokenName: string,
+  missingDescription: string,
+  labelPrefix: string,
+  issue: (severity: ValidationSeverity, tokenName: string, message: string) => void,
+): void => {
+  const refName = refValue.match(REF_PATTERN)![1]!;
+  const resolved = resolveKey(refName, tokenKeys);
+  switch (resolved.status) {
+    case "ok":
+      return;
+    case "missing":
+      issue("error", tokenName, `${labelPrefix}${missingDescription}: {${refName}}`);
+      return;
+    case "ambiguous":
+      issue(
+        "error",
+        tokenName,
+        `${labelPrefix}${ambiguousKeyMessage(refName, resolved.candidates)}`,
+      );
+      return;
+  }
+};
+
+/** Applied to both `token.value` and each `token.modes[x]`. */
 const validateValue = (
   value: unknown,
   token: Token,
   label: string,
-  tokenMap: Map<string, Token>,
+  tokenKeys: KeyAliasIndex,
   issue: (severity: ValidationSeverity, tokenName: string, message: string) => void,
 ): void => {
-  // Check for empty string values
   if (value === "") {
     issue("warning", token.name, `${label}Empty string value`);
   }
 
-  // Check color parseability
   if (
     COLOR_TYPES.has(token.type) &&
     typeof value === "string" &&
@@ -96,15 +119,10 @@ const validateValue = (
     issue("warning", token.name, `${label}Color value "${value}" could not be parsed`);
   }
 
-  // Check references
   if (isRef(value)) {
-    const refName = value.match(REF_PATTERN)![1]!;
-    if (!tokenMap.has(refName)) {
-      issue("error", token.name, `${label}Unresolved reference: {${refName}}`);
-    }
+    checkRef(value, tokenKeys, token.name, "Unresolved reference", label, issue);
   }
 
-  // Check composite shapes
   if (COMPOSITE_TYPES.has(token.type) && isComposite(value)) {
     const shapeError = validateCompositeShape(token.type, value as CompositeValue);
     if (shapeError) {
@@ -112,18 +130,17 @@ const validateValue = (
     }
   }
 
-  // Check for references in composite values
   if (isComposite(value)) {
     for (const [field, fieldValue] of Object.entries(value as CompositeValue)) {
       if (isRef(fieldValue)) {
-        const refName = (fieldValue as string).match(REF_PATTERN)![1]!;
-        if (!tokenMap.has(refName)) {
-          issue(
-            "error",
-            token.name,
-            `${label}Unresolved reference in field "${field}": {${refName}}`,
-          );
-        }
+        checkRef(
+          fieldValue,
+          tokenKeys,
+          token.name,
+          `Unresolved reference in field "${field}"`,
+          label,
+          issue,
+        );
       }
     }
   }
@@ -173,15 +190,17 @@ export const validate = (tokens: Token[]): ValidationResult => {
     }
 
     if (token.name) {
-      const qualifiedName = token.group ? `${token.group}/${token.name}` : token.name;
+      const qualifiedName = tokenKey(token);
       const count = (names.get(qualifiedName) ?? 0) + 1;
       names.set(qualifiedName, count);
       if (count === 2) {
         issue("warning", token.name, "Duplicate token name");
       }
-      tokenMap.set(token.name, token);
+      tokenMap.set(qualifiedName, token);
     }
   }
+
+  const tokenKeys = buildKeyAliasIndex([...tokenMap.keys()]);
 
   // Validate values (main + modes)
   for (const token of tokens) {
@@ -189,44 +208,55 @@ export const validate = (tokens: Token[]): ValidationResult => {
       continue;
     }
 
-    validateValue(token.value, token, "", tokenMap, issue);
+    validateValue(token.value, token, "", tokenKeys, issue);
 
     if (token.modes) {
       for (const [mode, modeValue] of Object.entries(token.modes)) {
-        validateValue(modeValue, token, `[mode "${mode}"] `, tokenMap, issue);
+        validateValue(modeValue, token, `[mode "${mode}"] `, tokenKeys, issue);
       }
     }
   }
 
-  // Check for circular references
+  // Walks refs (follow the chain), composites (visit each field),
+  // and modes of referenced tokens.
   const checkCircularValue = (
     value: unknown,
     originName: string,
     visited: Set<string>,
   ): boolean => {
+    if (isComposite(value)) {
+      for (const fieldValue of Object.values(value as CompositeValue)) {
+        if (checkCircularValue(fieldValue, originName, visited)) {
+          return true;
+        }
+      }
+      return false;
+    }
+
     if (!isRef(value)) {
       return false;
     }
 
-    const refName = (value as string).match(REF_PATTERN)![1]!;
-    if (visited.has(refName)) {
+    const refName = value.match(REF_PATTERN)![1]!;
+    const resolved = resolveKey(refName, tokenKeys);
+    if (resolved.status !== "ok") {
+      return false;
+    }
+
+    if (visited.has(resolved.key)) {
       issue("error", originName, `Circular reference: ${[...visited, refName].join(" -> ")}`);
       return true;
     }
 
-    const referenced = tokenMap.get(refName);
-    if (!referenced) {
-      return false;
-    }
-
+    // invariant: tokenKeys mirrors tokenMap
+    const referenced = tokenMap.get(resolved.key)!;
     const next = new Set(visited);
-    next.add(refName);
+    next.add(resolved.key);
 
     if (checkCircularValue(referenced.value, originName, next)) {
       return true;
     }
 
-    // Check modes of the referenced token for cycles back
     if (referenced.modes) {
       for (const modeVal of Object.values(referenced.modes)) {
         if (checkCircularValue(modeVal, originName, next)) {
@@ -242,11 +272,9 @@ export const validate = (tokens: Token[]): ValidationResult => {
     if (!token.name) {
       continue;
     }
-    const visited = new Set([token.name]);
+    const visited = new Set([tokenKey(token)]);
 
-    if (isRef(token.value)) {
-      checkCircularValue(token.value, token.name, visited);
-    }
+    checkCircularValue(token.value, token.name, visited);
 
     if (token.modes) {
       for (const modeVal of Object.values(token.modes)) {

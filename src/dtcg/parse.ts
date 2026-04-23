@@ -1,4 +1,4 @@
-import type { Token } from "../Token";
+import type { CompositeValue, ModeValues, Token, TokenValue } from "../Token";
 import type { DtcgDocument, DtcgGroup, DtcgToken } from "./types";
 import { dtcgTypeToTeikn, dtcgValueToTeikn } from "./values";
 
@@ -17,6 +17,27 @@ const isDtcgGroup = (node: unknown): node is DtcgGroup =>
 
 const isAlias = (value: unknown): value is string =>
   typeof value === "string" && value.startsWith("{") && value.endsWith("}");
+
+/**
+ * Parse a DTCG `$extensions.mode` object into Teikn mode values.
+ * Skips null / undefined entries (a common idiom for "no override in this
+ * mode"). Returns `undefined` when no mode entries survive filtering.
+ */
+const parseModeExtensions = (rawModes: unknown, dtcgType: string): ModeValues | undefined => {
+  if (!rawModes || typeof rawModes !== "object") {
+    return undefined;
+  }
+  const modes: ModeValues = {};
+  for (const [mode, modeValue] of Object.entries(rawModes)) {
+    if (modeValue === null || modeValue === undefined) {
+      continue;
+    }
+    modes[mode] = isAlias(modeValue)
+      ? (modeValue as TokenValue)
+      : (dtcgValueToTeikn(modeValue as any, dtcgType) as TokenValue | CompositeValue);
+  }
+  return Object.keys(modes).length > 0 ? modes : undefined;
+};
 
 const walk = (
   node: DtcgDocument | DtcgGroup,
@@ -52,7 +73,11 @@ const walk = (
         type: teiknType,
       };
 
-      // Preserve $description as usage, prepending [DEPRECATED] if needed
+      const modes = parseModeExtensions(child.$extensions?.mode, dtcgType);
+      if (modes) {
+        token.modes = modes;
+      }
+
       const deprecated = child.$deprecated;
       const description = child.$description;
 

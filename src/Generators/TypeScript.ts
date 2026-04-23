@@ -1,152 +1,111 @@
-import { EOL } from "node:os";
-
-import { camelCase, deriveShortName } from "../string-utils";
+import type { Plugin } from "../Plugins";
+import { camelCase } from "../string-utils";
 import type { Token } from "../Token";
-import { isFirstClassValue } from "../type-classifiers";
 import { getDate } from "../utils";
 import type { GeneratorInfo, GeneratorOptions } from "./Generator";
 import { Generator } from "./Generator";
+import type { JavaScriptModule } from "./JavaScript";
+import { JavaScript } from "./JavaScript";
+import { TypeScriptDeclarations } from "./TypeScriptDeclarations";
 
-const isValidIdentifier = (name: string): boolean => /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(name);
-
-const quoteKey = (name: string): string => (isValidIdentifier(name) ? name : `'${name}'`);
-
-const toTypeAnnotation = (value: unknown): string => {
-  if (typeof value === "object" && value !== null && !Array.isArray(value)) {
-    // First-class values (Color, Dimension, etc.) stringify to string
-    if (isFirstClassValue(value)) {
-      return "string";
-    }
-    const fields = Object.entries(value as Record<string, unknown>)
-      .map(([k, v]) => `${quoteKey(k)}: ${toTypeAnnotation(v)}`)
-      .join("; ");
-    return `{ ${fields} }`;
-  }
-  return typeof value;
-};
+export type TypeScriptOpts = {
+  dateFn?: () => string | null;
+  nameTransformer?: (name: string) => string;
+  /**
+   * Module system for the runtime output. Passed through to the
+   * internal JavaScript generator. Default: `"esm"`.
+   */
+  module?: JavaScriptModule;
+  /**
+   * When true, the internal TypeScriptDeclarations generator widens
+   * literal types to primitive types. Default: `false`.
+   */
+  loose?: boolean;
+} & GeneratorOptions;
 
 const defaultOptions = {
+  // `ext` is inert — the meta never emits a single file. `filenames()`
+  // and `generateFiles()` are overridden to enumerate the real outputs.
   ext: "d.ts",
   nameTransformer: camelCase,
   dateFn: getDate,
 };
 
-export type TypeScriptOpts = {
-  /**
-   * The function to get the build date
-   */
-  dateFn?: () => string | null;
-  /**
-   * The function to transform the name of the token
-   *
-   * default: `camelCase`
-   */
-  nameTransformer?: (name: string) => string;
-} & GeneratorOptions;
-
+/**
+ * Meta generator that emits both a JavaScript runtime module and a
+ * TypeScript declarations file from a single construction, wired with
+ * matching filename / name transforms / plugins.
+ *
+ * Internally composes `JavaScript` (for the runtime, default ESM) and
+ * `TypeScriptDeclarations` (for the `.d.ts`). Users who want only one
+ * can construct those classes directly.
+ */
 export class TypeScript extends Generator<TypeScriptOpts> {
-  constructor(options = {}) {
-    super(Object.assign({}, defaultOptions, options));
+  #javascript: JavaScript;
+  #declarations: TypeScriptDeclarations;
+
+  constructor(options: Partial<TypeScriptOpts> = {}) {
+    // ext is meaningless here: runtime ext derives from module, and
+    // declarations are always .d.ts. Reject explicitly so a caller's
+    // intent doesn't silently no-op.
+    if (options.ext !== undefined) {
+      throw new Error(
+        "TypeScript meta generator does not accept an `ext` option. " +
+          "Use `module` for the runtime format (esm or cjs), or construct " +
+          "`JavaScript` / `TypeScriptDeclarations` directly if you need per-file ext control.",
+      );
+    }
+
+    super({ ...defaultOptions, ...options });
+
+    // `module` is JavaScript-only, `loose` is TypeScriptDeclarations-only;
+    // strip before forwarding shared opts.
+    const { loose, module: moduleKind, ...shared } = options;
+    this.#javascript = new JavaScript({
+      ...shared,
+      ...(moduleKind !== undefined && { module: moduleKind }),
+    });
+    this.#declarations = new TypeScriptDeclarations({
+      ...shared,
+      ...(loose !== undefined && { loose }),
+    });
   }
 
-  override describe(): GeneratorInfo | null {
-    const base = this.options.filename ?? "tokens";
-    const groupUsage = this.options.groups
-      ? `\n\n// Or use typed group accessors\nimport { color } from './${base}';\ncolor('primary') // compile-time checked`
-      : "";
+  override describe(): GeneratorInfo {
+    const js = this.#javascript.describe();
     return {
-      format: "TypeScript Declarations",
-      usage: `import { tokens } from './${base}';\n\n// Pair with ES Module or CommonJS output for runtime values${groupUsage}`,
+      format: "TypeScript (runtime + declarations)",
+      usage: js.usage,
     };
   }
 
-  override tokenUsage(token: Token): string | null {
-    const { nameTransformer, groups } = this.options;
-    if (groups) {
-      const shortName = deriveShortName(token.name, token.type);
-      const groupName = camelCase(token.type);
-      return `${groupName}('${shortName}')`;
-    }
-    return `tokens.${nameTransformer!(token.name)}`;
+  // oxlint-disable-next-line class-methods-use-this
+  generateToken(): string {
+    return "";
   }
 
-  override header(): string {
-    return [this.commentHeader(), EOL, `/**`, ` * Design tokens`, ` */`].join(EOL);
+  // oxlint-disable-next-line class-methods-use-this
+  combinator(): string {
+    return "";
   }
 
-  generateToken(token: Token): string {
-    const { nameTransformer } = this.options;
-
-    const typeAnnotation = toTypeAnnotation(token.value);
-
-    return [
-      `  /**`,
-      token.usage && `   *  ${token.usage}`,
-      `   *  Type: ${token.type}`,
-      `   */`,
-      `  ${nameTransformer!(token.name)}: ${typeAnnotation},`,
-    ]
-      .filter(Boolean)
-      .join(EOL);
+  override filenames(): string[] {
+    return [...this.#javascript.filenames(), ...this.#declarations.filenames()];
   }
 
-  combinator(tokens: Token[]): string {
-    const values = tokens.map((t) => this.generateToken(t));
-    const parts = [
-      "export const tokens: {",
-      values
-        .map((token, index, arr) => (index === arr.length - 1 ? token.slice(0, -1) : token))
-        .join(EOL),
-      "}",
-    ];
-
-    // Token name union types grouped under a single namespace type
-    const groups = this.tokenGroups(tokens);
-    if (groups.length > 0) {
-      const { nameTransformer } = this.options;
-      const fields = groups.map(({ groupName, entries }) => {
-        const names = entries.map(({ token }) => `'${nameTransformer!(token.name)}'`).join(" | ");
-        const typeName = groupName.charAt(0).toUpperCase() + groupName.slice(1);
-        return `  ${typeName}: ${names};`;
-      });
-      const allUnion = groups
-        .map(
-          ({ groupName }) =>
-            `TokenNames['${groupName.charAt(0).toUpperCase() + groupName.slice(1)}']`,
-        )
-        .join(" | ");
-      fields.push(`  All: ${allUnion};`);
-      parts.push("", `export type TokenNames = {`, ...fields, `};`);
+  override generateFiles(tokens: Token[], plugins: Plugin[] = []): Map<string, string> {
+    // Each sub-generator filters plugins by its own ext in prepareTokens,
+    // so let each prepare its own view. Plugins targeting `.mjs` (or
+    // `.cjs`) apply to the runtime; plugins targeting `.d.ts` apply to
+    // the declarations. Plugins that want to apply to both can declare
+    // a regex or `*` outputType.
+    const merged = new Map<string, string>();
+    for (const [filename, content] of this.#javascript.generateFiles(tokens, plugins)) {
+      merged.set(filename, content);
     }
-
-    if (this.options.groups) {
-      const groupDecls = groups.map(({ groupName, entries }) => {
-        const union = entries.map(({ shortName }) => `'${shortName}'`).join(" | ");
-        return `export const ${groupName}: (name: ${union}) => string;`;
-      });
-      parts.push("", ...groupDecls);
+    for (const [filename, content] of this.#declarations.generateFiles(tokens, plugins)) {
+      merged.set(filename, content);
     }
-
-    const modeNames = new Set<string>();
-    for (const token of tokens) {
-      if (token.modes) {
-        for (const mode of Object.keys(token.modes)) {
-          modeNames.add(mode);
-        }
-      }
-    }
-
-    if (modeNames.size > 0) {
-      const modeEntries = [...modeNames].map(
-        (mode) => `  ${quoteKey(mode)}: Partial<typeof tokens>;`,
-      );
-      parts.push("", `export const modes: {`, ...modeEntries, `}`);
-    }
-
-    return parts.join(EOL);
-  }
-
-  override footer(): string {
-    return `export default tokens;`;
+    return merged;
   }
 }

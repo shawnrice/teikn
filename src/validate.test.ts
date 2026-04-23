@@ -75,10 +75,70 @@ describe("validate", () => {
     expect(result.issues.some((i) => i.message.includes("Unresolved reference"))).toBe(true);
   });
 
+  test("detects ambiguous bare references across groups", () => {
+    const tokens: Token[] = [
+      { name: "primary", type: "color", group: "color", value: "#0066cc" },
+      { name: "primary", type: "size", group: "size", value: "16px" },
+      { name: "link", type: "color", value: "{primary}" },
+    ];
+
+    const result = validate(tokens);
+    expect(result.valid).toBe(false);
+    expect(result.issues.some((i) => i.message.includes("Ambiguous token reference"))).toBe(true);
+  });
+
+  test("qualified reference is accepted even when bare name is ambiguous", () => {
+    const tokens: Token[] = [
+      { name: "primary", type: "color", group: "color", value: "#0066cc" },
+      { name: "primary", type: "size", group: "size", value: "16px" },
+      { name: "link", type: "color", value: "{color.primary}" },
+    ];
+
+    const result = validate(tokens);
+    expect(result.valid).toBe(true);
+    expect(result.issues.filter((i) => i.severity === "error")).toHaveLength(0);
+  });
+
   test("detects circular references", () => {
     const tokens: Token[] = [
       { name: "a", type: "color", value: "{b}" },
       { name: "b", type: "color", value: "{a}" },
+    ];
+
+    const result = validate(tokens);
+    expect(result.issues.some((i) => i.message.includes("Circular"))).toBe(true);
+  });
+
+  test("detects circular references inside composite field values", () => {
+    const tokens: Token[] = [
+      {
+        name: "heading",
+        type: "typography",
+        value: {
+          fontFamily: "Inter",
+          fontSize: "{sizeRef}",
+          fontWeight: 400,
+          lineHeight: 1.2,
+        },
+      },
+      { name: "sizeRef", type: "dimension", value: "{heading}" },
+    ];
+
+    const result = validate(tokens);
+    expect(result.issues.some((i) => i.message.includes("Circular"))).toBe(true);
+  });
+
+  test("detects circular references inside composite mode values", () => {
+    const tokens: Token[] = [
+      {
+        name: "surface",
+        type: "color",
+        value: "#fff",
+        modes: {
+          dark: { fontFamily: "Inter", fontSize: "{loopback}" } as unknown as string,
+        },
+      },
+      { name: "loopback", type: "color", value: "{surface}" },
     ];
 
     const result = validate(tokens);

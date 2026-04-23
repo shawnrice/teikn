@@ -8,6 +8,8 @@ lib
 .DS_Store
 yarn-error.log
 example/dist
+example/dist-js
 .playwright-mcp
 .tsc_d
 examples
+.claude/scheduled_tasks.lock

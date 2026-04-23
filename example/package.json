@@ -9,7 +9,7 @@
   "module": "tokens.esm.js",
   "typings": "tokens.d.ts",
   "scripts": {
-    "generate": "node example-usage.js",
+    "generate": "bun example-usage.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   }
 }

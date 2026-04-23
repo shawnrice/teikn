@@ -406,10 +406,10 @@ describe("builders", () => {
       });
 
       expect(dark.name).toBe("dark");
-      expect(dark.tokenNames).toEqual(["background", "text", "primary"]);
+      expect(dark.tokenNames).toEqual(["color.background", "color.text", "color.primary"]);
       expect(dark.overrides).toEqual({
-        background: "#1a1a1a",
-        text: "#eee",
+        "color.background": "#1a1a1a",
+        "color.text": "#eee",
       });
     });
 
@@ -444,12 +444,16 @@ describe("builders", () => {
       });
 
       expect(colorblindDark.name).toBe("colorblind-dark");
-      expect(colorblindDark.tokenNames).toEqual(["background", "text", "primary"]);
+      expect(colorblindDark.tokenNames).toEqual([
+        "color.background",
+        "color.text",
+        "color.primary",
+      ]);
       // Merges parent overrides with own
       expect(colorblindDark.overrides).toEqual({
-        background: "#1a1a1a",
-        text: "#eee",
-        primary: "#0077bb",
+        "color.background": "#1a1a1a",
+        "color.text": "#eee",
+        "color.primary": "#0077bb",
       });
     });
 
@@ -470,8 +474,8 @@ describe("builders", () => {
       });
 
       expect(darkHighContrast.overrides).toEqual({
-        background: "#000000",
-        text: "#ffffff",
+        "color.background": "#000000",
+        "color.text": "#ffffff",
       });
     });
 
@@ -504,10 +508,15 @@ describe("builders", () => {
       });
 
       expect(dark.name).toBe("dark");
-      expect(dark.tokenNames).toEqual(["background", "textPrimary", "sm", "md"]);
+      expect(dark.tokenNames).toEqual([
+        "color.background",
+        "color.textPrimary",
+        "spacing.sm",
+        "spacing.md",
+      ]);
       expect(dark.overrides).toEqual({
-        background: "#1a1a1a",
-        textPrimary: "#eee",
+        "color.background": "#1a1a1a",
+        "color.textPrimary": "#eee",
       });
     });
 
@@ -521,6 +530,42 @@ describe("builders", () => {
           nonexistent: "#red",
         } as any),
       ).toThrow('unknown token "nonexistent"');
+    });
+
+    test("throws on ambiguous bare token names across groups", () => {
+      const colors = group("color", { primary: "#0066cc" });
+      const sizing = group("size", { primary: "16px" });
+      const allTokens = tokens(colors, sizing);
+
+      expect(() =>
+        theme("dark", allTokens, {
+          primary: "#3399ff",
+        }),
+      ).toThrow('ambiguous token name "primary"');
+    });
+
+    test("qualified override key disambiguates across groups", () => {
+      const colors = group("color", { primary: "#0066cc" });
+      const sizing = group("size", { primary: "16px" });
+      const allTokens = tokens(colors, sizing);
+
+      const dark = theme("dark", allTokens, {
+        "color.primary": "#3399ff",
+      });
+      expect(dark.overrides["color.primary"]).toBe("#3399ff");
+    });
+
+    test("two qualified overrides for distinct tokens sharing a bare name coexist", () => {
+      const colors = group("color", { primary: "#0066cc" });
+      const sizing = group("size", { primary: "16px" });
+      const allTokens = tokens(colors, sizing);
+
+      const dark = theme("dark", allTokens, {
+        "color.primary": "#3399ff",
+        "size.primary": "20px",
+      });
+      expect(dark.overrides["color.primary"]).toBe("#3399ff");
+      expect(dark.overrides["size.primary"]).toBe("20px");
     });
   });
 

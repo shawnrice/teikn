@@ -36,7 +36,7 @@ export class DtcgGenerator extends Generator<DtcgOpts> {
   // DTCG skips stringifyValues() because it needs raw first-class values
   // (e.g., Dimension serializes as { value: 1, unit: "rem" }, not "1rem").
   // But it still uses sortPlugins + applyPlugin for correct ordering and mode handling.
-  protected override prepareTokens(tokens: Token[], plugins: Plugin[]): Token[] {
+  override prepareTokens(tokens: Token[], plugins: Plugin[]): Token[] {
     const sorted = sortPlugins(plugins);
     return tokens.map((token) =>
       sorted.reduce((acc, plugin) => {

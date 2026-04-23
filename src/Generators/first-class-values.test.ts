@@ -11,7 +11,6 @@ import type { Token } from "../Token";
 import { CssVars } from "./CssVars";
 import { Scss } from "./Scss";
 import { ScssVars } from "./ScssVars";
-import { EsModule } from "./EsModule";
 import { JavaScript } from "./JavaScript";
 import { Json } from "./Json";
 import { testOpts } from "../fixtures/testOpts";
@@ -27,8 +26,8 @@ const cssGenerators = () => [
 ];
 
 const jsGenerators = () => [
-  ["EsModule", new EsModule(opts)] as const,
-  ["JavaScript", new JavaScript(opts)] as const,
+  ["JavaScript (ESM)", new JavaScript(opts)] as const,
+  ["JavaScript (CJS)", new JavaScript({ ...opts, module: "cjs" })] as const,
 ];
 
 const allGenerators = () => [...cssGenerators(), ...jsGenerators(), ["Json", new Json()] as const];

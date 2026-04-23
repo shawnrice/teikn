@@ -134,6 +134,27 @@ both in `./dist/tokens/`. The dark theme generates `[data-theme="dark"]` overrid
 }
 ```
 
+### TypeScript / JavaScript output
+
+For consumers that import tokens in code, add the `TypeScript` meta generator — it emits a
+runtime `.mjs` and a companion `.d.ts` from a single construction:
+
+```typescript
+generators: [
+  new Teikn.generators.CssVars(),
+  new Teikn.generators.Json(),
+  new Teikn.generators.TypeScript(),                    // → tokens.mjs + tokens.d.ts
+  // new Teikn.generators.TypeScript({ module: 'cjs' }), // → tokens.cjs + tokens.d.ts
+  // new Teikn.generators.JavaScript(),                  // runtime only, no types
+  // new Teikn.generators.TypeScriptDeclarations(),      // types only, no runtime
+],
+```
+
+The generated declarations use literal types by default — `tokens.primary` is typed as the
+literal `"#0066cc"`, not `string`. This enables exhaustive unions like
+`type TokenColor = typeof tokens[keyof typeof tokens]`. Pass `loose: true` if you need
+widened primitive types.
+
 ## Next steps
 
 - [Concepts](./concepts.md) --- how values, tokens, groups, and generators fit together

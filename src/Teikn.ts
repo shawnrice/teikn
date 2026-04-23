@@ -5,7 +5,6 @@ import { ensureDirectory } from "./ensure-directory";
 import {
   CssVars,
   DtcgGenerator,
-  EsModule,
   Generator,
   Html,
   JavaScript,
@@ -14,6 +13,7 @@ import {
   ScssVars,
   Storybook,
   TypeScript,
+  TypeScriptDeclarations,
 } from "./Generators";
 import type { AuditIssue } from "./Plugins";
 import {
@@ -36,6 +36,7 @@ import {
   TouchTargetPlugin,
 } from "./Plugins";
 import { resolveReferences } from "./resolve";
+import { buildKeyAliasIndex, resolveKey, tokenKey } from "./token-keys";
 import type { ThemeLayer, Token, TokenValue } from "./Token";
 import type { ValidationResult } from "./validate";
 import { validate } from "./validate";
@@ -58,18 +59,38 @@ const applyThemes = (themes: ThemeLayer[], tokens: Token[]): Token[] => {
     return tokens;
   }
 
+  const tokenKeys = buildKeyAliasIndex(tokens.map((token) => tokenKey(token)).filter(Boolean));
   const modeUpdates = new Map<string, Record<string, TokenValue>>();
   for (const layer of themes) {
     for (const [name, value] of Object.entries(layer.overrides)) {
-      if (!modeUpdates.has(name)) {
-        modeUpdates.set(name, {});
+      const resolved = resolveKey(name, tokenKeys);
+      switch (resolved.status) {
+        case "missing":
+          throw new Error(
+            `Theme "${layer.name}" references unknown token "${name}" during apply. ` +
+              `The token may have been removed from the token set after the theme was created.`,
+          );
+        case "ambiguous":
+          // Unreachable via `theme()` (which qualifies keys at construction
+          // so they hit `fullKeys` here), but kept for consumers who hand-build
+          // a `ThemeLayer` literal with bare override keys against an ambiguous
+          // token universe.
+          throw new Error(
+            `Theme "${layer.name}" override key "${name}" is ambiguous during apply. ` +
+              `Matches: ${resolved.candidates.join(", ")}.`,
+          );
+        case "ok":
+          if (!modeUpdates.has(resolved.key)) {
+            modeUpdates.set(resolved.key, {});
+          }
+          modeUpdates.get(resolved.key)![layer.name] = value;
+          break;
       }
-      modeUpdates.get(name)![layer.name] = value;
     }
   }
 
   return tokens.map((token) => {
-    const updates = modeUpdates.get(token.name);
+    const updates = modeUpdates.get(tokenKey(token));
     if (!updates) {
       return token;
     }
@@ -119,7 +140,6 @@ const BuiltInPlugins: {
 const BuiltInGenerators: {
   CssVars: typeof CssVars;
   Dtcg: typeof DtcgGenerator;
-  EsModule: typeof EsModule;
   Html: typeof Html;
   JavaScript: typeof JavaScript;
   Json: typeof Json;
@@ -127,10 +147,10 @@ const BuiltInGenerators: {
   ScssVars: typeof ScssVars;
   Storybook: typeof Storybook;
   TypeScript: typeof TypeScript;
+  TypeScriptDeclarations: typeof TypeScriptDeclarations;
 } = {
   CssVars,
   Dtcg: DtcgGenerator,
-  EsModule,
   Html,
   JavaScript,
   Json,
@@ -138,6 +158,7 @@ const BuiltInGenerators: {
   ScssVars,
   Storybook,
   TypeScript,
+  TypeScriptDeclarations,
 };
 
 export type TeiknOptions = {
@@ -182,8 +203,21 @@ export class Teikn {
     this.options = options;
     this.generators = generators ?? [new Teikn.generators.Json()];
 
-    const filenames = this.generators.map((g) => g.file);
-    const dupes = filenames.filter((f, i) => filenames.indexOf(f) !== i);
+    const filenames = this.generators.flatMap((g) => g.filenames());
+    // Compare case-insensitively so pairs like `Tokens.mjs` / `tokens.mjs`
+    // are caught on case-insensitive filesystems (macOS, Windows) where
+    // both writes would target the same underlying file.
+    const seen = new Map<string, string>();
+    const dupes: string[] = [];
+    for (const filename of filenames) {
+      const key = filename.toLowerCase();
+      const prior = seen.get(key);
+      if (prior !== undefined) {
+        dupes.push(prior === filename ? filename : `${prior} / ${filename}`);
+      } else {
+        seen.set(key, filename);
+      }
+    }
     if (dupes.length > 0) {
       throw new Error(
         `Duplicate generator output filenames: ${[...new Set(dupes)].join(", ")}. Use the "filename" option to differentiate.`,
@@ -211,7 +245,14 @@ export class Teikn {
     let result = tokens;
     for (const plugin of this.plugins) {
       if ("expand" in plugin && typeof plugin.expand === "function") {
-        result = plugin.expand(result);
+        try {
+          result = plugin.expand(result);
+        } catch (cause) {
+          const { name } = plugin.constructor;
+          throw new Error(`Plugin \`${name}\` threw during expand(): ${(cause as Error).message}`, {
+            cause,
+          });
+        }
       }
     }
     return result;
@@ -229,8 +270,13 @@ export class Teikn {
   }
 
   generateToStrings(tokens: Token[]): Map<string, string> {
+    const expanded = this.expand(tokens);
+
+    // Validate after expand so plugin-added tokens are also covered.
+    // If expand plugins are disabled or add no tokens, `expanded` equals
+    // the input and behavior is unchanged.
     if (this.options.validate !== false) {
-      const result = validate(tokens);
+      const result = validate(expanded);
       const errors = result.issues.filter((i) => i.severity === "error");
       if (errors.length > 0) {
         throw new Error(
@@ -239,7 +285,6 @@ export class Teikn {
       }
     }
 
-    const expanded = this.expand(tokens);
     const withThemes = applyThemes(this.themes, expanded);
     const resolved = resolveReferences(withThemes);
     const named = prefixTokenNames(resolved);
@@ -250,7 +295,9 @@ export class Teikn {
 
     const results = new Map<string, string>();
     for (const generator of this.generators) {
-      results.set(generator.file, generator.generate(named, this.plugins));
+      for (const [filename, content] of generator.generateFiles(named, this.plugins)) {
+        results.set(filename, content);
+      }
     }
     return results;
   }

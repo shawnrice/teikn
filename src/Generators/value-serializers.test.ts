@@ -6,6 +6,7 @@ import { CubicBezier } from "../TokenTypes/CubicBezier";
 import { Duration } from "../TokenTypes/Duration";
 import { Transition } from "../TokenTypes/Transition";
 import {
+  maybeQuote,
   stringifyBoxShadowWithRefs,
   stringifyTransitionWithRefs,
   stringifyWithRefs,
@@ -14,6 +15,41 @@ import {
 } from "./value-serializers";
 
 const noRef = () => null;
+
+describe("maybeQuote", () => {
+  test("escapes backslash", () => {
+    expect(maybeQuote("a\\b")).toBe("'a\\\\b'");
+  });
+
+  test("escapes single quote", () => {
+    expect(maybeQuote("a'b")).toBe("'a\\'b'");
+  });
+
+  test("escapes newline", () => {
+    expect(maybeQuote("a\nb")).toBe("'a\\nb'");
+  });
+
+  test("escapes carriage return (SyntaxError otherwise inside single-quoted string)", () => {
+    // A literal CR inside a '...' string is a LineTerminator per ECMAScript
+    // and produces a SyntaxError at the consumer's runtime.
+    expect(maybeQuote("a\rb")).not.toContain("\r");
+  });
+
+  test("escapes U+2028 LINE SEPARATOR and U+2029 PARAGRAPH SEPARATOR", () => {
+    // Both are LineTerminators in JS strings and break source.
+    expect(maybeQuote("a b")).not.toContain(" ");
+    expect(maybeQuote("a b")).not.toContain(" ");
+  });
+
+  test("non-string scalars pass through String()", () => {
+    expect(maybeQuote(42)).toBe("42");
+    expect(maybeQuote(true)).toBe("true");
+  });
+
+  test("objects go through JSON.stringify", () => {
+    expect(maybeQuote({ a: 1, b: "two" })).toBe('{"a":1,"b":"two"}');
+  });
+});
 
 describe("stringifyTransitionWithRefs", () => {
   test("all components referenced", () => {

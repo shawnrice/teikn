@@ -1,6 +1,5 @@
 export * from "./CssVars";
 export * from "./Dtcg";
-export * from "./EsModule";
 export * from "./Generator";
 export * from "./Html";
 export * from "./JavaScript";
@@ -9,3 +8,4 @@ export * from "./Scss";
 export * from "./ScssVars";
 export * from "./Storybook";
 export * from "./TypeScript";
+export * from "./TypeScriptDeclarations";

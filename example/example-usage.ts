@@ -2,7 +2,7 @@ import * as path from 'node:path';
 
 import { Teikn, validate } from '../index';
 
-import { allTokens } from './raw-tokens';
+import { allTokens, themes } from './raw-tokens';
 
 // ─── Validate first ─────────────────────────────────────────
 
@@ -17,9 +17,8 @@ if (!result.valid) {
 
 const writer = new Teikn({
   generators: [
-    // Code outputs
+    // Code outputs (TypeScript meta emits tokens.mjs + tokens.d.ts)
     new Teikn.generators.Json(),
-    new Teikn.generators.EsModule({ ext: 'js', groups: true }),
     new Teikn.generators.TypeScript({ groups: true }),
 
     // Stylesheets
@@ -37,7 +36,8 @@ const writer = new Teikn({
     new Teikn.plugins.ColorTransformPlugin({ type: 'rgba' }),
     new Teikn.plugins.ScssQuoteValuePlugin(),
   ],
+  themes,
   outDir: path.resolve(import.meta.dirname!, 'dist'),
 });
 
-writer.transform(allTokens);
+await writer.transform(allTokens);

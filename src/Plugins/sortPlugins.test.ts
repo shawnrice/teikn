@@ -90,4 +90,17 @@ describe("sortPlugins", () => {
     expect(result[0]).toBe(x);
     expect(result[1]).toBe(y);
   });
+
+  test("throws when two instances of the same Plugin class are passed", () => {
+    // sortPlugins keys by constructor.name for runAfter resolution. Two
+    // instances of the same class can't both be kept — the second would
+    // silently overwrite the first in the nameMap and be dropped from the
+    // sorted output. Throw explicitly so the caller sees the ambiguity.
+    class Dup extends Plugin {
+      tokenType: RegExp = /.*/;
+      outputType: RegExp = /.*/;
+    }
+
+    expect(() => sortPlugins([new Dup(), new Dup()])).toThrow(/duplicate plugin instance.*Dup/i);
+  });
 });

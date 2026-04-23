@@ -1,41 +1,38 @@
-// Here are some font tokens that we'll use
-const fonts = [
-  {
-    name: 'body',
-    type: 'font-family',
-    value: '"Roboto Condensed", sans-serif',
-    usage: 'All body fonts',
-  },
-  {
-    name: 'headers',
-    type: 'font-family',
-    value: 'Arial, Helvetica, sans-serif',
-    usage: 'All header fonts',
-  },
-];
+import { Color, group, ref, theme, tokens } from '../lib/index.js';
 
-// Here be the colors that we'll use
-const colors = [
-  {
-    name: 'primary',
-    value: 'steelblue',
-    usage: 'Primary branding color',
-  },
-  {
-    name: 'error',
-    value: 'red',
-    usage: 'Use for error states',
-  },
-  {
-    name: 'text-primary',
-    value: 'rgba(0, 0, 0, .95)',
-    usage: 'Use for prominent text',
-  },
-  // Since these are all the same type, we can just map the type into each token at the end
-].map(token => ({ ...token, type: 'color' }));
+// ─── Colors ──────────────────────────────────────────────────
 
-// Since we defined the tokens in different arrays, we need to combine them
-const tokens = [...colors, ...fonts];
+const palette = {
+  steelblue: new Color('steelblue'),
+  crimson: new Color('crimson'),
+  forestgreen: new Color('forestgreen'),
+};
 
-// Don't forget to export
-module.exports = { tokens };
+const colors = group('color', {
+  primary: [palette.steelblue, 'Primary branding color'],
+  secondary: palette.crimson,
+  success: [palette.forestgreen, 'Use for success states'],
+  error: ['red', 'Use for error states'],
+  textPrimary: ['rgba(0, 0, 0, .95)', 'Use for prominent text'],
+  link: ref('primary'),
+  surface: '#ffffff',
+  background: '#fafafa',
+});
+
+// A theme is an override layer applied on top of the base colors.
+const darkColors = theme('dark', colors, {
+  surface: '#1a1a1a',
+  background: '#121212',
+});
+
+// ─── Typography ──────────────────────────────────────────────
+
+const fontFamilies = group('font-family', {
+  body: ['"Roboto Condensed", sans-serif', 'All body fonts'],
+  headers: ['Arial, Helvetica, sans-serif', 'All header fonts'],
+});
+
+// ─── Export ──────────────────────────────────────────────────
+
+export const allTokens = tokens(colors, fontFamilies);
+export const themes = [darkColors];

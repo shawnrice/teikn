@@ -100,7 +100,7 @@ describe("theme with Color object overrides", () => {
     const generatorConfigs = [
       { Gen: Teikn.generators.CssVars, file: "tokens.css" },
       { Gen: Teikn.generators.Json, file: "tokens.json" },
-      { Gen: Teikn.generators.EsModule, file: "tokens.mjs" },
+      { Gen: Teikn.generators.JavaScript, file: "tokens.mjs" },
     ] as const;
 
     for (const { Gen, file } of generatorConfigs) {
@@ -192,9 +192,9 @@ describe("round-trip JSON integrity", () => {
 
 // ─── Round-trip JS/ESM ──────────────────────────────────────
 
-describe("round-trip EsModule integrity", () => {
+describe("round-trip JavaScript (ESM) integrity", () => {
   const writer = new Teikn({
-    generators: [new Teikn.generators.EsModule(testOpts)],
+    generators: [new Teikn.generators.JavaScript(testOpts)],
     plugins: [new Teikn.plugins.NameConventionPlugin({ convention: "camelCase" })],
   });
 
@@ -223,7 +223,7 @@ describe("cross-generator value consistency", () => {
     generators: [
       new Teikn.generators.CssVars(testOpts),
       new Teikn.generators.Json(),
-      new Teikn.generators.EsModule(testOpts),
+      new Teikn.generators.JavaScript(testOpts),
     ],
     plugins: [new Teikn.plugins.NameConventionPlugin({ convention: "kebab-case" })],
   });

@@ -66,7 +66,12 @@ describe("SCSS Vars Generator tests", () => {
     expect(result).not.toContain("[object Object]");
   });
 
-  test("generateToken with generic object value produces space-separated values", () => {
+  test("generateToken with a generic composite value produces space-separated values", () => {
+    // cssValue emits composite shapes as space-joined values for use in
+    // CSS shorthand contexts (`font:` etc.). The ScssVars output is an
+    // SCSS variable declaration, not a map-entry, so an internal comma
+    // won't collide with map parsing — this generator doesn't need the
+    // paren-wrapping that Scss does.
     const gen = new Generator();
     const token: Token = {
       name: "typographyBody",

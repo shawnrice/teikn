@@ -10,7 +10,6 @@ import type { Token } from "../Token";
 import { CssVars } from "./CssVars";
 import { Scss } from "./Scss";
 import { ScssVars } from "./ScssVars";
-import { EsModule } from "./EsModule";
 import { JavaScript } from "./JavaScript";
 import { Json } from "./Json";
 import { testOpts } from "../fixtures/testOpts";
@@ -46,13 +45,13 @@ describe("mode values must not produce [object Object]", () => {
     expect(output).not.toContain(objectString);
   });
 
-  test("EsModule stringifies Color in modes", () => {
-    const output = new EsModule(opts).generate(colorToken(colorModes));
+  test("JavaScript (ESM) stringifies Color in modes", () => {
+    const output = new JavaScript(opts).generate(colorToken(colorModes));
     expect(output).not.toContain(objectString);
   });
 
-  test("JavaScript stringifies Color in modes", () => {
-    const output = new JavaScript(opts).generate(colorToken(colorModes));
+  test("JavaScript (CJS) stringifies Color in modes", () => {
+    const output = new JavaScript({ ...opts, module: "cjs" }).generate(colorToken(colorModes));
     expect(output).not.toContain(objectString);
   });
 
@@ -156,7 +155,7 @@ describe("plugins must transform mode values", () => {
     expect(output).not.toContain("crimson");
   });
 
-  test("ColorTransformPlugin converts mode values in EsModule", () => {
+  test("ColorTransformPlugin converts mode values in JavaScript (ESM)", () => {
     const tokens: Token[] = [
       {
         name: "surface",
@@ -165,7 +164,7 @@ describe("plugins must transform mode values", () => {
         modes: { dark: "crimson" },
       },
     ];
-    const output = new EsModule(opts).generate(tokens, [
+    const output = new JavaScript(opts).generate(tokens, [
       new ColorTransformPlugin({ type: "rgba" }),
     ]);
 

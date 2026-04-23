@@ -182,9 +182,9 @@ A **generator** transforms a `Token[]` into a file. Teikn ships with:
 | `Scss` | `tokens.scss` | SCSS with maps and group functions |
 | `Json` | `tokens.json` | Flat JSON |
 | `Dtcg` | `tokens.tokens.json` | W3C Design Token Community Group format |
-| `EsModule` | `tokens.mjs` | ES module exports |
-| `JavaScript` | `tokens.js` | CommonJS exports |
-| `TypeScript` | `tokens.ts` | TypeScript with full types |
+| `JavaScript` | `tokens.mjs` (default) / `tokens.cjs` | JS runtime; ESM by default, CJS via `module: "cjs"` |
+| `TypeScriptDeclarations` | `tokens.d.ts` | Ambient TS declarations, literal types by default |
+| `TypeScript` | `tokens.mjs` + `tokens.d.ts` | Meta generator — emits runtime + declarations as a pair |
 | `Html` | `tokens.html` | Visual documentation page |
 | `Storybook` | `*.stories.tsx` | Storybook stories |
 

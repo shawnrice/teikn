@@ -50,10 +50,109 @@ describe("resolveReferences", () => {
     expect(() => resolveReferences(tokens)).toThrow("Circular reference");
   });
 
+  test("circular reference error includes the full chain, not just the last hop", () => {
+    const tokens: Token[] = [
+      { name: "a", type: "color", value: "{b}" },
+      { name: "b", type: "color", value: "{c}" },
+      { name: "c", type: "color", value: "{a}" },
+    ];
+
+    expect(() => resolveReferences(tokens)).toThrow(/a\s*->\s*b\s*->\s*c\s*->\s*a/);
+  });
+
+  test("chained-ref unresolved error reports the qualified name of the source token", () => {
+    const tokens: Token[] = [
+      { name: "primary", type: "color", group: "color", value: "{missing}" },
+      { name: "link", type: "color", value: "{color.primary}" },
+    ];
+
+    expect(() => resolveReferences(tokens)).toThrow(/color\.primary/);
+  });
+
   test("throws on unresolved references", () => {
     const tokens: Token[] = [{ name: "link", type: "color", value: "{nonexistent}" }];
 
     expect(() => resolveReferences(tokens)).toThrow("Unresolved reference");
+  });
+
+  test("throws on ambiguous bare references across groups", () => {
+    const tokens: Token[] = [
+      { name: "primary", type: "color", group: "color", value: "#0066cc" },
+      { name: "primary", type: "size", group: "size", value: "16px" },
+      { name: "link", type: "color", value: "{primary}" },
+    ];
+
+    expect(() => resolveReferences(tokens)).toThrow("Ambiguous token reference");
+  });
+
+  test("qualified reference disambiguates an otherwise-ambiguous bare name", () => {
+    const tokens: Token[] = [
+      { name: "primary", type: "color", group: "color", value: "#0066cc" },
+      { name: "primary", type: "size", group: "size", value: "16px" },
+      { name: "link", type: "color", value: "{color.primary}" },
+    ];
+
+    const resolved = resolveReferences(tokens);
+    expect(resolved[2]!.value).toBe("#0066cc");
+  });
+
+  test("qualified reference works even when the bare name is unique", () => {
+    const tokens: Token[] = [
+      { name: "primary", type: "color", group: "color", value: "#0066cc" },
+      { name: "link", type: "color", value: "{color.primary}" },
+    ];
+
+    const resolved = resolveReferences(tokens);
+    expect(resolved[1]!.value).toBe("#0066cc");
+  });
+
+  test("tokens with only literal modes preserve object identity through resolveReferences", () => {
+    const tokens: Token[] = [
+      {
+        name: "surface",
+        type: "color",
+        value: "#ffffff",
+        modes: { dark: "#1a1a1a" },
+      },
+    ];
+
+    const result = resolveReferences(tokens);
+    expect(result[0]).toBe(tokens[0]);
+  });
+
+  test("composite __proto__ field is stored as a data property, not a prototype setter", () => {
+    const payload = JSON.parse('{"__proto__": {"polluted": true}}');
+    const tokens: Token[] = [{ name: "obj", type: "composite", value: payload }];
+    const result = resolveReferences(tokens);
+    const resolvedValue = result[0]!.value as Record<string, unknown>;
+
+    // The `__proto__` entry should be a data property, not swallowed
+    // by the setter. `resolvedValue.polluted` should be undefined
+    // (would be `true` via prototype inheritance if the setter fired).
+    expect(resolvedValue.polluted).toBeUndefined();
+  });
+
+  test("composite fields can reference the same token without spurious circular error", () => {
+    const tokens: Token[] = [
+      { name: "primary", type: "color", value: "#0066cc" },
+      {
+        name: "banner",
+        type: "typography",
+        value: {
+          fontFamily: "Inter",
+          fontSize: "1rem",
+          fontWeight: 400,
+          lineHeight: 1.2,
+          color: "{primary}",
+          background: "{primary}",
+        },
+      },
+    ];
+
+    const resolved = resolveReferences(tokens);
+    const banner = resolved[1]!.value as Record<string, unknown>;
+    expect(banner.color).toBe("#0066cc");
+    expect(banner.background).toBe("#0066cc");
   });
 
   test("does not mutate original tokens", () => {

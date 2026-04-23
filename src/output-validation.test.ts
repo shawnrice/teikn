@@ -134,9 +134,11 @@ const dark = theme("dark", colors, {
 
 const genOpts = testOpts;
 
-const generateOutput = (Gen: any, file: string) => {
+const generateOutput = (Gen: any, file: string) => generateOutputFrom(() => new Gen(genOpts), file);
+
+const generateOutputFrom = (make: () => any, file: string) => {
   const writer = new Teikn({
-    generators: [new Gen(genOpts)],
+    generators: [make()],
     themes: [dark],
     plugins: [new Teikn.plugins.NameConventionPlugin({ convention: "kebab-case" })],
   });
@@ -203,9 +205,12 @@ describe("output-validation: CssVars", () => {
   });
 
   test("custom property count in :root matches token count", () => {
-    // Extract the :root block
+    // Extract the :root block. Match the closing brace on its own line
+    // so we don't trip on `}` characters embedded in JSON-serialized
+    // composite values (e.g. typography tokens).
     const rootStart = css.indexOf(":root {");
-    const rootEnd = css.indexOf("}", rootStart);
+    const rootEndMatch = css.slice(rootStart).match(/\n\}/);
+    const rootEnd = rootEndMatch ? rootStart + rootEndMatch.index! : css.length;
     const rootBlock = css.slice(rootStart, rootEnd);
     const varLines = rootBlock.split("\n").filter((l) => l.trim().startsWith("--"));
     expect(varLines.length).toBe(TOTAL_TOKEN_COUNT);
@@ -455,10 +460,13 @@ describe("output-validation: Json", () => {
   });
 });
 
-// ─── JavaScript ──────────────────────────────────────────────
+// ─── JavaScript (CJS) ────────────────────────────────────────
 
-describe("output-validation: JavaScript", () => {
-  const js = generateOutput(Teikn.generators.JavaScript, "tokens.js");
+describe("output-validation: JavaScript (CJS)", () => {
+  const js = generateOutputFrom(
+    () => new Teikn.generators.JavaScript({ ...genOpts, module: "cjs" }),
+    "tokens.cjs",
+  );
 
   test("output is non-empty", () => {
     expect(js.length).toBeGreaterThan(0);
@@ -508,17 +516,17 @@ describe("output-validation: JavaScript", () => {
   });
 });
 
-// ─── EsModule ────────────────────────────────────────────────
+// ─── JavaScript (ESM) ────────────────────────────────────────
 
-describe("output-validation: EsModule", () => {
-  const esm = generateOutput(Teikn.generators.EsModule, "tokens.mjs");
+describe("output-validation: JavaScript (ESM)", () => {
+  const esm = generateOutput(Teikn.generators.JavaScript, "tokens.mjs");
 
   test("output is non-empty", () => {
     expect(esm.length).toBeGreaterThan(0);
   });
 
   test("contains no garbage values", () => {
-    assertNoGarbage(esm, "EsModule");
+    assertNoGarbage(esm, "JavaScript (ESM)");
   });
 
   test("has export const tokens", () => {
@@ -550,33 +558,59 @@ describe("output-validation: EsModule", () => {
   });
 });
 
-// ─── TypeScript ──────────────────────────────────────────────
+// ─── TypeScriptDeclarations ──────────────────────────────────
 
-describe("output-validation: TypeScript", () => {
-  const ts = generateOutput(Teikn.generators.TypeScript, "tokens.d.ts");
+describe("output-validation: TypeScriptDeclarations (narrow default)", () => {
+  const ts = generateOutput(Teikn.generators.TypeScriptDeclarations, "tokens.d.ts");
 
   test("output is non-empty", () => {
     expect(ts.length).toBeGreaterThan(0);
   });
 
-  test("has type declarations", () => {
-    expect(ts).toContain("export const tokens: {");
+  test("uses `export declare const` ambient declaration", () => {
+    expect(ts).toContain("export declare const tokens: {");
   });
 
-  test("composite types have the right fields", () => {
-    // Typography should produce an inline shape type
-    expect(ts).toContain(
-      "typographyDisplayLg: { fontFamily: string; fontSize: string; fontWeight: number; lineHeight: number }",
-    );
+  test("top-level fields are readonly", () => {
+    expect(ts).toMatch(/readonly \S+:/);
+  });
+
+  test("composite fields carry readonly on each key", () => {
+    // Typography has nested fontFamily / fontSize / fontWeight / lineHeight
+    expect(ts).toContain("readonly fontFamily:");
+    expect(ts).toContain("readonly fontSize:");
+    expect(ts).toContain("readonly fontWeight:");
+    expect(ts).toContain("readonly lineHeight:");
+  });
+
+  test("literal string types instead of widened string", () => {
+    // Narrow default emits `"1rem"`, not `string`, for dimension values
+    expect(ts).toContain('"1rem"');
   });
 
   test("mode type should be Partial<...>", () => {
-    expect(ts).toContain("export const modes: {");
+    expect(ts).toContain("export declare const modes: {");
     expect(ts).toContain("Partial<typeof tokens>");
   });
 
   test("export default tokens", () => {
     expect(ts).toContain("export default tokens;");
+  });
+});
+
+describe("output-validation: TypeScriptDeclarations (loose mode)", () => {
+  const ts = generateOutputFrom(
+    () => new Teikn.generators.TypeScriptDeclarations({ ...genOpts, loose: true }),
+    "tokens.d.ts",
+  );
+
+  test("widens to primitive types", () => {
+    expect(ts).toContain("readonly fontFamily: string");
+    expect(ts).toContain("readonly fontWeight: number");
+  });
+
+  test("does not emit literal string types", () => {
+    expect(ts).not.toContain('"1rem"');
   });
 });
 
@@ -774,7 +808,7 @@ describe("output-validation: cross-generator consistency", () => {
     generators: [
       new Teikn.generators.CssVars(genOpts),
       new Teikn.generators.Json(),
-      new Teikn.generators.EsModule(genOpts),
+      new Teikn.generators.JavaScript(genOpts),
     ],
     themes: [dark],
     plugins: [new Teikn.plugins.NameConventionPlugin({ convention: "kebab-case" })],
@@ -799,7 +833,7 @@ describe("output-validation: cross-generator consistency", () => {
     expect(json.spacingXs.value).toBe("0.25rem");
   });
 
-  test("spacing token values agree across EsModule and JSON", () => {
+  test("spacing token values agree across JavaScript and JSON", () => {
     expect(esm).toContain("'1rem'");
     expect(json.spacingMd.value).toBe("1rem");
 
@@ -818,7 +852,7 @@ describe("output-validation: cross-generator consistency", () => {
     expect(json.durationSlow.value).toBe("500ms");
   });
 
-  test("duration token values agree across EsModule and JSON", () => {
+  test("duration token values agree across JavaScript and JSON", () => {
     expect(esm).toContain("'150ms'");
     expect(json.durationFast.value).toBe("150ms");
 
@@ -827,9 +861,11 @@ describe("output-validation: cross-generator consistency", () => {
   });
 
   test("token count is consistent across generators", () => {
-    // CSS: count --var lines in :root
+    // CSS: count --var lines in :root (match `\n}` so we don't trip on
+    // `}` characters inside JSON-serialized composite values).
     const rootStart = css.indexOf(":root {");
-    const rootEnd = css.indexOf("}", rootStart);
+    const rootEndMatch = css.slice(rootStart).match(/\n\}/);
+    const rootEnd = rootEndMatch ? rootStart + rootEndMatch.index! : css.length;
     const rootBlock = css.slice(rootStart, rootEnd);
     const cssCount = rootBlock.split("\n").filter((l) => l.trim().startsWith("--")).length;
 

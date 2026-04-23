@@ -15,17 +15,62 @@ export const cssValue = (value: unknown): string => {
   }
   const obj = value as Record<string, unknown>;
   if ("width" in obj && "style" in obj && "color" in obj) {
+    // border shorthand: width style color
     return [obj.width, obj.style, obj.color].filter(Boolean).join(" ");
   }
+  // Unknown composite shape: space-join the values. This matches CSS
+  // shorthand order for typography (`font:` shorthand) when field order
+  // is roughly family, size, weight, line-height — fragile but usable
+  // in a CSS property-value context. SCSS contexts that put this in a
+  // map entry need to wrap the output in parens themselves to keep
+  // internal commas from being parsed as map-entry separators; see
+  // `cssMapValue` below.
   return Object.values(obj).join(" ");
 };
 
+/**
+ * Serialize a value for use as an SCSS map-entry value. Wraps compound
+ * objects whose serialization contains a top-level comma in parens so
+ * SCSS parses them as a single nested list — otherwise the comma inside
+ * a typography composite's fontFamily (or similar) would be treated as
+ * a map-entry separator and mangle the map.
+ *
+ * Scalars like `rgb(1, 2, 3)` also contain commas but don't need
+ * wrapping — the parens are part of the function-call syntax, which
+ * SCSS's parser already treats as one token.
+ */
+export const cssMapValue = (value: unknown): string => {
+  const serialized = cssValue(value);
+  const isCompositeObject =
+    typeof value === "object" &&
+    value !== null &&
+    !Array.isArray(value) &&
+    !isFirstClassValue(value);
+  return isCompositeObject && serialized.includes(",") ? `(${serialized})` : serialized;
+};
+
 // ─── JS value serialization ─────────────────────────────────────
-// Shared by JavaScript and EsModule generators.
+// Shared by the JavaScript generator (both ESM and CJS modes).
+
+// U+2028 LINE SEPARATOR and U+2029 PARAGRAPH SEPARATOR are valid JSON
+// but are LineTerminators in ECMAScript string literals — they break
+// single-quoted / double-quoted source strings at parse time. Build
+// the regex via String.fromCharCode so the source file itself doesn't
+// contain literal line terminators.
+const JS_LINE_SEPARATORS = new RegExp(`[${String.fromCharCode(0x2028, 0x2029)}]`, "g");
 
 export const maybeQuote = (val: unknown): string => {
   if (typeof val === "string") {
-    return `'${val.replace(/\\/g, "\\\\").replace(/'/g, "\\'").replace(/\n/g, "\\n")}'`;
+    // JSON.stringify covers \n, \r, \t, NUL, and other control chars.
+    // Strip the surrounding double-quote, unescape \" (our wrapper is
+    // single-quoted so double quotes don't need escaping), hand-escape
+    // U+2028 / U+2029, and escape single quotes.
+    const escaped = JSON.stringify(val)
+      .slice(1, -1)
+      .replace(/\\"/g, '"')
+      .replace(JS_LINE_SEPARATORS, (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, "0")}`)
+      .replace(/'/g, "\\'");
+    return `'${escaped}'`;
   }
   if (typeof val === "object" && val !== null) {
     return JSON.stringify(val);

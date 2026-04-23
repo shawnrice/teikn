@@ -8,8 +8,8 @@ import { CubicBezier } from "../TokenTypes/CubicBezier";
 import { LinearGradient, RadialGradient } from "../TokenTypes/Gradient";
 import { Transition } from "../TokenTypes/Transition";
 import { CssVars } from "./CssVars";
-import { EsModule } from "./EsModule";
 import { Html as Generator } from "./Html";
+import { JavaScript } from "./JavaScript";
 import { Scss } from "./Scss";
 
 const fixedDate = () => "Mon Jan 01 2024 12:00:00";
@@ -107,7 +107,7 @@ describe("Html Generator tests", () => {
 
   test("It renders flip cards with sibling usage snippets", () => {
     const htmlGen = new Generator({ dateFn: fixedDate, version: "test" });
-    const esGen = new EsModule({ groups: true });
+    const esGen = new JavaScript({ groups: true });
     const scssGen = new Scss();
     const cssGen = new CssVars();
 

@@ -26,10 +26,10 @@ import {
   isZLayerType,
 } from "../type-classifiers";
 import { getDate } from "../utils";
-import { EsModule } from "./EsModule";
 import type { GeneratorInfo, GeneratorOptions } from "./Generator";
 import { Generator } from "./Generator";
 import { JavaScript } from "./JavaScript";
+import { TypeScript } from "./TypeScript";
 
 // ─── Options ─────────────────────────────────────────────────
 
@@ -207,8 +207,28 @@ export class Storybook extends Generator<StorybookOpts> {
     if (this.options.importPath) {
       return this.options.importPath;
     }
-    const sibling = this.siblings.find((g) => g instanceof EsModule || g instanceof JavaScript);
-    return sibling ? `./${sibling.file.replace(/\.[^.]+$/, "")}` : "./tokens";
+    // Prefer TypeScript meta siblings over plain JavaScript siblings: the
+    // meta owns more of the consumer surface (.mjs + .d.ts pair) and a user
+    // who constructed both almost certainly intends the meta to be the
+    // canonical import target.
+    const meta = this.siblings.find((g): g is TypeScript => g instanceof TypeScript);
+    if (meta) {
+      const runtime = meta.filenames().find((f) => /\.(mjs|cjs)$/.test(f));
+      if (runtime) {
+        return `./${runtime.replace(/\.[^.]+$/, "")}`;
+      }
+    }
+    const js = this.siblings.find((g): g is JavaScript => g instanceof JavaScript);
+    if (js) {
+      return `./${js.file.replace(/\.[^.]+$/, "")}`;
+    }
+    throw new Error(
+      "Storybook: the generated stories file needs to import a runtime token module, " +
+        "but no `JavaScript` / `TypeScript` sibling generator was found in the same Teikn, " +
+        "and no `importPath` option was provided. Either add a runtime generator " +
+        "(e.g. `new JavaScript()` or `new TypeScript()`) to the same Teikn, or pass " +
+        "`new Storybook({ importPath: '...' })` pointing at where the tokens are built.",
+    );
   }
 
   private isTypeScript(): boolean {
@@ -259,14 +279,17 @@ export class Storybook extends Generator<StorybookOpts> {
 
     // Modes data
     if (hasModes) {
-      lines.push(`const modesData${ts ? ": Record<string, Record<string, string>>" : ""} = {`);
+      lines.push(`const modesData${ts ? ": Record<string, Record<string, unknown>>" : ""} = {`);
       for (const token of tokens) {
         if (!token.modes || Object.keys(token.modes).length === 0) {
           continue;
         }
         const key = nameTransformer!(token.name);
+        // Preserve composite mode values as JSON objects; `String(val)`
+        // would collapse them to "[object Object]". Scalars round-trip
+        // through JSON.stringify unchanged (strings get quoted).
         const modeEntries = Object.entries(token.modes)
-          .map(([mode, val]) => `    '${mode}': ${JSON.stringify(String(val))}`)
+          .map(([mode, val]) => `    '${mode}': ${JSON.stringify(val)}`)
           .join(`,${EOL}`);
         lines.push(`  '${key}': {`);
         lines.push(modeEntries);
