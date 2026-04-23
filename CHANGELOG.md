@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.0.0-alpha.12
+
+### Fixed
+
+- **`NameConventionPlugin` rename now reaches references inside composed
+  values.** `ScssVars` and `CssVars` previously built their reference map
+  from pre-plugin token names, so a token like `easeOut` referenced inside
+  a `Transition` would emit as `$easeOut` while the variable definition
+  correctly emitted as `$ease-out` (kebab-case plugin) — broken cross-reference.
+  Both generators now build the reference map from post-plugin tokens so
+  references always match their definitions.
+
 ## 2.0.0-alpha.11
 
 ### Breaking Changes

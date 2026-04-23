@@ -243,23 +243,33 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
     return String(value);
   }
 
-  prepareTokens(tokens: Token[], plugins: Plugin[]): Token[] {
+  /**
+   * Run the plugin pipeline (filter by tokenType/outputType, apply transform)
+   * without doing any value stringification. Ref-aware generators call this
+   * before building their refMap so the map captures post-plugin names.
+   */
+  protected applyPluginPipeline(tokens: Token[], plugins: Plugin[]): Token[] {
     const sorted = sortPlugins(plugins);
-    return tokens
-      .map((t) => this.stringifyValues(t))
-      .map((token) =>
-        sorted.reduce((acc, plugin) => {
-          if (!matches(plugin.tokenType, token.type)) {
-            return acc;
-          }
+    return tokens.map((token) =>
+      sorted.reduce((acc, plugin) => {
+        if (!matches(plugin.tokenType, token.type)) {
+          return acc;
+        }
 
-          if (!matches(plugin.outputType, this.options.ext)) {
-            return acc;
-          }
+        if (!matches(plugin.outputType, this.options.ext)) {
+          return acc;
+        }
 
-          return applyPlugin(plugin, acc);
-        }, token),
-      );
+        return applyPlugin(plugin, acc);
+      }, token),
+    );
+  }
+
+  prepareTokens(tokens: Token[], plugins: Plugin[]): Token[] {
+    return this.applyPluginPipeline(
+      tokens.map((t) => this.stringifyValues(t)),
+      plugins,
+    );
   }
 
   protected tokenGroups(

@@ -52,9 +52,14 @@ export class ScssVars extends Scss {
   }
 
   override prepareTokens(...args: Parameters<Generator["prepareTokens"]>): Token[] {
-    this.#refMap = this.buildReferenceMap(args[0]);
-    args[0] = topoSort(args[0], this.#refMap);
-    return super.prepareTokens(...args);
+    // Run plugins first so the refMap captures any name changes (e.g., from
+    // NameConventionPlugin). Otherwise references inside composed values
+    // (Transition, BoxShadow) point at the pre-rename names while the
+    // variable definitions emit the post-rename names — broken output.
+    const transformed = this.applyPluginPipeline(args[0], args[1]);
+    this.#refMap = this.buildReferenceMap(transformed);
+    const sorted = topoSort(transformed, this.#refMap);
+    return sorted.map((t) => this.stringifyValues(t));
   }
 
   protected override stringifyTokenValue(value: TokenValue): string {

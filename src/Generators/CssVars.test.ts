@@ -8,6 +8,7 @@ import { Color } from "../TokenTypes/Color";
 import { CubicBezier } from "../TokenTypes/CubicBezier";
 import { Duration } from "../TokenTypes/Duration";
 import { Transition } from "../TokenTypes/Transition";
+import { NameConventionPlugin } from "../Plugins/NameConventionPlugin";
 import { CssVars as Generator } from "./CssVars";
 import { testOpts } from "../fixtures/testOpts";
 
@@ -172,6 +173,28 @@ describe("CssVars Generator tests", () => {
     expect(output).toContain("--duration-fast: 100ms;");
     expect(output).toContain("--timing-standard: cubic-bezier(0.4, 0, 0.2, 1);");
     expect(output).toContain("--transition-fade: var(--duration-fast) var(--timing-standard);");
+  });
+
+  test("references reflect plugin renames (NameConventionPlugin)", () => {
+    // Regression: refMap was previously built from pre-plugin token names.
+    // For CssVars the bug was masked when the user's plugin convention matched
+    // the generator's nameTransformer (kebab); the snake_case case below
+    // exercises the post-plugin name being something the nameTransformer then
+    // re-kebabs — definition and reference must agree.
+    const easeOut = new CubicBezier("ease-out");
+    const tokenList: Token[] = [
+      { name: "easeOut", type: "timing", value: easeOut },
+      { name: "fast", type: "transition", value: new Transition("150ms", easeOut) },
+    ];
+
+    const gen = new Generator(testOpts);
+    const output = gen.generate(tokenList, [
+      new NameConventionPlugin({ convention: "snake_case" }),
+    ]);
+
+    // snake_case (plugin) → kebab (CssVars nameTransformer)
+    expect(output).toContain("--ease-out: cubic-bezier(0, 0, 0.58, 1);");
+    expect(output).toContain("--fast: 150ms var(--ease-out);");
   });
 
   test("Transition only references tokens that exist in the token set", () => {

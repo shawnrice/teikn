@@ -8,6 +8,7 @@ import { Color } from "../TokenTypes/Color";
 import { CubicBezier } from "../TokenTypes/CubicBezier";
 import { Duration } from "../TokenTypes/Duration";
 import { Transition } from "../TokenTypes/Transition";
+import { NameConventionPlugin } from "../Plugins/NameConventionPlugin";
 import { ScssVars as Generator } from "./ScssVars";
 import { testOpts } from "../fixtures/testOpts";
 
@@ -183,6 +184,27 @@ describe("SCSS Vars Generator tests", () => {
     });
     const gen = new Generator(testOpts);
     expect(() => gen.generate(tokens(transitions))).not.toThrow();
+  });
+
+  test("references reflect plugin renames (NameConventionPlugin)", () => {
+    // Regression: refMap was previously built from pre-plugin token names, so
+    // a camelCase token name + kebab-case plugin produced `$easeOut` inside
+    // composed values while the variable definition correctly emitted as
+    // `$ease-out` — broken cross-reference.
+    const easeOut = new CubicBezier("ease-out");
+    const tokenList: Token[] = [
+      { name: "easeOut", type: "timing", value: easeOut },
+      { name: "fast", type: "transition", value: new Transition("150ms", easeOut) },
+    ];
+
+    const gen = new Generator(testOpts);
+    const output = gen.generate(tokenList, [
+      new NameConventionPlugin({ convention: "kebab-case" }),
+    ]);
+
+    expect(output).toContain("$ease-out: cubic-bezier(0, 0, 0.58, 1);");
+    expect(output).toContain("$fast: 150ms $ease-out;");
+    expect(output).not.toContain("$easeOut");
   });
 
   test("BoxShadow references a color token by $variable", () => {
