@@ -76,6 +76,29 @@ describe("buildKeyAliasIndex + resolveKey", () => {
     expect(index.bareLookup.size).toBe(0);
     expect(resolveKey("anything", index).status).toBe("missing");
   });
+
+  test("a single index containing both unique and ambiguous bare names resolves each correctly", () => {
+    // Realistic case: most bare names are unique, a few collide. Existing
+    // tests exercise either all-unique or all-ambiguous; this one pins the
+    // mixed shape that real token sets produce.
+    const index = buildKeyAliasIndex(["color.primary", "size.primary", "color.accent"]);
+
+    const ambiguous = resolveKey("primary", index);
+    expect(ambiguous.status).toBe("ambiguous");
+    if (ambiguous.status === "ambiguous") {
+      expect([...ambiguous.candidates].toSorted()).toEqual(["color.primary", "size.primary"]);
+    }
+
+    expect(resolveKey("accent", index)).toEqual({
+      status: "ok",
+      key: "color.accent",
+      bare: "accent",
+    });
+
+    // Qualified lookups still work for both kinds in the same index.
+    expect(resolveKey("color.primary", index).status).toBe("ok");
+    expect(resolveKey("size.primary", index).status).toBe("ok");
+  });
 });
 
 describe("ambiguousKeyMessage shape", () => {

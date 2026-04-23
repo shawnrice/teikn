@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
+import { Plugin } from "../Plugins";
 import type { Token } from "../Token";
 import { TypeScript } from "./TypeScript";
 
@@ -154,5 +155,41 @@ describe("TypeScript meta generator", () => {
     // Declarations see the pre-plugin literal.
     expect(dts).toContain('"#ff0000"');
     expect(dts).not.toContain("#FF0000");
+  });
+
+  test("plugin runAfter ordering survives the meta's two prepareTokens passes", () => {
+    // The meta runs prepareTokens once per sub-generator. sortPlugins
+    // must produce the same order in both passes — A before B because
+    // B declares runAfter: ["A"]. With one token, two plugins, and two
+    // sub-gens, we expect exactly four transform() calls in A,B,A,B order.
+    const order: string[] = [];
+
+    class A extends Plugin {
+      tokenType: RegExp = /.*/;
+      outputType: RegExp = /.*/;
+      // oxlint-disable-next-line class-methods-use-this
+      transform(t: Token): Token {
+        order.push("A");
+        return t;
+      }
+    }
+    class B extends Plugin {
+      tokenType: RegExp = /.*/;
+      outputType: RegExp = /.*/;
+      override runAfter: string[] = ["A"];
+      // oxlint-disable-next-line class-methods-use-this
+      transform(t: Token): Token {
+        order.push("B");
+        return t;
+      }
+    }
+
+    // Pass in reverse declared order — sortPlugins must put A first.
+    new TypeScript({ dateFn: fixedDate }).generateFiles(
+      [{ name: "primary", type: "color", value: "#ff0000" }],
+      [new B(), new A()],
+    );
+
+    expect(order).toEqual(["A", "B", "A", "B"]);
   });
 });

@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
+import { resolveReferences } from "../resolve";
 import { BoxShadow } from "../TokenTypes/BoxShadow";
 import { Color } from "../TokenTypes/Color";
 import { CubicBezier } from "../TokenTypes/CubicBezier";
@@ -439,5 +440,34 @@ describe("parseDtcg", () => {
     } as DtcgDocument;
     const tokens = parseDtcg(doc);
     expect(tokens).toHaveLength(1);
+  });
+
+  test("DTCG-flattened dotted names resolve as fully-qualified alias targets", () => {
+    // parseDtcg flattens nested groups into dotted names like
+    // `color.brand.primary`. Such a name has no `group` field but IS a
+    // valid full-key in `tokenKey`'s output, and `resolveKey` should
+    // resolve `{color.brand.primary}` to it via the fullKeys check.
+    const doc: DtcgDocument = {
+      color: {
+        brand: {
+          primary: {
+            $value: { colorSpace: "srgb", components: [1, 0, 0] },
+            $type: "color",
+          },
+        },
+      },
+      link: {
+        $value: "{color.brand.primary}",
+        $type: "color",
+      },
+    };
+
+    const tokens = parseDtcg(doc);
+    const resolved = resolveReferences(tokens);
+
+    // The link token should now point at the same Color value as the
+    // brand primary — proving the dotted name resolved through the
+    // alias index without ambiguity.
+    expect(resolved[1]!.value).toBe(resolved[0]!.value);
   });
 });
