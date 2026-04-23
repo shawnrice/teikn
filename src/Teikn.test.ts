@@ -392,6 +392,26 @@ describe("Teikn", () => {
       expect(Object.keys(json)).toContain("colorBroken");
     });
 
+    test("expand() wraps a plugin throw with the plugin class name", () => {
+      class Boom extends Plugin {
+        tokenType: RegExp = /.*/;
+        outputType: RegExp = /.*/;
+        // oxlint-disable-next-line class-methods-use-this
+        expand(): never {
+          throw new Error("internal expand failure");
+        }
+      }
+
+      const writer = new Teikn({
+        generators: [new Json()],
+        plugins: [new Boom() as never],
+      });
+
+      // The thrown error names the plugin class so the user knows which
+      // plugin to look at, with the original error preserved as the cause.
+      expect(() => writer.generateToStrings([])).toThrow(/Boom.*expand.*internal expand failure/);
+    });
+
     test("applyThemes matches against post-expand token universe", () => {
       // Theme against existing color. Add a no-op expand plugin that
       // preserves the token set. Theme override still applies —

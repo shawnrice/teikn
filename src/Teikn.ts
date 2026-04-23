@@ -245,7 +245,14 @@ export class Teikn {
     let result = tokens;
     for (const plugin of this.plugins) {
       if ("expand" in plugin && typeof plugin.expand === "function") {
-        result = plugin.expand(result);
+        try {
+          result = plugin.expand(result);
+        } catch (cause) {
+          const { name } = plugin.constructor;
+          throw new Error(`Plugin \`${name}\` threw during expand(): ${(cause as Error).message}`, {
+            cause,
+          });
+        }
       }
     }
     return result;
