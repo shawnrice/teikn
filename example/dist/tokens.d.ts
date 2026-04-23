@@ -1,6 +1,6 @@
 /**
- * Teikn v2.0.0-alpha.10
- * Generated Tue Apr 21 2026 13:05:34
+ * Teikn v2.0.0-alpha.11
+ * Generated Thu Apr 23 2026 1:38:21
  *
  * This file is generated and should be committed to source control
  */
@@ -453,4 +453,8 @@ export declare const breakpoint: (name: 'sm' | 'md' | 'lg' | 'xl') => string;
 export declare const size: (name: 'icon-sm' | 'icon-md' | 'icon-lg' | 'avatar-sm' | 'avatar-md' | 'avatar-lg') => string;
 export declare const aspectRatio: (name: 'square' | 'video' | 'photo' | 'portrait') => string;
 export declare const zLayer: (name: 'dropdown' | 'sticky' | 'overlay' | 'modal') => string;
+
+export declare const modes: {
+  readonly dark: Partial<typeof tokens>;
+};
 export default tokens;

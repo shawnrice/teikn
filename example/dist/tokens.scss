@@ -1,6 +1,6 @@
 ///
-/// Teikn v2.0.0-alpha.10
-/// Generated Tue Apr 21 2026 13:05:34
+/// Teikn v2.0.0-alpha.11
+/// Generated Thu Apr 23 2026 1:38:21
 ///
 /// This file is generated and should be commited to source control
 ///
@@ -45,8 +45,8 @@ $token-values: (
   font-weight-regular: 400,
   font-weight-medium: 500,
   font-weight-bold: 700,
-  typography-body: "Roboto Condensed", sans-serif 1rem 400 1.5 normal,
-  typography-heading: Arial, Helvetica, sans-serif 2.25rem 700 1.2 -0.02em,
+  typography-body: ("Roboto Condensed", sans-serif 1rem 400 1.5 normal),
+  typography-heading: (Arial, Helvetica, sans-serif 2.25rem 700 1.2 -0.02em),
   spacing-xs: 0.25rem,
   spacing-sm: 0.5rem,
   /// Standard spacing
@@ -130,6 +130,15 @@ $token-values: (
   z-layer-overlay: 4000,
   z-layer-modal: 5000,
 );
+
+// prettier-ignore
+$modes: (
+  dark: (
+    color-surface: rgba(26, 26, 26, 1),
+    color-background: rgba(18, 18, 18, 1),
+    color-on-surface: rgba(255, 255, 255, 0.87),
+  ),
+) !default;
 
 /// Use "get-token" to access tokens by name
 @function get-token($name) {

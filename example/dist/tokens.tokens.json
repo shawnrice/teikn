@@ -103,7 +103,19 @@
         1
       ]
     },
-    "$type": "color"
+    "$type": "color",
+    "$extensions": {
+      "mode": {
+        "dark": {
+          "colorSpace": "srgb",
+          "components": [
+            0.10196078431372549,
+            0.10196078431372549,
+            0.10196078431372549
+          ]
+        }
+      }
+    }
   },
   "color-background": {
     "$value": {
@@ -114,7 +126,19 @@
         0.9803921568627451
       ]
     },
-    "$type": "color"
+    "$type": "color",
+    "$extensions": {
+      "mode": {
+        "dark": {
+          "colorSpace": "srgb",
+          "components": [
+            0.07058823529411765,
+            0.07058823529411765,
+            0.07058823529411765
+          ]
+        }
+      }
+    }
   },
   "color-onSurface": {
     "$value": {
@@ -126,7 +150,20 @@
       ],
       "alpha": 0.87
     },
-    "$type": "color"
+    "$type": "color",
+    "$extensions": {
+      "mode": {
+        "dark": {
+          "colorSpace": "srgb",
+          "components": [
+            1,
+            1,
+            1
+          ],
+          "alpha": 0.87
+        }
+      }
+    }
   },
   "color-onPrimary": {
     "$value": {

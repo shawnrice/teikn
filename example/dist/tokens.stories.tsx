@@ -1,13 +1,13 @@
 /**
- * Teikn v2.0.0-alpha.10
- * Generated Tue Apr 21 2026 13:05:34
+ * Teikn v2.0.0-alpha.11
+ * Generated Thu Apr 23 2026 1:38:21
  *
  * Storybook stories for design tokens
  * This file is generated — do not edit manually
  */
 import type { Meta, StoryObj } from '@storybook/react';
 import { tokens } from "./tokens";
-import { BorderDemo, BreakpointBar, DurationBar, FontSample, GradientSwatch, LetterSpacingSample, LineHeightSample, OpacityDemo, RadiusBox, RatioBox, ShadowBox, SizeBox, SpacingBar, Swatch, TimingDemo, TokenGrid, TokenList, TokenStory, TransitionDemo, TypographyBlock, ZLayerStack } from 'teikn/storybook';
+import { BorderDemo, BreakpointBar, DurationBar, FontSample, GradientSwatch, LetterSpacingSample, LineHeightSample, ModeTable, OpacityDemo, RadiusBox, RatioBox, ShadowBox, SizeBox, SpacingBar, Swatch, TimingDemo, TokenGrid, TokenList, TokenStory, TransitionDemo, TypographyBlock, ZLayerStack } from 'teikn/storybook';
 
 const colorKeys = ['colorPrimary', 'colorSecondary', 'colorSuccess', 'colorWarning', 'colorError', 'colorTextPrimary', 'colorTextSecondary', 'colorLink', 'colorSurface', 'colorBackground', 'colorOnSurface', 'colorOnPrimary', 'colorOnSecondary', 'colorOnSuccess', 'colorOnError'] as const;
 const fontFamilyKeys = ['fontFamilyBody', 'fontFamilyHeaders', 'fontFamilyMono'] as const;
@@ -30,6 +30,18 @@ const sizeKeys = ['sizeIconSm', 'sizeIconMd', 'sizeIconLg', 'sizeAvatarSm', 'siz
 const aspectRatioKeys = ['aspectRatioSquare', 'aspectRatioVideo', 'aspectRatioPhoto', 'aspectRatioPortrait'] as const;
 const zLayerKeys = ['zLayerDropdown', 'zLayerSticky', 'zLayerOverlay', 'zLayerModal'] as const;
 
+const modesData: Record<string, Record<string, unknown>> = {
+  'colorSurface': {
+    'dark': "rgba(26, 26, 26, 1)"
+  },
+  'colorBackground': {
+    'dark': "rgba(18, 18, 18, 1)"
+  },
+  'colorOnSurface': {
+    'dark': "rgba(255, 255, 255, 0.87)"
+  },
+};
+
 const meta = {
   title: "Design Tokens",
   tags: ['autodocs'],
@@ -44,6 +56,7 @@ export const Color: Story = {
         <TokenGrid>
           {colorKeys.map(key => <Swatch key={key} name={key} value={String(tokens[key])} />)}
         </TokenGrid>
+        <ModeTable tokenKeys={colorKeys} modesData={modesData} />
     </TokenStory>
   ),
 };

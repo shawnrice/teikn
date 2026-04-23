@@ -1,6 +1,6 @@
 /**
- * Teikn v2.0.0-alpha.10
- * Generated Tue Apr 21 2026 13:05:34
+ * Teikn v2.0.0-alpha.11
+ * Generated Thu Apr 23 2026 1:38:21
  *
  * This file is generated and should be committed to source control
  */
@@ -126,4 +126,10 @@
   /* For darkening the background and emphasizing visual focus */
   --z-layer-overlay: 4000;
   --z-layer-modal: 5000;
+}
+
+[data-theme="dark"] {
+  --color-surface: rgba(26, 26, 26, 1);
+  --color-background: rgba(18, 18, 18, 1);
+  --color-on-surface: rgba(255, 255, 255, 0.87);
 }
