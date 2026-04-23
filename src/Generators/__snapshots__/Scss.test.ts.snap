@@ -8,6 +8,8 @@ exports[`Scss Generator tests It generates the token set 1`] = `
 /// This file is generated and should be commited to source control
 ///
 
+@use "sass:map";
+
 
 // prettier-ignore
 $token-values: (
@@ -21,10 +23,10 @@ $token-values: (
 
 /// Use "get-token" to access tokens by name
 @function get-token($name) {
-  @if (not map-has-key($token-values, $name)) {
+  @if (not map.has-key($token-values, $name)) {
     @error "Token '#{$name}' does not exist.";
   }
-  @return map-get($token-values, $name);
+  @return map.get($token-values, $name);
 }"
 `;
 
@@ -36,6 +38,8 @@ exports[`Scss Generator tests it generates group maps and functions when groups:
 /// This file is generated and should be commited to source control
 ///
 
+@use "sass:map";
+
 
 // prettier-ignore
 $token-values: (
@@ -46,33 +50,33 @@ $token-values: (
 
 /// Use "get-token" to access tokens by name
 @function get-token($name) {
-  @if (not map-has-key($token-values, $name)) {
+  @if (not map.has-key($token-values, $name)) {
     @error "Token '#{$name}' does not exist.";
   }
-  @return map-get($token-values, $name);
+  @return map.get($token-values, $name);
 }
 
 $color-values: (
-  primary: map-get($token-values, color-primary),
-  secondary: map-get($token-values, color-secondary),
+  primary: map.get($token-values, color-primary),
+  secondary: map.get($token-values, color-secondary),
 );
 
 @function color($name) {
-  @if not map-has-key($color-values, $name) {
-    @error "Unknown color token '#{$name}'. Available: #{map-keys($color-values)}";
+  @if not map.has-key($color-values, $name) {
+    @error "Unknown color token '#{$name}'. Available: #{map.keys($color-values)}";
   }
-  @return map-get($color-values, $name);
+  @return map.get($color-values, $name);
 }
 
 $spacing-values: (
-  sm: map-get($token-values, spacing-sm),
+  sm: map.get($token-values, spacing-sm),
 );
 
 @function spacing($name) {
-  @if not map-has-key($spacing-values, $name) {
-    @error "Unknown spacing token '#{$name}'. Available: #{map-keys($spacing-values)}";
+  @if not map.has-key($spacing-values, $name) {
+    @error "Unknown spacing token '#{$name}'. Available: #{map.keys($spacing-values)}";
   }
-  @return map-get($spacing-values, $name);
+  @return map.get($spacing-values, $name);
 }"
 `;
 
@@ -83,6 +87,8 @@ exports[`Scss Generator tests it generates groups with PrefixTypePlugin 1`] = `
 ///
 /// This file is generated and should be commited to source control
 ///
+
+@use "sass:map";
 
 
 // prettier-ignore
@@ -97,33 +103,33 @@ $token-values: (
 
 /// Use "get-token" to access tokens by name
 @function get-token($name) {
-  @if (not map-has-key($token-values, $name)) {
+  @if (not map.has-key($token-values, $name)) {
     @error "Token '#{$name}' does not exist.";
   }
-  @return map-get($token-values, $name);
+  @return map.get($token-values, $name);
 }
 
 $font-family-values: (
-  body: map-get($token-values, font-family-body),
+  body: map.get($token-values, font-family-body),
 );
 
 @function font-family($name) {
-  @if not map-has-key($font-family-values, $name) {
-    @error "Unknown font-family token '#{$name}'. Available: #{map-keys($font-family-values)}";
+  @if not map.has-key($font-family-values, $name) {
+    @error "Unknown font-family token '#{$name}'. Available: #{map.keys($font-family-values)}";
   }
-  @return map-get($font-family-values, $name);
+  @return map.get($font-family-values, $name);
 }
 
 $color-values: (
-  primary: map-get($token-values, color-primary),
-  secondary: map-get($token-values, color-secondary),
+  primary: map.get($token-values, color-primary),
+  secondary: map.get($token-values, color-secondary),
 );
 
 @function color($name) {
-  @if not map-has-key($color-values, $name) {
-    @error "Unknown color token '#{$name}'. Available: #{map-keys($color-values)}";
+  @if not map.has-key($color-values, $name) {
+    @error "Unknown color token '#{$name}'. Available: #{map.keys($color-values)}";
   }
-  @return map-get($color-values, $name);
+  @return map.get($color-values, $name);
 }"
 `;
 
@@ -135,6 +141,8 @@ exports[`Scss Generator tests composite values with internal commas produce vali
 /// This file is generated and should be commited to source control
 ///
 
+@use "sass:map";
+
 
 // prettier-ignore
 $token-values: (
@@ -143,9 +151,9 @@ $token-values: (
 
 /// Use "get-token" to access tokens by name
 @function get-token($name) {
-  @if (not map-has-key($token-values, $name)) {
+  @if (not map.has-key($token-values, $name)) {
     @error "Token '#{$name}' does not exist.";
   }
-  @return map-get($token-values, $name);
+  @return map.get($token-values, $name);
 }"
 `;

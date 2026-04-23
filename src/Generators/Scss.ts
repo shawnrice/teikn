@@ -85,17 +85,17 @@ export class Scss extends Generator<ScssOpts> {
   }
 
   override header(): string | null {
-    return this.commentHeader("scss");
+    return `${this.commentHeader("scss")}@use "sass:map";${EOL}${EOL}`;
   }
 
   override footer(): string | null {
     return [
       `/// Use "get-token" to access tokens by name`,
       `@function get-token($name) {`,
-      `  @if (not map-has-key($token-values, $name)) {`,
+      `  @if (not map.has-key($token-values, $name)) {`,
       `    @error "Token '#{$name}' does not exist.";`,
       `  }`,
-      `  @return map-get($token-values, $name);`,
+      `  @return map.get($token-values, $name);`,
       `}`,
     ].join(EOL);
   }
@@ -114,7 +114,7 @@ export class Scss extends Generator<ScssOpts> {
         const mapEntries = entries
           .map(
             ({ shortName, token }) =>
-              `  ${kebabCase(shortName)}: map-get($token-values, ${nameTransformer!(token.name)}),`,
+              `  ${kebabCase(shortName)}: map.get($token-values, ${nameTransformer!(token.name)}),`,
           )
           .join(EOL);
         return [
@@ -123,10 +123,10 @@ export class Scss extends Generator<ScssOpts> {
           `);`,
           "",
           `@function ${groupKebab}($name) {`,
-          `  @if not map-has-key($${groupKebab}-values, $name) {`,
-          `    @error "Unknown ${groupKebab} token '#{$name}'. Available: #{map-keys($${groupKebab}-values)}";`,
+          `  @if not map.has-key($${groupKebab}-values, $name) {`,
+          `    @error "Unknown ${groupKebab} token '#{$name}'. Available: #{map.keys($${groupKebab}-values)}";`,
           `  }`,
-          `  @return map-get($${groupKebab}-values, $name);`,
+          `  @return map.get($${groupKebab}-values, $name);`,
           `}`,
         ].join(EOL);
       })

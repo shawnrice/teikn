@@ -115,6 +115,14 @@ export class ScssVars extends Scss {
     return null;
   }
 
+  override header(): string | null {
+    const base = this.commentHeader("scss");
+    if (this.options.groups) {
+      return `${base}@use "sass:map";${EOL}${EOL}`;
+    }
+    return base;
+  }
+
   override generateGroupBlocks(tokens: Token[]): string | null {
     if (!this.options.groups) {
       return null;
@@ -134,10 +142,10 @@ export class ScssVars extends Scss {
           `);`,
           "",
           `@function ${groupKebab}($name) {`,
-          `  @if not map-has-key($${groupKebab}-values, $name) {`,
-          `    @error "Unknown ${groupKebab} token '#{$name}'. Available: #{map-keys($${groupKebab}-values)}";`,
+          `  @if not map.has-key($${groupKebab}-values, $name) {`,
+          `    @error "Unknown ${groupKebab} token '#{$name}'. Available: #{map.keys($${groupKebab}-values)}";`,
           `  }`,
-          `  @return map-get($${groupKebab}-values, $name);`,
+          `  @return map.get($${groupKebab}-values, $name);`,
           `}`,
         ].join(EOL);
       })

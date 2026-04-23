@@ -1,5 +1,24 @@
 # Changelog
 
+## 2.0.0-alpha.13
+
+### Fixed
+
+- **SCSS output no longer emits deprecated global map functions.** `Scss`
+  and `ScssVars` previously emitted `map-get`, `map-has-key`, and
+  `map-keys`, which Dart Sass 2.x warns about and Dart Sass 3.0 removes.
+  Output now loads the `sass:map` module with `@use "sass:map";` and
+  calls the namespaced `map.get` / `map.has-key` / `map.keys` forms. The
+  `@use` directive is emitted only when the output actually uses map
+  functions (`Scss` always; `ScssVars` only with `groups: true`).
+
+### Compatibility
+
+- Generated SCSS requires **Dart Sass 1.23+** (Oct 2019), which covers
+  current `sass`, `sass-embedded`, and modern `sass-loader` setups.
+  Projects still on LibSass / `node-sass` (EOL since Oct 2020) will not
+  parse `@use "sass:map"` — they need to migrate to Dart Sass.
+
 ## 2.0.0-alpha.12
 
 ### Fixed

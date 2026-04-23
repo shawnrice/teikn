@@ -25,6 +25,8 @@ exports[`SCSS Vars Generator tests it generates group maps and functions when gr
 /// This file is generated and should be commited to source control
 ///
 
+@use "sass:map";
+
 
 $colorPrimary: aliceblue;
 $colorSecondary: rgb(102, 205, 170);
@@ -36,10 +38,10 @@ $color-values: (
 );
 
 @function color($name) {
-  @if not map-has-key($color-values, $name) {
-    @error "Unknown color token '#{$name}'. Available: #{map-keys($color-values)}";
+  @if not map.has-key($color-values, $name) {
+    @error "Unknown color token '#{$name}'. Available: #{map.keys($color-values)}";
   }
-  @return map-get($color-values, $name);
+  @return map.get($color-values, $name);
 }
 
 $spacing-values: (
@@ -47,9 +49,9 @@ $spacing-values: (
 );
 
 @function spacing($name) {
-  @if not map-has-key($spacing-values, $name) {
-    @error "Unknown spacing token '#{$name}'. Available: #{map-keys($spacing-values)}";
+  @if not map.has-key($spacing-values, $name) {
+    @error "Unknown spacing token '#{$name}'. Available: #{map.keys($spacing-values)}";
   }
-  @return map-get($spacing-values, $name);
+  @return map.get($spacing-values, $name);
 }"
 `;
