@@ -1,34 +1,58 @@
 # Teikn API Example
 
-Here's a quick example of how to use Teikn as a JS library.
+A minimal end-to-end example of using Teikn as a JS library.
 
-In this example, we define the tokens in `./raw-tokens.js`. It's good to note that it's just a regular JavaScript file.
-All that's needed is that we can import an array of tokens from it.
+## Files
 
-A token looks like:
+- `raw-tokens.js` / `raw-tokens.ts` — define tokens using teikn's builders (`group`, `theme`, `Color`, etc.)
+- `example-usage.js` / `example-usage.ts` — wire up generators, plugins, and themes, then call `transform()`
 
-```typescript
-type Token = {
-  name: string;
-  type: string;
-  usage?: string;
-  value: any;
-};
+## Defining tokens
+
+Tokens are organized into groups. Each group entry can be a value, a `[value, usage]` tuple, a value class (`Color`, `Dimension`, etc.), or a `ref()` to another token:
+
+```js
+import { Color, group, ref, theme, tokens } from 'teikn';
+
+const colors = group('color', {
+  primary: [new Color('steelblue'), 'Primary branding color'],
+  link: ref('primary'),
+  surface: '#ffffff',
+});
+
+const darkColors = theme('dark', colors, {
+  surface: '#1a1a1a',
+});
+
+export const allTokens = tokens(colors);
+export const themes = [darkColors];
 ```
 
-Or, for example:
+## Generating output
 
-```javascript
-const PrimaryColorToken = {
-  name: 'colorPrimary',
-  type: 'color',
-  usage: 'This is just a usage note that comes as a comment.',
-  value: 'aliceblue',
-};
+```js
+import { Teikn } from 'teikn';
+import { allTokens, themes } from './raw-tokens.js';
+
+const writer = new Teikn({
+  generators: [
+    new Teikn.generators.Json(),
+    new Teikn.generators.TypeScript(),  // emits tokens.mjs + tokens.d.ts
+    new Teikn.generators.Scss(),
+    new Teikn.generators.CssVars(),
+  ],
+  themes,
+  outDir: './dist',
+});
+
+await writer.transform(allTokens);
 ```
 
-Then, in `example-usage.js`, we just need to create a new instance of `Teikn` and tell it which generators and plugins
-to use as well as where to output the files. After that, we call `transform`, and you have some files.
+## Running
 
-If you want to re-use the tokens (which is probably the reason why you're making them to begin with), then you can
-publish them on GitHub or NPM.
+```bash
+bun example-usage.ts   # canonical
+bun example-usage.js   # ESM JS variant
+```
+
+Both write to `./dist/` (`.ts`) and `./dist-js/` (`.js`) respectively, so they don't clobber each other.

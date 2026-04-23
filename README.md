@@ -495,7 +495,6 @@ const writer = new Teikn({
     new Teikn.generators.Scss({ groups: true }),
     new Teikn.generators.ScssVars(),
     new Teikn.generators.Json(),
-    new Teikn.generators.EsModule({ ext: 'js', groups: true }),
     new Teikn.generators.JavaScript({ groups: true }),
     new Teikn.generators.TypeScript({ groups: true }),
     new Teikn.generators.Html(),
@@ -511,9 +510,9 @@ const writer = new Teikn({
 | **Scss** | `.scss` | SCSS map with `get-token()` function and optional typed group accessors |
 | **ScssVars** | `.scss` | SCSS variables (`$token-name`) with mode support |
 | **Json** | `.json` | Plain JSON object |
-| **EsModule** | `.mjs` | ES module export with optional typed group accessors |
-| **JavaScript** | `.js` | CommonJS module with optional typed group accessors |
-| **TypeScript** | `.d.ts` | TypeScript type declarations |
+| **JavaScript** | `.mjs` / `.cjs` | ES module (default) or CommonJS via `module: 'cjs'`; optional typed group accessors |
+| **TypeScript** | `.mjs` + `.d.ts` | Meta generator: emits both runtime (`JavaScript`) and declarations (`TypeScriptDeclarations`) |
+| **TypeScriptDeclarations** | `.d.ts` | TypeScript type declarations only (use directly to skip runtime emission) |
 | **Html** | `.html` | Visual documentation page with color swatches, font samples, spacing bars, and more |
 | **Storybook** | `.stories.tsx` | React Storybook stories with interactive visual components |
 | **Dtcg** | `.tokens.json` | W3C Design Token Community Group format for tool interoperability |
@@ -558,7 +557,7 @@ const writer = new Teikn({
 | Plugin | Description |
 |--------|-------------|
 | **ColorTransformPlugin** | Normalizes color tokens to a specific format (`hex`, `rgb`, `hsl`, `lab`, `lch`, `xyz`) |
-| **PrefixTypePlugin** | Prefixes token type to token name (e.g., `primary` becomes `colorPrimary`) (deprecated -- type prefixing is now built-in) |
+| **StripTypePrefixPlugin** | Opt out of the built-in type prefixing (e.g., keep `primary` as `primary` instead of `color-primary`) |
 | **ScssQuoteValuePlugin** | Wraps font and font-family values in `unquote()` for SCSS compatibility |
 | **RemUnitPlugin** | Converts px Dimensions to rem (or configurable unit). Options: `base` (default 16), `targetUnit` (default `'rem'`) |
 | **AlphaMultiplyPlugin** | Flattens semi-transparent colors against a background via alpha blending. Options: `background` (default `'#ffffff'`) |
@@ -671,7 +670,7 @@ teikn
 # Run with a token file and flags
 teikn path/to/tokens.ts \
   --outDir=./dist \
-  --generators="Scss,Json,EsModule,CssVars,Html" \
+  --generators="Scss,Json,JavaScript,CssVars,Html" \
   --plugins="ColorTransformPlugin,ScssQuoteValuePlugin"
 
 # Watch mode
