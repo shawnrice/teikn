@@ -1,9 +1,9 @@
-import type { Token } from "../Token";
+import type { Token } from "../Token.js";
 /* eslint-disable @typescript-eslint/no-useless-constructor */
-import { Color } from "../TokenTypes/Color";
-import type { ColorFormat } from "../TokenTypes/Color/types";
-import type { AuditIssue } from "./Plugin";
-import { Plugin } from "./Plugin";
+import { Color } from "../TokenTypes/Color/index.js";
+import type { ColorFormat } from "../TokenTypes/Color/types.js";
+import type { AuditIssue } from "./Plugin.js";
+import { Plugin } from "./Plugin.js";
 
 type ColorTransformPluginOptions = {
   type?: ColorFormat;

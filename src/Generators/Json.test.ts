@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test";
 
-import { tokenSet1 } from "../fixtures/tokenSet1";
-import type { Token } from "../Token";
-import { Json as Generator } from "./Json";
+import { tokenSet1 } from "../fixtures/tokenSet1.js";
+import type { Token } from "../Token.js";
+import { Json as Generator } from "./Json.js";
 
 describe("JSONGenerator tests", () => {
   test("It generates the token set", () => {

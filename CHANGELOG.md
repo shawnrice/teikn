@@ -1,5 +1,76 @@
 # Changelog
 
+## 2.0.0-alpha.14
+
+### Added
+
+- **`prefix` and `separator` options on `CssVars`, `Scss`, and `ScssVars`.**
+  Namespaces global symbols to prevent collisions when teikn-generated
+  output coexists with other CSS/SCSS that owns the same global namespace.
+  Accepts a single segment or an array (stacked left-to-right outermost):
+
+  ```ts
+  new CssVars({ prefix: "company" });
+  // --company-color-primary: ...
+
+  new ScssVars({ prefix: ["company", "abc"], separator: "_" });
+  // $company_abc_color-primary: ...
+  ```
+
+  Each segment runs through the generator's `nameTransformer`, so
+  authoring style is style-agnostic (`prefix: "myCompany"` yields
+  `--my-company-…` under the default `kebabCase`). References between
+  tokens (e.g. a `Transition` referencing a `Duration` token) pick up
+  the prefix automatically — the prefix is composed at emit time, not
+  baked into `token.name`. Group accessors (`color('primary')`) keep
+  using authored short-names; the underlying lookup resolves to the
+  prefixed variable.
+
+  `JavaScript`, `Json`, `Dtcg`, and `TypeScriptDeclarations` do not
+  accept the option — they have their own namespace mechanisms (module
+  scope, JSON keys, ambient declarations) and don't need it.
+
+### Changed
+
+- **`ScssVars` mode separator now follows the `separator` option.**
+  Previously hardcoded as `--` (e.g. `$color-surface--dark`). Now uses
+  the same separator as the prefix join, defaulting to `-`
+  (`$color-surface-dark`). This is a breaking change to the SCSS
+  variables output; consumers reading mode variables by name need to
+  update references. The double-hyphen pattern was a visual
+  disambiguation borrowed from CSS custom-property syntax, but it had
+  no semantic value in SCSS and produced inconsistency once the
+  `separator` option arrived.
+
+### Fixed
+
+- **Node ESM resolution.** The published `lib/` is `"type": "module"`
+  but TypeScript was emitting extensionless relative imports
+  (`export * from './src/Teikn'`), which Node's strict ESM resolver
+  rejects with `ERR_MODULE_NOT_FOUND`. Bun resolves them silently, so
+  the issue only surfaced under Node. All 126 affected source files
+  now use explicit `.js` extensions on relative imports, and
+  `tsconfig.json` switched to `"module": "nodenext"` to enforce this
+  going forward.
+
+- **`group()` builder corrupted the result array on numeric token
+  names.** `Object.defineProperty(arr, "0", { value })` writes through
+  to the array index slot, overwriting the token wrapper at index 0
+  with the raw value and breaking iteration on the next `for…of` step.
+  Numeric-string names now skip the by-name property shortcut; the
+  array contents themselves are unaffected. Access values by
+  `result.find(t => t.name === "0")` for numerically-named tokens.
+
+- **`Json.describe()` documented import is valid Node ESM.** Now
+  emits `import tokens from './tokens.json' with { type: 'json' };`
+  instead of the extension-less form Node rejects.
+
+- **`TypeScriptDeclarations.describe()` documented import paths use
+  the `.js` extension** so the displayed example resolves correctly
+  under Node ESM consumers.
+
+- **Typo in the SCSS generator file header** (`commited` → `committed`).
+
 ## 2.0.0-alpha.13
 
 ### Fixed

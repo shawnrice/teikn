@@ -1,5 +1,5 @@
-import type { Color, InternalCreate } from "../Color";
-import type { LCH } from "../types";
+import type { Color, InternalCreate } from "../Color.js";
+import type { LCH } from "../types.js";
 
 export class LCHOperations {
   #color: Color;

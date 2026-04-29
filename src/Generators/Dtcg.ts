@@ -1,10 +1,10 @@
-import { serializeDtcg } from "../dtcg";
-import type { Plugin } from "../Plugins";
-import { sortPlugins } from "../Plugins/Plugin";
-import type { Token } from "../Token";
-import { matches } from "../utils";
-import type { GeneratorInfo, GeneratorOptions } from "./Generator";
-import { Generator, applyPlugin } from "./Generator";
+import { serializeDtcg } from "../dtcg/index.js";
+import type { Plugin } from "../Plugins/index.js";
+import { sortPlugins } from "../Plugins/Plugin.js";
+import type { Token } from "../Token.js";
+import { matches } from "../utils.js";
+import type { GeneratorInfo, GeneratorOptions } from "./Generator.js";
+import { Generator, applyPlugin } from "./Generator.js";
 
 const defaultOptions = {
   ext: "tokens.json",

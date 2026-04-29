@@ -1,5 +1,5 @@
-import type { Color, InternalCreate } from "../Color";
-import type { XYZ } from "../types";
+import type { Color, InternalCreate } from "../Color.js";
+import type { XYZ } from "../types.js";
 
 export class XYZOperations {
   #color: Color;

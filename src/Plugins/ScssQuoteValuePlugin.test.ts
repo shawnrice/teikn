@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 
-import type { Token } from "../Token";
-import { ScssQuoteValuePlugin } from "./ScssQuoteValuePlugin";
+import type { Token } from "../Token.js";
+import { ScssQuoteValuePlugin } from "./ScssQuoteValuePlugin.js";
 
 describe("ScssQuoteValuePlugin", () => {
   const plugin = new ScssQuoteValuePlugin();

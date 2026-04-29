@@ -1,12 +1,12 @@
 import { describe, expect, test } from "bun:test";
 
-import { resolveReferences } from "./resolve";
-import type { Token } from "./Token";
-import { BoxShadow, BoxShadowList } from "./TokenTypes/BoxShadow";
-import { Color } from "./TokenTypes/Color";
-import { CubicBezier } from "./TokenTypes/CubicBezier";
-import { LinearGradient, RadialGradient } from "./TokenTypes/Gradient";
-import { Transition } from "./TokenTypes/Transition";
+import { resolveReferences } from "./resolve.js";
+import type { Token } from "./Token.js";
+import { BoxShadow, BoxShadowList } from "./TokenTypes/BoxShadow.js";
+import { Color } from "./TokenTypes/Color/index.js";
+import { CubicBezier } from "./TokenTypes/CubicBezier.js";
+import { LinearGradient, RadialGradient } from "./TokenTypes/Gradient.js";
+import { Transition } from "./TokenTypes/Transition.js";
 
 describe("resolveReferences", () => {
   test("resolves simple references", () => {

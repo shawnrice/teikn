@@ -1,5 +1,5 @@
-import type { Token } from "./Token";
-import { tokenKey } from "./token-keys";
+import type { Token } from "./Token.js";
+import { tokenKey } from "./token-keys.js";
 
 export type TokenSet = {
   name: string;

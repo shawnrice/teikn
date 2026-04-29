@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
-import { CubicBezier } from "./CubicBezier";
-import { Duration } from "./Duration";
-import { Transition, TransitionList } from "./Transition";
+import { CubicBezier } from "./CubicBezier.js";
+import { Duration } from "./Duration.js";
+import { Transition, TransitionList } from "./Transition.js";
 
 describe("Transition", () => {
   // ─── Construction ────────────────────────────────────────────

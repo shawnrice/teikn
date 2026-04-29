@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test";
 
-import { Color } from "./TokenTypes/Color";
-import type { Token } from "./Token";
-import { validate } from "./validate";
+import { Color } from "./TokenTypes/Color/index.js";
+import type { Token } from "./Token.js";
+import { validate } from "./validate.js";
 
 describe("validate", () => {
   test("returns valid for correct tokens", () => {

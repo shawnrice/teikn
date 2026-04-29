@@ -1,7 +1,7 @@
-import type { Token } from "../Token";
-import { Dimension } from "../TokenTypes/Dimension";
-import type { AuditIssue } from "./Plugin";
-import { Plugin } from "./Plugin";
+import type { Token } from "../Token.js";
+import { Dimension } from "../TokenTypes/Dimension.js";
+import type { AuditIssue } from "./Plugin.js";
+import { Plugin } from "./Plugin.js";
 
 type TouchTargetPluginOptions = {
   minPx?: number;

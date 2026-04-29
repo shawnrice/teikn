@@ -1,6 +1,6 @@
-import type { Space, SpaceData } from "./ColorSpace";
-import { hexToRGBWithAlpha } from "./conversions";
-import { namedColors } from "./namedColors";
+import type { Space, SpaceData } from "./ColorSpace.js";
+import { hexToRGBWithAlpha } from "./conversions.js";
+import { namedColors } from "./namedColors.js";
 import {
   isHex,
   isHSL,
@@ -13,8 +13,8 @@ import {
   normalizeDegrees,
   stringToRgb,
   stringToRgba,
-} from "./util";
-import { xkcdColors } from "./xkcdNamedColors";
+} from "./util.js";
+import { xkcdColors } from "./xkcdNamedColors.js";
 
 export type ParsedColor = {
   space: Space;

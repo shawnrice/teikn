@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { parseColorString } from "./parseColorString";
+import { parseColorString } from "./parseColorString.js";
 
 describe("parseColorString", () => {
   // ─── Hex ──────────────────────────────────────────────────

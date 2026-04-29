@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { Plugin, sortPlugins } from "./Plugin";
+import { Plugin, sortPlugins } from "./Plugin.js";
 
 // ─── Test plugins ────────────────────────────────────────────
 

@@ -1,18 +1,18 @@
 import { describe, expect, test } from "bun:test";
 
-import { Color } from "../TokenTypes/Color";
-import { BoxShadow } from "../TokenTypes/BoxShadow";
-import { CubicBezier } from "../TokenTypes/CubicBezier";
-import { Transition } from "../TokenTypes/Transition";
-import { LinearGradient } from "../TokenTypes/Gradient";
-import { ColorTransformPlugin } from "../Plugins/ColorTransformPlugin";
-import type { Token } from "../Token";
-import { CssVars } from "./CssVars";
-import { Scss } from "./Scss";
-import { ScssVars } from "./ScssVars";
-import { JavaScript } from "./JavaScript";
-import { Json } from "./Json";
-import { testOpts } from "../fixtures/testOpts";
+import { Color } from "../TokenTypes/Color/index.js";
+import { BoxShadow } from "../TokenTypes/BoxShadow.js";
+import { CubicBezier } from "../TokenTypes/CubicBezier.js";
+import { Transition } from "../TokenTypes/Transition.js";
+import { LinearGradient } from "../TokenTypes/Gradient.js";
+import { ColorTransformPlugin } from "../Plugins/ColorTransformPlugin.js";
+import type { Token } from "../Token.js";
+import { CssVars } from "./CssVars.js";
+import { Scss } from "./Scss.js";
+import { ScssVars } from "./ScssVars.js";
+import { JavaScript } from "./JavaScript.js";
+import { Json } from "./Json.js";
+import { testOpts } from "../fixtures/testOpts.js";
 
 // ─── Helpers ─────────────────────────────────────────────────
 

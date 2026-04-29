@@ -1,4 +1,4 @@
-import type { Token } from "./Token";
+import type { Token } from "./Token.js";
 
 // ─── First-class value brand ─────────────────────────────────────
 // Every first-class value type class carries a `__teikn_fcv__`

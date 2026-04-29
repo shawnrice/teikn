@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test";
 
-import { Color } from "./Color";
-import { GradientList, LinearGradient, RadialGradient } from "./Gradient";
+import { Color } from "./Color/index.js";
+import { GradientList, LinearGradient, RadialGradient } from "./Gradient.js";
 
 describe("LinearGradient", () => {
   // ─── Construction ────────────────────────────────────────────

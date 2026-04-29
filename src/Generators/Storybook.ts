@@ -1,7 +1,7 @@
 import { EOL } from "node:os";
 
-import { camelCase } from "../string-utils";
-import type { Token } from "../Token";
+import { camelCase } from "../string-utils.js";
+import type { Token } from "../Token.js";
 import {
   groupTokens,
   isAspectRatioType,
@@ -24,12 +24,12 @@ import {
   isTransitionType,
   isTypographyType,
   isZLayerType,
-} from "../type-classifiers";
-import { getDate } from "../utils";
-import type { GeneratorInfo, GeneratorOptions } from "./Generator";
-import { Generator } from "./Generator";
-import { JavaScript } from "./JavaScript";
-import { TypeScript } from "./TypeScript";
+} from "../type-classifiers.js";
+import { getDate } from "../utils.js";
+import type { GeneratorInfo, GeneratorOptions } from "./Generator.js";
+import { Generator } from "./Generator.js";
+import { JavaScript } from "./JavaScript.js";
+import { TypeScript } from "./TypeScript.js";
 
 // ─── Options ─────────────────────────────────────────────────
 

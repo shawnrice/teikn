@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test";
 
-import type { Token } from "../Token";
-import { Color } from "../TokenTypes/Color";
-import { ContrastValidatorPlugin } from "./ContrastValidatorPlugin";
+import type { Token } from "../Token.js";
+import { Color } from "../TokenTypes/Color/index.js";
+import { ContrastValidatorPlugin } from "./ContrastValidatorPlugin.js";
 
 describe("ContrastValidatorPlugin", () => {
   const makeToken = (name: string, value: string | Color): Token => ({

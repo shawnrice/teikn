@@ -1,6 +1,6 @@
-import { camelCase } from "../string-utils";
-import type { Token } from "../Token";
-import { Plugin } from "./Plugin";
+import { camelCase } from "../string-utils.js";
+import type { Token } from "../Token.js";
+import { Plugin } from "./Plugin.js";
 
 /**
  * Prefixes the token type to the token name

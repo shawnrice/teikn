@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test";
 
-import type { Token } from "../Token";
-import { Color } from "../TokenTypes/Color";
-import { AlphaMultiplyPlugin } from "./AlphaMultiplyPlugin";
+import type { Token } from "../Token.js";
+import { Color } from "../TokenTypes/Color/index.js";
+import { AlphaMultiplyPlugin } from "./AlphaMultiplyPlugin.js";
 
 describe("AlphaMultiplyPlugin", () => {
   const plugin = new AlphaMultiplyPlugin();

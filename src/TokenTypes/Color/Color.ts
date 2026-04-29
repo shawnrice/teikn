@@ -1,14 +1,14 @@
-import type { Space, SpaceData } from "./ColorSpace";
-import { convertWithIntermediates } from "./ColorSpace";
-import { RGBToHex } from "./conversions";
-import type { NamedColorValue } from "./namedColors";
-import { namedColorsByValue } from "./namedColors";
-import { HSLOperations } from "./operations/HSLOperations";
-import { LABOperations } from "./operations/LABOperations";
-import { LCHOperations } from "./operations/LCHOperations";
-import { RGBOperations } from "./operations/RGBOperations";
-import { XYZOperations } from "./operations/XYZOperations";
-import { parseColorString } from "./parseColorString";
+import type { Space, SpaceData } from "./ColorSpace.js";
+import { convertWithIntermediates } from "./ColorSpace.js";
+import { RGBToHex } from "./conversions.js";
+import type { NamedColorValue } from "./namedColors.js";
+import { namedColorsByValue } from "./namedColors.js";
+import { HSLOperations } from "./operations/HSLOperations.js";
+import { LABOperations } from "./operations/LABOperations.js";
+import { LCHOperations } from "./operations/LCHOperations.js";
+import { RGBOperations } from "./operations/RGBOperations.js";
+import { XYZOperations } from "./operations/XYZOperations.js";
+import { parseColorString } from "./parseColorString.js";
 import type {
   ColorBlindnessType,
   ColorFormat,
@@ -22,9 +22,9 @@ import type {
   RGBA,
   XYZ,
   XYZA,
-} from "./types";
-import { degreeRange, hexRange, percentRange, round, toPercent } from "./util";
-import { closest } from "./xkcdNamedColors";
+} from "./types.js";
+import { degreeRange, hexRange, percentRange, round, toPercent } from "./util.js";
+import { closest } from "./xkcdNamedColors.js";
 
 // Symbol for internal construction — only accessible within this module and operations
 const INTERNAL: unique symbol = Symbol("Color.internal");

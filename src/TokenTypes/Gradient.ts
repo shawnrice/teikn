@@ -1,5 +1,5 @@
-import { splitTopLevel } from "../string-utils";
-import { Color } from "./Color";
+import { splitTopLevel } from "../string-utils.js";
+import { Color } from "./Color/index.js";
 
 // ─── Shared types ─────────────────────────────────────────────
 

@@ -1,14 +1,14 @@
 import { describe, expect, test } from "bun:test";
 
-import { composite, dim, dp, dur, group, ref, scale, theme, tokens } from "./builders";
-import { Teikn } from "./Teikn";
-import { BoxShadow } from "./TokenTypes/BoxShadow";
-import { Color } from "./TokenTypes/Color";
-import { CubicBezier } from "./TokenTypes/CubicBezier";
-import { Dimension } from "./TokenTypes/Dimension";
-import { LinearGradient } from "./TokenTypes/Gradient";
-import { Transition } from "./TokenTypes/Transition";
-import { testOpts } from "./fixtures/testOpts";
+import { composite, dim, dp, dur, group, ref, scale, theme, tokens } from "./builders.js";
+import { Teikn } from "./Teikn.js";
+import { BoxShadow } from "./TokenTypes/BoxShadow.js";
+import { Color } from "./TokenTypes/Color/index.js";
+import { CubicBezier } from "./TokenTypes/CubicBezier.js";
+import { Dimension } from "./TokenTypes/Dimension.js";
+import { LinearGradient } from "./TokenTypes/Gradient.js";
+import { Transition } from "./TokenTypes/Transition.js";
+import { testOpts } from "./fixtures/testOpts.js";
 
 // ─── Comprehensive token set ─────────────────────────────────
 
@@ -317,7 +317,7 @@ describe("output-validation: ScssVars", () => {
   });
 
   test("mode variables are present", () => {
-    expect(scssVars).toContain("--dark:");
+    expect(scssVars).toContain("-dark:");
   });
 });
 

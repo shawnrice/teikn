@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { Octree } from "./Octree";
+import { Octree } from "./Octree.js";
 
 describe("Octree", () => {
   const items = [

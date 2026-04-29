@@ -1,7 +1,7 @@
-import type { CompositeValue, ModeValues, Token, TokenValue } from "./Token";
-import type { KeyAliasIndex } from "./token-keys";
-import { ambiguousKeyMessage, buildKeyAliasIndex, resolveKey, tokenKey } from "./token-keys";
-import { isFirstClassValue } from "./type-classifiers";
+import type { CompositeValue, ModeValues, Token, TokenValue } from "./Token.js";
+import type { KeyAliasIndex } from "./token-keys.js";
+import { ambiguousKeyMessage, buildKeyAliasIndex, resolveKey, tokenKey } from "./token-keys.js";
+import { isFirstClassValue } from "./type-classifiers.js";
 
 const REF_PATTERN = /^\{([^}]+)\}$/;
 

@@ -1,16 +1,16 @@
 import { describe, expect, test } from "bun:test";
 
-import type { Token } from "../Token";
-import { Color } from "../TokenTypes/Color";
-import { Dimension } from "../TokenTypes/Dimension";
-import { Duration } from "../TokenTypes/Duration";
-import { ColorTransformPlugin } from "../Plugins/ColorTransformPlugin";
-import { NameConventionPlugin } from "../Plugins/NameConventionPlugin";
-import { ScssQuoteValuePlugin } from "../Plugins/ScssQuoteValuePlugin";
-import { CssVars } from "./CssVars";
-import { Scss } from "./Scss";
-import { Json } from "./Json";
-import { testOpts } from "../fixtures/testOpts";
+import type { Token } from "../Token.js";
+import { Color } from "../TokenTypes/Color/index.js";
+import { Dimension } from "../TokenTypes/Dimension.js";
+import { Duration } from "../TokenTypes/Duration.js";
+import { ColorTransformPlugin } from "../Plugins/ColorTransformPlugin.js";
+import { NameConventionPlugin } from "../Plugins/NameConventionPlugin.js";
+import { ScssQuoteValuePlugin } from "../Plugins/ScssQuoteValuePlugin.js";
+import { CssVars } from "./CssVars.js";
+import { Scss } from "./Scss.js";
+import { Json } from "./Json.js";
+import { testOpts } from "../fixtures/testOpts.js";
 
 // ─── Helpers ─────────────────────────────────────────────────
 

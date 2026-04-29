@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 
-import type { Token } from "../Token";
-import { NameConventionPlugin } from "./NameConventionPlugin";
+import type { Token } from "../Token.js";
+import { NameConventionPlugin } from "./NameConventionPlugin.js";
 
 describe("NameConventionPlugin", () => {
   const makeToken = (name: string): Token => ({ name, type: "color", value: "#000" });

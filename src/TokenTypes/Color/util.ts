@@ -1,5 +1,5 @@
-import { clamp } from "../../utils";
-import type { RGB, RGBA } from "./types";
+import { clamp } from "../../utils.js";
+import type { RGB, RGBA } from "./types.js";
 
 /** Compose two unary functions: `pipe(f, g)(x)` === `g(f(x))` */
 export const pipe =

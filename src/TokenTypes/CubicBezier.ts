@@ -1,4 +1,4 @@
-import { clamp } from "../utils";
+import { clamp } from "../utils.js";
 
 const EPSILON = 1e-6;
 const MAX_ITERATIONS = 8;

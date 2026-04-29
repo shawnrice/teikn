@@ -7,8 +7,8 @@ import {
   RGBToXYZ,
   XYZToLAB,
   XYZToRGB,
-} from "./conversions";
-import type { HSL, LAB, LCH, RGB, XYZ } from "./types";
+} from "./conversions.js";
+import type { HSL, LAB, LCH, RGB, XYZ } from "./types.js";
 
 export type Space = "rgb" | "hsl" | "xyz" | "lab" | "lch";
 

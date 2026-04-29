@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test";
 
-import type { Token } from "../Token";
-import { Dimension } from "../TokenTypes/Dimension";
-import { MinFontSizePlugin } from "./MinFontSizePlugin";
+import type { Token } from "../Token.js";
+import { Dimension } from "../TokenTypes/Dimension.js";
+import { MinFontSizePlugin } from "./MinFontSizePlugin.js";
 
 describe("MinFontSizePlugin", () => {
   const makeToken = (name: string, value: unknown, type = "font-size"): Token => ({

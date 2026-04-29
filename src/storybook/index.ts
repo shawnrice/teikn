@@ -22,4 +22,4 @@ export {
   TransitionDemo,
   TypographyBlock,
   ZLayerStack,
-} from "./components";
+} from "./components.js";

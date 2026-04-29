@@ -1,5 +1,5 @@
-import type { Token } from "../Token";
-import { Color } from "../TokenTypes/Color";
+import type { Token } from "../Token.js";
+import { Color } from "../TokenTypes/Color/index.js";
 
 const tokenSet1: Token[] = [
   {

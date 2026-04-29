@@ -1,6 +1,6 @@
-import { deriveShortName } from "../string-utils";
-import type { Token } from "../Token";
-import { Plugin } from "./Plugin";
+import { deriveShortName } from "../string-utils.js";
+import type { Token } from "../Token.js";
+import { Plugin } from "./Plugin.js";
 
 /**
  * Strips the type prefix from token names, reversing the default type-prefixing behavior.

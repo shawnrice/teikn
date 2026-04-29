@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test";
 
-import type { Token } from "./Token";
-import { composeTokenSets, composeTokenSetsAsModes, tokenSet } from "./TokenSet";
-import { validate } from "./validate";
+import type { Token } from "./Token.js";
+import { composeTokenSets, composeTokenSetsAsModes, tokenSet } from "./TokenSet.js";
+import { validate } from "./validate.js";
 
 const makeToken = (name: string, type: string, value: any): Token => ({ name, type, value });
 

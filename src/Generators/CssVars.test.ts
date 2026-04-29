@@ -1,16 +1,16 @@
 import { describe, expect, test } from "bun:test";
 
-import { group, tokens } from "../builders";
-import { tokenSet1 } from "../fixtures/tokenSet1";
-import type { Token } from "../Token";
-import { BoxShadow } from "../TokenTypes/BoxShadow";
-import { Color } from "../TokenTypes/Color";
-import { CubicBezier } from "../TokenTypes/CubicBezier";
-import { Duration } from "../TokenTypes/Duration";
-import { Transition } from "../TokenTypes/Transition";
-import { NameConventionPlugin } from "../Plugins/NameConventionPlugin";
-import { CssVars as Generator } from "./CssVars";
-import { testOpts } from "../fixtures/testOpts";
+import { group, tokens } from "../builders.js";
+import { tokenSet1 } from "../fixtures/tokenSet1.js";
+import type { Token } from "../Token.js";
+import { BoxShadow } from "../TokenTypes/BoxShadow.js";
+import { Color } from "../TokenTypes/Color/index.js";
+import { CubicBezier } from "../TokenTypes/CubicBezier.js";
+import { Duration } from "../TokenTypes/Duration.js";
+import { Transition } from "../TokenTypes/Transition.js";
+import { NameConventionPlugin } from "../Plugins/NameConventionPlugin.js";
+import { CssVars as Generator } from "./CssVars.js";
+import { testOpts } from "../fixtures/testOpts.js";
 
 describe("CssVars Generator tests", () => {
   test("It has the correct filename", () => {
@@ -249,6 +249,70 @@ describe("CssVars Generator tests", () => {
     // First-wins: alpha was registered first
     expect(output).toContain("var(--alpha)");
     expect(output).not.toContain("var(--bravo)");
+  });
+
+  describe("prefix option", () => {
+    test("scalar prefix prepends to every variable name", () => {
+      const t: Token[] = [{ name: "colorPrimary", type: "color", value: "aliceblue" }];
+      const output = new Generator({ ...testOpts, prefix: "company" }).generate(t);
+      expect(output).toContain("--company-color-primary: aliceblue;");
+      expect(output).not.toContain("--color-primary:");
+    });
+
+    test("array prefix stacks segments left-to-right", () => {
+      const t: Token[] = [{ name: "colorPrimary", type: "color", value: "aliceblue" }];
+      const output = new Generator({ ...testOpts, prefix: ["company", "abc"] }).generate(t);
+      expect(output).toContain("--company-abc-color-primary: aliceblue;");
+    });
+
+    test("prefix segments run through nameTransformer (camelCase input is kebabed)", () => {
+      const t: Token[] = [{ name: "colorPrimary", type: "color", value: "aliceblue" }];
+      const output = new Generator({ ...testOpts, prefix: "myCompany" }).generate(t);
+      expect(output).toContain("--my-company-color-primary: aliceblue;");
+    });
+
+    test("references between tokens use the prefixed name", () => {
+      const fast = new Duration(100, "ms");
+      const durations = group("duration", { "duration-fast": fast });
+      const easings = group("timing", { "timing-standard": CubicBezier.standard });
+      const transitions: Token[] = [
+        {
+          name: "transitionFade",
+          type: "transition",
+          value: new Transition(durations["duration-fast"], easings["timing-standard"]),
+        },
+      ];
+      const output = new Generator({ ...testOpts, prefix: "company" }).generate(
+        tokens(durations, easings, transitions),
+      );
+      expect(output).toContain("--company-transition-fade:");
+      // The Transition's reference to duration-fast must also pick up the prefix.
+      expect(output).toContain("var(--company-duration-fast)");
+      expect(output).toContain("var(--company-timing-standard)");
+    });
+
+    test("mode variables also pick up the prefix", () => {
+      const t: Token[] = [
+        {
+          name: "colorPrimary",
+          type: "color",
+          value: "aliceblue",
+          modes: { dark: "midnightblue" },
+        },
+      ];
+      const output = new Generator({ ...testOpts, prefix: "company" }).generate(t);
+      expect(output).toContain("--company-color-primary: midnightblue;");
+    });
+
+    test("custom separator joins segments and the name", () => {
+      const t: Token[] = [{ name: "colorPrimary", type: "color", value: "aliceblue" }];
+      const output = new Generator({
+        ...testOpts,
+        prefix: ["co", "abc"],
+        separator: "_",
+      }).generate(t);
+      expect(output).toContain("--co_abc_color-primary: aliceblue;");
+    });
   });
 
   test("Transition in a mode still resolves references", () => {

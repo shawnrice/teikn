@@ -1,12 +1,12 @@
 import { EOL } from "node:os";
 
-import { version } from "../version";
-import { sortPlugins } from "../Plugins/Plugin";
-import type { Plugin } from "../Plugins";
-import { camelCase, deriveShortName } from "../string-utils";
-import type { ModeValues, Token, TokenValue } from "../Token";
-import { isFirstClassValue } from "../type-classifiers";
-import { matches } from "../utils";
+import { version } from "../version.js";
+import { sortPlugins } from "../Plugins/Plugin.js";
+import type { Plugin } from "../Plugins/index.js";
+import { camelCase, deriveShortName } from "../string-utils.js";
+import type { ModeValues, Token, TokenValue } from "../Token.js";
+import { isFirstClassValue } from "../type-classifiers.js";
+import { matches } from "../utils.js";
 
 export const applyPlugin = (plugin: Plugin, token: Token): Token => {
   const transformed = plugin.transform(token);
@@ -172,7 +172,7 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
         `/// ${this.signature()}`,
         date ? `/// Generated ${date}` : null,
         `///`,
-        `/// This file is generated and should be commited to source control`,
+        `/// This file is generated and should be committed to source control`,
         `///`,
         EOL,
       ]

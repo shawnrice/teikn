@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { camelCase, camelToKebabCase, deriveShortName, kebabCase } from "./string-utils";
+import { camelCase, camelToKebabCase, deriveShortName, kebabCase } from "./string-utils.js";
 
 describe("camelCase", () => {
   test("converts kebab-case", () => {

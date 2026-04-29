@@ -1,6 +1,6 @@
-import type { Color, InternalCreate } from "../Color";
-import type { LAB } from "../types";
-import { percentRange } from "../util";
+import type { Color, InternalCreate } from "../Color.js";
+import type { LAB } from "../types.js";
+import { percentRange } from "../util.js";
 
 export class LABOperations {
   #color: Color;

@@ -1,9 +1,9 @@
 import { describe, expect, test } from "bun:test";
 
-import { Color } from "./TokenTypes/Color";
-import { LinearGradient, RadialGradient } from "./TokenTypes/Gradient";
-import { PalettePlugin } from "./Plugins/PalettePlugin";
-import type { Token } from "./Token";
+import { Color } from "./TokenTypes/Color/index.js";
+import { LinearGradient, RadialGradient } from "./TokenTypes/Gradient.js";
+import { PalettePlugin } from "./Plugins/PalettePlugin.js";
+import type { Token } from "./Token.js";
 
 // ─── PalettePlugin edge cases ────────────────────────────────
 

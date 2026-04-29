@@ -1,7 +1,7 @@
-import type { Token } from "../Token";
-import type { DtcgDocument, DtcgToken } from "./types";
-import type { DtcgRefMap } from "./values";
-import { teiknTypeToDtcg, teiknValueToDtcg } from "./values";
+import type { Token } from "../Token.js";
+import type { DtcgDocument, DtcgToken } from "./types.js";
+import type { DtcgRefMap } from "./values.js";
+import { teiknTypeToDtcg, teiknValueToDtcg } from "./values.js";
 
 export type SerializeOptions = {
   /** Separator used in token names to reconstruct groups. Default: '.' */

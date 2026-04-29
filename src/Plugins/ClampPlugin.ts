@@ -1,6 +1,6 @@
-import type { Token } from "../Token";
-import { Dimension } from "../TokenTypes/Dimension";
-import { Plugin } from "./Plugin";
+import type { Token } from "../Token.js";
+import { Dimension } from "../TokenTypes/Dimension.js";
+import { Plugin } from "./Plugin.js";
 
 type ClampPair = {
   min: string;

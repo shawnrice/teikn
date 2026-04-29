@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test";
 
-import type { Token } from "../Token";
-import { Dimension } from "../TokenTypes/Dimension";
-import { TouchTargetPlugin } from "./TouchTargetPlugin";
+import type { Token } from "../Token.js";
+import { Dimension } from "../TokenTypes/Dimension.js";
+import { TouchTargetPlugin } from "./TouchTargetPlugin.js";
 
 describe("TouchTargetPlugin", () => {
   const makeToken = (name: string, value: unknown, type = "size"): Token => ({

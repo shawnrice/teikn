@@ -1,10 +1,10 @@
-import type { BoxShadow, BoxShadowList } from "./TokenTypes/BoxShadow";
-import type { Color } from "./TokenTypes/Color";
-import type { CubicBezier } from "./TokenTypes/CubicBezier";
-import type { Dimension } from "./TokenTypes/Dimension";
-import type { Duration } from "./TokenTypes/Duration";
-import type { GradientList, LinearGradient, RadialGradient } from "./TokenTypes/Gradient";
-import type { Transition, TransitionList } from "./TokenTypes/Transition";
+import type { BoxShadow, BoxShadowList } from "./TokenTypes/BoxShadow.js";
+import type { Color } from "./TokenTypes/Color/index.js";
+import type { CubicBezier } from "./TokenTypes/CubicBezier.js";
+import type { Dimension } from "./TokenTypes/Dimension.js";
+import type { Duration } from "./TokenTypes/Duration.js";
+import type { GradientList, LinearGradient, RadialGradient } from "./TokenTypes/Gradient.js";
+import type { Transition, TransitionList } from "./TokenTypes/Transition.js";
 
 export type TokenValue =
   | string

@@ -1,10 +1,10 @@
 import { describe, expect, test } from "bun:test";
 
-import { BoxShadow } from "../TokenTypes/BoxShadow";
-import { Color } from "../TokenTypes/Color";
-import { CubicBezier } from "../TokenTypes/CubicBezier";
-import { Duration } from "../TokenTypes/Duration";
-import { Transition } from "../TokenTypes/Transition";
+import { BoxShadow } from "../TokenTypes/BoxShadow.js";
+import { Color } from "../TokenTypes/Color/index.js";
+import { CubicBezier } from "../TokenTypes/CubicBezier.js";
+import { Duration } from "../TokenTypes/Duration.js";
+import { Transition } from "../TokenTypes/Transition.js";
 import {
   maybeQuote,
   stringifyBoxShadowWithRefs,
@@ -12,7 +12,7 @@ import {
   stringifyWithRefs,
   valueDependencies,
   visitComponents,
-} from "./value-serializers";
+} from "./value-serializers.js";
 
 const noRef = () => null;
 

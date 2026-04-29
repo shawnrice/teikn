@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
-import type { Token } from "../Token";
-import { Color } from "../TokenTypes/Color";
-import { ColorBlindnessPlugin } from "./ColorBlindnessPlugin";
+import type { Token } from "../Token.js";
+import { Color } from "../TokenTypes/Color/index.js";
+import { ColorBlindnessPlugin } from "./ColorBlindnessPlugin.js";
 
 const colorToken = (name: string, color: Color, usage?: string): Token => ({
   name,

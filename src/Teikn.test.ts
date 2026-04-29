@@ -1,10 +1,10 @@
 import { describe, expect, test } from "bun:test";
 
-import { group, theme, tokens } from "./builders";
-import { Json } from "./Generators";
-import { Generator } from "./Generators/Generator";
-import { Plugin, PrefixTypePlugin, StripTypePrefixPlugin } from "./Plugins";
-import { Teikn } from "./Teikn";
+import { group, theme, tokens } from "./builders.js";
+import { Json } from "./Generators/index.js";
+import { Generator } from "./Generators/Generator.js";
+import { Plugin, PrefixTypePlugin, StripTypePrefixPlugin } from "./Plugins/index.js";
+import { Teikn } from "./Teikn.js";
 
 const parseOutput = (writer: Teikn, tokenList: any[]) => {
   const output = writer.generateToStrings(tokenList);

@@ -1,7 +1,7 @@
-import type { Token } from "../Token";
-import { Color } from "../TokenTypes/Color";
-import type { AuditIssue } from "./Plugin";
-import { Plugin } from "./Plugin";
+import type { Token } from "../Token.js";
+import { Color } from "../TokenTypes/Color/index.js";
+import type { AuditIssue } from "./Plugin.js";
+import { Plugin } from "./Plugin.js";
 
 type ContrastValidatorPluginOptions = {
   pairs: { foreground: string; background: string; level?: "AA" | "AAA" }[];

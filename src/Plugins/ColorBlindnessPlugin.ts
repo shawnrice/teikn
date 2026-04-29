@@ -1,6 +1,6 @@
-import type { Token } from "../Token";
-import { Color } from "../TokenTypes/Color";
-import { Plugin } from "./Plugin";
+import type { Token } from "../Token.js";
+import { Color } from "../TokenTypes/Color/index.js";
+import { Plugin } from "./Plugin.js";
 
 type ColorBlindnessType = "protanopia" | "deuteranopia" | "tritanopia";
 

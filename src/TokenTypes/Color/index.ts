@@ -1,4 +1,4 @@
-export * from "./Color";
-export * from "./conversions";
-export * from "./namedColors";
-export type { Space as ColorSpace, SpaceData as ColorSpaceData } from "./ColorSpace";
+export * from "./Color.js";
+export * from "./conversions.js";
+export * from "./namedColors.js";
+export type { Space as ColorSpace, SpaceData as ColorSpaceData } from "./ColorSpace.js";

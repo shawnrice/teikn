@@ -1,7 +1,7 @@
-import type { TokenValue } from "../Token";
-import { BoxShadow } from "../TokenTypes/BoxShadow";
-import { Transition } from "../TokenTypes/Transition";
-import { isFirstClassValue } from "../type-classifiers";
+import type { TokenValue } from "../Token.js";
+import { BoxShadow } from "../TokenTypes/BoxShadow.js";
+import { Transition } from "../TokenTypes/Transition.js";
+import { isFirstClassValue } from "../type-classifiers.js";
 
 // ─── CSS/SCSS value serialization ────────────────────────────────
 // Shared by CssVars, Scss, and ScssVars generators.

@@ -1,13 +1,13 @@
 import { describe, expect, test } from "bun:test";
 
-import { BoxShadow } from "../TokenTypes/BoxShadow";
-import { CubicBezier } from "../TokenTypes/CubicBezier";
-import { LinearGradient } from "../TokenTypes/Gradient";
-import { tokenSet1 } from "../fixtures/tokenSet1";
-import type { Token } from "../Token";
-import { JavaScript } from "./JavaScript";
-import { Storybook } from "./Storybook";
-import { TypeScript } from "./TypeScript";
+import { BoxShadow } from "../TokenTypes/BoxShadow.js";
+import { CubicBezier } from "../TokenTypes/CubicBezier.js";
+import { LinearGradient } from "../TokenTypes/Gradient.js";
+import { tokenSet1 } from "../fixtures/tokenSet1.js";
+import type { Token } from "../Token.js";
+import { JavaScript } from "./JavaScript.js";
+import { Storybook } from "./Storybook.js";
+import { TypeScript } from "./TypeScript.js";
 
 const fixedDate = () => "Mon Jan 01 2024 12:00:00";
 

@@ -1,11 +1,11 @@
 import { EOL } from "node:os";
 
-import { kebabCase } from "../string-utils";
-import type { CompositeValue, Token, TokenValue } from "../Token";
-import { Color } from "../TokenTypes/Color";
-import { CubicBezier } from "../TokenTypes/CubicBezier";
-import { GradientList, LinearGradient, RadialGradient } from "../TokenTypes/Gradient";
-import { Transition } from "../TokenTypes/Transition";
+import { kebabCase } from "../string-utils.js";
+import type { CompositeValue, Token, TokenValue } from "../Token.js";
+import { Color } from "../TokenTypes/Color/index.js";
+import { CubicBezier } from "../TokenTypes/CubicBezier.js";
+import { GradientList, LinearGradient, RadialGradient } from "../TokenTypes/Gradient.js";
+import { Transition } from "../TokenTypes/Transition.js";
 import {
   groupTokens,
   isAspectRatioType,
@@ -29,10 +29,10 @@ import {
   isTransitionType,
   isTypographyType,
   isZLayerType,
-} from "../type-classifiers";
-import { getDate } from "../utils";
-import type { GeneratorOptions } from "./Generator";
-import { Generator } from "./Generator";
+} from "../type-classifiers.js";
+import { getDate } from "../utils.js";
+import type { GeneratorOptions } from "./Generator.js";
+import { Generator } from "./Generator.js";
 
 const defaultOptions = {
   ext: "html",

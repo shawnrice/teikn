@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { Color } from "./Color";
+import { Color } from "./Color.js";
 import {
   hexToRGB,
   hexToRGBWithAlpha,
@@ -14,9 +14,9 @@ import {
   RGBToXYZ,
   XYZToLAB,
   XYZToRGB,
-} from "./conversions";
-import { stringToRGBA } from "./stringToRGBA";
-import { round, roundHSL } from "./util";
+} from "./conversions.js";
+import { stringToRGBA } from "./stringToRGBA.js";
+import { round, roundHSL } from "./util.js";
 
 describe("Color tests", () => {
   // ─── Conversion function tests ───────────────────────────

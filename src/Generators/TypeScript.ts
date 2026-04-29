@@ -1,12 +1,12 @@
-import type { Plugin } from "../Plugins";
-import { camelCase } from "../string-utils";
-import type { Token } from "../Token";
-import { getDate } from "../utils";
-import type { GeneratorInfo, GeneratorOptions } from "./Generator";
-import { Generator } from "./Generator";
-import type { JavaScriptModule } from "./JavaScript";
-import { JavaScript } from "./JavaScript";
-import { TypeScriptDeclarations } from "./TypeScriptDeclarations";
+import type { Plugin } from "../Plugins/index.js";
+import { camelCase } from "../string-utils.js";
+import type { Token } from "../Token.js";
+import { getDate } from "../utils.js";
+import type { GeneratorInfo, GeneratorOptions } from "./Generator.js";
+import { Generator } from "./Generator.js";
+import type { JavaScriptModule } from "./JavaScript.js";
+import { JavaScript } from "./JavaScript.js";
+import { TypeScriptDeclarations } from "./TypeScriptDeclarations.js";
 
 export type TypeScriptOpts = {
   dateFn?: () => string | null;

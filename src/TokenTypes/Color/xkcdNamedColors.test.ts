@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { closest } from "./xkcdNamedColors";
+import { closest } from "./xkcdNamedColors.js";
 
 describe("xkcdColors", () => {
   test("closest finds primary blue for #0000ff", () => {

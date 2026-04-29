@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
-import { BoxShadow, BoxShadowList } from "./BoxShadow";
-import { Color } from "./Color";
+import { BoxShadow, BoxShadowList } from "./BoxShadow.js";
+import { Color } from "./Color/index.js";
 
 describe("BoxShadow", () => {
   // ─── Construction ────────────────────────────────────────────

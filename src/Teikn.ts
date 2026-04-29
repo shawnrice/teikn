@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { ensureDirectory } from "./ensure-directory";
+import { ensureDirectory } from "./ensure-directory.js";
 import {
   CssVars,
   DtcgGenerator,
@@ -14,8 +14,8 @@ import {
   Storybook,
   TypeScript,
   TypeScriptDeclarations,
-} from "./Generators";
-import type { AuditIssue } from "./Plugins";
+} from "./Generators/index.js";
+import type { AuditIssue } from "./Plugins/index.js";
 import {
   AlphaMultiplyPlugin,
   ClampPlugin,
@@ -34,12 +34,12 @@ import {
   ScssQuoteValuePlugin,
   StripTypePrefixPlugin,
   TouchTargetPlugin,
-} from "./Plugins";
-import { resolveReferences } from "./resolve";
-import { buildKeyAliasIndex, resolveKey, tokenKey } from "./token-keys";
-import type { ThemeLayer, Token, TokenValue } from "./Token";
-import type { ValidationResult } from "./validate";
-import { validate } from "./validate";
+} from "./Plugins/index.js";
+import { resolveReferences } from "./resolve.js";
+import { buildKeyAliasIndex, resolveKey, tokenKey } from "./token-keys.js";
+import type { ThemeLayer, Token, TokenValue } from "./Token.js";
+import type { ValidationResult } from "./validate.js";
+import { validate } from "./validate.js";
 
 /**
  * Prefix each token's name with its type, joined by a hyphen.

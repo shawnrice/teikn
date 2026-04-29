@@ -1,6 +1,6 @@
-import { camelCase, kebabCase } from "../string-utils";
-import type { ModeValues, Token } from "../Token";
-import { Plugin } from "./Plugin";
+import { camelCase, kebabCase } from "../string-utils.js";
+import type { ModeValues, Token } from "../Token.js";
+import { Plugin } from "./Plugin.js";
 
 type NameConvention = "camelCase" | "kebab-case" | "snake_case" | "PascalCase" | "SCREAMING_SNAKE";
 

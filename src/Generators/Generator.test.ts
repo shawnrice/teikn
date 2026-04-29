@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test";
 
-import { Plugin } from "../Plugins/Plugin";
-import type { Token } from "../Token";
-import { applyPlugin, Generator } from "./Generator";
+import { Plugin } from "../Plugins/Plugin.js";
+import type { Token } from "../Token.js";
+import { applyPlugin, Generator } from "./Generator.js";
 
 describe("Generator base class tests", () => {
   test("It throws when the extension is not set in options", () => {

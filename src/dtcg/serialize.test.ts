@@ -1,14 +1,14 @@
 import { describe, expect, test } from "bun:test";
 
-import type { Token } from "../Token";
-import { BoxShadow } from "../TokenTypes/BoxShadow";
-import { Color } from "../TokenTypes/Color";
-import { CubicBezier } from "../TokenTypes/CubicBezier";
-import { Duration } from "../TokenTypes/Duration";
-import { LinearGradient } from "../TokenTypes/Gradient";
-import { Transition } from "../TokenTypes/Transition";
-import { parseDtcg } from "./parse";
-import { serializeDtcg } from "./serialize";
+import type { Token } from "../Token.js";
+import { BoxShadow } from "../TokenTypes/BoxShadow.js";
+import { Color } from "../TokenTypes/Color/index.js";
+import { CubicBezier } from "../TokenTypes/CubicBezier.js";
+import { Duration } from "../TokenTypes/Duration.js";
+import { LinearGradient } from "../TokenTypes/Gradient.js";
+import { Transition } from "../TokenTypes/Transition.js";
+import { parseDtcg } from "./parse.js";
+import { serializeDtcg } from "./serialize.js";
 
 describe("serializeDtcg", () => {
   test("serializes a simple color token", () => {

@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 
-import type { Token } from "../Token";
-import { DeprecationPlugin } from "./DeprecationPlugin";
+import type { Token } from "../Token.js";
+import { DeprecationPlugin } from "./DeprecationPlugin.js";
 
 describe("DeprecationPlugin", () => {
   const plugin = new DeprecationPlugin({

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { ambiguousKeyMessage, buildKeyAliasIndex, resolveKey, tokenKey } from "./token-keys";
+import { ambiguousKeyMessage, buildKeyAliasIndex, resolveKey, tokenKey } from "./token-keys.js";
 
 describe("tokenKey", () => {
   test("returns qualified key when group is present", () => {

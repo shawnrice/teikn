@@ -1,13 +1,13 @@
 import { describe, expect, test } from "bun:test";
 
-import { composite, dim, dp, dur, group, ref, scale, theme, tokens, onColor } from "./builders";
-import { resolveReferences } from "./resolve";
-import { Teikn } from "./Teikn";
-import type { Token } from "./Token";
-import { Color } from "./TokenTypes/Color";
-import { Dimension } from "./TokenTypes/Dimension";
-import { Duration } from "./TokenTypes/Duration";
-import { validate } from "./validate";
+import { composite, dim, dp, dur, group, ref, scale, theme, tokens, onColor } from "./builders.js";
+import { resolveReferences } from "./resolve.js";
+import { Teikn } from "./Teikn.js";
+import type { Token } from "./Token.js";
+import { Color } from "./TokenTypes/Color/index.js";
+import { Dimension } from "./TokenTypes/Dimension.js";
+import { Duration } from "./TokenTypes/Duration.js";
+import { validate } from "./validate.js";
 
 // ═══════════════════════════════════════════════════════════════
 // validate() errors

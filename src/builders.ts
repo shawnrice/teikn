@@ -1,10 +1,10 @@
-import { Color } from "./TokenTypes/Color";
-import { Dimension, allUnits } from "./TokenTypes/Dimension";
-import type { DimensionUnit } from "./TokenTypes/Dimension";
-import { Duration, durationUnits } from "./TokenTypes/Duration";
-import type { DurationUnit } from "./TokenTypes/Duration";
-import { buildKeyAliasIndex, resolveKey, tokenKey } from "./token-keys";
-import { isFirstClassValue } from "./type-classifiers";
+import { Color } from "./TokenTypes/Color/index.js";
+import { Dimension, allUnits } from "./TokenTypes/Dimension.js";
+import type { DimensionUnit } from "./TokenTypes/Dimension.js";
+import { Duration, durationUnits } from "./TokenTypes/Duration.js";
+import type { DurationUnit } from "./TokenTypes/Duration.js";
+import { buildKeyAliasIndex, resolveKey, tokenKey } from "./token-keys.js";
+import { isFirstClassValue } from "./type-classifiers.js";
 import type {
   CompositeInput,
   CompositeTokenInput,
@@ -14,7 +14,14 @@ import type {
   TokenInput,
   TokenInputObject,
   TokenValue,
-} from "./Token";
+} from "./Token.js";
+
+const arrayKeys = new Set(Object.getOwnPropertyNames(Array.prototype));
+
+// Numeric-string keys (e.g. "0", "1") are valid array indices — defining a
+// property at that key overwrites the array slot, corrupting iteration.
+// Skip the by-name shortcut for these; access the value via .find(...) instead.
+const isArrayIndex = (n: string): boolean => /^\d+$/.test(n) && Number(n) < 2 ** 32 - 1;
 
 const isTokenInputObject = (v: unknown): v is TokenInputObject =>
   typeof v === "object" && v !== null && !Array.isArray(v) && !isFirstClassValue(v) && "value" in v;
@@ -101,12 +108,14 @@ export const group = <E extends Record<string, TokenInput>>(
     group: type,
   }));
 
-  const arrayKeys = new Set(Object.getOwnPropertyNames(Array.prototype));
   for (const token of result) {
     if (arrayKeys.has(token.name)) {
       throw new Error(
         `group(): token name "${token.name}" conflicts with Array.prototype.${token.name}. Rename the token to avoid shadowing built-in array behavior.`,
       );
+    }
+    if (isArrayIndex(token.name)) {
+      continue;
     }
     Object.defineProperty(result, token.name, { value: token.value, enumerable: false });
   }

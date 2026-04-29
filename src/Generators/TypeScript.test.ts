@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test";
 
-import { Plugin } from "../Plugins";
-import type { Token } from "../Token";
-import { TypeScript } from "./TypeScript";
+import { Plugin } from "../Plugins/index.js";
+import type { Token } from "../Token.js";
+import { TypeScript } from "./TypeScript.js";
 
 const fixedDate = () => "Mon Jan 01 2024 12:00:00";
 

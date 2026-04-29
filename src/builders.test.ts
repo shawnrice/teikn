@@ -12,12 +12,12 @@ import {
   scale,
   theme,
   tokens,
-} from "./builders";
-import { Color } from "./TokenTypes/Color";
-import { CubicBezier } from "./TokenTypes/CubicBezier";
-import { Dimension } from "./TokenTypes/Dimension";
-import { Duration } from "./TokenTypes/Duration";
-import { Transition } from "./TokenTypes/Transition";
+} from "./builders.js";
+import { Color } from "./TokenTypes/Color/index.js";
+import { CubicBezier } from "./TokenTypes/CubicBezier.js";
+import { Dimension } from "./TokenTypes/Dimension.js";
+import { Duration } from "./TokenTypes/Duration.js";
+import { Transition } from "./TokenTypes/Transition.js";
 
 describe("builders", () => {
   describe("group", () => {
@@ -176,6 +176,14 @@ describe("builders", () => {
       expect(() => group("size", { length: "100px" })).toThrow("conflicts with Array.prototype");
       expect(() => group("size", { push: "100px" })).toThrow("conflicts with Array.prototype");
       expect(() => group("size", { map: "100px" })).toThrow("conflicts with Array.prototype");
+    });
+
+    test("numeric-string token names do not corrupt the result array", () => {
+      const result = group("zIndex", { "0": 0, "1": 10, "2": 20 });
+      expect(result).toHaveLength(3);
+      expect(result.map((t) => t.name)).toEqual(["0", "1", "2"]);
+      expect(result[0]).toEqual(expect.objectContaining({ name: "0", value: 0, type: "zIndex" }));
+      expect(result[1]).toEqual(expect.objectContaining({ name: "1", value: 10, type: "zIndex" }));
     });
 
     test("named values compose into higher-level types", () => {

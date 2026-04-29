@@ -1,9 +1,9 @@
 import { describe, expect, test } from "bun:test";
 
-import { testOpts } from "../fixtures/testOpts";
-import { tokenSet1 } from "../fixtures/tokenSet1";
-import type { Token } from "../Token";
-import { TypeScriptDeclarations as Generator } from "./TypeScriptDeclarations";
+import { testOpts } from "../fixtures/testOpts.js";
+import { tokenSet1 } from "../fixtures/tokenSet1.js";
+import type { Token } from "../Token.js";
+import { TypeScriptDeclarations as Generator } from "./TypeScriptDeclarations.js";
 
 const fixedDate = () => "Mon Jan 01 2024 12:00:00";
 

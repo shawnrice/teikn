@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test";
 
-import type { Token } from "../Token";
-import { Dimension } from "../TokenTypes/Dimension";
-import { RemUnitPlugin } from "./RemUnitPlugin";
+import type { Token } from "../Token.js";
+import { Dimension } from "../TokenTypes/Dimension.js";
+import { RemUnitPlugin } from "./RemUnitPlugin.js";
 
 describe("RemUnitPlugin", () => {
   const plugin = new RemUnitPlugin();

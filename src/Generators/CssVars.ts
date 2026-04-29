@@ -1,11 +1,13 @@
 import { EOL } from "node:os";
 
-import { kebabCase } from "../string-utils";
-import type { Token, TokenValue } from "../Token";
-import { getDate } from "../utils";
-import type { GeneratorInfo, GeneratorOptions } from "./Generator";
-import { Generator } from "./Generator";
-import { cssValue, stringifyWithRefs } from "./value-serializers";
+import { kebabCase } from "../string-utils.js";
+import type { Token, TokenValue } from "../Token.js";
+import { getDate } from "../utils.js";
+import type { GeneratorInfo, GeneratorOptions } from "./Generator.js";
+import { Generator } from "./Generator.js";
+import type { PrefixOptions } from "./prefix-utils.js";
+import { composeSymbol } from "./prefix-utils.js";
+import { cssValue, stringifyWithRefs } from "./value-serializers.js";
 
 const defaultOptions = {
   ext: "css",
@@ -20,7 +22,8 @@ export type CssVarsOpts = {
   dateFn?: () => string | null;
   useMediaQuery?: boolean;
   modeSelectors?: Record<string, ModeSelector>;
-} & GeneratorOptions;
+} & GeneratorOptions &
+  PrefixOptions;
 
 const parseModeSelector = (
   raw: ModeSelector | undefined,
@@ -56,8 +59,12 @@ export class CssVars extends Generator<CssVarsOpts> {
     if (!name) {
       return null;
     }
+    return `var(--${this.#emit(name)})`;
+  }
+
+  #emit(name: string): string {
     const { nameTransformer } = this.options;
-    return `var(--${nameTransformer!(name)})`;
+    return composeSymbol(name, nameTransformer!, this.options);
   }
 
   protected override stringifyTokenValue(value: TokenValue): string {
@@ -81,8 +88,7 @@ export class CssVars extends Generator<CssVarsOpts> {
   }
 
   override tokenUsage(token: Token): string | null {
-    const { nameTransformer } = this.options;
-    return `var(--${nameTransformer!(token.name)})`;
+    return `var(--${this.#emit(token.name)})`;
   }
 
   override header(): string {
@@ -90,9 +96,8 @@ export class CssVars extends Generator<CssVarsOpts> {
   }
 
   generateToken(token: Token): string {
-    const { nameTransformer } = this.options;
     const { usage, value } = token;
-    const key = `--${nameTransformer!(token.name)}`;
+    const key = `--${this.#emit(token.name)}`;
 
     return [usage && `  /* ${usage} */`, `  ${key}: ${cssValue(value)};`].filter(Boolean).join(EOL);
   }
@@ -100,7 +105,9 @@ export class CssVars extends Generator<CssVarsOpts> {
   combinator(tokens: Token[]): string {
     const rootVars = tokens.map((token) => this.generateToken(token));
 
-    const modeMap = this.buildModeMap(tokens, (key, val) => `  --${key}: ${cssValue(val)};`);
+    const modeMap = this.buildModeMap(tokens, (_key, val, _mode, token) => {
+      return `  --${this.#emit(token.name)}: ${cssValue(val)};`;
+    });
 
     const blocks = [`:root {`, rootVars.join(EOL), `}`];
 

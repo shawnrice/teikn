@@ -1,12 +1,12 @@
 import { EOL } from "node:os";
 
-import { camelCase, deriveShortName } from "../string-utils";
-import type { Token } from "../Token";
-import { isFirstClassValue } from "../type-classifiers";
-import { getDate } from "../utils";
-import type { GeneratorInfo, GeneratorOptions } from "./Generator";
-import { Generator } from "./Generator";
-import { quoteKey } from "./value-serializers";
+import { camelCase, deriveShortName } from "../string-utils.js";
+import type { Token } from "../Token.js";
+import { isFirstClassValue } from "../type-classifiers.js";
+import { getDate } from "../utils.js";
+import type { GeneratorInfo, GeneratorOptions } from "./Generator.js";
+import { Generator } from "./Generator.js";
+import { quoteKey } from "./value-serializers.js";
 
 /**
  * Produce a TypeScript type annotation for a token value. Narrow by
@@ -72,11 +72,11 @@ export class TypeScriptDeclarations extends Generator<TypeScriptDeclarationsOpts
   override describe(): GeneratorInfo {
     const base = this.options.filename ?? "tokens";
     const groupUsage = this.options.groups
-      ? `\n\n// Or use typed group accessors\nimport { color } from './${base}';\ncolor('primary') // compile-time checked`
+      ? `\n\n// Or use typed group accessors\nimport { color } from './${base}.js';\ncolor('primary') // compile-time checked`
       : "";
     return {
       format: "TypeScript Declarations",
-      usage: `import { tokens } from './${base}';\n\n// Pair with JavaScript runtime output, or use the TypeScript meta generator${groupUsage}`,
+      usage: `import { tokens } from './${base}.js';\n\n// Pair with JavaScript runtime output, or use the TypeScript meta generator${groupUsage}`,
     };
   }
 

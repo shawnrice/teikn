@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { CubicBezier } from "./CubicBezier";
+import { CubicBezier } from "./CubicBezier.js";
 
 describe("CubicBezier", () => {
   // ─── Construction ────────────────────────────────────────────

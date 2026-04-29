@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { Duration, convertDuration, durationUnits, isDurationUnit } from "./Duration";
+import { Duration, convertDuration, durationUnits, isDurationUnit } from "./Duration.js";
 
 describe("Duration", () => {
   describe("constructor overloads", () => {

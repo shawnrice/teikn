@@ -1,4 +1,4 @@
-import type { Token } from "./Token";
+import type { Token } from "./Token.js";
 
 export type KeyResolution =
   | { status: "ok"; key: string; bare: string }

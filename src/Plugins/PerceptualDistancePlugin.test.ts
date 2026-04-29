@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test";
 
-import type { Token } from "../Token";
-import { Color } from "../TokenTypes/Color";
-import { PerceptualDistancePlugin } from "./PerceptualDistancePlugin";
+import type { Token } from "../Token.js";
+import { Color } from "../TokenTypes/Color/index.js";
+import { PerceptualDistancePlugin } from "./PerceptualDistancePlugin.js";
 
 describe("PerceptualDistancePlugin", () => {
   const makeToken = (name: string, value: string | Color, group?: string): Token => ({

@@ -1,5 +1,5 @@
-import type { Token } from "../Token";
-import { Plugin } from "./Plugin";
+import type { Token } from "../Token.js";
+import { Plugin } from "./Plugin.js";
 
 type DeprecationPluginOptions = {
   tokens: Record<string, string | true>;

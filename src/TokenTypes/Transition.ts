@@ -1,6 +1,6 @@
-import { splitTopLevel } from "../string-utils";
-import { CubicBezier } from "./CubicBezier";
-import { Duration } from "./Duration";
+import { splitTopLevel } from "../string-utils.js";
+import { CubicBezier } from "./CubicBezier.js";
+import { Duration } from "./Duration.js";
 
 const timeRe = /^(\d+(?:\.\d+)?)(ms|s)$/;
 

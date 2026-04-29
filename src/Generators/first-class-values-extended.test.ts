@@ -1,14 +1,14 @@
 import { describe, expect, test } from "bun:test";
 
-import { BoxShadow } from "../TokenTypes/BoxShadow";
-import { Color } from "../TokenTypes/Color";
-import { Dimension } from "../TokenTypes/Dimension";
-import { Duration } from "../TokenTypes/Duration";
-import type { Token } from "../Token";
-import { Html } from "./Html";
-import { Storybook } from "./Storybook";
-import { DtcgGenerator } from "./Dtcg";
-import { testOpts } from "../fixtures/testOpts";
+import { BoxShadow } from "../TokenTypes/BoxShadow.js";
+import { Color } from "../TokenTypes/Color/index.js";
+import { Dimension } from "../TokenTypes/Dimension.js";
+import { Duration } from "../TokenTypes/Duration.js";
+import type { Token } from "../Token.js";
+import { Html } from "./Html.js";
+import { Storybook } from "./Storybook.js";
+import { DtcgGenerator } from "./Dtcg.js";
+import { testOpts } from "../fixtures/testOpts.js";
 
 // ─── Helpers ─────────────────────────────────────────────────
 

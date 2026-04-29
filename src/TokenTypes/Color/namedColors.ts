@@ -1,6 +1,6 @@
 // cspell:disable
 
-import { flip, type Flip } from "./flip";
+import { flip, type Flip } from "./flip.js";
 
 /**
  * @see https://www.w3schools.com/colors/colors_hex.asp

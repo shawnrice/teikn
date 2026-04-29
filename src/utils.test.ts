@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { getDate, matches, pad0 } from "./utils";
+import { getDate, matches, pad0 } from "./utils.js";
 
 describe("utils tests", () => {
   test("pad0 does nothing with 2 digits", () => {

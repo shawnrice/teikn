@@ -1,9 +1,9 @@
 import { describe, expect, test } from "bun:test";
 
-import { composite, dim, dp, dur, group, ref, scale, theme } from "./builders";
-import { Color } from "./TokenTypes/Color";
-import { Dimension } from "./TokenTypes/Dimension";
-import { Duration } from "./TokenTypes/Duration";
+import { composite, dim, dp, dur, group, ref, scale, theme } from "./builders.js";
+import { Color } from "./TokenTypes/Color/index.js";
+import { Dimension } from "./TokenTypes/Dimension.js";
+import { Duration } from "./TokenTypes/Duration.js";
 
 describe("builders edge cases: first-class value types", () => {
   test("tuple syntax with first-class Dimension value", () => {

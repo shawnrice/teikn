@@ -1,13 +1,13 @@
-import type { Color } from "./Color";
+import type { Color } from "./Color.js";
 /**
  * xkcd colors from the rgb color survey
  *
  * @see https://xkcd.com/color/rgb/
  * @source https://xkcd.com/color/rgb.txt
  */
-import { hexToRGB } from "./conversions";
-import { Octree } from "./Octree";
-import { isHex as isHexColor } from "./util";
+import { hexToRGB } from "./conversions.js";
+import { Octree } from "./Octree.js";
+import { isHex as isHexColor } from "./util.js";
 
 // 'cspell':disable
 

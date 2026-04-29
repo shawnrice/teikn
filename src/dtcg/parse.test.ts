@@ -1,14 +1,14 @@
 import { describe, expect, test } from "bun:test";
 
-import { resolveReferences } from "../resolve";
-import { BoxShadow } from "../TokenTypes/BoxShadow";
-import { Color } from "../TokenTypes/Color";
-import { CubicBezier } from "../TokenTypes/CubicBezier";
-import { Dimension } from "../TokenTypes/Dimension";
-import { Duration } from "../TokenTypes/Duration";
-import { LinearGradient } from "../TokenTypes/Gradient";
-import { parseDtcg } from "./parse";
-import type { DtcgDocument } from "./types";
+import { resolveReferences } from "../resolve.js";
+import { BoxShadow } from "../TokenTypes/BoxShadow.js";
+import { Color } from "../TokenTypes/Color/index.js";
+import { CubicBezier } from "../TokenTypes/CubicBezier.js";
+import { Dimension } from "../TokenTypes/Dimension.js";
+import { Duration } from "../TokenTypes/Duration.js";
+import { LinearGradient } from "../TokenTypes/Gradient.js";
+import { parseDtcg } from "./parse.js";
+import type { DtcgDocument } from "./types.js";
 
 describe("parseDtcg", () => {
   test("parses a simple color token", () => {

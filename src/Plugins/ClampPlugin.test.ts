@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test";
 
-import type { Token } from "../Token";
-import { Dimension } from "../TokenTypes/Dimension";
-import { ClampPlugin } from "./ClampPlugin";
+import type { Token } from "../Token.js";
+import { Dimension } from "../TokenTypes/Dimension.js";
+import { ClampPlugin } from "./ClampPlugin.js";
 
 describe("ClampPlugin", () => {
   const plugin = new ClampPlugin({

@@ -1,8 +1,8 @@
-import type { Token } from "../Token";
-import { CubicBezier } from "../TokenTypes/CubicBezier";
-import { Duration } from "../TokenTypes/Duration";
-import { Transition } from "../TokenTypes/Transition";
-import { Plugin } from "./Plugin";
+import type { Token } from "../Token.js";
+import { CubicBezier } from "../TokenTypes/CubicBezier.js";
+import { Duration } from "../TokenTypes/Duration.js";
+import { Transition } from "../TokenTypes/Transition.js";
+import { Plugin } from "./Plugin.js";
 
 type ReducedMotionPluginOptions = {
   prefix?: string;

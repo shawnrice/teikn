@@ -1,6 +1,6 @@
-import type { Color, InternalCreate } from "../Color";
-import type { HSL } from "../types";
-import { degreeRange, percentRange } from "../util";
+import type { Color, InternalCreate } from "../Color.js";
+import type { HSL } from "../types.js";
+import { degreeRange, percentRange } from "../util.js";
 
 export class HSLOperations {
   #color: Color;

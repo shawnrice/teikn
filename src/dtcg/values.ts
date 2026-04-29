@@ -1,10 +1,10 @@
-import { BoxShadow, BoxShadowList } from "../TokenTypes/BoxShadow";
-import { Color } from "../TokenTypes/Color";
-import { CubicBezier } from "../TokenTypes/CubicBezier";
-import { Dimension } from "../TokenTypes/Dimension";
-import { Duration, isDurationUnit } from "../TokenTypes/Duration";
-import { GradientList, LinearGradient, RadialGradient } from "../TokenTypes/Gradient";
-import { Transition, TransitionList } from "../TokenTypes/Transition";
+import { BoxShadow, BoxShadowList } from "../TokenTypes/BoxShadow.js";
+import { Color } from "../TokenTypes/Color/index.js";
+import { CubicBezier } from "../TokenTypes/CubicBezier.js";
+import { Dimension } from "../TokenTypes/Dimension.js";
+import { Duration, isDurationUnit } from "../TokenTypes/Duration.js";
+import { GradientList, LinearGradient, RadialGradient } from "../TokenTypes/Gradient.js";
+import { Transition, TransitionList } from "../TokenTypes/Transition.js";
 import type {
   DtcgColorValue,
   DtcgCubicBezierValue,
@@ -14,8 +14,8 @@ import type {
   DtcgGradientValue,
   DtcgShadowValue,
   DtcgValue,
-} from "./types";
-import { DtcgTypes } from "./types";
+} from "./types.js";
+import { DtcgTypes } from "./types.js";
 
 // ─── Helpers ─────────────────────────────────────────────────
 

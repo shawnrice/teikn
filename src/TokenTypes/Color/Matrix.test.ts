@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { Matrix } from "./Matrix";
+import { Matrix } from "./Matrix.js";
 
 describe("Matrix", () => {
   test("2x2 dot product", () => {

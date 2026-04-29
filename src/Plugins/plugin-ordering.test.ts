@@ -1,9 +1,9 @@
 import { describe, expect, test } from "bun:test";
 
-import type { Token } from "../Token";
-import { Json } from "../Generators/Json";
-import { AlphaMultiplyPlugin } from "./AlphaMultiplyPlugin";
-import { ColorTransformPlugin } from "./ColorTransformPlugin";
+import type { Token } from "../Token.js";
+import { Json } from "../Generators/Json.js";
+import { AlphaMultiplyPlugin } from "./AlphaMultiplyPlugin.js";
+import { ColorTransformPlugin } from "./ColorTransformPlugin.js";
 
 describe("plugin ordering", () => {
   test("ColorTransformPlugin runs after AlphaMultiplyPlugin regardless of input order", () => {

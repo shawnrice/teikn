@@ -2,8 +2,8 @@
   "compilerOptions": {
     // Output
     "target": "es2023",
-    "module": "es2022",
-    "moduleResolution": "bundler",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
     "lib": ["esnext", "dom"],
     "types": ["node"],
     "jsx": "react-jsx",

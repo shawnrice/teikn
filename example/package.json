@@ -5,11 +5,15 @@
   "description": "Design tokens in one place",
   "license": "MIT",
   "author": "",
+  "type": "module",
   "main": "tokens.js",
   "module": "tokens.esm.js",
   "typings": "tokens.d.ts",
   "scripts": {
-    "generate": "bun example-usage.js",
+    "generate:js": "bun example-usage.js",
+    "generate:ts": "bun example-usage.ts",
+    "generate:node:js": "node example-usage.js",
+    "generate:node:ts": "bun example-usage.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   }
 }

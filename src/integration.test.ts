@@ -1,11 +1,11 @@
 import { describe, expect, test } from "bun:test";
 
-import { group, scale, composite, tokens, theme, dp, dur } from "./builders";
-import { Color } from "./TokenTypes/Color";
-import { BoxShadow } from "./TokenTypes/BoxShadow";
-import { Teikn } from "./Teikn";
-import { validate } from "./validate";
-import { testOpts } from "./fixtures/testOpts";
+import { group, scale, composite, tokens, theme, dp, dur } from "./builders.js";
+import { Color } from "./TokenTypes/Color/index.js";
+import { BoxShadow } from "./TokenTypes/BoxShadow.js";
+import { Teikn } from "./Teikn.js";
+import { validate } from "./validate.js";
+import { testOpts } from "./fixtures/testOpts.js";
 
 // ─── Realistic token set ────────────────────────────────────
 // Modeled on actual consumer usage from the docs.

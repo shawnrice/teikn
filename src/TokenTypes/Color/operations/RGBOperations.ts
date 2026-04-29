@@ -1,5 +1,5 @@
-import type { Color, InternalCreate } from "../Color";
-import type { RGB } from "../types";
+import type { Color, InternalCreate } from "../Color.js";
+import type { RGB } from "../types.js";
 
 export class RGBOperations {
   #color: Color;

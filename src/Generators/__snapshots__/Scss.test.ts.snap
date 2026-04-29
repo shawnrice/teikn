@@ -5,7 +5,7 @@ exports[`Scss Generator tests It generates the token set 1`] = `
 /// Teikn vtest
 /// Generated null
 ///
-/// This file is generated and should be commited to source control
+/// This file is generated and should be committed to source control
 ///
 
 @use "sass:map";
@@ -35,7 +35,7 @@ exports[`Scss Generator tests it generates group maps and functions when groups:
 /// Teikn vtest
 /// Generated null
 ///
-/// This file is generated and should be commited to source control
+/// This file is generated and should be committed to source control
 ///
 
 @use "sass:map";
@@ -85,7 +85,7 @@ exports[`Scss Generator tests it generates groups with PrefixTypePlugin 1`] = `
 /// Teikn vtest
 /// Generated null
 ///
-/// This file is generated and should be commited to source control
+/// This file is generated and should be committed to source control
 ///
 
 @use "sass:map";
@@ -138,7 +138,7 @@ exports[`Scss Generator tests composite values with internal commas produce vali
 /// Teikn vtest
 /// Generated null
 ///
-/// This file is generated and should be commited to source control
+/// This file is generated and should be committed to source control
 ///
 
 @use "sass:map";

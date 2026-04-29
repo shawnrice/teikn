@@ -1,9 +1,9 @@
 import { describe, expect, test } from "bun:test";
 
-import { group, scale, composite, tokens, theme, dp, dur } from "./builders";
-import { Color } from "./TokenTypes/Color";
-import { Teikn } from "./Teikn";
-import { testOpts } from "./fixtures/testOpts";
+import { group, scale, composite, tokens, theme, dp, dur } from "./builders.js";
+import { Color } from "./TokenTypes/Color/index.js";
+import { Teikn } from "./Teikn.js";
+import { testOpts } from "./fixtures/testOpts.js";
 
 // ─── Shared token sets ─────────────────────────────────────
 

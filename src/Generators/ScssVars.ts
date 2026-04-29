@@ -1,10 +1,11 @@
 import { EOL } from "node:os";
 
-import { camelCase, deriveShortName, kebabCase } from "../string-utils";
-import type { Token, TokenValue } from "../Token";
-import type { Generator, GeneratorInfo } from "./Generator";
-import { Scss } from "./Scss";
-import { cssValue, stringifyWithRefs, valueDependencies } from "./value-serializers";
+import { camelCase, deriveShortName, kebabCase } from "../string-utils.js";
+import type { Token, TokenValue } from "../Token.js";
+import type { Generator, GeneratorInfo } from "./Generator.js";
+import { composeSymbol } from "./prefix-utils.js";
+import { Scss } from "./Scss.js";
+import { cssValue, stringifyWithRefs, valueDependencies } from "./value-serializers.js";
 
 const topoSort = (tokens: Token[], refMap: Map<unknown, string>): Token[] => {
   const byName = new Map(tokens.map((t) => [t.name, t]));
@@ -48,7 +49,15 @@ export class ScssVars extends Scss {
 
   #ref(value: unknown): string | null {
     const name = this.#refMap.get(value);
-    return name ? `$${name}` : null;
+    return name ? `$${this.#emit(name)}` : null;
+  }
+
+  // ScssVars (unlike CssVars) does not currently apply nameTransformer to
+  // emitted variable names — `$colorPrimary` stays camelCase. We pass an
+  // identity transform here so the prefix composes with the name as-is and
+  // existing snapshots remain stable.
+  #emit(name: string): string {
+    return composeSymbol(name, (s) => s, this.options);
   }
 
   override prepareTokens(...args: Parameters<Generator["prepareTokens"]>): Token[] {
@@ -85,21 +94,25 @@ export class ScssVars extends Scss {
       const groupKebab = kebabCase(groupName);
       return `${groupKebab}('${kebabCase(shortName)}')`;
     }
-    return `$${token.name}`;
+    return `$${this.#emit(token.name)}`;
   }
 
   override generateToken(token: Token): string {
-    const { usage, name, value } = token;
-    return [usage && `/// ${usage}`, `$${name}: ${cssValue(value)};`].filter(Boolean).join(EOL);
+    const { usage, value } = token;
+    return [usage && `/// ${usage}`, `$${this.#emit(token.name)}: ${cssValue(value)};`]
+      .filter(Boolean)
+      .join(EOL);
   }
 
   override combinator(tokens: Token[]): string {
     const values = tokens.map((token) => this.generateToken(token));
     const lines = [values.join(EOL)];
 
+    const { separator = "-" } = this.options;
     const modeMap = this.buildModeMap(
       tokens,
-      (_key, val, mode, token) => `$${token.name}--${mode}: ${cssValue(val)};`,
+      (_key, val, mode, token) =>
+        `$${this.#emit(token.name)}${separator}${mode}: ${cssValue(val)};`,
     );
 
     for (const [mode, entries] of modeMap) {
@@ -134,7 +147,7 @@ export class ScssVars extends Scss {
       .map(({ groupName, entries }) => {
         const groupKebab = kebabCase(groupName);
         const mapEntries = entries
-          .map(({ shortName, token }) => `  ${kebabCase(shortName)}: $${token.name},`)
+          .map(({ shortName, token }) => `  ${kebabCase(shortName)}: $${this.#emit(token.name)},`)
           .join(EOL);
         return [
           `$${groupKebab}-values: (`,

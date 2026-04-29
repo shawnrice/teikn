@@ -1,5 +1,5 @@
-import type { HSL, LAB, LCH, RGB, XYZ } from "./types";
-import { byteToUnit, pad0, parseInt16, pipe } from "./util";
+import type { HSL, LAB, LCH, RGB, XYZ } from "./types.js";
+import { byteToUnit, pad0, parseInt16, pipe } from "./util.js";
 
 // Color space conversion references:
 // - W3C CSS Color 4 conversions: https://github.com/w3c/csswg-drafts/blob/main/css-color-4/conversions.js

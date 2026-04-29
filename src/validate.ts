@@ -1,8 +1,8 @@
-import type { CompositeValue, Token } from "./Token";
-import { Color } from "./TokenTypes/Color";
-import type { KeyAliasIndex } from "./token-keys";
-import { ambiguousKeyMessage, buildKeyAliasIndex, resolveKey, tokenKey } from "./token-keys";
-import { isFirstClassValue } from "./type-classifiers";
+import type { CompositeValue, Token } from "./Token.js";
+import { Color } from "./TokenTypes/Color/index.js";
+import type { KeyAliasIndex } from "./token-keys.js";
+import { ambiguousKeyMessage, buildKeyAliasIndex, resolveKey, tokenKey } from "./token-keys.js";
+import { isFirstClassValue } from "./type-classifiers.js";
 
 export type ValidationSeverity = "error" | "warning";
 

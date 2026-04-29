@@ -1,4 +1,4 @@
-import type { Token } from "../Token";
+import type { Token } from "../Token.js";
 
 export type AuditIssue = {
   severity: "error" | "warning" | "info";

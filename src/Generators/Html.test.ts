@@ -1,16 +1,16 @@
 import { describe, expect, test } from "bun:test";
 
-import { tokenSet1 } from "../fixtures/tokenSet1";
-import type { Token } from "../Token";
-import { BoxShadow } from "../TokenTypes/BoxShadow";
-import { Color } from "../TokenTypes/Color";
-import { CubicBezier } from "../TokenTypes/CubicBezier";
-import { LinearGradient, RadialGradient } from "../TokenTypes/Gradient";
-import { Transition } from "../TokenTypes/Transition";
-import { CssVars } from "./CssVars";
-import { Html as Generator } from "./Html";
-import { JavaScript } from "./JavaScript";
-import { Scss } from "./Scss";
+import { tokenSet1 } from "../fixtures/tokenSet1.js";
+import type { Token } from "../Token.js";
+import { BoxShadow } from "../TokenTypes/BoxShadow.js";
+import { Color } from "../TokenTypes/Color/index.js";
+import { CubicBezier } from "../TokenTypes/CubicBezier.js";
+import { LinearGradient, RadialGradient } from "../TokenTypes/Gradient.js";
+import { Transition } from "../TokenTypes/Transition.js";
+import { CssVars } from "./CssVars.js";
+import { Html as Generator } from "./Html.js";
+import { JavaScript } from "./JavaScript.js";
+import { Scss } from "./Scss.js";
 
 const fixedDate = () => "Mon Jan 01 2024 12:00:00";
 

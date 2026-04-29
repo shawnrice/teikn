@@ -1,11 +1,11 @@
 import { describe, expect, test } from "bun:test";
-import { Color } from "./TokenTypes/Color";
-import { Dimension } from "./TokenTypes/Dimension";
-import { Teikn } from "./Teikn";
-import { Plugin } from "./Plugins";
-import { composite, dp, dim, dur, group, ref, scale, theme, tokens } from "./builders";
-import { validate } from "./validate";
-import type { Token } from "./Token";
+import { Color } from "./TokenTypes/Color/index.js";
+import { Dimension } from "./TokenTypes/Dimension.js";
+import { Teikn } from "./Teikn.js";
+import { Plugin } from "./Plugins/index.js";
+import { composite, dp, dim, dur, group, ref, scale, theme, tokens } from "./builders.js";
+import { validate } from "./validate.js";
+import type { Token } from "./Token.js";
 
 describe("misuse patterns", () => {
   // ──────────────────────────────────────────────────────────────────

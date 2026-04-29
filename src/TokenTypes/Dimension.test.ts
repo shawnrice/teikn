@@ -14,7 +14,7 @@ import {
   isFontRelativeUnit,
   isViewportUnit,
   viewportUnits,
-} from "./Dimension";
+} from "./Dimension.js";
 
 describe("Dimension", () => {
   describe("constructor overloads", () => {

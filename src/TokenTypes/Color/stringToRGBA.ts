@@ -1,6 +1,6 @@
-import { convert } from "./ColorSpace";
-import { parseColorString } from "./parseColorString";
-import type { RGBA } from "./types";
+import { convert } from "./ColorSpace.js";
+import { parseColorString } from "./parseColorString.js";
+import type { RGBA } from "./types.js";
 
 /**
  * Takes a string and converts it to an RGBA tuple.

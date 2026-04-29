@@ -1,17 +1,17 @@
 import { describe, expect, test } from "bun:test";
 
-import type { Token } from "../Token";
-import { Color } from "../TokenTypes/Color";
-import { CssVars } from "../Generators/CssVars";
-import { Json } from "../Generators/Json";
-import { Scss } from "../Generators/Scss";
-import { ColorTransformPlugin } from "./ColorTransformPlugin";
-import { RemUnitPlugin } from "./RemUnitPlugin";
-import { AlphaMultiplyPlugin } from "./AlphaMultiplyPlugin";
-import { NameConventionPlugin } from "./NameConventionPlugin";
-import { ScssQuoteValuePlugin } from "./ScssQuoteValuePlugin";
-import { DeprecationPlugin } from "./DeprecationPlugin";
-import { testOpts } from "../fixtures/testOpts";
+import type { Token } from "../Token.js";
+import { Color } from "../TokenTypes/Color/index.js";
+import { CssVars } from "../Generators/CssVars.js";
+import { Json } from "../Generators/Json.js";
+import { Scss } from "../Generators/Scss.js";
+import { ColorTransformPlugin } from "./ColorTransformPlugin.js";
+import { RemUnitPlugin } from "./RemUnitPlugin.js";
+import { AlphaMultiplyPlugin } from "./AlphaMultiplyPlugin.js";
+import { NameConventionPlugin } from "./NameConventionPlugin.js";
+import { ScssQuoteValuePlugin } from "./ScssQuoteValuePlugin.js";
+import { DeprecationPlugin } from "./DeprecationPlugin.js";
+import { testOpts } from "../fixtures/testOpts.js";
 
 const opts = testOpts;
 

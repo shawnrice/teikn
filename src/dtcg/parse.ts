@@ -1,6 +1,6 @@
-import type { CompositeValue, ModeValues, Token, TokenValue } from "../Token";
-import type { DtcgDocument, DtcgGroup, DtcgToken } from "./types";
-import { dtcgTypeToTeikn, dtcgValueToTeikn } from "./values";
+import type { CompositeValue, ModeValues, Token, TokenValue } from "../Token.js";
+import type { DtcgDocument, DtcgGroup, DtcgToken } from "./types.js";
+import { dtcgTypeToTeikn, dtcgValueToTeikn } from "./values.js";
 
 export type ParseOptions = {
   /** Separator for flattening group paths into token names. Default: '.' */

@@ -1,7 +1,7 @@
-import { camelCase } from "../string-utils";
-import type { Token } from "../Token";
-import type { GeneratorInfo, GeneratorOptions } from "./Generator";
-import { Generator } from "./Generator";
+import { camelCase } from "../string-utils.js";
+import type { Token } from "../Token.js";
+import type { GeneratorInfo, GeneratorOptions } from "./Generator.js";
+import { Generator } from "./Generator.js";
 
 const defaultOptions = {
   ext: "json",
@@ -21,7 +21,7 @@ export class Json extends Generator<JsonOpts> {
   override describe(): GeneratorInfo {
     return {
       format: "JSON",
-      usage: `// Import as a module\nimport tokens from './${this.file}';\n\n// Or fetch at runtime\nfetch('./${this.file}').then(r => r.json())`,
+      usage: `// Import as a module (Node ESM requires the import attribute)\nimport tokens from './${this.file}' with { type: 'json' };\n\n// Or fetch at runtime\nfetch('./${this.file}').then(r => r.json())`,
     };
   }
 

@@ -1,11 +1,11 @@
 import { describe, expect, test } from "bun:test";
 
-import { AlphaMultiplyPlugin, ColorTransformPlugin } from "../Plugins";
-import type { Token } from "../Token";
-import { Color } from "../TokenTypes/Color";
-import { CubicBezier } from "../TokenTypes/CubicBezier";
-import { Dimension } from "../TokenTypes/Dimension";
-import { DtcgGenerator } from "./Dtcg";
+import { AlphaMultiplyPlugin, ColorTransformPlugin } from "../Plugins/index.js";
+import type { Token } from "../Token.js";
+import { Color } from "../TokenTypes/Color/index.js";
+import { CubicBezier } from "../TokenTypes/CubicBezier.js";
+import { Dimension } from "../TokenTypes/Dimension.js";
+import { DtcgGenerator } from "./Dtcg.js";
 
 const sampleTokens: Token[] = [
   {

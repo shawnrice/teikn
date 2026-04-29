@@ -1,12 +1,13 @@
 import { EOL } from "node:os";
 
-import type { Plugin } from "../Plugins";
-import { camelCase, deriveShortName, kebabCase } from "../string-utils";
-import type { Token } from "../Token";
-import { getDate } from "../utils";
-import type { GeneratorInfo, GeneratorOptions } from "./Generator";
-import { Generator } from "./Generator";
-import { cssMapValue } from "./value-serializers";
+import type { Plugin } from "../Plugins/index.js";
+import { camelCase, deriveShortName, kebabCase } from "../string-utils.js";
+import type { Token } from "../Token.js";
+import { getDate } from "../utils.js";
+import type { GeneratorInfo, GeneratorOptions } from "./Generator.js";
+import { Generator } from "./Generator.js";
+import type { PrefixOptions } from "./prefix-utils.js";
+import { cssMapValue } from "./value-serializers.js";
 
 const defaultOptions = {
   ext: "scss",
@@ -17,7 +18,8 @@ const defaultOptions = {
 export type ScssOpts = {
   nameTransformer?: (name: string) => string;
   dateFn?: () => string | null;
-} & GeneratorOptions;
+} & GeneratorOptions &
+  PrefixOptions;
 
 export class Scss extends Generator<ScssOpts> {
   constructor(options = {}) {

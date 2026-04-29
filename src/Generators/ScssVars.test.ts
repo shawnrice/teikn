@@ -1,16 +1,16 @@
 import { describe, expect, test } from "bun:test";
 
-import { group, tokens } from "../builders";
-import { tokenSet1 } from "../fixtures/tokenSet1";
-import type { Token } from "../Token";
-import { BoxShadow } from "../TokenTypes/BoxShadow";
-import { Color } from "../TokenTypes/Color";
-import { CubicBezier } from "../TokenTypes/CubicBezier";
-import { Duration } from "../TokenTypes/Duration";
-import { Transition } from "../TokenTypes/Transition";
-import { NameConventionPlugin } from "../Plugins/NameConventionPlugin";
-import { ScssVars as Generator } from "./ScssVars";
-import { testOpts } from "../fixtures/testOpts";
+import { group, tokens } from "../builders.js";
+import { tokenSet1 } from "../fixtures/tokenSet1.js";
+import type { Token } from "../Token.js";
+import { BoxShadow } from "../TokenTypes/BoxShadow.js";
+import { Color } from "../TokenTypes/Color/index.js";
+import { CubicBezier } from "../TokenTypes/CubicBezier.js";
+import { Duration } from "../TokenTypes/Duration.js";
+import { Transition } from "../TokenTypes/Transition.js";
+import { NameConventionPlugin } from "../Plugins/NameConventionPlugin.js";
+import { ScssVars as Generator } from "./ScssVars.js";
+import { testOpts } from "../fixtures/testOpts.js";
 
 describe("SCSS Vars Generator tests", () => {
   test("It has the correct filename", () => {
@@ -110,8 +110,8 @@ describe("SCSS Vars Generator tests", () => {
     const output = new Generator(testOpts).generate(testTokens);
 
     expect(output).toContain("// Mode: dark");
-    expect(output).toContain("$colorSurface--dark: #1a1a1a;");
-    expect(output).toContain("$colorText--dark: #e0e0e0;");
+    expect(output).toContain("$colorSurface-dark: #1a1a1a;");
+    expect(output).toContain("$colorText-dark: #e0e0e0;");
   });
 
   test("it does not emit mode variables when no tokens have modes", () => {
@@ -119,7 +119,6 @@ describe("SCSS Vars Generator tests", () => {
     const output = new Generator(testOpts).generate(testTokens);
 
     expect(output).not.toContain("// Mode:");
-    expect(output).not.toContain("--");
   });
 
   test("it handles multiple modes", () => {
@@ -129,9 +128,17 @@ describe("SCSS Vars Generator tests", () => {
     const output = new Generator(testOpts).generate(testTokens);
 
     expect(output).toContain("// Mode: dark");
-    expect(output).toContain("$colorSurface--dark: #111;");
+    expect(output).toContain("$colorSurface-dark: #111;");
     expect(output).toContain("// Mode: dim");
-    expect(output).toContain("$colorSurface--dim: #333;");
+    expect(output).toContain("$colorSurface-dim: #333;");
+  });
+
+  test("mode separator follows the configured separator option", () => {
+    const testTokens: Token[] = [
+      { name: "colorSurface", type: "color", value: "#fff", modes: { dark: "#111" } },
+    ];
+    const output = new Generator({ ...testOpts, separator: "_" }).generate(testTokens);
+    expect(output).toContain("$colorSurface_dark: #111;");
   });
 
   test("topologically sorts tokens so dependencies come first", () => {
@@ -215,5 +222,63 @@ describe("SCSS Vars Generator tests", () => {
     const gen = new Generator(testOpts);
     const output = gen.generate(tokens(colors, shadows));
     expect(output).toContain("$shadow-sm: 0 1px 2px $color-shadow;");
+  });
+
+  describe("prefix option", () => {
+    test("scalar prefix prepends to every variable name", () => {
+      const t: Token[] = [{ name: "color-primary", type: "color", value: "aliceblue" }];
+      const output = new Generator({ ...testOpts, prefix: "company" }).generate(t);
+      expect(output).toContain("$company-color-primary: aliceblue;");
+    });
+
+    test("array prefix stacks segments left-to-right", () => {
+      const t: Token[] = [{ name: "color-primary", type: "color", value: "aliceblue" }];
+      const output = new Generator({ ...testOpts, prefix: ["company", "abc"] }).generate(t);
+      expect(output).toContain("$company-abc-color-primary: aliceblue;");
+    });
+
+    test("references between tokens use the prefixed name", () => {
+      const fast = new Duration(100, "ms");
+      const durations = group("duration", { "duration-fast": fast });
+      const easings = group("timing", { "timing-standard": CubicBezier.standard });
+      const transitions: Token[] = [
+        {
+          name: "transition-fade",
+          type: "transition",
+          value: new Transition(durations["duration-fast"], easings["timing-standard"]),
+        },
+      ];
+      const output = new Generator({ ...testOpts, prefix: "company" }).generate(
+        tokens(durations, easings, transitions),
+      );
+      expect(output).toContain("$company-transition-fade:");
+      expect(output).toContain("$company-duration-fast");
+      expect(output).toContain("$company-timing-standard");
+    });
+
+    test("group accessors look up by short-name and resolve to prefixed variables", () => {
+      const t: Token[] = [
+        { name: "color-primary", type: "color", value: "aliceblue" },
+        { name: "color-secondary", type: "color", value: "rgb(102, 205, 170)" },
+      ];
+      const output = new Generator({ ...testOpts, groups: true, prefix: "company" }).generate(t);
+      expect(output).toContain("$company-color-primary: aliceblue;");
+      // The accessor maps the authored short-name onto the prefixed variable.
+      expect(output).toContain("primary: $company-color-primary");
+      expect(output).toContain("@function color($name)");
+    });
+
+    test("mode variables also pick up the prefix", () => {
+      const t: Token[] = [
+        {
+          name: "color-primary",
+          type: "color",
+          value: "aliceblue",
+          modes: { dark: "midnightblue" },
+        },
+      ];
+      const output = new Generator({ ...testOpts, prefix: "company" }).generate(t);
+      expect(output).toContain("$company-color-primary-dark: midnightblue;");
+    });
   });
 });

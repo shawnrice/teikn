@@ -1,11 +1,11 @@
 import { EOL } from "node:os";
 
-import { camelCase, deriveShortName } from "../string-utils";
-import type { Token } from "../Token";
-import { getDate } from "../utils";
-import type { GeneratorInfo, GeneratorOptions } from "./Generator";
-import { Generator } from "./Generator";
-import { maybeQuote, quoteKey } from "./value-serializers";
+import { camelCase, deriveShortName } from "../string-utils.js";
+import type { Token } from "../Token.js";
+import { getDate } from "../utils.js";
+import type { GeneratorInfo, GeneratorOptions } from "./Generator.js";
+import { Generator } from "./Generator.js";
+import { maybeQuote, quoteKey } from "./value-serializers.js";
 
 export type JavaScriptModule = "esm" | "cjs";
 
