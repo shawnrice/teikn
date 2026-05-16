@@ -338,13 +338,9 @@ describe("generator that emits more files than declared", () => {
     }
 
     const teikn = new Teikn({ generators: [new OverDeliver()], validate: false });
-    const out = teikn.generateToStrings([]);
-    // BUG / DESIGN QUESTION (src/Teikn.ts:296-301): undeclared files leak
-    // through into the output Map. This breaks the duplicate-detection
-    // invariant — a generator could secretly emit "tokens.css" at runtime
-    // and clobber CssVars' output without being caught at construction.
-    expect(out.has("sneaky.txt")).toBe(true);
-    expect(out.get("sneaky.txt")).toBe("undeclared content");
+    expect(() => teikn.generateToStrings([])).toThrow(
+      /OverDeliver.*did not declare.*sneaky\.txt/,
+    );
   });
 
   test("undeclared file can silently clobber another generator's output", () => {
@@ -370,15 +366,15 @@ describe("generator that emits more files than declared", () => {
       }
     }
 
-    // CssVars is registered first; Squatter overwrites it at merge time.
+    // CssVars is registered first; Squatter previously overwrote it at merge
+    // time. The hard contract now catches this at generateToStrings time.
     const teikn = new Teikn({
       generators: [new CssVars({ dateFn: fixedDate }), new Squatter()],
       validate: false,
     });
-    const out = teikn.generateToStrings(tokens);
-    // BUG: the duplicate check at construction missed this because Squatter
-    // only declared "harmless.txt". The merge loop just overwrites.
-    expect(out.get("tokens.css")).toBe("/* CLOBBERED */");
+    expect(() => teikn.generateToStrings(tokens)).toThrow(
+      /Squatter.*did not declare.*tokens\.css/,
+    );
   });
 });
 
@@ -405,12 +401,7 @@ describe("generator that declares more files than it emits", () => {
     }
 
     const teikn = new Teikn({ generators: [new UnderDeliver()], validate: false });
-    const out = teikn.generateToStrings([]);
-    // BUG / DESIGN QUESTION: declared "b.txt" is missing from output but
-    // no error is raised. Downstream consumers expecting that file (e.g.
-    // a Storybook stories file importing it) would fail at runtime.
-    expect(out.has("a.txt")).toBe(true);
-    expect(out.has("b.txt")).toBe(false);
+    expect(() => teikn.generateToStrings([])).toThrow(/UnderDeliver.*declared.*b\.txt/);
   });
 });
 

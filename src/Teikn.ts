@@ -320,7 +320,26 @@ export class Teikn {
 
     const results = new Map<string, string>();
     for (const generator of this.generators) {
-      for (const [filename, content] of generator.generateFiles(named, this.plugins)) {
+      const declared = new Set(generator.filenames());
+      const produced = generator.generateFiles(named, this.plugins);
+      const emitted = new Set(produced.keys());
+
+      const undeclared = [...emitted].filter((k) => !declared.has(k));
+      if (undeclared.length > 0) {
+        throw new Error(
+          `Generator \`${generator.constructor.name}\` emitted file(s) it did not declare in filenames(): ${undeclared.join(", ")}. ` +
+            `This is a bug in the generator's generateFiles() implementation — declared keys and emitted keys must match.`,
+        );
+      }
+      const missing = [...declared].filter((k) => !emitted.has(k));
+      if (missing.length > 0) {
+        throw new Error(
+          `Generator \`${generator.constructor.name}\` declared filename(s) in filenames() but did not emit them from generateFiles(): ${missing.join(", ")}. ` +
+            `This is a bug in the generator's generateFiles() implementation — declared keys and emitted keys must match.`,
+        );
+      }
+
+      for (const [filename, content] of produced) {
         results.set(filename, content);
       }
     }
