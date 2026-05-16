@@ -6,6 +6,7 @@ import { isFirstClassValue } from "../type-classifiers.js";
 import { getDate } from "../utils.js";
 import type { GeneratorInfo, GeneratorOptions } from "./Generator.js";
 import { Generator } from "./Generator.js";
+import type { JavaScriptModule } from "./JavaScript.js";
 import { quoteKey } from "./value-serializers.js";
 
 /**
@@ -57,6 +58,13 @@ export type TypeScriptDeclarationsOpts = {
    * `type TokenColor = typeof tokens[keyof typeof tokens]`.
    */
   loose?: boolean;
+  /**
+   * Pair the declarations file with a specific runtime module format. When
+   * set to `"cjs"`, emit `.d.cts` instead of `.d.ts` so Node's strict
+   * ESM/CJS resolvers (`moduleResolution: "node16" | "bundler"`) pick up
+   * the declarations alongside the `.cjs` runtime file.
+   */
+  module?: JavaScriptModule;
 } & GeneratorOptions;
 
 /**
@@ -66,7 +74,8 @@ export type TypeScriptDeclarationsOpts = {
  */
 export class TypeScriptDeclarations extends Generator<TypeScriptDeclarationsOpts> {
   constructor(options: Partial<TypeScriptDeclarationsOpts> = {}) {
-    super({ ...defaultOptions, ...options });
+    const ext = options.module === "cjs" ? "d.cts" : "d.ts";
+    super({ ...defaultOptions, ...options, ext });
   }
 
   override describe(): GeneratorInfo {

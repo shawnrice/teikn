@@ -111,14 +111,11 @@ describe("TypeScript meta option propagation", () => {
     expect(files).toContain("design.d.ts");
   });
 
-  test("module: 'cjs' emits .cjs for JS; declarations stay .d.ts", () => {
+  test("module: 'cjs' emits .cjs for JS and .d.cts for declarations", () => {
     const ts = new TypeScript({ module: "cjs", filename: "design", dateFn: fixedDate });
     const files = ts.filenames();
     expect(files).toContain("design.cjs");
-    // DESIGN QUESTION: when module=cjs, should declarations be .d.cts so
-    // Node's conditional resolution picks them up under `require`? Current
-    // implementation emits `.d.ts` regardless.
-    expect(files).toContain("design.d.ts");
+    expect(files).toContain("design.d.cts");
   });
 
   test("loose: true affects declarations but not JS", () => {
