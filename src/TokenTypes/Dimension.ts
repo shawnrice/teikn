@@ -1,3 +1,5 @@
+import { assertNotRef } from "./ref-guard.js";
+
 // ─── Unit Types ─────────────────────────────────────────────
 
 export type AbsoluteUnit = "px" | "cm" | "mm" | "in" | "pt" | "pc" | "Q";
@@ -177,6 +179,7 @@ export class Dimension {
     }
 
     if (typeof first === "string") {
+      assertNotRef(first, "Dimension");
       const parsed = parseCss(first);
       this.#value = parsed.value;
       this.#unit = parsed.unit;

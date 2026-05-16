@@ -1,5 +1,6 @@
 import { splitTopLevel } from "../string-utils.js";
 import { Color } from "./Color/index.js";
+import { assertNotRef } from "./ref-guard.js";
 
 // ─── Shared types ─────────────────────────────────────────────
 
@@ -131,6 +132,7 @@ export class LinearGradient {
     }
 
     if (typeof first === "string") {
+      assertNotRef(first, "LinearGradient");
       const m = first.match(linearRe);
       if (!m) {
         throw new Error(`Invalid linear-gradient: "${first}"`);
@@ -253,6 +255,7 @@ export class RadialGradient {
     }
 
     if (typeof first === "string") {
+      assertNotRef(first, "RadialGradient");
       const m = first.match(radialRe);
       if (!m) {
         throw new Error(`Invalid radial-gradient: "${first}"`);
@@ -412,6 +415,7 @@ export class GradientList {
     }
 
     if (typeof first === "string") {
+      assertNotRef(first, "GradientList");
       this.#layers = splitTopLevel(first).map(parseGradient);
       return;
     }

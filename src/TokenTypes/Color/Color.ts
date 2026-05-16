@@ -1,3 +1,4 @@
+import { assertNotRef } from "../ref-guard.js";
 import type { Space, SpaceData } from "./ColorSpace.js";
 import { convertWithIntermediates } from "./ColorSpace.js";
 import { RGBToHex } from "./conversions.js";
@@ -150,6 +151,7 @@ export class Color {
 
     // String constructor
     if (typeof r === "string") {
+      assertNotRef(r, "Color");
       const parsed = parseColorString(r);
       this.#nativeSpace = parsed.space;
       this.#nativeData = parsed.data;

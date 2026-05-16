@@ -109,17 +109,30 @@ describe("reference stress", () => {
     expect(v.color).not.toBe("{accent}");
   });
 
-  // ── Scenario 8: ref inside a first-class wrapper (Transition) ─
-  test("(8) Transition built from a {ref} string in the object form — BUG candidate", () => {
-    // The Transition class doesn't know about refs. When constructed at token
-    // authoring time with `duration: "{motion.fast}"`, parsing fails or the
-    // ref is baked into the wrapper object and never resolved.
-    // resolveReferences treats first-class values as opaque (isFirstClassValue).
-    // So the ref inside survives unresolved.
-    // Actual behavior: Duration constructor throws on `{motion.fast}`.
-    // This effectively means: refs cannot be embedded inside first-class
-    // wrappers. Use plain composite objects if you need ref-substitution.
-    expect(() => new Transition({ duration: "{motion.fast}", timingFunction: "ease" })).toThrow();
+  // ── Scenario 8: ref inside a first-class wrapper ──────────────
+  test("(8) Duration string ref is rejected with a clear message", () => {
+    expect(() => new Duration("{motion.fast}")).toThrow(
+      /Duration cannot be constructed from a reference string/,
+    );
+  });
+
+  test("(8) Transition object with ref string in a field is rejected via Duration", () => {
+    expect(() => new Transition({ duration: "{motion.fast}", timingFunction: "ease" })).toThrow(
+      /Duration cannot be constructed from a reference string/,
+    );
+  });
+
+  test("(8) BoxShadow with a ref-string color is rejected via Color", () => {
+    expect(
+      () =>
+        new BoxShadow({
+          offsetX: 0,
+          offsetY: 2,
+          blur: 8,
+          spread: 0,
+          color: "{accent}",
+        }),
+    ).toThrow(/Color cannot be constructed from a reference string/);
   });
 
   // ── Scenario 9: ref points at a composite value ───────────────

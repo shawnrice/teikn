@@ -1,4 +1,5 @@
 import { clamp } from "../utils.js";
+import { assertNotRef } from "./ref-guard.js";
 
 const EPSILON = 1e-6;
 const MAX_ITERATIONS = 8;
@@ -98,6 +99,7 @@ export class CubicBezier {
     }
 
     if (typeof first === "string") {
+      assertNotRef(first, "CubicBezier");
       const named = presets[first.trim().toLowerCase()];
       if (named) {
         [this.#x1, this.#y1, this.#x2, this.#y2] = named;
