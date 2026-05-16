@@ -8,8 +8,20 @@ import type { ModeValues, Token, TokenValue } from "../Token.js";
 import { isFirstClassValue } from "../type-classifiers.js";
 import { matches } from "../utils.js";
 
+const runTransform = (plugin: Plugin, input: Token, contextTokenName: string): Token => {
+  try {
+    return plugin.transform(input);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    throw new Error(
+      `Plugin \`${plugin.constructor.name}\` threw while processing token \`${contextTokenName}\`: ${msg}`,
+      { cause: e },
+    );
+  }
+};
+
 export const applyPlugin = (plugin: Plugin, token: Token): Token => {
-  const transformed = plugin.transform(token);
+  const transformed = runTransform(plugin, token, token.name);
 
   if (!transformed || typeof transformed !== "object" || !transformed.name || !transformed.type) {
     throw new Error(
@@ -30,7 +42,7 @@ export const applyPlugin = (plugin: Plugin, token: Token): Token => {
   for (const [mode, modeVal] of Object.entries(sourceModes)) {
     const { modes: _, ...rest } = transformed;
     const syntheticToken = { ...rest, value: modeVal };
-    transformedModes[mode] = plugin.transform(syntheticToken).value;
+    transformedModes[mode] = runTransform(plugin, syntheticToken, token.name).value;
   }
 
   return { ...transformed, modes: transformedModes };

@@ -470,11 +470,7 @@ describe("Scenario 12 — empty plugin list", () => {
 // ─── Scenario 13 — plugin transform throws ────────────────────
 
 describe("Scenario 13 — plugin transform throws", () => {
-  test("error from plugin.transform does NOT include the token name in the message", () => {
-    // BUG / design question: applyPlugin in Generator.ts validates the
-    // RESULT of plugin.transform but does not try/catch around the call.
-    // A thrown error propagates raw — the caller has to guess which token
-    // tripped the plugin.
+  test("error from plugin.transform is wrapped with plugin + token context", () => {
     class Bomb extends Plugin {
       tokenType: RegExp = /.*/;
       outputType: RegExp = /.*/;
@@ -496,13 +492,9 @@ describe("Scenario 13 — plugin transform throws", () => {
       err = e as Error;
     }
     expect(err).toBeDefined();
-    // BUG: observed — error message is just "kaboom". Expected: should
-    // mention either the plugin class name ("Bomb") or the token name ("boom")
-    // to be actionable. applyPlugin already wraps malformed RETURN values
-    // with context; it should similarly wrap thrown errors.
-    expect(err!.message).toBe("kaboom");
-    // The following would be the desired behavior — leaving as documentation:
-    // expect(err!.message).toMatch(/boom|Bomb/);
+    expect(err!.message).toMatch(/Bomb/);
+    expect(err!.message).toMatch(/boom/);
+    expect(err!.message).toMatch(/kaboom/);
   });
 });
 
