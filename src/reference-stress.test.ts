@@ -164,9 +164,7 @@ describe("reference stress", () => {
 
   // ── Scenario 10: dotted token names in groups ─────────────────
   test("(10) dotted token names are rejected at validation time", () => {
-    const tokens: Token[] = [
-      { name: "key.with.dots", group: "g", type: "color", value: "#aaa" },
-    ];
+    const tokens: Token[] = [{ name: "key.with.dots", group: "g", type: "color", value: "#aaa" }];
     const { issues, valid } = validate(tokens);
     expect(valid).toBe(false);
     expect(issues.some((i) => i.severity === "error" && /must not contain/.test(i.message))).toBe(
@@ -175,9 +173,7 @@ describe("reference stress", () => {
   });
 
   test("(10) dotted group is rejected at validation time", () => {
-    const tokens: Token[] = [
-      { name: "primary", group: "g.nested", type: "color", value: "#aaa" },
-    ];
+    const tokens: Token[] = [{ name: "primary", group: "g.nested", type: "color", value: "#aaa" }];
     const { issues, valid } = validate(tokens);
     expect(valid).toBe(false);
     expect(

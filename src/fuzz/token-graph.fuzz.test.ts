@@ -31,7 +31,6 @@ import {
   StripTypePrefixPlugin,
 } from "../Plugins/index.js";
 import { Teikn } from "../Teikn.js";
-import type { TeiknOptions } from "../Teikn.ts";
 import { BoxShadow } from "../TokenTypes/BoxShadow.js";
 import { Color } from "../TokenTypes/Color/index.js";
 import { CubicBezier } from "../TokenTypes/CubicBezier.js";
@@ -292,21 +291,19 @@ describe("token-graph fuzz", () => {
     it(`seed=${seed}: all generators emit non-empty output and are deterministic`, () => {
       const rng = makeRng(seed);
       const toks = buildGraph(rng, { tricky: chance(rng, 0.7) });
-      const plugins = allPlugins(rng);
+      // Build the plugin list from a dedicated rng seeded per-test so both
+      // Teikn instances below share an identical, reproducible plugin set.
+      const buildPlugins = () => allPlugins(makeRng(seed));
 
-      const opts: TeiknOptions = {
+      const t1 = new Teikn({
         generators: buildGenerators(),
-        plugins,
+        plugins: buildPlugins(),
         validate: false,
-      };
-
-      const t1 = new Teikn(opts);
-      // BUG: `_t2` is constructed but determinism check below mistakenly
-      // reuses `t1`. Pinned for follow-up; renaming preserves current behavior.
-      const _t2 = new Teikn({
-        ...opts,
+      });
+      const t2 = new Teikn({
         generators: buildGenerators(),
-        plugins: allPlugins(makeRng(seed)).slice(0, plugins.length),
+        plugins: buildPlugins(),
+        validate: false,
       });
 
       let out1: Map<string, string>;
@@ -349,13 +346,21 @@ describe("token-graph fuzz", () => {
         expect(cssContent.includes(":"), `CSS missing declarations (seed=${seed})`).toBe(true);
       }
 
-      // Determinism: same input + same plugins should produce identical output
-      // (Use the same Teikn instance generators reused on the same input.)
-      const out2 = t1.generateToStrings(toks);
+      // Determinism — same instance, second call (idempotence)
+      const out1b = t1.generateToStrings(toks);
+      for (const [filename, content] of out1) {
+        expect(
+          out1b.get(filename),
+          `non-deterministic on second call (same instance): ${filename} (seed=${seed})`,
+        ).toBe(content);
+      }
+
+      // Determinism — different instance built from the same seed
+      const out2 = t2.generateToStrings(toks);
       for (const [filename, content] of out1) {
         expect(
           out2.get(filename),
-          `non-deterministic on second call: ${filename} (seed=${seed})`,
+          `non-deterministic across instances: ${filename} (seed=${seed})`,
         ).toBe(content);
       }
     });

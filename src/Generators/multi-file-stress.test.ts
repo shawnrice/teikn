@@ -335,9 +335,7 @@ describe("generator that emits more files than declared", () => {
     }
 
     const teikn = new Teikn({ generators: [new OverDeliver()], validate: false });
-    expect(() => teikn.generateToStrings([])).toThrow(
-      /OverDeliver.*did not declare.*sneaky\.txt/,
-    );
+    expect(() => teikn.generateToStrings([])).toThrow(/OverDeliver.*did not declare.*sneaky\.txt/);
   });
 
   test("undeclared file can silently clobber another generator's output", () => {
@@ -369,9 +367,7 @@ describe("generator that emits more files than declared", () => {
       generators: [new CssVars({ dateFn: fixedDate }), new Squatter()],
       validate: false,
     });
-    expect(() => teikn.generateToStrings(tokens)).toThrow(
-      /Squatter.*did not declare.*tokens\.css/,
-    );
+    expect(() => teikn.generateToStrings(tokens)).toThrow(/Squatter.*did not declare.*tokens\.css/);
   });
 });
 
