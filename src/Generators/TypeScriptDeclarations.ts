@@ -107,11 +107,15 @@ export class TypeScriptDeclarations extends Generator<TypeScriptDeclarationsOpts
     const { nameTransformer, loose } = this.options;
     const key = quoteKey(nameTransformer!(token.name));
     const typeAnnotation = toTypeAnnotation(token.value, loose || false);
+    const deprecationTag = token.deprecated
+      ? `   *  @deprecated${token.replacement ? ` use \`${nameTransformer!(token.replacement)}\` instead` : ""}`
+      : null;
 
     return [
       `  /**`,
       token.usage && `   *  ${token.usage}`,
       `   *  Type: ${token.type}`,
+      deprecationTag,
       `   */`,
       `  readonly ${key}: ${typeAnnotation};`,
     ]

@@ -8,6 +8,7 @@ import { Scss } from "../Generators/Scss.js";
 import { ScssVars } from "../Generators/ScssVars.js";
 import { JavaScript } from "../Generators/JavaScript.js";
 import { Json } from "../Generators/Json.js";
+import { TypeScriptDeclarations } from "../Generators/TypeScriptDeclarations.js";
 import { Teikn } from "../Teikn.js";
 import { Plugin, sortPlugins } from "./Plugin.js";
 import { AlphaMultiplyPlugin } from "./AlphaMultiplyPlugin.js";
@@ -559,21 +560,26 @@ describe("Scenario 15 — DeprecationPlugin output across generators", () => {
     expect(j.old.deprecated).toBe(true);
   });
 
-  test("CssVars: deprecation surfaces in a comment or annotation", () => {
+  test("CssVars surfaces deprecation in the var's usage comment", () => {
     const out = new CssVars(opts).generate(tokens, [plugin]);
-    // BUG candidate: CssVars output emits the deprecated token alongside
-    // valid tokens without any comment/marker. Consumers have no way to
-    // know "old" is deprecated from CSS output alone.
     expect(out).toContain("--old");
-    // OBSERVED: CssVars does emit "DEPRECATED" text via usage-derived
-    // comments on the token. Verify it shows up somewhere consumable.
     expect(out.toLowerCase()).toContain("deprecated");
   });
 
-  test("Scss: deprecation surfaces in a comment or annotation", () => {
+  test("Scss surfaces deprecation in the map entry's usage comment", () => {
     const out = new Scss(opts).generate(tokens, [plugin]);
-    // Same behavioral note as CssVars.
     expect(out).toContain("old");
+    expect(out.toLowerCase()).toContain("deprecated");
+  });
+
+  test("JavaScript emits @deprecated JSDoc with replacement name", () => {
+    const out = new JavaScript({ dateFn: () => "FIXED" }).generate(tokens, [plugin]);
+    expect(out).toMatch(/@deprecated use `new` instead[\s\S]*old:/);
+  });
+
+  test("TypeScriptDeclarations emits @deprecated JSDoc with replacement name", () => {
+    const out = new TypeScriptDeclarations({ dateFn: () => "FIXED" }).generate(tokens, [plugin]);
+    expect(out).toMatch(/@deprecated use `new` instead[\s\S]*readonly old/);
   });
 });
 
