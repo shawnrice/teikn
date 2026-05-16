@@ -465,22 +465,22 @@ describe("emitted CJS is loadable by Node's require", () => {
 
 // ─── Scenario 12: Filename with directory separator ───────────────
 describe("filename with directory separator", () => {
-  test("subdir/foo passes through to Map key as-is", () => {
-    const out = new CssVars({ filename: "subdir/tokens", dateFn: fixedDate }).generateFiles(tokens);
-    const keys = [...out.keys()];
-    // DESIGN QUESTION: should the generator reject paths with separators
-    // (filenames are conceptually file *names*) or treat them as relative
-    // paths? Today they pass through, and Teikn.transform() relies on
-    // ensureDirectory at outDir level only — so writing "subdir/tokens.css"
-    // would fail unless the subdir already exists.
-    expect(keys).toEqual(["subdir/tokens.css"]);
+  test("filename containing / is rejected at construction", () => {
+    expect(() => new CssVars({ filename: "subdir/tokens", dateFn: fixedDate })).toThrow(
+      /path separators/,
+    );
   });
 
-  test("filename with .. is not sanitized", () => {
-    const out = new CssVars({ filename: "../escape", dateFn: fixedDate }).generateFiles(tokens);
-    // DESIGN QUESTION: this writes outside outDir on transform(). Likely
-    // a real issue if filenames ever come from untrusted config.
-    expect([...out.keys()]).toEqual(["../escape.css"]);
+  test("filename containing .. is rejected at construction", () => {
+    expect(() => new CssVars({ filename: "../escape", dateFn: fixedDate })).toThrow(
+      /path separators|\.\./,
+    );
+  });
+
+  test("filename containing backslash is rejected at construction", () => {
+    expect(() => new CssVars({ filename: "subdir\\tokens", dateFn: fixedDate })).toThrow(
+      /path separators/,
+    );
   });
 });
 

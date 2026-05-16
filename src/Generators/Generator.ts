@@ -156,6 +156,14 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
       }
     }
 
+    const { filename } = this.options;
+    if (typeof filename === "string" && /[\\/]|(^|\/)\.\.($|\/)/.test(filename)) {
+      errors.push(
+        `Error: filename "${filename}" must not contain path separators (\`/\`, \`\\\`) or \`..\` segments. ` +
+          `Use the \`outDir\` option to control the output directory.`,
+      );
+    }
+
     if (errors.length) {
       throw new Error(errors.join(EOL));
     }
