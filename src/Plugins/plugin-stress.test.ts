@@ -382,11 +382,11 @@ describe("Scenario 9 — ScssQuoteValue × NameConvention", () => {
 
 // ─── Scenario 10 — plugin sees ref string vs resolved value ──
 
-describe("Scenario 10 — plugin transform sees ref string at generator level", () => {
-  // DESIGN QUESTION: when calling Generator.generate() directly (bypassing
-  // Teikn), refs are NOT resolved. ColorTransformPlugin defensively skips
-  // values starting with "{". Other plugins (e.g. RemUnit) may not.
-  test("ColorTransform skips ref string values", () => {
+describe("Scenario 10 — plugins always see resolved values", () => {
+  // `Generator.generate` resolves refs internally before running plugins
+  // (matches Teikn.generateToStrings' contract), so plugins never observe
+  // raw `{ref}` strings regardless of entry point.
+  test("Generator.generate resolves refs before plugins run", () => {
     const tokens: Token[] = [
       { name: "primary", type: "color", value: "#ff0000" },
       { name: "alias", type: "color", value: "{primary}" },
@@ -394,8 +394,8 @@ describe("Scenario 10 — plugin transform sees ref string at generator level", 
     const out = new Json().generate(tokens, [new ColorTransformPlugin({ type: "rgba" })]);
     const j = JSON.parse(out);
     expect(j.primary.value).toContain("rgba(");
-    // alias is left as the raw ref string — plugin defensively skipped it
-    expect(j.alias.value).toBe("{primary}");
+    // alias is also transformed because the ref was resolved first.
+    expect(j.alias.value).toContain("rgba(");
   });
 
   test("Via full Teikn pipeline, refs are resolved before plugin runs", () => {

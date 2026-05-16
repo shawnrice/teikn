@@ -3,6 +3,7 @@ import { EOL } from "node:os";
 import { version } from "../version.js";
 import { sortPlugins } from "../Plugins/Plugin.js";
 import type { Plugin } from "../Plugins/index.js";
+import { resolveReferences } from "../resolve.js";
 import { camelCase, deriveShortName } from "../string-utils.js";
 import type { ModeValues, Token, TokenValue } from "../Token.js";
 import { isFirstClassValue } from "../type-classifiers.js";
@@ -314,8 +315,19 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
 
   abstract combinator(_: Token[]): string;
 
+  /**
+   * @internal Use {@link Teikn.generateToStrings} (or {@link Teikn.transform})
+   * instead. Calling `generate` directly is supported for testing but is not
+   * part of the stable public API; behavior may change between versions.
+   *
+   * Resolves references defensively so plugins always see materialized values,
+   * regardless of whether the caller pre-resolved.
+   * `resolveReferences` is idempotent on already-resolved tokens, so calling
+   * this from inside `Teikn.generateToStrings` (which also resolves) is safe.
+   */
   generate(tokens: Token[], plugins: Plugin[] = []): string {
-    return [this.header(), this.combinator(this.prepareTokens(tokens, plugins)), this.footer()]
+    const resolved = resolveReferences(tokens);
+    return [this.header(), this.combinator(this.prepareTokens(resolved, plugins)), this.footer()]
       .filter(Boolean)
       .join(EOL)
       .trim();
@@ -334,9 +346,10 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
   }
 
   /**
-   * Produce the full set of generated files keyed by filename. Default
-   * implementation emits a single file at {@link file} with the output of
-   * {@link generate}. Generators that emit multiple files override this.
+   * @internal Use {@link Teikn.generateToStrings} instead. Produces the full
+   * set of generated files keyed by filename. Default impl emits a single
+   * file at {@link file} with the output of {@link generate}. Multi-file
+   * generators (TypeScript meta) override.
    */
   generateFiles(tokens: Token[], plugins: Plugin[] = []): Map<string, string> {
     return new Map([[this.file, this.generate(tokens, plugins)]]);
