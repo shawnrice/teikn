@@ -7,6 +7,7 @@ import { getDate } from "../utils.js";
 import type { GeneratorInfo, GeneratorOptions } from "./Generator.js";
 import { Generator } from "./Generator.js";
 import type { PrefixOptions } from "./prefix-utils.js";
+import { composeSymbol } from "./prefix-utils.js";
 import { cssMapValue } from "./value-serializers.js";
 
 const defaultOptions = {
@@ -38,22 +39,25 @@ export class Scss extends Generator<ScssOpts> {
     };
   }
 
+  #emit(name: string): string {
+    const { nameTransformer } = this.options;
+    return composeSymbol(name, nameTransformer!, this.options);
+  }
+
   override tokenUsage(token: Token): string | null {
-    const { nameTransformer, groups } = this.options;
+    const { groups } = this.options;
     if (groups) {
       const shortName = deriveShortName(token.name, token.type);
       const groupName = camelCase(token.type);
       const groupKebab = kebabCase(groupName);
       return `${groupKebab}('${kebabCase(shortName)}')`;
     }
-    return `get-token('${nameTransformer!(token.name)}')`;
+    return `get-token('${this.#emit(token.name)}')`;
   }
 
   generateToken(token: Token): string {
-    const { nameTransformer } = this.options;
-
     const { usage, value } = token;
-    const key = nameTransformer!(token.name);
+    const key = this.#emit(token.name);
 
     // prettier-ignore
     return [
@@ -107,7 +111,6 @@ export class Scss extends Generator<ScssOpts> {
       return null;
     }
 
-    const { nameTransformer } = this.options;
     const groups = this.tokenGroups(tokens);
 
     return groups
@@ -116,7 +119,7 @@ export class Scss extends Generator<ScssOpts> {
         const mapEntries = entries
           .map(
             ({ shortName, token }) =>
-              `  ${kebabCase(shortName)}: map.get($token-values, ${nameTransformer!(token.name)}),`,
+              `  ${kebabCase(shortName)}: map.get($token-values, ${this.#emit(token.name)}),`,
           )
           .join(EOL);
         return [

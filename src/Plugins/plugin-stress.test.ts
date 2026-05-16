@@ -527,18 +527,12 @@ describe("Scenario 14 — generator prefix with special characters", () => {
     expect(out).toContain("weird");
   });
 
-  test("Scss prefix with leading digit", () => {
+  test("Scss applies prefix to map keys and get-token usage", () => {
     const tokens: Token[] = [{ name: "primary", type: "color", value: "#ff0000" }];
-    const out = new Scss({ ...opts, prefix: "1bad" } as ConstructorParameters<
+    const out = new Scss({ ...opts, prefix: "myco" } as ConstructorParameters<
       typeof Scss
     >[0]).generate(tokens, [new NameConventionPlugin({ convention: "kebab-case" })]);
-    // BUG: Scss accepts a `prefix` option (declared via PrefixOptions in
-    // ScssOpts), but `Scss.generateToken` / `combinator` never reads it —
-    // see src/Generators/Scss.ts where `composeName` from prefix-utils is
-    // not invoked. Observed: prefix is silently dropped (no "1bad" anywhere).
-    // Expected: either apply the prefix consistently (like CssVars does
-    // for `--prefix-name`) or throw on the unsupported option.
-    expect(out).not.toContain("1bad");
+    expect(out).toContain("myco-primary");
   });
 
   test("ScssVars prefix containing $", () => {
