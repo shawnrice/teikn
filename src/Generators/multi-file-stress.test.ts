@@ -96,13 +96,9 @@ describe("duplicate filenames within a single generator", () => {
       }
     }
 
-    // BUG (suspected, src/Teikn.ts:206-225): the duplicate-filename check
-    // flattens all generators' filenames into one list and reports any
-    // repeat. So an intra-generator dupe IS caught — but the error message
-    // implies cross-generator collision ("Use the `filename` option to
-    // differentiate"), which is misleading when only one generator is at
-    // fault.
-    expect(() => new Teikn({ generators: [new LiarGenerator()] })).toThrow(/Duplicate/);
+    expect(() => new Teikn({ generators: [new LiarGenerator()] })).toThrow(
+      /LiarGenerator.*duplicate output filenames/,
+    );
   });
 });
 
