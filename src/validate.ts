@@ -188,13 +188,33 @@ export const validate = (tokens: Token[]): ValidationResult => {
     if (!token.type) {
       issue("error", label, "Missing required field: type");
     }
+    if (token.name?.includes(".")) {
+      issue(
+        "error",
+        label,
+        `Token name must not contain "." — the dot is reserved as the group/name separator. ` +
+          `Rename the token, or split the path into \`group\` + \`name\`.`,
+      );
+    }
+    if (token.group?.includes(".")) {
+      issue(
+        "error",
+        label,
+        `Token group "${token.group}" must not contain "." — the dot is reserved as the group/name separator.`,
+      );
+    }
 
     if (token.name) {
       const qualifiedName = tokenKey(token);
       const count = (names.get(qualifiedName) ?? 0) + 1;
       names.set(qualifiedName, count);
       if (count === 2) {
-        issue("warning", token.name, "Duplicate token name");
+        issue(
+          "error",
+          token.name,
+          `Duplicate qualified token name "${qualifiedName}" — two tokens resolve to the same key. ` +
+            `The resolver picks one non-deterministically; rename one of the tokens.`,
+        );
       }
       tokenMap.set(qualifiedName, token);
     }

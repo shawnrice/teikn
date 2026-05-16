@@ -150,48 +150,42 @@ describe("reference stress", () => {
   });
 
   // ── Scenario 10: dotted token names in groups ─────────────────
-  test("(10) dotted token name within a group — qualified key is ambiguous", () => {
-    // BUG candidate: tokenKey() joins with "." so `g` + `key.with.dots`
-    // produces `g.key.with.dots`. There is no way to know whether the user
-    // meant group=g, name=key.with.dots OR group=g.key.with, name=dots, etc.
-    // bareKey() picks LAST segment after split(".") — so the bare alias for
-    // `g.key.with.dots` becomes `dots`, not `key.with.dots`.
+  test("(10) dotted token names are rejected at validation time", () => {
     const tokens: Token[] = [
       { name: "key.with.dots", group: "g", type: "color", value: "#aaa" },
-      { name: "ref1", type: "color", value: "{g.key.with.dots}" },
-      { name: "ref2", type: "color", value: "{dots}" },
     ];
-    const out = resolveReferences(tokens);
-    expect(out[1]!.value).toBe("#aaa");
-    // BUG: bare {dots} resolves to the token via last-segment-bare logic,
-    // which is surprising — user likely expected {key.with.dots} bare.
-    expect(out[2]!.value).toBe("#aaa");
+    const { issues, valid } = validate(tokens);
+    expect(valid).toBe(false);
+    expect(issues.some((i) => i.severity === "error" && /must not contain/.test(i.message))).toBe(
+      true,
+    );
+  });
 
-    // BUG: bare-name lookup uses LAST `.`-segment only. A token authored as
-    // `name: "key.with.dots"` is NOT addressable via the bare reference
-    // `{key.with.dots}` (only `{dots}` or fully-qualified `{g.key.with.dots}`).
-    // Likely intentional but surprising; document as an open design question.
+  test("(10) dotted group is rejected at validation time", () => {
+    const tokens: Token[] = [
+      { name: "primary", group: "g.nested", type: "color", value: "#aaa" },
+    ];
+    const { issues, valid } = validate(tokens);
+    expect(valid).toBe(false);
+    expect(
+      issues.some(
+        (i) => i.severity === "error" && /group "g\.nested" must not contain/.test(i.message),
+      ),
+    ).toBe(true);
+  });
 
-    // Collision: group `g` + name `key.with.dots` vs group `g.key.with` + name `dots`
-    // both produce the qualified key `g.key.with.dots`. The validate() pass
-    // catches this via the name-index ("Duplicate token name"), but the
-    // resolver itself silently overwrites the first with the second.
+  test("(10) duplicate qualified token name is a validation error", () => {
     const collide: Token[] = [
-      { name: "key.with.dots", group: "g", type: "color", value: "#aaa" },
-      { name: "dots", group: "g.key.with", type: "color", value: "#bbb" },
+      { name: "primary", group: "color", type: "color", value: "#aaa" },
+      { name: "primary", group: "color", type: "color", value: "#bbb" },
     ];
-    const r = resolveReferences([
-      ...collide,
-      { name: "use", type: "color", value: "{g.key.with.dots}" },
-    ]);
-    // Second token silently wins:
-    expect(r[2]!.value).toBe("#bbb");
-    // validate catches it as a warning (severity warning, not error):
-    const { issues } = validate(collide);
-    expect(issues.some((i) => /Duplicate token name/.test(i.message))).toBe(true);
-    // BUG: this is a *warning*, not an *error*. A real key collision should
-    // probably be an error, since the resolver picks a value non-deterministically
-    // from the user's perspective (order-dependent).
+    const { issues, valid } = validate(collide);
+    expect(valid).toBe(false);
+    expect(
+      issues.some(
+        (i) => i.severity === "error" && /Duplicate qualified token name/.test(i.message),
+      ),
+    ).toBe(true);
   });
 
   // ── Scenario 11: unresolved reference ─────────────────────────
