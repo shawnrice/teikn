@@ -72,20 +72,27 @@ describe("Scenario 1 — cycle in runAfter", () => {
 // ─── Scenario 2: unregistered runAfter target ────────────────
 
 describe("Scenario 2 — runAfter references unregistered plugin", () => {
-  test("missing runAfter targets are silently ignored", () => {
-    // DESIGN QUESTION: is silent skip the right behavior?
-    // A typo in runAfter goes undetected — e.g. "ColroTransformPlugin"
-    // (sic) would not warn, the plugin runs first and bug surfaces
-    // far downstream.
+  test("missing runAfter targets log to stderr and continue", () => {
     class Dependent extends Plugin {
       tokenType: RegExp = /.*/;
       outputType: RegExp = /.*/;
       override readonly runAfter: string[] = ["NotARealPlugin"];
     }
     const d = new Dependent();
-    const result = sortPlugins([d]);
-    expect(result).toEqual([d]);
-    // Observed: no warning, no throw. Document for design decision.
+    const original = console.error;
+    const messages: string[] = [];
+    console.error = (msg: string) => {
+      messages.push(msg);
+    };
+    try {
+      const result = sortPlugins([d]);
+      expect(result).toEqual([d]);
+    } finally {
+      console.error = original;
+    }
+    expect(messages.length).toBe(1);
+    expect(messages[0]).toMatch(/Dependent/);
+    expect(messages[0]).toMatch(/NotARealPlugin/);
   });
 });
 

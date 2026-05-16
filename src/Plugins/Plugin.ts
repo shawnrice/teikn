@@ -67,6 +67,11 @@ export const sortPlugins = (plugins: Plugin[]): Plugin[] => {
       const depPlugin = nameMap.get(dep);
       if (depPlugin) {
         visit(depPlugin);
+      } else {
+        console.error(
+          `Plugin \`${name}\` declares \`runAfter: ["${dep}"]\`, but no plugin named \`${dep}\` is registered. ` +
+            `The ordering hint is being ignored. Check for a typo or remove the entry.`,
+        );
       }
     }
     visiting.delete(name);
