@@ -25,7 +25,6 @@ import {
   isTypographyType,
   isZLayerType,
 } from "../type-classifiers.js";
-import { getDate } from "../utils.js";
 import type { GeneratorInfo, GeneratorOptions } from "./Generator.js";
 import { Generator } from "./Generator.js";
 import { JavaScript } from "./JavaScript.js";
@@ -36,7 +35,6 @@ import { TypeScript } from "./TypeScript.js";
 const defaultOptions = {
   ext: "stories.tsx",
   nameTransformer: camelCase,
-  dateFn: getDate,
   storyTitle: "Design Tokens",
 };
 
@@ -183,16 +181,19 @@ export class Storybook extends Generator<StorybookOpts> {
 
   override header(): string {
     const { dateFn } = this.options;
+    const date = dateFn ? dateFn() : null;
 
     return [
       `/**`,
       ` * ${this.signature()}`,
-      ` * Generated ${dateFn!()}`,
+      date ? ` * Generated ${date}` : null,
       ` *`,
       ` * Storybook stories for design tokens`,
       ` * This file is generated — do not edit manually`,
       ` */`,
-    ].join(EOL);
+    ]
+      .filter(Boolean)
+      .join(EOL);
   }
 
   override footer(): string | null {

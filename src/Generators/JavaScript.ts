@@ -2,7 +2,6 @@ import { EOL } from "node:os";
 
 import { camelCase, deriveShortName } from "../string-utils.js";
 import type { Token } from "../Token.js";
-import { getDate } from "../utils.js";
 import type { GeneratorInfo, GeneratorOptions } from "./Generator.js";
 import { Generator } from "./Generator.js";
 import { maybeQuote, quoteKey } from "./value-serializers.js";
@@ -38,7 +37,6 @@ export class JavaScript extends Generator<JavaScriptOpts> {
     }
     super({
       nameTransformer: camelCase,
-      dateFn: getDate,
       module: moduleKind,
       ext: defaultExt(moduleKind),
       ...options,
