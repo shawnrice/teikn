@@ -30,14 +30,12 @@ import {
   isTypographyType,
   isZLayerType,
 } from "../type-classifiers.js";
-import { getDate } from "../utils.js";
 import type { GeneratorOptions } from "./Generator.js";
 import { Generator } from "./Generator.js";
 
 const defaultOptions = {
   ext: "html",
   nameTransformer: kebabCase,
-  dateFn: getDate,
 };
 
 export type HtmlOpts = {

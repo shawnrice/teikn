@@ -1,7 +1,6 @@
 import type { Plugin } from "../Plugins/index.js";
 import { camelCase } from "../string-utils.js";
 import type { Token } from "../Token.js";
-import { getDate } from "../utils.js";
 import type { GeneratorInfo, GeneratorOptions } from "./Generator.js";
 import { Generator } from "./Generator.js";
 import type { JavaScriptModule } from "./JavaScript.js";
@@ -28,7 +27,6 @@ const defaultOptions = {
   // and `generateFiles()` are overridden to enumerate the real outputs.
   ext: "d.ts",
   nameTransformer: camelCase,
-  dateFn: getDate,
 };
 
 /**

@@ -3,7 +3,6 @@ import { EOL } from "node:os";
 import type { Plugin } from "../Plugins/index.js";
 import { camelCase, deriveShortName, kebabCase } from "../string-utils.js";
 import type { Token } from "../Token.js";
-import { getDate } from "../utils.js";
 import type { GeneratorInfo, GeneratorOptions } from "./Generator.js";
 import { Generator } from "./Generator.js";
 import type { PrefixOptions } from "./prefix-utils.js";
@@ -13,7 +12,6 @@ import { cssMapValue } from "./value-serializers.js";
 const defaultOptions = {
   ext: "scss",
   nameTransformer: kebabCase,
-  dateFn: getDate,
 };
 
 export type ScssOpts = {
