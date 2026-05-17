@@ -35,10 +35,20 @@ fi
 
 echo "$CURRENT → $NEW_VERSION"
 
-# Update all three files
-sed -i '' "s/\"version\": \"$CURRENT\"/\"version\": \"$NEW_VERSION\"/" "$ROOT/package.json"
-sed -i '' "s/\"version\": \"$CURRENT\"/\"version\": \"$NEW_VERSION\"/" "$ROOT/jsr.json"
-sed -i '' "s/export const version = \"$CURRENT\"/export const version = \"$NEW_VERSION\"/" "$ROOT/src/version.ts"
+# Portable in-place edit: BSD sed wants `-i ''`, GNU sed parses that as a
+# missing file. Use a temp file + mv instead — works in both, atomic.
+replace_in_file() {
+  local pattern="$1"
+  local file="$2"
+  local tmp
+  tmp="$(mktemp "${file}.XXXXXX")"
+  sed "$pattern" "$file" > "$tmp"
+  mv "$tmp" "$file"
+}
+
+replace_in_file "s/\"version\": \"$CURRENT\"/\"version\": \"$NEW_VERSION\"/" "$ROOT/package.json"
+replace_in_file "s/\"version\": \"$CURRENT\"/\"version\": \"$NEW_VERSION\"/" "$ROOT/jsr.json"
+replace_in_file "s/export const version = \"$CURRENT\"/export const version = \"$NEW_VERSION\"/" "$ROOT/src/version.ts"
 
 # Verify
 for file in package.json jsr.json src/version.ts; do

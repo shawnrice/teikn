@@ -1,6 +1,7 @@
 import { splitTopLevel } from "../string-utils.js";
 import { CubicBezier } from "./CubicBezier.js";
 import { Duration } from "./Duration.js";
+import { assertNotRef } from "./ref-guard.js";
 
 const timeRe = /^(\d+(?:\.\d+)?)(ms|s)$/;
 
@@ -108,6 +109,7 @@ export class Transition {
     }
 
     if (typeof first === "string" && timingFunction === undefined) {
+      assertNotRef(first, "Transition");
       const parsed = parse(first);
       this.#duration = new Duration(parsed.duration);
       this.#timingFunction = parsed.timingFunction;
@@ -259,6 +261,7 @@ export class TransitionList {
     }
 
     if (typeof first === "string") {
+      assertNotRef(first, "TransitionList");
       this.#layers = splitTopLevel(first).map((s) => new Transition(s));
       return;
     }

@@ -1,5 +1,6 @@
 import { splitTopLevel } from "../string-utils.js";
 import { Color } from "./Color/index.js";
+import { assertNotRef } from "./ref-guard.js";
 
 const lengthRe = /^(-?\d+(?:\.\d+)?)(px|rem|em)?/;
 
@@ -102,6 +103,7 @@ export class BoxShadow {
     }
 
     if (typeof first === "string") {
+      assertNotRef(first, "BoxShadow");
       const parsed = parse(first);
       this.#offsetX = parsed.offsetX;
       this.#offsetY = parsed.offsetY;
@@ -220,6 +222,7 @@ export class BoxShadowList {
     }
 
     if (typeof first === "string") {
+      assertNotRef(first, "BoxShadowList");
       this.#layers = splitTopLevel(first).map((s) => new BoxShadow(s));
       return;
     }

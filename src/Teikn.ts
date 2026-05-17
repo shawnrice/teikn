@@ -203,19 +203,44 @@ export class Teikn {
     this.options = options;
     this.generators = generators ?? [new Teikn.generators.Json()];
 
-    const filenames = this.generators.flatMap((g) => g.filenames());
-    // Compare case-insensitively so pairs like `Tokens.mjs` / `tokens.mjs`
-    // are caught on case-insensitive filesystems (macOS, Windows) where
-    // both writes would target the same underlying file.
+    // Check intra-generator duplicates first — a single generator declaring
+    // the same filename twice is a bug in that generator, not a configuration
+    // problem the user can fix by setting `filename`.
+    for (const g of this.generators) {
+      const own = g.filenames();
+      const seen = new Set<string>();
+      const dupes = new Set<string>();
+      for (const filename of own) {
+        const key = filename.toLowerCase();
+        if (seen.has(key)) {
+          dupes.add(filename);
+        } else {
+          seen.add(key);
+        }
+      }
+      if (dupes.size > 0) {
+        throw new Error(
+          `Generator \`${g.constructor.name}\` declared duplicate output filenames: ${[...dupes].join(", ")}. ` +
+            `This is a bug in the generator's filenames() implementation, not user configuration.`,
+        );
+      }
+    }
+
+    // Then check cross-generator duplicates — those *are* user-fixable via
+    // the `filename` option. Compare case-insensitively so pairs like
+    // `Tokens.mjs` / `tokens.mjs` are caught on case-insensitive filesystems
+    // (macOS, Windows) where both writes would target the same file.
     const seen = new Map<string, string>();
     const dupes: string[] = [];
-    for (const filename of filenames) {
-      const key = filename.toLowerCase();
-      const prior = seen.get(key);
-      if (prior !== undefined) {
-        dupes.push(prior === filename ? filename : `${prior} / ${filename}`);
-      } else {
-        seen.set(key, filename);
+    for (const g of this.generators) {
+      for (const filename of g.filenames()) {
+        const key = filename.toLowerCase();
+        const prior = seen.get(key);
+        if (prior !== undefined) {
+          dupes.push(prior === filename ? filename : `${prior} / ${filename}`);
+        } else {
+          seen.set(key, filename);
+        }
       }
     }
     if (dupes.length > 0) {
@@ -295,7 +320,26 @@ export class Teikn {
 
     const results = new Map<string, string>();
     for (const generator of this.generators) {
-      for (const [filename, content] of generator.generateFiles(named, this.plugins)) {
+      const declared = new Set(generator.filenames());
+      const produced = generator.generateFiles(named, this.plugins);
+      const emitted = new Set(produced.keys());
+
+      const undeclared = [...emitted].filter((k) => !declared.has(k));
+      if (undeclared.length > 0) {
+        throw new Error(
+          `Generator \`${generator.constructor.name}\` emitted file(s) it did not declare in filenames(): ${undeclared.join(", ")}. ` +
+            `This is a bug in the generator's generateFiles() implementation — declared keys and emitted keys must match.`,
+        );
+      }
+      const missing = [...declared].filter((k) => !emitted.has(k));
+      if (missing.length > 0) {
+        throw new Error(
+          `Generator \`${generator.constructor.name}\` declared filename(s) in filenames() but did not emit them from generateFiles(): ${missing.join(", ")}. ` +
+            `This is a bug in the generator's generateFiles() implementation — declared keys and emitted keys must match.`,
+        );
+      }
+
+      for (const [filename, content] of produced) {
         results.set(filename, content);
       }
     }

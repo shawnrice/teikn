@@ -55,9 +55,9 @@ describe("TypeScript meta generator", () => {
     expect(dts).toContain('readonly colorSecondary: "#999999";');
   });
 
-  test("module: 'cjs' switches the runtime file to .cjs + module.exports", () => {
+  test("module: 'cjs' switches the runtime file to .cjs + module.exports and declarations to .d.cts", () => {
     const files = new TypeScript({ dateFn: fixedDate, module: "cjs" }).generateFiles(sampleTokens);
-    expect([...files.keys()].toSorted()).toEqual(["tokens.cjs", "tokens.d.ts"]);
+    expect([...files.keys()].toSorted()).toEqual(["tokens.cjs", "tokens.d.cts"]);
     const cjs = files.get("tokens.cjs")!;
     expect(cjs).toContain("const tokens = {");
     expect(cjs).toContain("module.exports = { tokens: tokens, default: tokens };");

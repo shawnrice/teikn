@@ -1,3 +1,5 @@
+import { assertNotRef } from "./ref-guard.js";
+
 // ─── Unit Type ──────────────────────────────────────────────
 
 export type DurationUnit = "ms" | "s";
@@ -48,6 +50,7 @@ export class Duration {
     }
 
     if (typeof first === "string") {
+      assertNotRef(first, "Duration");
       const parsed = parseCss(first);
       this.#value = parsed.value;
       this.#unit = parsed.unit;

@@ -58,8 +58,10 @@ export class TypeScript extends Generator<TypeScriptOpts> {
 
     super({ ...defaultOptions, ...options });
 
-    // `module` is JavaScript-only, `loose` is TypeScriptDeclarations-only;
-    // strip before forwarding shared opts.
+    // `loose` is TypeScriptDeclarations-only; `module` propagates to both
+    // (JavaScript picks the runtime ext; TypeScriptDeclarations picks
+    // `.d.cts` vs `.d.ts` so Node's strict resolvers find declarations
+    // alongside the runtime).
     const { loose, module: moduleKind, ...shared } = options;
     this.#javascript = new JavaScript({
       ...shared,
@@ -68,6 +70,7 @@ export class TypeScript extends Generator<TypeScriptOpts> {
     this.#declarations = new TypeScriptDeclarations({
       ...shared,
       ...(loose !== undefined && { loose }),
+      ...(moduleKind !== undefined && { module: moduleKind }),
     });
   }
 

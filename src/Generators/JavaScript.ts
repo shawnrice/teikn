@@ -81,11 +81,15 @@ export class JavaScript extends Generator<JavaScriptOpts> {
   generateToken(token: Token): string {
     const { nameTransformer } = this.options;
     const key = quoteKey(nameTransformer!(token.name));
+    const deprecationTag = token.deprecated
+      ? `   *  @deprecated${token.replacement ? ` use \`${nameTransformer!(token.replacement)}\` instead` : ""}`
+      : null;
 
     return [
       `  /**`,
       token.usage && `   *  ${token.usage}`,
       `   *  Type: ${token.type}`,
+      deprecationTag,
       `   */`,
       `  ${key}: ${maybeQuote(token.value)},`,
     ]

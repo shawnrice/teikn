@@ -206,14 +206,14 @@ describe("Teikn", () => {
       ).toThrow("PrefixTypePlugin is no longer needed");
     });
 
-    test("last-write-wins when the same prefixed name appears twice", () => {
+    test("duplicate prefixed names are rejected as a validation error", () => {
       const first = group("color", { primary: "#0066cc" });
       const second = group("color", { primary: "#ff0000" });
 
       const writer = new Teikn({ generators: [new Json()] });
-      const json = parseOutput(writer, tokens(first, second));
-
-      expect(json.colorPrimary.value).toBe("#ff0000");
+      expect(() => writer.generateToStrings(tokens(first, second))).toThrow(
+        /Duplicate qualified token name/,
+      );
     });
 
     test("does not mutate input token names", () => {

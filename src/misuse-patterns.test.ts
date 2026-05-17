@@ -151,31 +151,29 @@ describe("misuse patterns", () => {
   // 7. Duplicate token names
   // ──────────────────────────────────────────────────────────────────
   describe("7. duplicate token names", () => {
-    test("tokens() with duplicate names in separate groups", () => {
+    test("tokens() with duplicate names in separate groups is a validation error", () => {
       const a = group("color", { primary: "#000" });
       const b = group("color", { primary: "#fff" });
       const combined = tokens(a, b);
-      // Both tokens are in the array
       expect(combined.length).toBe(2);
 
       const result = validate(combined);
-      // GOOD: validate warns about duplicate names
-      expect(result.issues.some((i) => i.message.includes("Duplicate token name"))).toBe(true);
+      expect(result.valid).toBe(false);
+      expect(
+        result.issues.some(
+          (i) => i.severity === "error" && /Duplicate qualified token name/.test(i.message),
+        ),
+      ).toBe(true);
     });
 
-    test("generateToStrings with duplicates uses last value", () => {
+    test("generateToStrings with duplicates throws", () => {
       const a = group("color", { primary: "#000000" });
       const b = group("color", { primary: "#ffffff" });
       const combined = tokens(a, b);
       const t = new Teikn({
         generators: [new Teikn.generators.CssVars({ version: "test" })],
       });
-      const result = t.generateToStrings(combined);
-      const css = result.get("tokens.css")!;
-      // FOOTGUN: both tokens end up in the output, second overwrites first in CSS cascade
-      // but both are emitted. No deduplication happens.
-      expect(css).toContain("#000000");
-      expect(css).toContain("#ffffff");
+      expect(() => t.generateToStrings(combined)).toThrow(/Duplicate qualified token name/);
     });
   });
 

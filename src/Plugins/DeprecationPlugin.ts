@@ -27,6 +27,6 @@ export class DeprecationPlugin extends Plugin<DeprecationPluginOptions> {
       deprecated: true,
       ...(replacement ? { replacement } : {}),
       usage,
-    } as Token & { deprecated: boolean; replacement?: string };
+    };
   }
 }

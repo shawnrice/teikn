@@ -32,6 +32,13 @@ export type Token = {
   type: string;
   group?: string;
   modes?: ModeValues;
+  /**
+   * Set by `DeprecationPlugin`. When `true`, the token is deprecated.
+   * When a string, generators may surface it as a deprecation reason.
+   */
+  deprecated?: boolean;
+  /** Set by `DeprecationPlugin` when a replacement token is named. */
+  replacement?: string;
 };
 
 export type TokenInput = TokenValue | [value: TokenValue, usage: string] | TokenInputObject;
