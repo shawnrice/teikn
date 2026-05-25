@@ -1,5 +1,45 @@
 # Changelog
 
+## 2.0.0-beta.2
+
+### Fixed
+
+- **Color alpha precision.** Alpha channel now rounds to 4 decimal places
+  in all color format serializers (rgba, hsla, lab, lch).
+- **Noisy `runAfter` warnings removed.** Missing targets are silently
+  skipped — they're ordering hints, not requirements.
+
+## 2.0.0-beta.1
+
+### Fixed
+
+- **Generated SCSS passes Stylelint.** Blank line before `@return`, dropped
+  `@if` parens, number precision capped at 4, final newline on all files.
+- **Dropped wall-clock date from generated headers.** No more spurious diffs
+  on every CI run. `dateFn` still available as an opt-in.
+
+## 2.0.0-beta.0
+
+### Changed
+
+- **`filenames()` is a hard contract.** Generators that emit or omit files
+  not matching their declaration now throw.
+- **Dot forbidden in token name/group.** Duplicate qualified keys are errors.
+- **Reject `{ref}` strings inside first-class value wrappers.**
+- **Plugin errors include plugin name + token name.**
+- **`sortPlugins` warns on unknown `runAfter` targets.**
+
+### Fixed
+
+- **`Scss` honors its `prefix` option** (was typed but unread).
+- **`.d.cts` declarations emitted for `module: "cjs"`.**
+- **Path separators rejected in `filename`** — was silently writing outside outDir.
+
+### Added
+
+- **`DeprecationPlugin`** shows `@deprecated` JSDoc in JS/TS output.
+- ~170 new tests including a seeded fuzzer over the token graph.
+
 ## 2.0.0-alpha.14
 
 ### Added
