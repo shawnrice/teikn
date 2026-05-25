@@ -38,6 +38,7 @@ export declare const color: (name: 'primary' | 'accent') => string;
 export declare const spacing: (name: 'sm') => string;
 export default tokens;
 
+
 === tokens.mjs ===
 /**
  * Teikn vtest
@@ -76,5 +77,6 @@ export const spacing = (name) => {
   return _spacing[name];
 };
 
-export default tokens;"
+export default tokens;
+"
 `;
