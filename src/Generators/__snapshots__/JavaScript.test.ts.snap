@@ -25,7 +25,8 @@ export const tokens = {
   secondary: 'rgb(102, 205, 170)',
 };
 
-export default tokens;"
+export default tokens;
+"
 `;
 
 exports[`JavaScript generator (ESM default) it generates group accessors when groups: true 1`] = `
@@ -66,5 +67,6 @@ export const spacing = (name) => {
   return _spacing[name];
 };
 
-export default tokens;"
+export default tokens;
+"
 `;

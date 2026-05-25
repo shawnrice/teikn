@@ -96,7 +96,7 @@ describe("Generator multi-file emission contract", () => {
   test("default generateFiles() returns a single-entry map keyed by this.file", () => {
     const files = new SingleFile().generateFiles([]);
     expect([...files.keys()]).toEqual(["tokens.txt"]);
-    expect(files.get("tokens.txt")).toBe("body");
+    expect(files.get("tokens.txt")).toBe("body\n");
   });
 
   test("multi-file generators can report multiple filenames", () => {

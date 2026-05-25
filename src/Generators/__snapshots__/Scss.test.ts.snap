@@ -23,11 +23,13 @@ $token-values: (
 
 /// Use "get-token" to access tokens by name
 @function get-token($name) {
-  @if (not map.has-key($token-values, $name)) {
+  @if not map.has-key($token-values, $name) {
     @error "Token '#{$name}' does not exist.";
   }
+
   @return map.get($token-values, $name);
-}"
+}
+"
 `;
 
 exports[`Scss Generator tests it generates group maps and functions when groups: true 1`] = `
@@ -50,9 +52,10 @@ $token-values: (
 
 /// Use "get-token" to access tokens by name
 @function get-token($name) {
-  @if (not map.has-key($token-values, $name)) {
+  @if not map.has-key($token-values, $name) {
     @error "Token '#{$name}' does not exist.";
   }
+
   @return map.get($token-values, $name);
 }
 
@@ -65,6 +68,7 @@ $color-values: (
   @if not map.has-key($color-values, $name) {
     @error "Unknown color token '#{$name}'. Available: #{map.keys($color-values)}";
   }
+
   @return map.get($color-values, $name);
 }
 
@@ -76,8 +80,10 @@ $spacing-values: (
   @if not map.has-key($spacing-values, $name) {
     @error "Unknown spacing token '#{$name}'. Available: #{map.keys($spacing-values)}";
   }
+
   @return map.get($spacing-values, $name);
-}"
+}
+"
 `;
 
 exports[`Scss Generator tests it generates groups with PrefixTypePlugin 1`] = `
@@ -103,9 +109,10 @@ $token-values: (
 
 /// Use "get-token" to access tokens by name
 @function get-token($name) {
-  @if (not map.has-key($token-values, $name)) {
+  @if not map.has-key($token-values, $name) {
     @error "Token '#{$name}' does not exist.";
   }
+
   @return map.get($token-values, $name);
 }
 
@@ -117,6 +124,7 @@ $font-family-values: (
   @if not map.has-key($font-family-values, $name) {
     @error "Unknown font-family token '#{$name}'. Available: #{map.keys($font-family-values)}";
   }
+
   @return map.get($font-family-values, $name);
 }
 
@@ -129,8 +137,10 @@ $color-values: (
   @if not map.has-key($color-values, $name) {
     @error "Unknown color token '#{$name}'. Available: #{map.keys($color-values)}";
   }
+
   @return map.get($color-values, $name);
-}"
+}
+"
 `;
 
 exports[`Scss Generator tests composite values with internal commas produce valid SCSS map output 1`] = `
@@ -151,9 +161,11 @@ $token-values: (
 
 /// Use "get-token" to access tokens by name
 @function get-token($name) {
-  @if (not map.has-key($token-values, $name)) {
+  @if not map.has-key($token-values, $name) {
     @error "Token '#{$name}' does not exist.";
   }
+
   @return map.get($token-values, $name);
-}"
+}
+"
 `;

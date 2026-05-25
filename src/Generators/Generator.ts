@@ -330,7 +330,7 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
     return [this.header(), this.combinator(this.prepareTokens(resolved, plugins)), this.footer()]
       .filter(Boolean)
       .join(EOL)
-      .trim();
+      .trim() + EOL;
   }
 
   /**
