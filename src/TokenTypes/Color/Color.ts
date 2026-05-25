@@ -47,19 +47,25 @@ const fmtTriplet = (
   alpha?: number,
 ): string => {
   const core = `${round(precision, a)}, ${round(precision, b)}, ${round(precision, c)}`;
-  return alpha !== undefined ? `${name}(${core} / ${round(PRECISION_ALPHA, alpha)})` : `${name}(${core})`;
+  return alpha !== undefined
+    ? `${name}(${core} / ${round(PRECISION_ALPHA, alpha)})`
+    : `${name}(${core})`;
 };
 
 const fmt = {
   rgb: (values: RGB | RGBA): string => {
     const [r, g, b] = values;
     const core = `${r}, ${g}, ${b}`;
-    return values.length === 4 ? `rgba(${core}, ${round(PRECISION_ALPHA, values[3])})` : `rgb(${core})`;
+    return values.length === 4
+      ? `rgba(${core}, ${round(PRECISION_ALPHA, values[3])})`
+      : `rgb(${core})`;
   },
   hsl: (values: HSL | HSLA): string => {
     const [h, s, l] = values;
     const core = `${h}, ${toPercent(s)}, ${toPercent(l)}`;
-    return values.length === 4 ? `hsla(${core}, ${round(PRECISION_ALPHA, values[3])})` : `hsl(${core})`;
+    return values.length === 4
+      ? `hsla(${core}, ${round(PRECISION_ALPHA, values[3])})`
+      : `hsl(${core})`;
   },
   lab: (values: LAB | LABA): string => {
     const [L, a, b] = values;
