@@ -32,6 +32,11 @@ const INTERNAL: unique symbol = Symbol("Color.internal");
 
 export type InternalCreate = (space: Space, data: SpaceData[Space], alpha: number) => Color;
 
+// CSS Color 4 serialization precision per color space
+const PRECISION_ALPHA = 4;
+const PRECISION_LAB = 2;
+const PRECISION_XYZ = 5;
+
 // String formatters — each handles both opaque and alpha variants
 const fmtTriplet = (
   name: string,
@@ -42,37 +47,43 @@ const fmtTriplet = (
   alpha?: number,
 ): string => {
   const core = `${round(precision, a)}, ${round(precision, b)}, ${round(precision, c)}`;
-  return alpha !== undefined ? `${name}(${core} / ${alpha})` : `${name}(${core})`;
+  return alpha !== undefined
+    ? `${name}(${core} / ${round(PRECISION_ALPHA, alpha)})`
+    : `${name}(${core})`;
 };
 
 const fmt = {
   rgb: (values: RGB | RGBA): string => {
     const [r, g, b] = values;
     const core = `${r}, ${g}, ${b}`;
-    return values.length === 4 ? `rgba(${core}, ${values[3]})` : `rgb(${core})`;
+    return values.length === 4
+      ? `rgba(${core}, ${round(PRECISION_ALPHA, values[3])})`
+      : `rgb(${core})`;
   },
   hsl: (values: HSL | HSLA): string => {
     const [h, s, l] = values;
     const core = `${h}, ${toPercent(s)}, ${toPercent(l)}`;
-    return values.length === 4 ? `hsla(${core}, ${values[3]})` : `hsl(${core})`;
+    return values.length === 4
+      ? `hsla(${core}, ${round(PRECISION_ALPHA, values[3])})`
+      : `hsl(${core})`;
   },
   lab: (values: LAB | LABA): string => {
     const [L, a, b] = values;
     return values.length === 4
-      ? fmtTriplet("lab", 2, L, a, b, values[3])
-      : fmtTriplet("lab", 2, L, a, b);
+      ? fmtTriplet("lab", PRECISION_LAB, L, a, b, values[3])
+      : fmtTriplet("lab", PRECISION_LAB, L, a, b);
   },
   lch: (values: LCH | LCHA): string => {
     const [L, c, h] = values;
     return values.length === 4
-      ? fmtTriplet("lch", 2, L, c, h, values[3])
-      : fmtTriplet("lch", 2, L, c, h);
+      ? fmtTriplet("lch", PRECISION_LAB, L, c, h, values[3])
+      : fmtTriplet("lch", PRECISION_LAB, L, c, h);
   },
   xyz: (values: XYZ | XYZA): string => {
     const [x, y, z] = values;
     return values.length === 4
-      ? fmtTriplet("xyz", 5, x, y, z, values[3])
-      : fmtTriplet("xyz", 5, x, y, z);
+      ? fmtTriplet("xyz", PRECISION_XYZ, x, y, z, values[3])
+      : fmtTriplet("xyz", PRECISION_XYZ, x, y, z);
   },
 };
 

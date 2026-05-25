@@ -279,6 +279,13 @@ describe("Color tests", () => {
     expect(new Color(0, 0, 0, 0).setAlpha(0.5).toString()).toBe("rgba(0, 0, 0, 0.5)");
   });
 
+  test("alpha precision is capped at 4 decimal places", () => {
+    expect(new Color(0, 0, 0, 0.8631111111111112).toString("rgba")).toBe("rgba(0, 0, 0, 0.8631)");
+    expect(new Color(0, 0, 0, 0.123456789).toString("rgba")).toBe("rgba(0, 0, 0, 0.1235)");
+    expect(new Color(0, 0, 0, 0.54).toString("rgba")).toBe("rgba(0, 0, 0, 0.54)");
+    expect(new Color(0, 0, 0, 0.333333333).toString("hsla")).toBe("hsla(0, 0%, 0%, 0.3333)");
+  });
+
   // ─── HSL mutation tests ──────────────────────────────────
 
   test("Setting Hue works", () => {
