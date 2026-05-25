@@ -35,7 +35,8 @@ export type TokenNames = {
   Color: 'primary' | 'secondary';
   All: TokenNames['FontFamily'] | TokenNames['Color'];
 };
-export default tokens;"
+export default tokens;
+"
 `;
 
 exports[`TypeScriptDeclarations generator > it generates group type declarations when groups: true 1`] = `
@@ -73,5 +74,6 @@ export type TokenNames = {
 
 export declare const color: (name: 'primary' | 'secondary') => string;
 export declare const spacing: (name: 'sm') => string;
-export default tokens;"
+export default tokens;
+"
 `;

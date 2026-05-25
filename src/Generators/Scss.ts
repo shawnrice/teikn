@@ -96,9 +96,10 @@ export class Scss extends Generator<ScssOpts> {
     return [
       `/// Use "get-token" to access tokens by name`,
       `@function get-token($name) {`,
-      `  @if (not map.has-key($token-values, $name)) {`,
+      `  @if not map.has-key($token-values, $name) {`,
       `    @error "Token '#{$name}' does not exist.";`,
       `  }`,
+      ``,
       `  @return map.get($token-values, $name);`,
       `}`,
     ].join(EOL);
@@ -129,6 +130,7 @@ export class Scss extends Generator<ScssOpts> {
           `  @if not map.has-key($${groupKebab}-values, $name) {`,
           `    @error "Unknown ${groupKebab} token '#{$name}'. Available: #{map.keys($${groupKebab}-values)}";`,
           `  }`,
+          ``,
           `  @return map.get($${groupKebab}-values, $name);`,
           `}`,
         ].join(EOL);
@@ -143,6 +145,6 @@ export class Scss extends Generator<ScssOpts> {
     if (!groupBlocks) {
       return base;
     }
-    return [base, "", groupBlocks].join(EOL).trim();
+    return [base.trimEnd(), "", groupBlocks].join(EOL).trim() + EOL;
   }
 }

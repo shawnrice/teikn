@@ -38,7 +38,8 @@ export const spacing = (name) => {
   return _spacing[name];
 };
 
-export default tokens;"
+export default tokens;
+"
 `;
 
 exports[`JavaScript generator (ESM default) > it generates tokens as an ES module by default 1`] = `
@@ -66,5 +67,6 @@ export const tokens = {
   secondary: 'rgb(102, 205, 170)',
 };
 
-export default tokens;"
+export default tokens;
+"
 `;

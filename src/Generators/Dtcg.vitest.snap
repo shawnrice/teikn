@@ -64,5 +64,6 @@ exports[`DtcgGenerator tests > snapshot test with standard token set 1`] = `
     },
     "$type": "number"
   }
-}"
+}
+"
 `;

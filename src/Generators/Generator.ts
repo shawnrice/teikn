@@ -327,10 +327,12 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
    */
   generate(tokens: Token[], plugins: Plugin[] = []): string {
     const resolved = resolveReferences(tokens);
-    return [this.header(), this.combinator(this.prepareTokens(resolved, plugins)), this.footer()]
-      .filter(Boolean)
-      .join(EOL)
-      .trim();
+    return (
+      [this.header(), this.combinator(this.prepareTokens(resolved, plugins)), this.footer()]
+        .filter(Boolean)
+        .join(EOL)
+        .trim() + EOL
+    );
   }
 
   /**

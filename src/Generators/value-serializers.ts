@@ -6,7 +6,21 @@ import { isFirstClassValue } from "../type-classifiers.js";
 // ─── CSS/SCSS value serialization ────────────────────────────────
 // Shared by CssVars, Scss, and ScssVars generators.
 
+const MAX_PRECISION = 4;
+
+const roundNumber = (n: number): string => {
+  const str = String(n);
+  const dot = str.indexOf(".");
+  if (dot === -1 || str.length - dot - 1 <= MAX_PRECISION) {
+    return str;
+  }
+  return parseFloat(n.toFixed(MAX_PRECISION)).toString();
+};
+
 export const cssValue = (value: unknown): string => {
+  if (typeof value === "number") {
+    return roundNumber(value);
+  }
   if (typeof value !== "object" || value === null) {
     return String(value);
   }

@@ -158,6 +158,7 @@ export class ScssVars extends Scss {
           `  @if not map.has-key($${groupKebab}-values, $name) {`,
           `    @error "Unknown ${groupKebab} token '#{$name}'. Available: #{map.keys($${groupKebab}-values)}";`,
           `  }`,
+          ``,
           `  @return map.get($${groupKebab}-values, $name);`,
           `}`,
         ].join(EOL);

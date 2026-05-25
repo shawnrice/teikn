@@ -17,5 +17,6 @@ exports[`JSONGenerator tests > It generates the token set 1`] = `
     "usage": "the secondary branding color",
     "value": "rgb(102, 205, 170)"
   }
-}"
+}
+"
 `;
