@@ -2,7 +2,6 @@ import { EOL } from "node:os";
 
 import { kebabCase } from "../string-utils.js";
 import type { Token, TokenValue } from "../Token.js";
-import { getDate } from "../utils.js";
 import type { GeneratorInfo, GeneratorOptions } from "./Generator.js";
 import { Generator } from "./Generator.js";
 import type { PrefixOptions } from "./prefix-utils.js";
@@ -12,7 +11,6 @@ import { cssValue, stringifyWithRefs } from "./value-serializers.js";
 const defaultOptions = {
   ext: "css",
   nameTransformer: kebabCase,
-  dateFn: getDate,
 };
 
 export type ModeSelector = string | { atRule: string; selector?: string };

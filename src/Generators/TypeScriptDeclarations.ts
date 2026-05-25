@@ -3,7 +3,6 @@ import { EOL } from "node:os";
 import { camelCase, deriveShortName } from "../string-utils.js";
 import type { Token } from "../Token.js";
 import { isFirstClassValue } from "../type-classifiers.js";
-import { getDate } from "../utils.js";
 import type { GeneratorInfo, GeneratorOptions } from "./Generator.js";
 import { Generator } from "./Generator.js";
 import type { JavaScriptModule } from "./JavaScript.js";
@@ -44,7 +43,6 @@ const toTypeAnnotation = (value: unknown, loose: boolean): string => {
 const defaultOptions = {
   ext: "d.ts",
   nameTransformer: camelCase,
-  dateFn: getDate,
 };
 
 export type TypeScriptDeclarationsOpts = {
