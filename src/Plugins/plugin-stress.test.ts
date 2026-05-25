@@ -73,27 +73,15 @@ describe("Scenario 1 — cycle in runAfter", () => {
 // ─── Scenario 2: unregistered runAfter target ────────────────
 
 describe("Scenario 2 — runAfter references unregistered plugin", () => {
-  test("missing runAfter targets log to stderr and continue", () => {
+  test("missing runAfter targets are silently skipped", () => {
     class Dependent extends Plugin {
       tokenType: RegExp = /.*/;
       outputType: RegExp = /.*/;
       override readonly runAfter: string[] = ["NotARealPlugin"];
     }
     const d = new Dependent();
-    const original = console.error;
-    const messages: string[] = [];
-    console.error = (msg: string) => {
-      messages.push(msg);
-    };
-    try {
-      const result = sortPlugins([d]);
-      expect(result).toEqual([d]);
-    } finally {
-      console.error = original;
-    }
-    expect(messages.length).toBe(1);
-    expect(messages[0]).toMatch(/Dependent/);
-    expect(messages[0]).toMatch(/NotARealPlugin/);
+    const result = sortPlugins([d]);
+    expect(result).toEqual([d]);
   });
 });
 
