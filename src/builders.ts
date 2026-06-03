@@ -13,10 +13,25 @@ import type {
   Token,
   TokenInput,
   TokenInputObject,
+  TypeSpec,
   TokenValue,
 } from "./Token.js";
 
 const arrayKeys = new Set(Object.getOwnPropertyNames(Array.prototype));
+
+/**
+ * A builder's first argument: a bare type string, or a {@link TypeSpec}
+ * object carrying a documentation-only `preview` hint alongside the type.
+ */
+export type TypeArg = string | TypeSpec;
+
+const normalizeTypeArg = (arg: TypeArg): TypeSpec =>
+  typeof arg === "string" ? { type: arg } : arg;
+
+// Attach the optional `preview` hint to a built token. Kept as a helper so
+// the three group builders stamp it identically and only when present.
+const withPreview = <T extends Token>(token: T, preview: TypeSpec["preview"]): T =>
+  preview ? { ...token, preview } : token;
 
 // Numeric-string keys (e.g. "0", "1") are valid array indices — defining a
 // property at that key overwrites the array slot, corrupting iteration.
@@ -78,12 +93,21 @@ const resolveCompositeInput = (name: string, input: CompositeTokenInput): Omit<T
  * - A tuple: `['#0066cc', 'Primary brand color']`
  * - An object: `{ value: '#0066cc', usage: 'Primary brand color', modes: { dark: '#3399ff' } }`
  *
+ * The first argument is normally the type string, but can be an object to
+ * attach a documentation-only `preview` hint — useful when a semantic type
+ * name wouldn't be recognized by the doc generators' inference:
+ *
  * @example
  * ```ts
  * const colors = group('color', {
  *   primary: '#0066cc',
  *   secondary: ['#cc6600', 'Secondary brand color'],
  *   surface: { value: '#ffffff', modes: { dark: '#1a1a1a' } },
+ * });
+ *
+ * // Name the group whatever you like; tell the docs how to picture it:
+ * const elevation = group({ type: 'elevation', preview: 'shadow' }, {
+ *   card: new BoxShadow(0, 1, 2, 0, '#0003'),
  * });
  * ```
  */
@@ -95,18 +119,25 @@ export type TokenGroup<E extends Record<string, TokenInput>> = Token[] & {
 };
 
 export const group = <E extends Record<string, TokenInput>>(
-  type: string,
+  typeArg: TypeArg,
   entries: E,
 ): TokenGroup<E> => {
   if (typeof entries !== "object" || entries === null || Array.isArray(entries)) {
     throw new TypeError(`group(): entries must be a plain object, got ${typeof entries}`);
   }
 
-  const result = Object.entries(entries).map(([name, input]) => ({
-    ...resolveTokenInput(name, input),
-    type,
-    group: type,
-  }));
+  const { type, preview } = normalizeTypeArg(typeArg);
+
+  const result = Object.entries(entries).map(([name, input]) =>
+    withPreview(
+      {
+        ...resolveTokenInput(name, input),
+        type,
+        group: type,
+      },
+      preview,
+    ),
+  );
 
   for (const token of result) {
     if (arrayKeys.has(token.name)) {
@@ -143,13 +174,15 @@ export const group = <E extends Record<string, TokenInput>>(
  * ```
  */
 export const scale = (
-  type: string,
+  typeArg: TypeArg,
   values: Record<string, TokenInput> | number[],
   options?: { names?: string[]; transform?: (n: number) => TokenValue; usage?: string },
 ): Token[] => {
   if (!Array.isArray(values) && (typeof values !== "object" || values === null)) {
     throw new TypeError(`scale(): values must be a plain object or array, got ${typeof values}`);
   }
+
+  const { type, preview } = normalizeTypeArg(typeArg);
 
   if (Array.isArray(values)) {
     const { names, transform = (n: number) => n, usage } = options ?? {};
@@ -161,11 +194,12 @@ export const scale = (
         token.usage = usage;
       }
 
-      return token;
+      return withPreview(token, preview);
     });
   }
 
-  return group(type, values);
+  // Re-pass the original arg so `group` applies the same preview stamping.
+  return group(typeArg, values);
 };
 
 /**
@@ -179,9 +213,16 @@ export const scale = (
  * });
  * ```
  */
-export const composite = (type: string, entries: Record<string, CompositeTokenInput>): Token[] =>
-  Object.entries(entries).map(([name, input]) => {
-    const token = { ...resolveCompositeInput(name, input), type, group: type };
+export const composite = (
+  typeArg: TypeArg,
+  entries: Record<string, CompositeTokenInput>,
+): Token[] => {
+  const { type, preview } = normalizeTypeArg(typeArg);
+  return Object.entries(entries).map(([name, input]) => {
+    const token = withPreview(
+      { ...resolveCompositeInput(name, input), type, group: type },
+      preview,
+    );
     const compositeValue = token.value;
 
     if (
@@ -206,6 +247,7 @@ export const composite = (type: string, entries: Record<string, CompositeTokenIn
 
     return token;
   });
+};
 
 // TODO: consider supporting custom text colors beyond black/white for cases where neither meets WCAG AA
 /**

@@ -18,7 +18,7 @@ const colorKeys = ['primary', 'secondary'] as const;
 const meta = {
   title: "Design Tokens",
   tags: ['autodocs'],
-  parameters: { layout: 'padded' },
+  parameters: { layout: 'fullscreen' },
 } satisfies Meta;
 export default meta;
 type Story = StoryObj<typeof meta>;
