@@ -17,17 +17,17 @@ export declare const tokens: {
    *  Use for body fonts
    *  Type: font-family
    */
-  readonly body: "\\"Roboto Condensed\\", Arial, sans";
+  readonly body: '"Roboto Condensed", Arial, sans';
   /**
    *  the primary branding color
    *  Type: color
    */
-  readonly primary: "aliceblue";
+  readonly primary: 'aliceblue';
   /**
    *  the secondary branding color
    *  Type: color
    */
-  readonly secondary: "rgb(102, 205, 170)";
+  readonly secondary: 'rgb(102, 205, 170)';
 };
 
 export type TokenNames = {
@@ -55,15 +55,15 @@ export declare const tokens: {
   /**
    *  Type: color
    */
-  readonly colorPrimary: "aliceblue";
+  readonly colorPrimary: 'aliceblue';
   /**
    *  Type: color
    */
-  readonly colorSecondary: "rgb(102, 205, 170)";
+  readonly colorSecondary: 'rgb(102, 205, 170)';
   /**
    *  Type: spacing
    */
-  readonly spacingSm: "4px";
+  readonly spacingSm: '4px';
 };
 
 export type TokenNames = {

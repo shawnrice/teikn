@@ -119,7 +119,14 @@ export class JavaScript extends Generator<JavaScriptOpts> {
           mapEntries,
           `};`,
           `${decl} ${groupName} = (name) => {`,
-          `  if (!(name in _${groupName})) throw new Error(\`Unknown ${groupName} token: \${name}\`);`,
+          // `hasOwnProperty.call` (not `name in`) so inherited keys like
+          // "toString"/"constructor" don't sneak past the guard. Spelled out
+          // rather than `Object.hasOwn` (ES2022) because this runs in the
+          // consumer's environment, which may predate it. Braces match the
+          // project's control-flow style and keep the output lint-clean.
+          `  if (!Object.prototype.hasOwnProperty.call(_${groupName}, name)) {`,
+          `    throw new Error(\`Unknown ${groupName} token: \${name}\`);`,
+          `  }`,
           `  return _${groupName}[name];`,
           `};`,
         ].join(EOL);

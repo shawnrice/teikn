@@ -56,14 +56,18 @@ const _color = {
   secondary: tokens.colorSecondary,
 };
 export const color = (name) => {
-  if (!(name in _color)) throw new Error(\`Unknown color token: \${name}\`);
+  if (!Object.prototype.hasOwnProperty.call(_color, name)) {
+    throw new Error(\`Unknown color token: \${name}\`);
+  }
   return _color[name];
 };
 const _spacing = {
   sm: tokens.spacingSm,
 };
 export const spacing = (name) => {
-  if (!(name in _spacing)) throw new Error(\`Unknown spacing token: \${name}\`);
+  if (!Object.prototype.hasOwnProperty.call(_spacing, name)) {
+    throw new Error(\`Unknown spacing token: \${name}\`);
+  }
   return _spacing[name];
 };
 

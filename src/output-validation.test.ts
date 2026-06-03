@@ -584,8 +584,8 @@ describe("output-validation: TypeScriptDeclarations (narrow default)", () => {
   });
 
   test("literal string types instead of widened string", () => {
-    // Narrow default emits `"1rem"`, not `string`, for dimension values
-    expect(ts).toContain('"1rem"');
+    // Narrow default emits `'1rem'`, not `string`, for dimension values
+    expect(ts).toContain("'1rem'");
   });
 
   test("mode type should be Partial<...>", () => {

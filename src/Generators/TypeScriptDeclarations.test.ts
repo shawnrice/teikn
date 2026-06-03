@@ -21,6 +21,23 @@ describe("TypeScriptDeclarations generator", () => {
     expect(new Generator({ ...testOpts, groups: true }).generate(tokens)).toMatchSnapshot();
   });
 
+  test("group accessors widen their return to the primitive type", () => {
+    const tokens: Token[] = [
+      { name: "zIndexModal", type: "z-index", value: 400 },
+      { name: "zIndexToast", type: "z-index", value: 500 },
+      { name: "colorPrimary", type: "color", value: "#0066cc" },
+    ];
+    const out = new Generator({ ...testOpts, groups: true }).generate(tokens);
+    // A numeric group returns `number` — not `string`, not a literal union.
+    expect(out).toContain("export declare const zIndex: (name: 'modal' | 'toast') => number;");
+    expect(out).not.toContain("=> 400");
+    // A string group returns `string`.
+    expect(out).toContain("export declare const color: (name: 'primary') => string;");
+    // The tokens object still carries precise literals for static access.
+    expect(out).toContain("readonly zIndexModal: 400;");
+    expect(out).toContain("readonly colorPrimary: '#0066cc';");
+  });
+
   test("describe includes group accessor usage when groups enabled", () => {
     const info = new Generator({ dateFn: fixedDate, groups: true }).describe();
     expect(info.format).toBe("TypeScript Declarations");
@@ -79,7 +96,7 @@ describe("TypeScriptDeclarations generator", () => {
       nameTransformer: (name: string) => name.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase(),
     }).generate([{ name: "colorPrimary", type: "color", value: "#ffffff" }]);
 
-    expect(output).toContain("'color-primary': \"#ffffff\"");
+    expect(output).toContain("'color-primary': '#ffffff'");
   });
 });
 
@@ -88,7 +105,7 @@ describe("TypeScriptDeclarations: literal types (default)", () => {
 
   test("string values become literal string types", () => {
     const output = gen.generate([{ name: "primary", type: "color", value: "#0066cc" }]);
-    expect(output).toContain('readonly primary: "#0066cc";');
+    expect(output).toContain("readonly primary: '#0066cc';");
   });
 
   test("number values become literal number types", () => {
@@ -120,14 +137,14 @@ describe("TypeScriptDeclarations: literal types (default)", () => {
         value: { fontFamily: "Inter", fontSize: "16px" },
       },
     ]);
-    expect(output).toContain('readonly fontFamily: "Inter"');
-    expect(output).toContain('readonly fontSize: "16px"');
+    expect(output).toContain("readonly fontFamily: 'Inter'");
+    expect(output).toContain("readonly fontSize: '16px'");
   });
 
   test("top-level tokens declaration uses `export declare const` with readonly fields", () => {
     const output = gen.generate([{ name: "primary", type: "color", value: "#0066cc" }]);
     expect(output).toContain("export declare const tokens: {");
-    expect(output).toContain('readonly primary: "#0066cc";');
+    expect(output).toContain("readonly primary: '#0066cc';");
   });
 });
 

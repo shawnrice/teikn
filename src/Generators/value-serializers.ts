@@ -73,18 +73,23 @@ export const cssMapValue = (value: unknown): string => {
 // contain literal line terminators.
 const JS_LINE_SEPARATORS = new RegExp(`[${String.fromCharCode(0x2028, 0x2029)}]`, "g");
 
+// Single-quote a string for emission into generated source. Using single
+// quotes means values containing double quotes (e.g. font stacks like
+// `"Times New Roman"`) don't need escaping. JSON.stringify covers \n, \r, \t,
+// NUL, and other control chars; we then strip its double-quote wrapper,
+// unescape \", hand-escape U+2028 / U+2029, and escape single quotes.
+export const quoteString = (val: string): string => {
+  const escaped = JSON.stringify(val)
+    .slice(1, -1)
+    .replace(/\\"/g, '"')
+    .replace(JS_LINE_SEPARATORS, (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, "0")}`)
+    .replace(/'/g, "\\'");
+  return `'${escaped}'`;
+};
+
 export const maybeQuote = (val: unknown): string => {
   if (typeof val === "string") {
-    // JSON.stringify covers \n, \r, \t, NUL, and other control chars.
-    // Strip the surrounding double-quote, unescape \" (our wrapper is
-    // single-quoted so double quotes don't need escaping), hand-escape
-    // U+2028 / U+2029, and escape single quotes.
-    const escaped = JSON.stringify(val)
-      .slice(1, -1)
-      .replace(/\\"/g, '"')
-      .replace(JS_LINE_SEPARATORS, (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, "0")}`)
-      .replace(/'/g, "\\'");
-    return `'${escaped}'`;
+    return quoteString(val);
   }
   if (typeof val === "object" && val !== null) {
     return JSON.stringify(val);
