@@ -1,5 +1,33 @@
 # Changelog
 
+## 2.0.0-beta.3
+
+### Added
+
+- **Documentation `preview` hint.** Pass `group({ type, preview }, …)` (also on
+  `scale`/`composite`) to override how a token is visualized in the `Storybook`
+  and `Html` generators — e.g. `{ type: "elevation", preview: "shadow" }`. It's
+  presentational only and never affects CSS/SCSS/JS/DTCG output; when omitted,
+  the kind is inferred from `type` as before.
+
+### Fixed
+
+- **Storybook dark mode.** The theme wrapper now paints its own
+  background/color, so cards no longer float on a white canvas. Added a
+  `darkMode` option to opt out of the dark chrome entirely.
+- **Shadow swatches in dark mode.** Box-shadows now render on a light stage so
+  the semi-transparent shadow stays visible.
+- **`border-width`, `border-style`, and bare `radius` tokens.** These rendered
+  as a plain table; they now get proper visual samples.
+- **`Html` crash with no `dateFn`.** `header()` no longer assumes the optional
+  `dateFn` is present.
+
+### Changed
+
+- **Single source of truth for token-type classification.** The per-generator
+  regex ladders are replaced by `classifyTokenType` + `resolvePreviewKind`;
+  behavior is unchanged for existing token sets.
+
 ## 2.0.0-beta.2
 
 ### Fixed
