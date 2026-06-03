@@ -12,8 +12,17 @@ type ElOrNull = React.JSX.Element | null;
 
 // ─── Theme ───────────────────────────────────────────────────
 
-const themeStyles = `
-.teikn-sb {
+type ColorScheme = "auto" | "light" | "dark";
+
+// Palette-independent vars (fonts, accents, radius). These never change
+// between light and dark, so they live on the root unconditionally.
+const constants = `
+  --tkn-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  --tkn-accent: #0066cc;
+  --tkn-accent-light: #38bdf8;
+  --tkn-radius: 8px;`;
+
+const lightVars = `
   --tkn-bg: #ffffff;
   --tkn-bg-subtle: #f5f5f5;
   --tkn-bg-muted: #fafafa;
@@ -21,27 +30,12 @@ const themeStyles = `
   --tkn-text: #1a1a1a;
   --tkn-text-secondary: #666666;
   --tkn-text-muted: #999999;
-  --tkn-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
-  --tkn-accent: #0066cc;
-  --tkn-accent-light: #38bdf8;
-  --tkn-radius: 8px;
-  color-scheme: light dark;
-}
+  --tkn-shadow-stage: #f4f4f6;`;
 
-@media (prefers-color-scheme: dark) {
-  .teikn-sb {
-    --tkn-bg: #1e1e1e;
-    --tkn-bg-subtle: #2a2a2a;
-    --tkn-bg-muted: #252525;
-    --tkn-border: #3a3a3a;
-    --tkn-text: #e0e0e0;
-    --tkn-text-secondary: #a0a0a0;
-    --tkn-text-muted: #777777;
-  }
-}
-
-[data-theme="dark"] .teikn-sb,
-.dark .teikn-sb {
+// `--tkn-shadow-stage` stays light even in dark mode: box-shadows are
+// semi-transparent black and only read against a light surface, so shadow
+// swatches sit on their own light stage regardless of the theme.
+const darkVars = `
   --tkn-bg: #1e1e1e;
   --tkn-bg-subtle: #2a2a2a;
   --tkn-bg-muted: #252525;
@@ -49,8 +43,37 @@ const themeStyles = `
   --tkn-text: #e0e0e0;
   --tkn-text-secondary: #a0a0a0;
   --tkn-text-muted: #777777;
+  --tkn-shadow-stage: #e6e6ea;`;
+
+// The wrapper paints its OWN background/color so the whole story surface is
+// themed — without this, dark cards float on Storybook's white canvas.
+const rootSurface = `
+  background: var(--tkn-bg);
+  color: var(--tkn-text);
+  min-height: 100%;
+  padding: 1.5rem;
+  box-sizing: border-box;`;
+
+const buildThemeStyles = (colorScheme: ColorScheme): string => {
+  if (colorScheme === "light") {
+    return `.teikn-sb {${constants}${lightVars}${rootSurface}\n  color-scheme: light;\n}`;
+  }
+  if (colorScheme === "dark") {
+    return `.teikn-sb {${constants}${darkVars}${rootSurface}\n  color-scheme: dark;\n}`;
+  }
+  return `.teikn-sb {${constants}${lightVars}${rootSurface}
+  color-scheme: light dark;
 }
-`;
+
+@media (prefers-color-scheme: dark) {
+  .teikn-sb {${darkVars}
+  }
+}
+
+[data-theme="dark"] .teikn-sb,
+.dark .teikn-sb {${darkVars}
+}`;
+};
 
 // ─── Primitives ──────────────────────────────────────────────
 
@@ -83,9 +106,15 @@ const mono: React.CSSProperties = {
 
 // ─── Theme wrapper ───────────────────────────────────────────
 
-export const TokenStory = ({ children }: { children: React.ReactNode }): El => (
+export const TokenStory = ({
+  children,
+  colorScheme = "auto",
+}: {
+  children: React.ReactNode;
+  colorScheme?: ColorScheme;
+}): El => (
   <div className="teikn-sb">
-    <style>{themeStyles}</style>
+    <style>{buildThemeStyles(colorScheme)}</style>
     {children}
   </div>
 );
@@ -140,19 +169,24 @@ export const SpacingBar = ({ name, value }: { name: string; value: string }): El
 // ─── Shadow ──────────────────────────────────────────────────
 
 export const ShadowBox = ({ name, value }: { name: string; value: string }): El => (
-  <div style={{ ...card, padding: "1rem", width: 200, textAlign: "center" }}>
-    <div
-      style={{
-        width: 88,
-        height: 88,
-        background: "var(--tkn-bg)",
-        borderRadius: 8,
-        margin: "0.75rem auto",
-        boxShadow: value,
-      }}
-    />
-    <div style={{ fontWeight: 600, fontSize: "0.875rem" }}>{name}</div>
-    <div style={{ ...mono, marginTop: "0.25rem", wordBreak: "break-all" }}>{value}</div>
+  <div style={{ ...card, padding: 0, width: 200, textAlign: "center", overflow: "hidden" }}>
+    {/* Light stage so dark, semi-transparent shadows stay visible in any theme */}
+    <div style={{ background: "var(--tkn-shadow-stage)", padding: "1.75rem 1rem" }}>
+      <div
+        style={{
+          width: 88,
+          height: 88,
+          background: "#ffffff",
+          borderRadius: 8,
+          margin: "0 auto",
+          boxShadow: value,
+        }}
+      />
+    </div>
+    <div style={{ padding: "0.875rem" }}>
+      <div style={{ fontWeight: 600, fontSize: "0.875rem" }}>{name}</div>
+      <div style={{ ...mono, marginTop: "0.25rem", wordBreak: "break-all" }}>{value}</div>
+    </div>
   </div>
 );
 
@@ -257,6 +291,42 @@ export const BorderDemo = ({
     </div>
   );
 };
+
+// ─── Border Width ────────────────────────────────────────────
+
+export const BorderWidthDemo = ({ name, value }: { name: string; value: string }): El => (
+  <div style={{ ...card, padding: "1rem", marginBottom: "0.75rem" }}>
+    <div style={label}>
+      {name} <code style={code}>{value}</code>
+    </div>
+    <div
+      style={{
+        height: 56,
+        borderRadius: 6,
+        background: "var(--tkn-bg-muted)",
+        border: `${value} solid var(--tkn-accent)`,
+      }}
+    />
+  </div>
+);
+
+// ─── Border Style ────────────────────────────────────────────
+
+export const BorderStyleDemo = ({ name, value }: { name: string; value: string }): El => (
+  <div style={{ ...card, padding: "1rem", marginBottom: "0.75rem" }}>
+    <div style={label}>
+      {name} <code style={code}>{value}</code>
+    </div>
+    <div
+      style={{
+        height: 56,
+        borderRadius: 6,
+        background: "var(--tkn-bg-muted)",
+        border: `3px ${value} var(--tkn-accent)`,
+      }}
+    />
+  </div>
+);
 
 // ─── Border Radius ───────────────────────────────────────────
 

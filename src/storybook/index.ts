@@ -1,6 +1,8 @@
 export {
   BreakpointBar,
   BorderDemo,
+  BorderStyleDemo,
+  BorderWidthDemo,
   DurationBar,
   FontSample,
   GradientSwatch,
