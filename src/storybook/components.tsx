@@ -5,7 +5,7 @@
  * They use CSS custom properties for theming and respond to
  * Storybook's dark mode automatically.
  */
-import React from "react";
+import * as React from "react";
 
 type El = React.JSX.Element;
 type ElOrNull = React.JSX.Element | null;
