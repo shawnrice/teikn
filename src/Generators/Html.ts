@@ -1,34 +1,16 @@
 import { EOL } from "node:os";
 
 import { kebabCase } from "../string-utils.js";
-import type { CompositeValue, Token, TokenValue } from "../Token.js";
+import type { CompositeValue, PreviewKind, Token, TokenValue } from "../Token.js";
 import { Color } from "../TokenTypes/Color/index.js";
 import { CubicBezier } from "../TokenTypes/CubicBezier.js";
 import { GradientList, LinearGradient, RadialGradient } from "../TokenTypes/Gradient.js";
 import { Transition } from "../TokenTypes/Transition.js";
 import {
   groupTokens,
-  isAspectRatioType,
-  isBorderRadiusType,
-  isBorderType,
-  isBreakpointType,
   isColorType,
-  isDurationType,
   isFirstClassValue,
-  isFontFamilyType,
-  isFontSizeType,
-  isFontWeightType,
-  isGradientType,
-  isLetterSpacingType,
-  isLineHeightType,
-  isOpacityType,
-  isShadowType,
-  isSizeType,
-  isSpacingType,
-  isTimingType,
-  isTransitionType,
-  isTypographyType,
-  isZLayerType,
+  resolvePreviewKind,
 } from "../type-classifiers.js";
 import type { GeneratorOptions } from "./Generator.js";
 import { Generator } from "./Generator.js";
@@ -44,6 +26,20 @@ export type HtmlOpts = {
 } & GeneratorOptions;
 
 // ─── Helpers ─────────────────────────────────────────────────
+
+// CSS class for the grid wrapper around a section's visualizations, by kind.
+// Kinds not listed render in the default (non-grid) flow.
+const gridClassByKind: Partial<Record<PreviewKind, string>> = {
+  color: "color-grid",
+  shadow: "shadow-grid",
+  borderRadius: "radius-grid",
+  gradient: "gradient-grid",
+  opacity: "opacity-grid",
+  size: "size-grid",
+  aspectRatio: "ratio-grid",
+};
+
+const vizClassForKind = (kind: PreviewKind): string => gridClassByKind[kind] ?? "";
 
 const escapeHtml = (str: string): string =>
   str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -1046,104 +1042,76 @@ export class Html extends Generator<HtmlOpts> {
 
   // ── Routing ────────────────────────────────────────────────
 
-  private renderVisualization(token: Token): string {
-    const { type, value } = token;
+  // Generic composite fallback: render an object value as a composite,
+  // otherwise nothing. Used by kinds Html has no bespoke renderer for.
+  private renderCompositeFallback(token: Token): string {
+    return typeof token.value === "object" && !isFirstClassValue(token.value)
+      ? this.renderCompositeToken(token)
+      : "";
+  }
 
-    // Specific type renderers (check before generic composite)
-    if (isColorType(type)) {
-      return this.renderColorToken(token);
-    }
-    if (isTypographyType(type) && typeof value === "object" && !isFirstClassValue(value)) {
-      return this.renderTypographyToken(token);
-    }
-    if (isShadowType(type)) {
-      return this.renderShadowToken(token);
-    }
-    if (isDurationType(type)) {
-      return this.renderDurationToken(token);
-    }
-    if (isTimingType(type)) {
-      return this.renderTimingToken(token);
-    }
-    if (isBorderRadiusType(type)) {
-      return this.renderBorderRadiusToken(token);
-    }
-    if (isBorderType(type) && typeof value === "object" && !isFirstClassValue(value)) {
-      return this.renderBorderToken(token);
-    }
-    if (isFontSizeType(type)) {
-      return this.renderFontToken(token, "font-size");
-    }
-    if (isFontFamilyType(type)) {
-      return this.renderFontToken(token, "font-family");
-    }
-    if (isFontWeightType(type)) {
-      return this.renderFontToken(token, "font-weight");
-    }
-    if (isLetterSpacingType(type)) {
-      return this.renderLetterSpacingToken(token);
-    }
-    if (isSpacingType(type)) {
-      return this.renderSpacingToken(token);
-    }
+  private renderVisualization(token: Token): string {
+    const { value } = token;
+
+    // Gradient values can appear under any type, so match the value first.
     if (
-      isGradientType(type) ||
       value instanceof LinearGradient ||
       value instanceof RadialGradient ||
       value instanceof GradientList
     ) {
       return this.renderGradientToken(token);
     }
-    if (isOpacityType(type)) {
-      return this.renderOpacityToken(token);
-    }
-    if (isLineHeightType(type)) {
-      return this.renderLineHeightToken(token);
-    }
-    if (isBreakpointType(type)) {
-      return this.renderBreakpointToken(token);
-    }
-    if (isSizeType(type)) {
-      return this.renderSizeToken(token);
-    }
-    if (isAspectRatioType(type)) {
-      return this.renderAspectRatioToken(token);
-    }
-    if (isTransitionType(type)) {
-      return this.renderTransitionToken(token);
-    }
 
-    // Generic composite fallback
-    if (typeof value === "object" && !isFirstClassValue(value)) {
-      return this.renderCompositeToken(token);
+    switch (resolvePreviewKind(token)) {
+      case "color":
+        return this.renderColorToken(token);
+      // Typography/border only get a bespoke preview when the value is a
+      // composite object; scalars fall through to the generic fallback.
+      case "typography":
+        return typeof value === "object" && !isFirstClassValue(value)
+          ? this.renderTypographyToken(token)
+          : this.renderCompositeFallback(token);
+      case "border":
+        return typeof value === "object" && !isFirstClassValue(value)
+          ? this.renderBorderToken(token)
+          : this.renderCompositeFallback(token);
+      case "shadow":
+        return this.renderShadowToken(token);
+      case "duration":
+        return this.renderDurationToken(token);
+      case "timing":
+        return this.renderTimingToken(token);
+      case "borderRadius":
+        return this.renderBorderRadiusToken(token);
+      case "fontSize":
+        return this.renderFontToken(token, "font-size");
+      case "fontFamily":
+        return this.renderFontToken(token, "font-family");
+      case "fontWeight":
+        return this.renderFontToken(token, "font-weight");
+      case "letterSpacing":
+        return this.renderLetterSpacingToken(token);
+      case "spacing":
+        return this.renderSpacingToken(token);
+      case "gradient":
+        return this.renderGradientToken(token);
+      case "opacity":
+        return this.renderOpacityToken(token);
+      case "lineHeight":
+        return this.renderLineHeightToken(token);
+      case "breakpoint":
+        return this.renderBreakpointToken(token);
+      case "size":
+        return this.renderSizeToken(token);
+      case "aspectRatio":
+        return this.renderAspectRatioToken(token);
+      case "transition":
+        return this.renderTransitionToken(token);
+      // borderWidth/borderStyle (no bespoke Html renderer), zLayer (handled at
+      // the section level), and table all fall back to the generic renderer.
+      default:
+        return this.renderCompositeFallback(token);
     }
-
-    return "";
-  }
-
-  private vizClassForType(type: string): string {
-    if (isColorType(type)) {
-      return "color-grid";
-    }
-    if (isShadowType(type)) {
-      return "shadow-grid";
-    }
-    if (isBorderRadiusType(type)) {
-      return "radius-grid";
-    }
-    if (isGradientType(type)) {
-      return "gradient-grid";
-    }
-    if (isOpacityType(type)) {
-      return "opacity-grid";
-    }
-    if (isSizeType(type)) {
-      return "size-grid";
-    }
-    if (isAspectRatioType(type)) {
-      return "ratio-grid";
-    }
-    return "";
   }
 
   private wrapWithFlip(cardHtml: string, token: Token): string {
@@ -1197,10 +1165,13 @@ export class Html extends Generator<HtmlOpts> {
   private renderSection(type: string, tokens: Token[]): string {
     const id = slugify(type);
     const rows = tokens.map((t) => this.generateToken(t));
-    const vizClass = this.vizClassForType(type);
+    // All tokens in a section share a type (and preview), so the first is
+    // representative of how the whole section should be pictured.
+    const kind = resolvePreviewKind(tokens[0]!);
+    const isZLayer = kind === "zLayer";
 
     // Z-layer gets a special stacked visualization (no flip cards)
-    const vizs = isZLayerType(type)
+    const vizs = isZLayer
       ? tokens.map((t, i) => this.renderZLayerToken(t, i, tokens.length))
       : tokens
           .map((t) => {
@@ -1213,7 +1184,7 @@ export class Html extends Generator<HtmlOpts> {
           })
           .filter(Boolean);
 
-    const vizWrapClass = isZLayerType(type) ? "zlayer-stack" : vizClass;
+    const vizWrapClass = isZLayer ? "zlayer-stack" : vizClassForKind(kind);
 
     return [
       `<section id="section-${id}">`,
@@ -1301,6 +1272,8 @@ export class Html extends Generator<HtmlOpts> {
 
   override header(): string {
     const { dateFn } = this.options;
+    const date = dateFn ? dateFn() : null;
+    const generated = date ? ` · Generated ${escapeHtml(date)}` : "";
 
     return [
       `<!DOCTYPE html>`,
@@ -1314,7 +1287,7 @@ export class Html extends Generator<HtmlOpts> {
       `<body>`,
       `<header class="page-header">`,
       `<h1>Design Tokens</h1>`,
-      `<p class="meta">${escapeHtml(this.signature())} · Generated ${escapeHtml(String(dateFn!()))}</p>`,
+      `<p class="meta">${escapeHtml(this.signature())}${generated}</p>`,
       `</header>`,
       `<div class="layout">`,
     ].join(EOL);

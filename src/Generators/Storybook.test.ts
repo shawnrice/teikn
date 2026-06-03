@@ -219,6 +219,87 @@ describe("Storybook generator", () => {
     expect(output).toContain("RadiusBox");
   });
 
+  test("A preview hint overrides type inference (elevation → ShadowBox)", () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
+    const tokens: Token[] = [
+      {
+        name: "elevationCard",
+        type: "elevation",
+        preview: "shadow",
+        value: new BoxShadow(0, 1, 2, 0, "rgba(0,0,0,.12)"),
+      },
+    ];
+    const output = sb.generate(tokens);
+
+    expect(output).toContain("export const Elevation: Story");
+    expect(output).toContain("ShadowBox");
+    // Without the hint, "elevation" would fall back to the generic table.
+    expect(output).not.toContain("TokenTable");
+  });
+
+  test("A preview hint wins over a conflicting type inference (radius would be RadiusBox, forced to SpacingBar)", () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
+    const tokens: Token[] = [
+      // `type: "radius"` infers to borderRadius/RadiusBox; the explicit hint
+      // must override that and pick the spacing component instead.
+      { name: "radiusSm", type: "radius", preview: "spacing", value: "4px" },
+    ];
+    const output = sb.generate(tokens);
+
+    expect(output).toContain("SpacingBar");
+    expect(output).not.toContain("RadiusBox");
+  });
+
+  test("It renders bare radius stories with RadiusBox", () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
+    const tokens: Token[] = [{ name: "radiusSm", type: "radius", value: "4px" }];
+    const output = sb.generate(tokens);
+
+    expect(output).toContain("export const Radius: Story");
+    expect(output).toContain("RadiusBox");
+  });
+
+  test("It renders border-width stories with BorderWidthDemo", () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
+    const tokens: Token[] = [{ name: "borderWidthThin", type: "border-width", value: "1px" }];
+    const output = sb.generate(tokens);
+
+    expect(output).toContain("export const BorderWidth: Story");
+    expect(output).toContain("BorderWidthDemo");
+  });
+
+  test("It renders border-style stories with BorderStyleDemo", () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
+    const tokens: Token[] = [{ name: "borderStyleDashed", type: "border-style", value: "dashed" }];
+    const output = sb.generate(tokens);
+
+    expect(output).toContain("export const BorderStyle: Story");
+    expect(output).toContain("BorderStyleDemo");
+  });
+
+  test("It omits the dark chrome and forces light when darkMode is false", () => {
+    const sb = new Storybook({
+      dateFn: fixedDate,
+      version: "test",
+      importPath: "./tokens",
+      darkMode: false,
+    });
+    const tokens: Token[] = [{ name: "colorPrimary", type: "color", value: "#0066cc" }];
+    const output = sb.generate(tokens);
+
+    expect(output).toContain('<TokenStory colorScheme="light">');
+    expect(output).not.toContain("<TokenStory>");
+  });
+
+  test("It emits the dark chrome by default", () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
+    const tokens: Token[] = [{ name: "colorPrimary", type: "color", value: "#0066cc" }];
+    const output = sb.generate(tokens);
+
+    expect(output).toContain("<TokenStory>");
+    expect(output).not.toContain("colorScheme");
+  });
+
   test("It renders border stories with BorderDemo", () => {
     const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
     const tokens: Token[] = [
@@ -340,7 +421,7 @@ describe("Storybook generator", () => {
     expect(output).toContain("export default meta");
     expect(output).toContain("type Story = StoryObj<typeof meta>");
     expect(output).toContain("tags: ['autodocs']");
-    expect(output).toContain("layout: 'padded'");
+    expect(output).toContain("layout: 'fullscreen'");
     expect(output).not.toContain("import React");
     expect(output).toContain("<TokenStory>");
   });

@@ -1,30 +1,8 @@
 import { EOL } from "node:os";
 
 import { camelCase } from "../string-utils.js";
-import type { Token } from "../Token.js";
-import {
-  groupTokens,
-  isAspectRatioType,
-  isBorderRadiusType,
-  isBorderType,
-  isBreakpointType,
-  isColorType,
-  isDurationType,
-  isFontFamilyType,
-  isFontSizeType,
-  isFontWeightType,
-  isGradientType,
-  isLetterSpacingType,
-  isLineHeightType,
-  isOpacityType,
-  isShadowType,
-  isSizeType,
-  isSpacingType,
-  isTimingType,
-  isTransitionType,
-  isTypographyType,
-  isZLayerType,
-} from "../type-classifiers.js";
+import type { PreviewKind, Token } from "../Token.js";
+import { groupTokens, resolvePreviewKind } from "../type-classifiers.js";
 import type { GeneratorInfo, GeneratorOptions } from "./Generator.js";
 import { Generator } from "./Generator.js";
 import { JavaScript } from "./JavaScript.js";
@@ -36,6 +14,7 @@ const defaultOptions = {
   ext: "stories.tsx",
   nameTransformer: camelCase,
   storyTitle: "Design Tokens",
+  darkMode: true,
 };
 
 export type StorybookOpts = {
@@ -43,6 +22,12 @@ export type StorybookOpts = {
   importPath?: string;
   storyTitle?: string;
   dateFn?: () => string | null;
+  /**
+   * Emit the dark-mode "chrome" (the `prefers-color-scheme` / `[data-theme]`
+   * variants). When `false`, stories render with the light palette only.
+   * Defaults to `true`.
+   */
+  darkMode?: boolean;
 } & GeneratorOptions;
 
 // ─── Type → component mapping ───────────────────────────────
@@ -54,69 +39,40 @@ type ComponentMapping = {
   valueType?: "composite" | "string";
 };
 
-const classifyType = (type: string): ComponentMapping => {
-  if (isColorType(type)) {
-    return { component: "Swatch", layout: "grid" };
-  }
-  if (isTypographyType(type)) {
-    return { component: "TypographyBlock", layout: "list", valueType: "composite" };
-  }
-  if (isFontSizeType(type)) {
-    return { component: "FontSample", layout: "list", extraProps: ' styleProp="fontSize"' };
-  }
-  if (isFontFamilyType(type)) {
-    return { component: "FontSample", layout: "list", extraProps: ' styleProp="fontFamily"' };
-  }
-  if (isFontWeightType(type)) {
-    return { component: "FontSample", layout: "list", extraProps: ' styleProp="fontWeight"' };
-  }
-  if (isShadowType(type)) {
-    return { component: "ShadowBox", layout: "grid" };
-  }
-  if (isDurationType(type)) {
-    return { component: "DurationBar", layout: "list" };
-  }
-  if (isTimingType(type)) {
-    return { component: "TimingDemo", layout: "list" };
-  }
-  if (isBorderRadiusType(type)) {
-    return { component: "RadiusBox", layout: "grid" };
-  }
-  if (isBorderType(type)) {
-    return { component: "BorderDemo", layout: "list", valueType: "composite" };
-  }
-  if (isLetterSpacingType(type)) {
-    return { component: "LetterSpacingSample", layout: "list" };
-  }
-  if (isSpacingType(type)) {
-    return { component: "SpacingBar", layout: "list" };
-  }
-  if (isGradientType(type)) {
-    return { component: "GradientSwatch", layout: "grid" };
-  }
-  if (isOpacityType(type)) {
-    return { component: "OpacityDemo", layout: "grid" };
-  }
-  if (isLineHeightType(type)) {
-    return { component: "LineHeightSample", layout: "list" };
-  }
-  if (isBreakpointType(type)) {
-    return { component: "BreakpointBar", layout: "list" };
-  }
-  if (isSizeType(type)) {
-    return { component: "SizeBox", layout: "grid" };
-  }
-  if (isAspectRatioType(type)) {
-    return { component: "RatioBox", layout: "grid" };
-  }
-  if (isZLayerType(type)) {
-    return { component: "ZLayerStack", layout: "none" };
-  }
-  if (isTransitionType(type)) {
-    return { component: "TransitionDemo", layout: "list" };
-  }
-  return { component: "TokenTable", layout: "none" };
+// Each preview kind maps to exactly one component + layout. Using a
+// Record (rather than an if-ladder) makes the mapping order-independent and
+// gives compile-time exhaustiveness: add a PreviewKind and TypeScript flags
+// the missing entry here.
+const componentByKind: Record<PreviewKind, ComponentMapping> = {
+  color: { component: "Swatch", layout: "grid" },
+  typography: { component: "TypographyBlock", layout: "list", valueType: "composite" },
+  fontSize: { component: "FontSample", layout: "list", extraProps: ' styleProp="fontSize"' },
+  fontFamily: { component: "FontSample", layout: "list", extraProps: ' styleProp="fontFamily"' },
+  fontWeight: { component: "FontSample", layout: "list", extraProps: ' styleProp="fontWeight"' },
+  shadow: { component: "ShadowBox", layout: "grid" },
+  duration: { component: "DurationBar", layout: "list" },
+  timing: { component: "TimingDemo", layout: "list" },
+  borderWidth: { component: "BorderWidthDemo", layout: "list" },
+  borderStyle: { component: "BorderStyleDemo", layout: "list" },
+  borderRadius: { component: "RadiusBox", layout: "grid" },
+  border: { component: "BorderDemo", layout: "list", valueType: "composite" },
+  letterSpacing: { component: "LetterSpacingSample", layout: "list" },
+  spacing: { component: "SpacingBar", layout: "list" },
+  gradient: { component: "GradientSwatch", layout: "grid" },
+  opacity: { component: "OpacityDemo", layout: "grid" },
+  lineHeight: { component: "LineHeightSample", layout: "list" },
+  breakpoint: { component: "BreakpointBar", layout: "list" },
+  size: { component: "SizeBox", layout: "grid" },
+  aspectRatio: { component: "RatioBox", layout: "grid" },
+  zLayer: { component: "ZLayerStack", layout: "none" },
+  transition: { component: "TransitionDemo", layout: "list" },
+  table: { component: "TokenTable", layout: "none" },
 };
+
+// All tokens in a group share a type (and, if set, a preview), so the first
+// token is representative of the whole group's visualization.
+const classifyGroup = (members: Token[]): ComponentMapping =>
+  componentByKind[resolvePreviewKind(members[0]!)];
 
 const toStoryName = (type: string): string => camelCase(type).replace(/^./, (c) => c.toUpperCase());
 
@@ -237,16 +193,15 @@ export class Storybook extends Generator<StorybookOpts> {
   }
 
   combinator(tokens: Token[]): string {
-    const { nameTransformer, storyTitle } = this.options;
+    const { nameTransformer, storyTitle, darkMode } = this.options;
     const ts = this.isTypeScript();
     const groups = groupTokens(tokens);
-    const types = [...groups.keys()];
     const hasModes = tokens.some((t) => t.modes && Object.keys(t.modes).length > 0);
 
     // Collect needed component imports
     const componentImports = new Set<string>(["TokenStory"]);
-    for (const type of types) {
-      const mapping = classifyType(type);
+    for (const typeTokens of groups.values()) {
+      const mapping = classifyGroup(typeTokens);
       componentImports.add(mapping.component);
       if (mapping.layout === "grid") {
         componentImports.add("TokenGrid");
@@ -304,7 +259,7 @@ export class Storybook extends Generator<StorybookOpts> {
     lines.push(`const meta = {`);
     lines.push(`  title: ${JSON.stringify(storyTitle)},`);
     lines.push(`  tags: ['autodocs'],`);
-    lines.push(`  parameters: { layout: 'padded' },`);
+    lines.push(`  parameters: { layout: 'fullscreen' },`);
     lines.push(`}${ts ? " satisfies Meta" : ""};`);
     lines.push(`export default meta;`);
     if (ts) {
@@ -317,13 +272,13 @@ export class Storybook extends Generator<StorybookOpts> {
     for (const [type, typeTokens] of groups) {
       const storyName = toStoryName(type);
       const keysVarName = `${camelCase(type)}Keys`;
-      const mapping = classifyType(type);
+      const mapping = classifyGroup(typeTokens);
       const typeModes =
         hasModes && typeTokens.some((t) => t.modes && Object.keys(t.modes).length > 0);
 
       lines.push(`export const ${storyName}${storyType} = {`);
       lines.push(`  render: () => (`);
-      lines.push(`    <TokenStory>`);
+      lines.push(`    ${darkMode ? `<TokenStory>` : `<TokenStory colorScheme="light">`}`);
       lines.push(...buildRenderBody(mapping, keysVarName, ts));
       if (typeModes) {
         lines.push(`        <ModeTable tokenKeys={${keysVarName}} modesData={modesData} />`);
