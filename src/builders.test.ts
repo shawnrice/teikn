@@ -589,4 +589,46 @@ describe("builders", () => {
       expect(result.usage).toBe("Link color");
     });
   });
+
+  describe("preview hint (object type argument)", () => {
+    test("group stamps every token with the preview kind", () => {
+      const result = group(
+        { type: "elevation", preview: "shadow" },
+        {
+          card: "0 1px 2px #0003",
+          modal: "0 8px 16px #0003",
+        },
+      );
+      expect(result.every((t) => t.preview === "shadow")).toBe(true);
+      // type is still the bare string — grouping/DTCG/plugins are unaffected.
+      expect(result.every((t) => t.type === "elevation")).toBe(true);
+    });
+
+    test("a bare string type argument leaves preview undefined", () => {
+      const result = group("color", { primary: "#0066cc" });
+      expect(result[0]!.preview).toBeUndefined();
+    });
+
+    test("scale stamps preview on the numeric-array path", () => {
+      const result = scale({ type: "ring", preview: "borderWidth" }, [1, 2, 4], {
+        names: ["thin", "medium", "thick"],
+      });
+      expect(result.every((t) => t.preview === "borderWidth")).toBe(true);
+    });
+
+    test("scale stamps preview on the object path (via group)", () => {
+      const result = scale({ type: "ring", preview: "borderWidth" }, { thin: "1px", thick: "4px" });
+      expect(result.every((t) => t.preview === "borderWidth")).toBe(true);
+    });
+
+    test("composite stamps preview on each token", () => {
+      const result = composite(
+        { type: "ornament", preview: "typography" },
+        {
+          h1: { fontFamily: "Rubik", fontSize: "2rem" },
+        },
+      );
+      expect(result[0]!.preview).toBe("typography");
+    });
+  });
 });
