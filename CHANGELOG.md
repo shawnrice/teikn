@@ -1,5 +1,25 @@
 # Changelog
 
+## 2.0.0-beta.4
+
+### Fixed
+
+- **Group accessor guard.** The generated `groups: true` accessors checked
+  `name in _group`, which walks the prototype chain — `color("toString")` and
+  the like slipped past the guard and returned an inherited function instead of
+  throwing. Now uses `Object.prototype.hasOwnProperty.call(...)` (spelled out
+  rather than `Object.hasOwn`, since the output may run on pre-ES2022 runtimes).
+- **Declaration return types.** `.d.ts` group accessors were all typed
+  `=> string`, even for numeric groups (`z-index`, `font-weight`). They now
+  return the actual primitive (`number`, `string`, or a union for mixed groups).
+
+### Changed
+
+- **Generated output style.** Accessor functions are now braced (lint-clean,
+  consistent with the rest of the codebase), and generated string literals are
+  single-quoted so font stacks like `"Times New Roman", serif` are no longer
+  emitted with escaped quotes.
+
 ## 2.0.0-beta.3
 
 ### Added
