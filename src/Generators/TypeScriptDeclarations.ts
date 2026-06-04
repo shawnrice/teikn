@@ -6,7 +6,7 @@ import { isFirstClassValue } from "../type-classifiers.js";
 import type { GeneratorInfo, GeneratorOptions } from "./Generator.js";
 import { Generator } from "./Generator.js";
 import type { JavaScriptModule } from "./JavaScript.js";
-import { quoteKey } from "./value-serializers.js";
+import { quoteKey, quoteString } from "./value-serializers.js";
 
 /**
  * Produce a TypeScript type annotation for a token value. Narrow by
@@ -32,7 +32,7 @@ const toTypeAnnotation = (value: unknown, loose: boolean): string => {
     return typeof value;
   }
   if (typeof value === "string") {
-    return JSON.stringify(value);
+    return quoteString(value);
   }
   if (typeof value === "number" || typeof value === "boolean") {
     return String(value);
@@ -146,7 +146,16 @@ export class TypeScriptDeclarations extends Generator<TypeScriptDeclarationsOpts
     if (this.options.groups) {
       const groupDecls = groups.map(({ groupName, entries }) => {
         const union = entries.map(({ shortName }) => `'${shortName}'`).join(" | ");
-        return `export declare const ${groupName}: (name: ${union}) => string;`;
+        // The accessor does a runtime lookup, so the return can't be narrowed
+        // to a specific value per name — widen to the primitive type(s)
+        // (`string`, `number`, or a union for a mixed group) rather than emit a
+        // large, non-narrowing literal union. Precise literals stay available
+        // on the `tokens` object for static access. `toTypeAnnotation(_, true)`
+        // forces the widened form regardless of the generator's `loose` option.
+        const returnType = [
+          ...new Set(entries.map(({ token }) => toTypeAnnotation(token.value, true))),
+        ].join(" | ");
+        return `export declare const ${groupName}: (name: ${union}) => ${returnType};`;
       });
       parts.push("", ...groupDecls);
     }

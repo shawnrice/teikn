@@ -17,15 +17,15 @@ export declare const tokens: {
   /**
    *  Type: color
    */
-  readonly primary: "#0066cc";
+  readonly primary: '#0066cc';
   /**
    *  Type: color
    */
-  readonly accent: "#ff6600";
+  readonly accent: '#ff6600';
   /**
    *  Type: spacing
    */
-  readonly sm: "0.5rem";
+  readonly sm: '0.5rem';
 };
 
 export type TokenNames = {
@@ -66,14 +66,18 @@ const _color = {
   accent: tokens.accent,
 };
 export const color = (name) => {
-  if (!(name in _color)) throw new Error(\`Unknown color token: \${name}\`);
+  if (!Object.prototype.hasOwnProperty.call(_color, name)) {
+    throw new Error(\`Unknown color token: \${name}\`);
+  }
   return _color[name];
 };
 const _spacing = {
   sm: tokens.sm,
 };
 export const spacing = (name) => {
-  if (!(name in _spacing)) throw new Error(\`Unknown spacing token: \${name}\`);
+  if (!Object.prototype.hasOwnProperty.call(_spacing, name)) {
+    throw new Error(\`Unknown spacing token: \${name}\`);
+  }
   return _spacing[name];
 };
 
