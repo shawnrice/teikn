@@ -8,6 +8,14 @@ type PerceptualDistancePluginOptions = {
   groups?: string[][];
 } & Record<string, unknown>;
 
+const toColor = (t: Token): Color | null => {
+  try {
+    return t.value instanceof Color ? t.value : new Color(t.value as string);
+  } catch {
+    return null;
+  }
+};
+
 export class PerceptualDistancePlugin extends Plugin<PerceptualDistancePluginOptions> {
   tokenType: string = "color";
   outputType: RegExp = /.*/;
@@ -17,14 +25,6 @@ export class PerceptualDistancePlugin extends Plugin<PerceptualDistancePluginOpt
 
     const colorTokens = tokens.filter((t) => t.type === "color");
     const tokenMap = new Map(colorTokens.map((t) => [t.name, t]));
-
-    const toColor = (t: Token): Color | null => {
-      try {
-        return t.value instanceof Color ? t.value : new Color(t.value as string);
-      } catch {
-        return null;
-      }
-    };
 
     const comparePairs = (names: string[]): AuditIssue[] => {
       const issues: AuditIssue[] = [];
