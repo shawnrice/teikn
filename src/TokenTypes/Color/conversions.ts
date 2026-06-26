@@ -1,5 +1,5 @@
-import type { HSL, LAB, LCH, RGB, XYZ } from "./types.js";
-import { byteToUnit, pad0, parseInt16, pipe } from "./util.js";
+import type { HSL, LAB, LCH, RGB, XYZ } from './types.js';
+import { byteToUnit, pad0, parseInt16, pipe } from './util.js';
 
 // Color space conversion references:
 // - W3C CSS Color 4 conversions: https://github.com/w3c/csswg-drafts/blob/main/css-color-4/conversions.js
@@ -23,12 +23,13 @@ const getRawHue = (r: number, g: number, b: number): number => {
     case b:
       return 4 + (r - g) / chroma;
     default:
-      throw new Error("An unexpected error occurred");
+      throw new Error('An unexpected error occurred');
   }
 };
 
 const getHue = (r: number, g: number, b: number): number => {
   const hue = Math.min(getRawHue(r, g, b) * 60, 360);
+
   return hue < 0 ? hue + 360 : hue;
 };
 
@@ -49,6 +50,7 @@ const getSaturation = (r: number, g: number, b: number): number => {
 
 export const RGBToHSL = (rgb: RGB): HSL => {
   const [r, g, b] = rgb.map(byteToUnit) as [number, number, number];
+
   return [getHue(r, g, b), getSaturation(r, g, b), getLightness(r, g, b)];
 };
 
@@ -56,12 +58,13 @@ export const HSLToRGB = ([hue, saturation, lightness]: HSL): RGB => {
   const f = (coefficient: number) => {
     const angle = saturation * Math.min(lightness, 1 - lightness);
     const k = (coefficient + hue / 30) % 12;
+
     return lightness - angle * Math.max(Math.min(k - 3, 9 - k, 1), -1);
   };
 
   return [0, 8, 4]
     .map(f)
-    .map((x) => x * 255)
+    .map(x => x * 255)
     .map(Math.round) as unknown as RGB;
 };
 
@@ -95,6 +98,7 @@ const applyGamma = (v: number): number =>
 export const RGBToXYZ = (rgb: RGB): XYZ => {
   const [r, g, b] = rgb.map(byteToUnit).map(linearize) as [number, number, number];
   const m = sRGBToXYZMatrix;
+
   return [
     r * m[0][0] + g * m[0][1] + b * m[0][2],
     r * m[1][0] + g * m[1][1] + b * m[1][2],
@@ -108,10 +112,11 @@ export const RGBToXYZ = (rgb: RGB): XYZ => {
  */
 export const XYZToRGB = (xyz: XYZ): RGB => {
   const m = xyzToSRGBMatrix;
+
   return xyz
     .map((_, i) => xyz[0] * m[i]![0] + xyz[1] * m[i]![1] + xyz[2] * m[i]![2])
     .map(applyGamma)
-    .map((x) => x * 255)
+    .map(x => x * 255)
     .map(Math.round) as unknown as RGB;
 };
 
@@ -161,6 +166,7 @@ const RAD = Math.PI / 180;
 export const LABToLCH = ([L, a, b]: LAB): LCH => {
   const C = Math.sqrt(a * a + b * b);
   const H = Math.atan2(b, a) * DEG;
+
   return [L, C, H < 0 ? H + 360 : H];
 };
 
@@ -178,33 +184,37 @@ export const LCHToLAB = ([l, c, h]: LCH): LAB => {
 // ─── Hex ─────────────────────────────────────────────────────
 
 export const RGBToHex = (rgb: RGB, preferShort = false): string => {
-  const initial = rgb.map((x) => x.toString(16)).map(pad0);
-  if (preferShort && initial.every((x) => x.length === 2 && x[0] === x[1])) {
-    return initial.map((x) => x[0]).join("");
+  const initial = rgb.map(x => x.toString(16)).map(pad0);
+
+  if (preferShort && initial.every(x => x.length === 2 && x[0] === x[1])) {
+    return initial.map(x => x[0]).join('');
   }
-  return initial.join("");
+
+  return initial.join('');
 };
 
 export type HexResult = { rgb: RGB; alpha: number };
 
 export const hexToRGBWithAlpha = (c: string): HexResult => {
   // Possibly remove the hash
-  const color = c.slice(0, 1) === "#" ? c.slice(1) : c;
+  const color = c.slice(0, 1) === '#' ? c.slice(1) : c;
 
   // 6-character hex: #RRGGBB
   if (color.length === 6) {
     const rgb = [color.slice(0, 2), color.slice(2, 4), color.slice(4, 6)].map(
       parseInt16,
     ) as unknown as RGB;
+
     return { rgb, alpha: 1 };
   }
 
   // 3-character hex: #RGB → expand each to double
   if (color.length === 3) {
     const rgb = color
-      .split("")
-      .map((x) => `${x}${x}`)
+      .split('')
+      .map(x => `${x}${x}`)
       .map(parseInt16) as unknown as RGB;
+
     return { rgb, alpha: 1 };
   }
 
@@ -214,6 +224,7 @@ export const hexToRGBWithAlpha = (c: string): HexResult => {
       parseInt16,
     ) as unknown as RGB;
     const alpha = parseInt16(color.slice(6, 8)) / 255;
+
     return { rgb, alpha };
   }
 
@@ -221,11 +232,12 @@ export const hexToRGBWithAlpha = (c: string): HexResult => {
   if (color.length === 4) {
     const rgb = color
       .slice(0, 3)
-      .split("")
-      .map((x) => `${x}${x}`)
+      .split('')
+      .map(x => `${x}${x}`)
       .map(parseInt16) as unknown as RGB;
     const alphaChar = color[3]!;
     const alpha = parseInt16(`${alphaChar}${alphaChar}`) / 255;
+
     return { rgb, alpha };
   }
 

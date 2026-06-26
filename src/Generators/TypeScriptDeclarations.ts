@@ -1,12 +1,12 @@
-import { EOL } from "node:os";
+import { EOL } from 'node:os';
 
-import { camelCase, deriveShortName } from "../string-utils.js";
-import type { Token } from "../Token.js";
-import { isFirstClassValue } from "../type-classifiers.js";
-import type { GeneratorInfo, GeneratorOptions } from "./Generator.js";
-import { Generator } from "./Generator.js";
-import type { JavaScriptModule } from "./JavaScript.js";
-import { quoteKey, quoteString } from "./value-serializers.js";
+import { camelCase, deriveShortName } from '../string-utils.js';
+import type { Token } from '../Token.js';
+import { isFirstClassValue } from '../type-classifiers.js';
+import type { GeneratorInfo, GeneratorOptions } from './Generator.js';
+import { Generator } from './Generator.js';
+import type { JavaScriptModule } from './JavaScript.js';
+import { quoteKey, quoteString } from './value-serializers.js';
 
 /**
  * Produce a TypeScript type annotation for a token value. Narrow by
@@ -16,34 +16,38 @@ import { quoteKey, quoteString } from "./value-serializers.js";
  */
 const toTypeAnnotation = (value: unknown, loose: boolean): string => {
   if (value === null) {
-    return "null";
+    return 'null';
   }
-  if (typeof value === "object" && !Array.isArray(value)) {
+
+  if (typeof value === 'object' && !Array.isArray(value)) {
     // First-class values (Color, Dimension, etc.) stringify to string.
     if (isFirstClassValue(value)) {
-      return "string";
+      return 'string';
     }
+
     const fields = Object.entries(value as Record<string, unknown>)
       .map(([k, v]) => `readonly ${quoteKey(k)}: ${toTypeAnnotation(v, loose)}`)
-      .join("; ");
+      .join('; ');
+
     return `{ ${fields} }`;
   }
+
   if (loose) {
     return typeof value;
   }
-  if (typeof value === "string") {
+
+  if (typeof value === 'string') {
     return quoteString(value);
   }
-  if (typeof value === "number" || typeof value === "boolean") {
+
+  if (typeof value === 'number' || typeof value === 'boolean') {
     return String(value);
   }
+
   return typeof value;
 };
 
-const defaultOptions = {
-  ext: "d.ts",
-  nameTransformer: camelCase,
-};
+const defaultOptions = { ext: 'd.ts', nameTransformer: camelCase };
 
 export type TypeScriptDeclarationsOpts = {
   dateFn?: () => string | null;
@@ -72,28 +76,32 @@ export type TypeScriptDeclarationsOpts = {
  */
 export class TypeScriptDeclarations extends Generator<TypeScriptDeclarationsOpts> {
   constructor(options: Partial<TypeScriptDeclarationsOpts> = {}) {
-    const ext = options.module === "cjs" ? "d.cts" : "d.ts";
+    const ext = options.module === 'cjs' ? 'd.cts' : 'd.ts';
     super({ ...defaultOptions, ...options, ext });
   }
 
   override describe(): GeneratorInfo {
-    const base = this.options.filename ?? "tokens";
+    const base = this.options.filename ?? 'tokens';
     const groupUsage = this.options.groups
       ? `\n\n// Or use typed group accessors\nimport { color } from './${base}.js';\ncolor('primary') // compile-time checked`
-      : "";
+      : '';
+
     return {
-      format: "TypeScript Declarations",
+      format: 'TypeScript Declarations',
       usage: `import { tokens } from './${base}.js';\n\n// Pair with JavaScript runtime output, or use the TypeScript meta generator${groupUsage}`,
     };
   }
 
   override tokenUsage(token: Token): string | null {
     const { nameTransformer, groups } = this.options;
+
     if (groups) {
       const shortName = deriveShortName(token.name, token.type);
       const groupName = camelCase(token.type);
+
       return `${groupName}('${shortName}')`;
     }
+
     return `tokens.${nameTransformer!(token.name)}`;
   }
 
@@ -106,7 +114,7 @@ export class TypeScriptDeclarations extends Generator<TypeScriptDeclarationsOpts
     const key = quoteKey(nameTransformer!(token.name));
     const typeAnnotation = toTypeAnnotation(token.value, loose || false);
     const deprecationTag = token.deprecated
-      ? `   *  @deprecated${token.replacement ? ` use \`${nameTransformer!(token.replacement)}\` instead` : ""}`
+      ? `   *  @deprecated${token.replacement ? ` use \`${nameTransformer!(token.replacement)}\` instead` : ''}`
       : null;
 
     return [
@@ -122,15 +130,17 @@ export class TypeScriptDeclarations extends Generator<TypeScriptDeclarationsOpts
   }
 
   combinator(tokens: Token[]): string {
-    const values = tokens.map((t) => this.generateToken(t));
-    const parts = ["export declare const tokens: {", values.join(EOL), "};"];
+    const values = tokens.map(t => this.generateToken(t));
+    const parts = ['export declare const tokens: {', values.join(EOL), '};'];
 
     const groups = this.tokenGroups(tokens);
+
     if (groups.length > 0) {
       const { nameTransformer } = this.options;
       const fields = groups.map(({ groupName, entries }) => {
-        const names = entries.map(({ token }) => `'${nameTransformer!(token.name)}'`).join(" | ");
+        const names = entries.map(({ token }) => `'${nameTransformer!(token.name)}'`).join(' | ');
         const typeName = groupName.charAt(0).toUpperCase() + groupName.slice(1);
+
         return `  ${typeName}: ${names};`;
       });
       const allUnion = groups
@@ -138,14 +148,14 @@ export class TypeScriptDeclarations extends Generator<TypeScriptDeclarationsOpts
           ({ groupName }) =>
             `TokenNames['${groupName.charAt(0).toUpperCase() + groupName.slice(1)}']`,
         )
-        .join(" | ");
+        .join(' | ');
       fields.push(`  All: ${allUnion};`);
-      parts.push("", `export type TokenNames = {`, ...fields, `};`);
+      parts.push('', `export type TokenNames = {`, ...fields, `};`);
     }
 
     if (this.options.groups) {
       const groupDecls = groups.map(({ groupName, entries }) => {
-        const union = entries.map(({ shortName }) => `'${shortName}'`).join(" | ");
+        const union = entries.map(({ shortName }) => `'${shortName}'`).join(' | ');
         // The accessor does a runtime lookup, so the return can't be narrowed
         // to a specific value per name — widen to the primitive type(s)
         // (`string`, `number`, or a union for a mixed group) rather than emit a
@@ -154,13 +164,15 @@ export class TypeScriptDeclarations extends Generator<TypeScriptDeclarationsOpts
         // forces the widened form regardless of the generator's `loose` option.
         const returnType = [
           ...new Set(entries.map(({ token }) => toTypeAnnotation(token.value, true))),
-        ].join(" | ");
+        ].join(' | ');
+
         return `export declare const ${groupName}: (name: ${union}) => ${returnType};`;
       });
-      parts.push("", ...groupDecls);
+      parts.push('', ...groupDecls);
     }
 
     const modeNames = new Set<string>();
+
     for (const token of tokens) {
       if (token.modes) {
         for (const mode of Object.keys(token.modes)) {
@@ -171,9 +183,9 @@ export class TypeScriptDeclarations extends Generator<TypeScriptDeclarationsOpts
 
     if (modeNames.size > 0) {
       const modeEntries = [...modeNames].map(
-        (mode) => `  readonly ${quoteKey(mode)}: Partial<typeof tokens>;`,
+        mode => `  readonly ${quoteKey(mode)}: Partial<typeof tokens>;`,
       );
-      parts.push("", `export declare const modes: {`, ...modeEntries, `};`);
+      parts.push('', `export declare const modes: {`, ...modeEntries, `};`);
     }
 
     return parts.join(EOL);

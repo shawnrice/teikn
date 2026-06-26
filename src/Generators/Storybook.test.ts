@@ -1,598 +1,595 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from 'bun:test';
 
-import { BoxShadow } from "../TokenTypes/BoxShadow.js";
-import { CubicBezier } from "../TokenTypes/CubicBezier.js";
-import { LinearGradient } from "../TokenTypes/Gradient.js";
-import { tokenSet1 } from "../fixtures/tokenSet1.js";
-import type { Token } from "../Token.js";
-import { JavaScript } from "./JavaScript.js";
-import { Storybook } from "./Storybook.js";
-import { TypeScript } from "./TypeScript.js";
+import { tokenSet1 } from '../fixtures/tokenSet1.js';
+import type { Token } from '../Token.js';
+import { BoxShadow } from '../TokenTypes/BoxShadow.js';
+import { CubicBezier } from '../TokenTypes/CubicBezier.js';
+import { LinearGradient } from '../TokenTypes/Gradient.js';
+import { JavaScript } from './JavaScript.js';
+import { Storybook } from './Storybook.js';
+import { TypeScript } from './TypeScript.js';
 
-const fixedDate = () => "Mon Jan 01 2024 12:00:00";
+const fixedDate = () => 'Mon Jan 01 2024 12:00:00';
 
-describe("Storybook generator", () => {
-  test("It generates the full token set", () => {
+describe('Storybook generator', () => {
+  test('It generates the full token set', () => {
     expect(
-      new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" }).generate(
+      new Storybook({ dateFn: fixedDate, version: 'test', importPath: './tokens' }).generate(
         tokenSet1,
       ),
     ).toMatchSnapshot();
   });
 
-  test("It sets the correct file extension", () => {
+  test('It sets the correct file extension', () => {
     const gen = new Storybook();
-    expect(gen.file).toBe("tokens.stories.tsx");
+    expect(gen.file).toBe('tokens.stories.tsx');
   });
 
-  test("It detects JavaScript (ESM) sibling import path", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test" });
+  test('It detects JavaScript (ESM) sibling import path', () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: 'test' });
     const js = new JavaScript();
     sb.siblings = [sb, js];
 
-    const tokens: Token[] = [{ name: "primary", type: "color", value: "#ff0000" }];
+    const tokens: Token[] = [{ name: 'primary', type: 'color', value: '#ff0000' }];
     const output = sb.generate(tokens);
 
     expect(output).toContain('from "./tokens"');
   });
 
-  test("It detects JavaScript (CJS) sibling import path", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test" });
-    const js = new JavaScript({ module: "cjs" });
+  test('It detects JavaScript (CJS) sibling import path', () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: 'test' });
+    const js = new JavaScript({ module: 'cjs' });
     sb.siblings = [sb, js];
 
-    const tokens: Token[] = [{ name: "primary", type: "color", value: "#ff0000" }];
+    const tokens: Token[] = [{ name: 'primary', type: 'color', value: '#ff0000' }];
     const output = sb.generate(tokens);
 
     expect(output).toContain('from "./tokens"');
   });
 
-  test("It detects TypeScript meta sibling and imports from the runtime base", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test" });
-    const ts = new TypeScript({ filename: "design" });
+  test('It detects TypeScript meta sibling and imports from the runtime base', () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: 'test' });
+    const ts = new TypeScript({ filename: 'design' });
     sb.siblings = [sb, ts];
 
-    const tokens: Token[] = [{ name: "primary", type: "color", value: "#ff0000" }];
+    const tokens: Token[] = [{ name: 'primary', type: 'color', value: '#ff0000' }];
     const output = sb.generate(tokens);
 
     expect(output).toContain('from "./design"');
   });
 
   test("composite mode values are preserved as objects, not stringified to '[object Object]'", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
+    const sb = new Storybook({ dateFn: fixedDate, version: 'test', importPath: './tokens' });
     const tokens: Token[] = [
       {
-        name: "heading",
-        type: "typography",
-        value: { fontFamily: "Inter", fontSize: "1rem" },
-        modes: { dark: { fontFamily: "Inter", fontSize: "1.125rem" } as unknown as string },
+        name: 'heading',
+        type: 'typography',
+        value: { fontFamily: 'Inter', fontSize: '1rem' },
+        modes: { dark: { fontFamily: 'Inter', fontSize: '1.125rem' } as unknown as string },
       },
     ];
     const output = sb.generate(tokens);
-    expect(output).not.toContain("[object Object]");
+    expect(output).not.toContain('[object Object]');
     // The mode's composite fields should survive into the output as JSON.
-    expect(output).toContain("Inter");
-    expect(output).toContain("1.125rem");
+    expect(output).toContain('Inter');
+    expect(output).toContain('1.125rem');
   });
 
-  test("It prefers TypeScript meta sibling over a standalone JavaScript when both are present", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test" });
-    const js = new JavaScript({ filename: "js-only" });
-    const ts = new TypeScript({ filename: "meta" });
+  test('It prefers TypeScript meta sibling over a standalone JavaScript when both are present', () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: 'test' });
+    const js = new JavaScript({ filename: 'js-only' });
+    const ts = new TypeScript({ filename: 'meta' });
     sb.siblings = [sb, js, ts];
 
-    const tokens: Token[] = [{ name: "primary", type: "color", value: "#ff0000" }];
+    const tokens: Token[] = [{ name: 'primary', type: 'color', value: '#ff0000' }];
     const output = sb.generate(tokens);
 
     expect(output).toContain('from "./meta"');
   });
 
-  test("It uses custom importPath when provided", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "@design/tokens" });
+  test('It uses custom importPath when provided', () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: 'test', importPath: '@design/tokens' });
 
-    const tokens: Token[] = [{ name: "primary", type: "color", value: "#ff0000" }];
+    const tokens: Token[] = [{ name: 'primary', type: 'color', value: '#ff0000' }];
     const output = sb.generate(tokens);
 
     expect(output).toContain('from "@design/tokens"');
   });
 
-  test("It uses custom storyTitle", () => {
+  test('It uses custom storyTitle', () => {
     const sb = new Storybook({
       dateFn: fixedDate,
-      version: "test",
-      importPath: "./tokens",
-      storyTitle: "Brand Tokens",
+      version: 'test',
+      importPath: './tokens',
+      storyTitle: 'Brand Tokens',
     });
-    const tokens: Token[] = [{ name: "primary", type: "color", value: "#ff0000" }];
+    const tokens: Token[] = [{ name: 'primary', type: 'color', value: '#ff0000' }];
     const output = sb.generate(tokens);
 
     expect(output).toContain('title: "Brand Tokens"');
   });
 
-  test("It renders color stories with Swatch", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
+  test('It renders color stories with Swatch', () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: 'test', importPath: './tokens' });
     const tokens: Token[] = [
-      { name: "colorPrimary", type: "color", value: "#ff0000" },
-      { name: "colorSecondary", type: "color", value: "#00ff00" },
+      { name: 'colorPrimary', type: 'color', value: '#ff0000' },
+      { name: 'colorSecondary', type: 'color', value: '#00ff00' },
     ];
     const output = sb.generate(tokens);
 
-    expect(output).toContain("export const Color: Story");
-    expect(output).toContain("Swatch");
+    expect(output).toContain('export const Color: Story');
+    expect(output).toContain('Swatch');
     expect(output).toContain("const colorKeys = ['colorPrimary', 'colorSecondary'] as const;");
   });
 
-  test("It renders spacing stories with SpacingBar", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
+  test('It renders spacing stories with SpacingBar', () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: 'test', importPath: './tokens' });
     const tokens: Token[] = [
-      { name: "spacingSm", type: "spacing", value: "8px" },
-      { name: "spacingMd", type: "spacing", value: "16px" },
+      { name: 'spacingSm', type: 'spacing', value: '8px' },
+      { name: 'spacingMd', type: 'spacing', value: '16px' },
     ];
     const output = sb.generate(tokens);
 
-    expect(output).toContain("export const Spacing: Story");
-    expect(output).toContain("SpacingBar");
+    expect(output).toContain('export const Spacing: Story');
+    expect(output).toContain('SpacingBar');
     expect(output).toContain("const spacingKeys = ['spacingSm', 'spacingMd'] as const;");
   });
 
-  test("It renders font-size stories with FontSample", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
-    const tokens: Token[] = [{ name: "fontSizeBase", type: "font-size", value: "1rem" }];
+  test('It renders font-size stories with FontSample', () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: 'test', importPath: './tokens' });
+    const tokens: Token[] = [{ name: 'fontSizeBase', type: 'font-size', value: '1rem' }];
     const output = sb.generate(tokens);
 
-    expect(output).toContain("export const FontSize: Story");
-    expect(output).toContain("FontSample");
+    expect(output).toContain('export const FontSize: Story');
+    expect(output).toContain('FontSample');
     expect(output).toContain('styleProp="fontSize"');
   });
 
-  test("It renders font-family stories with correct styleProp", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
+  test('It renders font-family stories with correct styleProp', () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: 'test', importPath: './tokens' });
     const tokens: Token[] = [
-      { name: "fontFamilyBody", type: "font-family", value: "Arial, sans-serif" },
+      { name: 'fontFamilyBody', type: 'font-family', value: 'Arial, sans-serif' },
     ];
     const output = sb.generate(tokens);
 
-    expect(output).toContain("export const FontFamily: Story");
+    expect(output).toContain('export const FontFamily: Story');
     expect(output).toContain('styleProp="fontFamily"');
   });
 
-  test("It renders font-weight stories with correct styleProp", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
-    const tokens: Token[] = [{ name: "fontWeightBold", type: "font-weight", value: "700" }];
+  test('It renders font-weight stories with correct styleProp', () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: 'test', importPath: './tokens' });
+    const tokens: Token[] = [{ name: 'fontWeightBold', type: 'font-weight', value: '700' }];
     const output = sb.generate(tokens);
 
-    expect(output).toContain("export const FontWeight: Story");
+    expect(output).toContain('export const FontWeight: Story');
     expect(output).toContain('styleProp="fontWeight"');
   });
 
-  test("It renders typography stories with TypographyBlock", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
+  test('It renders typography stories with TypographyBlock', () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: 'test', importPath: './tokens' });
     const tokens: Token[] = [
       {
-        name: "typographyBody",
-        type: "typography",
-        value: { fontFamily: "Arial", fontSize: "1rem", fontWeight: 400 },
+        name: 'typographyBody',
+        type: 'typography',
+        value: { fontFamily: 'Arial', fontSize: '1rem', fontWeight: 400 },
       },
     ];
     const output = sb.generate(tokens);
 
-    expect(output).toContain("export const Typography: Story");
-    expect(output).toContain("TypographyBlock");
-    expect(output).toContain("Record<string, unknown>");
+    expect(output).toContain('export const Typography: Story');
+    expect(output).toContain('TypographyBlock');
+    expect(output).toContain('Record<string, unknown>');
   });
 
-  test("It renders shadow stories with ShadowBox", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
+  test('It renders shadow stories with ShadowBox', () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: 'test', importPath: './tokens' });
     const tokens: Token[] = [
-      { name: "shadowMd", type: "shadow", value: new BoxShadow(0, 2, 8, 0, "rgba(0,0,0,.12)") },
+      { name: 'shadowMd', type: 'shadow', value: new BoxShadow(0, 2, 8, 0, 'rgba(0,0,0,.12)') },
     ];
     const output = sb.generate(tokens);
 
-    expect(output).toContain("export const Shadow: Story");
-    expect(output).toContain("ShadowBox");
+    expect(output).toContain('export const Shadow: Story');
+    expect(output).toContain('ShadowBox');
   });
 
-  test("It renders duration stories with DurationBar", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
-    const tokens: Token[] = [{ name: "durationFast", type: "duration", value: "0.1s" }];
+  test('It renders duration stories with DurationBar', () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: 'test', importPath: './tokens' });
+    const tokens: Token[] = [{ name: 'durationFast', type: 'duration', value: '0.1s' }];
     const output = sb.generate(tokens);
 
-    expect(output).toContain("export const Duration: Story");
-    expect(output).toContain("DurationBar");
+    expect(output).toContain('export const Duration: Story');
+    expect(output).toContain('DurationBar');
   });
 
-  test("It renders timing stories with TimingDemo", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
-    const tokens: Token[] = [{ name: "timingEase", type: "timing", value: CubicBezier.standard }];
+  test('It renders timing stories with TimingDemo', () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: 'test', importPath: './tokens' });
+    const tokens: Token[] = [{ name: 'timingEase', type: 'timing', value: CubicBezier.standard }];
     const output = sb.generate(tokens);
 
-    expect(output).toContain("export const Timing: Story");
-    expect(output).toContain("TimingDemo");
+    expect(output).toContain('export const Timing: Story');
+    expect(output).toContain('TimingDemo');
   });
 
-  test("It renders border-radius stories with RadiusBox", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
-    const tokens: Token[] = [{ name: "borderRadiusStandard", type: "border-radius", value: "8px" }];
+  test('It renders border-radius stories with RadiusBox', () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: 'test', importPath: './tokens' });
+    const tokens: Token[] = [{ name: 'borderRadiusStandard', type: 'border-radius', value: '8px' }];
     const output = sb.generate(tokens);
 
-    expect(output).toContain("export const BorderRadius: Story");
-    expect(output).toContain("RadiusBox");
+    expect(output).toContain('export const BorderRadius: Story');
+    expect(output).toContain('RadiusBox');
   });
 
-  test("A preview hint overrides type inference (elevation → ShadowBox)", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
+  test('A preview hint overrides type inference (elevation → ShadowBox)', () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: 'test', importPath: './tokens' });
     const tokens: Token[] = [
       {
-        name: "elevationCard",
-        type: "elevation",
-        preview: "shadow",
-        value: new BoxShadow(0, 1, 2, 0, "rgba(0,0,0,.12)"),
+        name: 'elevationCard',
+        type: 'elevation',
+        preview: 'shadow',
+        value: new BoxShadow(0, 1, 2, 0, 'rgba(0,0,0,.12)'),
       },
     ];
     const output = sb.generate(tokens);
 
-    expect(output).toContain("export const Elevation: Story");
-    expect(output).toContain("ShadowBox");
+    expect(output).toContain('export const Elevation: Story');
+    expect(output).toContain('ShadowBox');
     // Without the hint, "elevation" would fall back to the generic table.
-    expect(output).not.toContain("TokenTable");
+    expect(output).not.toContain('TokenTable');
   });
 
-  test("A preview hint wins over a conflicting type inference (radius would be RadiusBox, forced to SpacingBar)", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
+  test('A preview hint wins over a conflicting type inference (radius would be RadiusBox, forced to SpacingBar)', () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: 'test', importPath: './tokens' });
     const tokens: Token[] = [
       // `type: "radius"` infers to borderRadius/RadiusBox; the explicit hint
       // must override that and pick the spacing component instead.
-      { name: "radiusSm", type: "radius", preview: "spacing", value: "4px" },
+      { name: 'radiusSm', type: 'radius', preview: 'spacing', value: '4px' },
     ];
     const output = sb.generate(tokens);
 
-    expect(output).toContain("SpacingBar");
-    expect(output).not.toContain("RadiusBox");
+    expect(output).toContain('SpacingBar');
+    expect(output).not.toContain('RadiusBox');
   });
 
-  test("It renders bare radius stories with RadiusBox", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
-    const tokens: Token[] = [{ name: "radiusSm", type: "radius", value: "4px" }];
+  test('It renders bare radius stories with RadiusBox', () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: 'test', importPath: './tokens' });
+    const tokens: Token[] = [{ name: 'radiusSm', type: 'radius', value: '4px' }];
     const output = sb.generate(tokens);
 
-    expect(output).toContain("export const Radius: Story");
-    expect(output).toContain("RadiusBox");
+    expect(output).toContain('export const Radius: Story');
+    expect(output).toContain('RadiusBox');
   });
 
-  test("It renders border-width stories with BorderWidthDemo", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
-    const tokens: Token[] = [{ name: "borderWidthThin", type: "border-width", value: "1px" }];
+  test('It renders border-width stories with BorderWidthDemo', () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: 'test', importPath: './tokens' });
+    const tokens: Token[] = [{ name: 'borderWidthThin', type: 'border-width', value: '1px' }];
     const output = sb.generate(tokens);
 
-    expect(output).toContain("export const BorderWidth: Story");
-    expect(output).toContain("BorderWidthDemo");
+    expect(output).toContain('export const BorderWidth: Story');
+    expect(output).toContain('BorderWidthDemo');
   });
 
-  test("It renders border-style stories with BorderStyleDemo", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
-    const tokens: Token[] = [{ name: "borderStyleDashed", type: "border-style", value: "dashed" }];
+  test('It renders border-style stories with BorderStyleDemo', () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: 'test', importPath: './tokens' });
+    const tokens: Token[] = [{ name: 'borderStyleDashed', type: 'border-style', value: 'dashed' }];
     const output = sb.generate(tokens);
 
-    expect(output).toContain("export const BorderStyle: Story");
-    expect(output).toContain("BorderStyleDemo");
+    expect(output).toContain('export const BorderStyle: Story');
+    expect(output).toContain('BorderStyleDemo');
   });
 
-  test("It omits the dark chrome and forces light when darkMode is false", () => {
+  test('It omits the dark chrome and forces light when darkMode is false', () => {
     const sb = new Storybook({
       dateFn: fixedDate,
-      version: "test",
-      importPath: "./tokens",
+      version: 'test',
+      importPath: './tokens',
       darkMode: false,
     });
-    const tokens: Token[] = [{ name: "colorPrimary", type: "color", value: "#0066cc" }];
+    const tokens: Token[] = [{ name: 'colorPrimary', type: 'color', value: '#0066cc' }];
     const output = sb.generate(tokens);
 
     expect(output).toContain('<TokenStory colorScheme="light">');
-    expect(output).not.toContain("<TokenStory>");
+    expect(output).not.toContain('<TokenStory>');
   });
 
-  test("It emits the dark chrome by default", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
-    const tokens: Token[] = [{ name: "colorPrimary", type: "color", value: "#0066cc" }];
+  test('It emits the dark chrome by default', () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: 'test', importPath: './tokens' });
+    const tokens: Token[] = [{ name: 'colorPrimary', type: 'color', value: '#0066cc' }];
     const output = sb.generate(tokens);
 
-    expect(output).toContain("<TokenStory>");
-    expect(output).not.toContain("colorScheme");
+    expect(output).toContain('<TokenStory>');
+    expect(output).not.toContain('colorScheme');
   });
 
-  test("It renders border stories with BorderDemo", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
+  test('It renders border stories with BorderDemo', () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: 'test', importPath: './tokens' });
     const tokens: Token[] = [
       {
-        name: "borderDefault",
-        type: "border",
-        value: { width: "1px", style: "solid", color: "#e0e0e0" },
+        name: 'borderDefault',
+        type: 'border',
+        value: { width: '1px', style: 'solid', color: '#e0e0e0' },
       },
     ];
     const output = sb.generate(tokens);
 
-    expect(output).toContain("export const Border: Story");
-    expect(output).toContain("BorderDemo");
+    expect(output).toContain('export const Border: Story');
+    expect(output).toContain('BorderDemo');
   });
 
-  test("It renders gradient stories with GradientSwatch", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
+  test('It renders gradient stories with GradientSwatch', () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: 'test', importPath: './tokens' });
     const tokens: Token[] = [
       {
-        name: "gradientBrand",
-        type: "gradient",
+        name: 'gradientBrand',
+        type: 'gradient',
         value: new LinearGradient(135, [
-          ["#ff0000", "0%"],
-          ["#0000ff", "100%"],
+          ['#ff0000', '0%'],
+          ['#0000ff', '100%'],
         ]),
       },
     ];
     const output = sb.generate(tokens);
 
-    expect(output).toContain("export const Gradient: Story");
-    expect(output).toContain("GradientSwatch");
+    expect(output).toContain('export const Gradient: Story');
+    expect(output).toContain('GradientSwatch');
   });
 
-  test("It renders opacity stories with OpacityDemo", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
-    const tokens: Token[] = [{ name: "opacityDisabled", type: "opacity", value: 0.38 }];
+  test('It renders opacity stories with OpacityDemo', () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: 'test', importPath: './tokens' });
+    const tokens: Token[] = [{ name: 'opacityDisabled', type: 'opacity', value: 0.38 }];
     const output = sb.generate(tokens);
 
-    expect(output).toContain("export const Opacity: Story");
-    expect(output).toContain("OpacityDemo");
+    expect(output).toContain('export const Opacity: Story');
+    expect(output).toContain('OpacityDemo');
   });
 
-  test("It renders line-height stories with LineHeightSample", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
-    const tokens: Token[] = [{ name: "lineHeightTight", type: "line-height", value: 1.2 }];
+  test('It renders line-height stories with LineHeightSample', () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: 'test', importPath: './tokens' });
+    const tokens: Token[] = [{ name: 'lineHeightTight', type: 'line-height', value: 1.2 }];
     const output = sb.generate(tokens);
 
-    expect(output).toContain("export const LineHeight: Story");
-    expect(output).toContain("LineHeightSample");
+    expect(output).toContain('export const LineHeight: Story');
+    expect(output).toContain('LineHeightSample');
   });
 
-  test("It renders letter-spacing stories with LetterSpacingSample", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
+  test('It renders letter-spacing stories with LetterSpacingSample', () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: 'test', importPath: './tokens' });
     const tokens: Token[] = [
-      { name: "letterSpacingWide", type: "letter-spacing", value: "0.05em" },
+      { name: 'letterSpacingWide', type: 'letter-spacing', value: '0.05em' },
     ];
     const output = sb.generate(tokens);
 
-    expect(output).toContain("export const LetterSpacing: Story");
-    expect(output).toContain("LetterSpacingSample");
+    expect(output).toContain('export const LetterSpacing: Story');
+    expect(output).toContain('LetterSpacingSample');
   });
 
-  test("It renders breakpoint stories with BreakpointBar", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
-    const tokens: Token[] = [{ name: "breakpointMd", type: "breakpoint", value: "768px" }];
+  test('It renders breakpoint stories with BreakpointBar', () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: 'test', importPath: './tokens' });
+    const tokens: Token[] = [{ name: 'breakpointMd', type: 'breakpoint', value: '768px' }];
     const output = sb.generate(tokens);
 
-    expect(output).toContain("export const Breakpoint: Story");
-    expect(output).toContain("BreakpointBar");
+    expect(output).toContain('export const Breakpoint: Story');
+    expect(output).toContain('BreakpointBar');
   });
 
-  test("It renders size stories with SizeBox", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
-    const tokens: Token[] = [{ name: "sizeIconSm", type: "size", value: "16px" }];
+  test('It renders size stories with SizeBox', () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: 'test', importPath: './tokens' });
+    const tokens: Token[] = [{ name: 'sizeIconSm', type: 'size', value: '16px' }];
     const output = sb.generate(tokens);
 
-    expect(output).toContain("export const Size: Story");
-    expect(output).toContain("SizeBox");
+    expect(output).toContain('export const Size: Story');
+    expect(output).toContain('SizeBox');
   });
 
-  test("It renders aspect-ratio stories with RatioBox", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
-    const tokens: Token[] = [{ name: "aspectRatioVideo", type: "aspect-ratio", value: "16/9" }];
+  test('It renders aspect-ratio stories with RatioBox', () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: 'test', importPath: './tokens' });
+    const tokens: Token[] = [{ name: 'aspectRatioVideo', type: 'aspect-ratio', value: '16/9' }];
     const output = sb.generate(tokens);
 
-    expect(output).toContain("export const AspectRatio: Story");
-    expect(output).toContain("RatioBox");
+    expect(output).toContain('export const AspectRatio: Story');
+    expect(output).toContain('RatioBox');
   });
 
-  test("It renders z-layer stories with ZLayerStack", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
+  test('It renders z-layer stories with ZLayerStack', () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: 'test', importPath: './tokens' });
     const tokens: Token[] = [
-      { name: "zLayerModal", type: "z-layer", value: 5000 },
-      { name: "zLayerDropdown", type: "z-layer", value: 1000 },
+      { name: 'zLayerModal', type: 'z-layer', value: 5000 },
+      { name: 'zLayerDropdown', type: 'z-layer', value: 1000 },
     ];
     const output = sb.generate(tokens);
 
-    expect(output).toContain("export const ZLayer: Story");
-    expect(output).toContain("ZLayerStack");
+    expect(output).toContain('export const ZLayer: Story');
+    expect(output).toContain('ZLayerStack');
   });
 
-  test("It renders unknown types with TokenTable fallback", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
-    const tokens: Token[] = [{ name: "customThing", type: "custom-type", value: "some-value" }];
+  test('It renders unknown types with TokenTable fallback', () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: 'test', importPath: './tokens' });
+    const tokens: Token[] = [{ name: 'customThing', type: 'custom-type', value: 'some-value' }];
     const output = sb.generate(tokens);
 
-    expect(output).toContain("export const CustomType: Story");
-    expect(output).toContain("TokenTable");
+    expect(output).toContain('export const CustomType: Story');
+    expect(output).toContain('TokenTable');
   });
 
-  test("It emits CSF 3.0 meta structure", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
-    const tokens: Token[] = [{ name: "primary", type: "color", value: "#ff0000" }];
+  test('It emits CSF 3.0 meta structure', () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: 'test', importPath: './tokens' });
+    const tokens: Token[] = [{ name: 'primary', type: 'color', value: '#ff0000' }];
     const output = sb.generate(tokens);
 
     expect(output).toContain("import type { Meta, StoryObj } from '@storybook/react'");
     expect(output).toContain("from 'teikn/storybook'");
-    expect(output).toContain("satisfies Meta");
-    expect(output).toContain("export default meta");
-    expect(output).toContain("type Story = StoryObj<typeof meta>");
+    expect(output).toContain('satisfies Meta');
+    expect(output).toContain('export default meta');
+    expect(output).toContain('type Story = StoryObj<typeof meta>');
     expect(output).toContain("tags: ['autodocs']");
     expect(output).toContain("layout: 'fullscreen'");
-    expect(output).not.toContain("import React");
-    expect(output).toContain("<TokenStory>");
+    expect(output).not.toContain('import React');
+    expect(output).toContain('<TokenStory>');
   });
 
-  test("It generates valid JSX when ext is stories.jsx", () => {
+  test('It generates valid JSX when ext is stories.jsx', () => {
     const sb = new Storybook({
       dateFn: fixedDate,
-      version: "test",
-      ext: "stories.jsx",
-      importPath: "./tokens",
+      version: 'test',
+      ext: 'stories.jsx',
+      importPath: './tokens',
     });
     const tokens: Token[] = [
-      { name: "primary", type: "color", value: "#ff0000" },
+      { name: 'primary', type: 'color', value: '#ff0000' },
       {
-        name: "heading",
-        type: "typography",
-        value: { fontFamily: "Arial", fontSize: "2rem", fontWeight: 700 },
+        name: 'heading',
+        type: 'typography',
+        value: { fontFamily: 'Arial', fontSize: '2rem', fontWeight: 700 },
       },
     ];
     const output = sb.generate(tokens);
 
     // No TypeScript syntax
-    expect(output).not.toContain("import type");
-    expect(output).not.toContain("as const");
-    expect(output).not.toContain("satisfies Meta");
-    expect(output).not.toContain("type Story");
-    expect(output).not.toContain(": Story");
-    expect(output).not.toContain("Record<");
-    expect(output).not.toContain("as Record");
+    expect(output).not.toContain('import type');
+    expect(output).not.toContain('as const');
+    expect(output).not.toContain('satisfies Meta');
+    expect(output).not.toContain('type Story');
+    expect(output).not.toContain(': Story');
+    expect(output).not.toContain('Record<');
+    expect(output).not.toContain('as Record');
 
     // Still has valid structure
-    expect(output).toContain("export default meta");
-    expect(output).toContain("export const Color");
-    expect(output).toContain("<TokenStory>");
+    expect(output).toContain('export default meta');
+    expect(output).toContain('export const Color');
+    expect(output).toContain('<TokenStory>');
     expect(output).toContain("from 'teikn/storybook'");
   });
 
-  test("It only imports components needed by present token types", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
-    const tokens: Token[] = [{ name: "primary", type: "color", value: "#ff0000" }];
+  test('It only imports components needed by present token types', () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: 'test', importPath: './tokens' });
+    const tokens: Token[] = [{ name: 'primary', type: 'color', value: '#ff0000' }];
     const output = sb.generate(tokens);
 
-    expect(output).toContain("Swatch");
-    expect(output).toContain("TokenGrid");
-    expect(output).toContain("TokenStory");
-    expect(output).not.toContain("SpacingBar");
-    expect(output).not.toContain("ShadowBox");
-    expect(output).not.toContain("DurationBar");
+    expect(output).toContain('Swatch');
+    expect(output).toContain('TokenGrid');
+    expect(output).toContain('TokenStory');
+    expect(output).not.toContain('SpacingBar');
+    expect(output).not.toContain('ShadowBox');
+    expect(output).not.toContain('DurationBar');
   });
 
-  test("describe() returns correct info", () => {
+  test('describe() returns correct info', () => {
     const sb = new Storybook();
     const info = sb.describe();
 
-    expect(info).toEqual({
-      format: "Storybook",
-      usage: "// View in Storybook\nnpx storybook dev",
-    });
+    expect(info).toEqual({ format: 'Storybook', usage: '// View in Storybook\nnpx storybook dev' });
   });
 
-  test("tokenUsage() returns flat-mode accessor", () => {
+  test('tokenUsage() returns flat-mode accessor', () => {
     const sb = new Storybook();
-    const token: Token = { name: "colorPrimary", type: "color", value: "#ff0000" };
+    const token: Token = { name: 'colorPrimary', type: 'color', value: '#ff0000' };
 
-    expect(sb.tokenUsage(token)).toBe("tokens.colorPrimary");
+    expect(sb.tokenUsage(token)).toBe('tokens.colorPrimary');
   });
 
-  test("It applies custom nameTransformer", () => {
+  test('It applies custom nameTransformer', () => {
     const sb = new Storybook({
       dateFn: fixedDate,
-      version: "test",
+      version: 'test',
       nameTransformer: (name: string) => name.toUpperCase(),
-      importPath: "./tokens",
+      importPath: './tokens',
     });
-    const tokens: Token[] = [{ name: "primary", type: "color", value: "#ff0000" }];
+    const tokens: Token[] = [{ name: 'primary', type: 'color', value: '#ff0000' }];
     const output = sb.generate(tokens);
 
     expect(output).toContain("'PRIMARY'");
   });
 
-  test("generateToken returns empty string", () => {
+  test('generateToken returns empty string', () => {
     const sb = new Storybook();
-    const token: Token = { name: "primary", type: "color", value: "#ff0000" };
+    const token: Token = { name: 'primary', type: 'color', value: '#ff0000' };
 
-    expect(sb.generateToken(token)).toBe("");
+    expect(sb.generateToken(token)).toBe('');
   });
 
-  test("Multiple types produce multiple stories", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
+  test('Multiple types produce multiple stories', () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: 'test', importPath: './tokens' });
     const tokens: Token[] = [
-      { name: "primary", type: "color", value: "#ff0000" },
-      { name: "spacingSm", type: "spacing", value: "8px" },
-      { name: "shadowMd", type: "shadow", value: "0 2px 4px rgba(0,0,0,.1)" },
+      { name: 'primary', type: 'color', value: '#ff0000' },
+      { name: 'spacingSm', type: 'spacing', value: '8px' },
+      { name: 'shadowMd', type: 'shadow', value: '0 2px 4px rgba(0,0,0,.1)' },
     ];
     const output = sb.generate(tokens);
 
-    expect(output).toContain("export const Color: Story");
-    expect(output).toContain("export const Spacing: Story");
-    expect(output).toContain("export const Shadow: Story");
+    expect(output).toContain('export const Color: Story');
+    expect(output).toContain('export const Spacing: Story');
+    expect(output).toContain('export const Shadow: Story');
 
-    expect(output).toContain("const colorKeys");
-    expect(output).toContain("const spacingKeys");
-    expect(output).toContain("const shadowKeys");
+    expect(output).toContain('const colorKeys');
+    expect(output).toContain('const spacingKeys');
+    expect(output).toContain('const shadowKeys');
   });
 
-  test("It includes header with signature and date", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
-    const tokens: Token[] = [{ name: "primary", type: "color", value: "#ff0000" }];
+  test('It includes header with signature and date', () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: 'test', importPath: './tokens' });
+    const tokens: Token[] = [{ name: 'primary', type: 'color', value: '#ff0000' }];
     const output = sb.generate(tokens);
 
-    expect(output).toContain("Teikn v");
-    expect(output).toContain("Mon Jan 01 2024 12:00:00");
-    expect(output).toContain("Storybook stories for design tokens");
+    expect(output).toContain('Teikn v');
+    expect(output).toContain('Mon Jan 01 2024 12:00:00');
+    expect(output).toContain('Storybook stories for design tokens');
   });
 
   // ── Breakpoint bar ────────────────────────────────────────
 
-  test("It imports BreakpointBar for breakpoint stories", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
+  test('It imports BreakpointBar for breakpoint stories', () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: 'test', importPath: './tokens' });
     const tokens: Token[] = [
-      { name: "sm", type: "breakpoint", value: "640px" },
-      { name: "md", type: "breakpoint", value: "48rem" },
+      { name: 'sm', type: 'breakpoint', value: '640px' },
+      { name: 'md', type: 'breakpoint', value: '48rem' },
     ];
     const output = sb.generate(tokens);
 
-    expect(output).toContain("BreakpointBar");
-    expect(output).toContain("breakpointKeys");
+    expect(output).toContain('BreakpointBar');
+    expect(output).toContain('breakpointKeys');
     expect(output).toContain("from 'teikn/storybook'");
   });
 
   // ── Mode variants ─────────────────────────────────────────
 
-  test("It emits modesData and ModeTable when tokens have modes", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
+  test('It emits modesData and ModeTable when tokens have modes', () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: 'test', importPath: './tokens' });
     const tokens: Token[] = [
-      { name: "colorSurface", type: "color", value: "#ffffff", modes: { dark: "#1a1a1a" } },
+      { name: 'colorSurface', type: 'color', value: '#ffffff', modes: { dark: '#1a1a1a' } },
     ];
     const output = sb.generate(tokens);
 
-    expect(output).toContain("modesData");
+    expect(output).toContain('modesData');
     expect(output).toContain("'colorSurface'");
     expect(output).toContain("'dark'");
-    expect(output).toContain("#1a1a1a");
-    expect(output).toContain("ModeTable");
+    expect(output).toContain('#1a1a1a');
+    expect(output).toContain('ModeTable');
   });
 
-  test("It does not emit modesData when no tokens have modes", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
-    const tokens: Token[] = [{ name: "primary", type: "color", value: "#ff0000" }];
+  test('It does not emit modesData when no tokens have modes', () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: 'test', importPath: './tokens' });
+    const tokens: Token[] = [{ name: 'primary', type: 'color', value: '#ff0000' }];
     const output = sb.generate(tokens);
 
-    expect(output).not.toContain("modesData");
-    expect(output).not.toContain("ModeTable");
+    expect(output).not.toContain('modesData');
+    expect(output).not.toContain('ModeTable');
   });
 
-  test("It only shows ModeTable in stories with mode tokens", () => {
-    const sb = new Storybook({ dateFn: fixedDate, version: "test", importPath: "./tokens" });
+  test('It only shows ModeTable in stories with mode tokens', () => {
+    const sb = new Storybook({ dateFn: fixedDate, version: 'test', importPath: './tokens' });
     const tokens: Token[] = [
-      { name: "colorSurface", type: "color", value: "#fff", modes: { dark: "#111" } },
-      { name: "spacingSm", type: "spacing", value: "4px" },
+      { name: 'colorSurface', type: 'color', value: '#fff', modes: { dark: '#111' } },
+      { name: 'spacingSm', type: 'spacing', value: '4px' },
     ];
     const output = sb.generate(tokens);
 
     // Color story should have ModeTable
     const colorStoryMatch = output.match(/export const Color: Story[\s\S]*?};/);
     expect(colorStoryMatch).toBeTruthy();
-    expect(colorStoryMatch![0]).toContain("ModeTable");
+    expect(colorStoryMatch![0]).toContain('ModeTable');
 
     // Spacing story should NOT have ModeTable
     const spacingStoryMatch = output.match(/export const Spacing: Story[\s\S]*?};/);
     expect(spacingStoryMatch).toBeTruthy();
-    expect(spacingStoryMatch![0]).not.toContain("ModeTable");
+    expect(spacingStoryMatch![0]).not.toContain('ModeTable');
   });
 });

@@ -2,12 +2,13 @@ const REF_RE = /^\{[^}]+\}$/;
 
 /** True when `input` is a single `{tokenName}` reference string. */
 export const isRefString = (input: unknown): input is string =>
-  typeof input === "string" && REF_RE.test(input.trim());
+  typeof input === 'string' && REF_RE.test(input.trim());
 
 export const assertNotRef = (input: unknown, typeName: string): void => {
   if (!isRefString(input)) {
     return;
   }
+
   throw new Error(
     `${typeName} cannot be constructed from a reference string ${input.trim()}. ` +
       `A whole-value reference should be the token value itself, not wrapped. ` +
@@ -40,7 +41,7 @@ export type RefFields = {
 };
 
 export const hasRefFields = (value: unknown): value is RefFields =>
-  typeof value === "object" &&
+  typeof value === 'object' &&
   value !== null &&
-  typeof (value as Partial<RefFields>).__teikn_fields__ === "function" &&
-  typeof (value as Partial<RefFields>).__teikn_fromFields__ === "function";
+  typeof (value as Partial<RefFields>).__teikn_fields__ === 'function' &&
+  typeof (value as Partial<RefFields>).__teikn_fromFields__ === 'function';

@@ -1,5 +1,5 @@
-import type { Color, InternalCreate } from "../Color.js";
-import type { XYZ } from "../types.js";
+import type { Color, InternalCreate } from '../Color.js';
+import type { XYZ } from '../types.js';
 
 export class XYZOperations {
   #color: Color;
@@ -20,8 +20,10 @@ export class XYZOperations {
     if (value === undefined) {
       return this.#xyz()[0];
     }
+
     const [, y, z] = this.#xyz();
-    return this.#new("xyz", [value, y, z], this.#color.alpha);
+
+    return this.#new('xyz', [value, y, z], this.#color.alpha);
   }
 
   y(): number;
@@ -30,8 +32,10 @@ export class XYZOperations {
     if (value === undefined) {
       return this.#xyz()[1];
     }
+
     const [x, , z] = this.#xyz();
-    return this.#new("xyz", [x, value, z], this.#color.alpha);
+
+    return this.#new('xyz', [x, value, z], this.#color.alpha);
   }
 
   z(): number;
@@ -40,11 +44,13 @@ export class XYZOperations {
     if (value === undefined) {
       return this.#xyz()[2];
     }
+
     const [x, y] = this.#xyz();
-    return this.#new("xyz", [x, y, value], this.#color.alpha);
+
+    return this.#new('xyz', [x, y, value], this.#color.alpha);
   }
 
   toString(): string {
-    return this.#color.toString("xyz");
+    return this.#color.toString('xyz');
   }
 }

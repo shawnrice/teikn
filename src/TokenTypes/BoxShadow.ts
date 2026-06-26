@@ -1,10 +1,10 @@
-import { splitTopLevel } from "../string-utils.js";
-import { Color } from "./Color/index.js";
-import { assertNotRef } from "./ref-guard.js";
+import { splitTopLevel } from '../string-utils.js';
+import { Color } from './Color/index.js';
+import { assertNotRef } from './ref-guard.js';
 
 const lengthRe = /^(-?\d+(?:\.\d+)?)(px|rem|em)?/;
 
-const fmtLength = (v: number): string => (v === 0 ? "0" : `${v}px`);
+const fmtLength = (v: number): string => (v === 0 ? '0' : `${v}px`);
 
 const stripKeyword = (str: string, keyword: string): string => {
   if (str.startsWith(`${keyword} `)) {
@@ -30,16 +30,19 @@ const parse = (
 } => {
   const trimmed = str.trim();
 
-  const withoutInset = stripKeyword(trimmed, "inset");
+  const withoutInset = stripKeyword(trimmed, 'inset');
   const inset = withoutInset !== trimmed;
 
   const nums: number[] = [];
   let s = withoutInset;
+
   while (s.length > 0) {
     const m = s.match(lengthRe);
+
     if (!m) {
       break;
     }
+
     nums.push(parseFloat(m[1]!));
     s = s.slice(m[0].length).trim();
   }
@@ -99,11 +102,12 @@ export class BoxShadow {
       this.#spread = first.#spread;
       this.#color = first.#color;
       this.#inset = first.#inset;
+
       return;
     }
 
-    if (typeof first === "string") {
-      assertNotRef(first, "BoxShadow");
+    if (typeof first === 'string') {
+      assertNotRef(first, 'BoxShadow');
       const parsed = parse(first);
       this.#offsetX = parsed.offsetX;
       this.#offsetY = parsed.offsetY;
@@ -111,17 +115,19 @@ export class BoxShadow {
       this.#spread = parsed.spread;
       this.#color = parsed.color;
       this.#inset = parsed.inset;
+
       return;
     }
 
-    if (typeof first === "object") {
+    if (typeof first === 'object') {
       const c = first.color;
       this.#offsetX = first.offsetX ?? 0;
       this.#offsetY = first.offsetY ?? 0;
       this.#blur = first.blur ?? 0;
       this.#spread = first.spread ?? 0;
-      this.#color = typeof c === "string" ? new Color(c) : (c ?? new Color(0, 0, 0));
+      this.#color = typeof c === 'string' ? new Color(c) : (c ?? new Color(0, 0, 0));
       this.#inset = first.inset ?? false;
+
       return;
     }
 
@@ -129,7 +135,7 @@ export class BoxShadow {
     this.#offsetY = offsetY ?? 0;
     this.#blur = blur ?? 0;
     this.#spread = spread ?? 0;
-    this.#color = typeof color === "string" ? new Color(color) : (color ?? new Color(0, 0, 0));
+    this.#color = typeof color === 'string' ? new Color(color) : (color ?? new Color(0, 0, 0));
     this.#inset = inset ?? false;
   }
 
@@ -181,31 +187,38 @@ export class BoxShadow {
 
   toString(): string {
     const parts: string[] = [];
+
     if (this.#inset) {
-      parts.push("inset");
+      parts.push('inset');
     }
+
     parts.push(fmtLength(this.#offsetX));
     parts.push(fmtLength(this.#offsetY));
+
     if (this.#blur !== 0 || this.#spread !== 0) {
       parts.push(fmtLength(this.#blur));
     }
+
     if (this.#spread !== 0) {
       parts.push(fmtLength(this.#spread));
     }
+
     parts.push(this.#color.toString());
-    return parts.join(" ");
+
+    return parts.join(' ');
   }
 
   static from(value: BoxShadow | BoxShadowOptions | string): BoxShadow {
-    if (typeof value === "object" && !(value instanceof BoxShadow)) {
+    if (typeof value === 'object' && !(value instanceof BoxShadow)) {
       return new BoxShadow(value);
     }
+
     return new BoxShadow(value);
   }
 
   /** Combine multiple shadows into a single CSS value */
   static combine(...shadows: BoxShadow[]): string {
-    return shadows.map((s) => s.toString()).join(", ");
+    return shadows.map(s => s.toString()).join(', ');
   }
 }
 
@@ -218,12 +231,14 @@ export class BoxShadowList {
   constructor(first: BoxShadow[] | string | BoxShadowList) {
     if (first instanceof BoxShadowList) {
       this.#layers = first.#layers;
+
       return;
     }
 
-    if (typeof first === "string") {
-      assertNotRef(first, "BoxShadowList");
-      this.#layers = splitTopLevel(first).map((s) => new BoxShadow(s));
+    if (typeof first === 'string') {
+      assertNotRef(first, 'BoxShadowList');
+      this.#layers = splitTopLevel(first).map(s => new BoxShadow(s));
+
       return;
     }
 
@@ -250,7 +265,7 @@ export class BoxShadowList {
   }
 
   toString(): string {
-    return this.#layers.map((s) => s.toString()).join(", ");
+    return this.#layers.map(s => s.toString()).join(', ');
   }
 
   static from(value: BoxShadowList | string | BoxShadow[]): BoxShadowList {

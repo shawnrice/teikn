@@ -1,6 +1,6 @@
-import { camelCase } from "../string-utils.js";
-import type { Token } from "../Token.js";
-import { Plugin } from "./Plugin.js";
+import { camelCase } from '../string-utils.js';
+import type { Token } from '../Token.js';
+import { Plugin } from './Plugin.js';
 
 /**
  * Prefixes the token type to the token name
@@ -33,12 +33,9 @@ export class PrefixTypePlugin extends Plugin {
     const { type, name } = token;
 
     if (!type || !name) {
-      throw new Error("Token is missing type or name");
+      throw new Error('Token is missing type or name');
     }
 
-    return {
-      ...token,
-      name: [camelCase(type), name.at(0)?.toUpperCase(), name.slice(1)].join(""),
-    };
+    return { ...token, name: [camelCase(type), name.at(0)?.toUpperCase(), name.slice(1)].join('') };
   }
 }

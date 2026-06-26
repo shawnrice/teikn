@@ -1,4 +1,4 @@
-declare module "ktree" {
+declare module 'ktree' {
   export class Octree<T extends object = object> {
     constructor(
       data: T[],

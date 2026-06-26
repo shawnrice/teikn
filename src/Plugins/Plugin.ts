@@ -1,10 +1,6 @@
-import type { Token } from "../Token.js";
+import type { Token } from '../Token.js';
 
-export type AuditIssue = {
-  severity: "error" | "warning" | "info";
-  token: string;
-  message: string;
-};
+export type AuditIssue = { severity: 'error' | 'warning' | 'info'; token: string; message: string };
 
 export abstract class Plugin<Options extends Record<string, unknown> = Record<string, unknown>> {
   abstract tokenType: string | RegExp;
@@ -37,8 +33,10 @@ export abstract class Plugin<Options extends Record<string, unknown> = Record<st
  */
 export const sortPlugins = (plugins: Plugin[]): Plugin[] => {
   const nameMap = new Map<string, Plugin>();
+
   for (const p of plugins) {
     const { name } = p.constructor;
+
     if (nameMap.has(name)) {
       throw new Error(
         `Duplicate plugin instance: two instances of \`${name}\` were passed. ` +
@@ -46,6 +44,7 @@ export const sortPlugins = (plugins: Plugin[]): Plugin[] => {
           `Merge their configuration into a single instance.`,
       );
     }
+
     nameMap.set(name, p);
   }
 
@@ -55,20 +54,25 @@ export const sortPlugins = (plugins: Plugin[]): Plugin[] => {
 
   const visit = (plugin: Plugin): void => {
     const { name } = plugin.constructor;
+
     if (visited.has(name)) {
       return;
     }
+
     if (visiting.has(name)) {
       throw new Error(`Plugin dependency cycle detected involving: ${name}`);
     }
 
     visiting.add(name);
+
     for (const dep of plugin.runAfter) {
       const depPlugin = nameMap.get(dep);
+
       if (depPlugin) {
         visit(depPlugin);
       }
     }
+
     visiting.delete(name);
     visited.add(name);
     sorted.push(plugin);

@@ -1,10 +1,4 @@
-import { Color } from "./TokenTypes/Color/index.js";
-import { Dimension, allUnits } from "./TokenTypes/Dimension.js";
-import type { DimensionUnit } from "./TokenTypes/Dimension.js";
-import { Duration, durationUnits } from "./TokenTypes/Duration.js";
-import type { DurationUnit } from "./TokenTypes/Duration.js";
-import { buildKeyAliasIndex, resolveKey, tokenKey } from "./token-keys.js";
-import { isFirstClassValue } from "./type-classifiers.js";
+import { buildKeyAliasIndex, resolveKey, tokenKey } from './token-keys.js';
 import type {
   CompositeInput,
   CompositeTokenInput,
@@ -15,7 +9,13 @@ import type {
   TokenInputObject,
   TypeSpec,
   TokenValue,
-} from "./Token.js";
+} from './Token.js';
+import { Color } from './TokenTypes/Color/index.js';
+import { Dimension, allUnits } from './TokenTypes/Dimension.js';
+import type { DimensionUnit } from './TokenTypes/Dimension.js';
+import { Duration, durationUnits } from './TokenTypes/Duration.js';
+import type { DurationUnit } from './TokenTypes/Duration.js';
+import { isFirstClassValue } from './type-classifiers.js';
 
 const arrayKeys = new Set(Object.getOwnPropertyNames(Array.prototype));
 
@@ -26,11 +26,11 @@ const arrayKeys = new Set(Object.getOwnPropertyNames(Array.prototype));
 export type TypeArg = string | TypeSpec;
 
 const normalizeTypeArg = (arg: TypeArg): TypeSpec =>
-  typeof arg === "string" ? { type: arg } : arg;
+  typeof arg === 'string' ? { type: arg } : arg;
 
 // Attach the optional `preview` hint to a built token. Kept as a helper so
 // the three group builders stamp it identically and only when present.
-const withPreview = <T extends Token>(token: T, preview: TypeSpec["preview"]): T =>
+const withPreview = <T extends Token>(token: T, preview: TypeSpec['preview']): T =>
   preview ? { ...token, preview } : token;
 
 // Numeric-string keys (e.g. "0", "1") are valid array indices — defining a
@@ -39,16 +39,17 @@ const withPreview = <T extends Token>(token: T, preview: TypeSpec["preview"]): T
 const isArrayIndex = (n: string): boolean => /^\d+$/.test(n) && Number(n) < 2 ** 32 - 1;
 
 const isTokenInputObject = (v: unknown): v is TokenInputObject =>
-  typeof v === "object" && v !== null && !Array.isArray(v) && !isFirstClassValue(v) && "value" in v;
+  typeof v === 'object' && v !== null && !Array.isArray(v) && !isFirstClassValue(v) && 'value' in v;
 
-const resolveTokenInput = (name: string, input: TokenInput): Omit<Token, "type"> => {
+const resolveTokenInput = (name: string, input: TokenInput): Omit<Token, 'type'> => {
   if (Array.isArray(input)) {
     return { name, value: input[0], usage: input[1] };
   }
 
   if (isTokenInputObject(input)) {
     const { value, usage, modes } = input;
-    const token: Omit<Token, "type"> = { name, value };
+    const token: Omit<Token, 'type'> = { name, value };
+
     if (usage) {
       token.usage = usage;
     }
@@ -56,20 +57,21 @@ const resolveTokenInput = (name: string, input: TokenInput): Omit<Token, "type">
     if (modes) {
       token.modes = modes;
     }
+
     return token;
   }
 
   return { name, value: input };
 };
 
-const resolveCompositeInput = (name: string, input: CompositeTokenInput): Omit<Token, "type"> => {
+const resolveCompositeInput = (name: string, input: CompositeTokenInput): Omit<Token, 'type'> => {
   if (Array.isArray(input)) {
     return { name, value: input[0], usage: input[1] };
   }
 
-  if (typeof input === "object" && "value" in input && typeof input.value === "object") {
+  if (typeof input === 'object' && 'value' in input && typeof input.value === 'object') {
     const obj = input as { value: CompositeInput; usage?: string; modes?: Record<string, any> };
-    const token: Omit<Token, "type"> = { name, value: obj.value };
+    const token: Omit<Token, 'type'> = { name, value: obj.value };
 
     if (obj.usage) {
       token.usage = obj.usage;
@@ -122,21 +124,14 @@ export const group = <E extends Record<string, TokenInput>>(
   typeArg: TypeArg,
   entries: E,
 ): TokenGroup<E> => {
-  if (typeof entries !== "object" || entries === null || Array.isArray(entries)) {
+  if (typeof entries !== 'object' || entries === null || Array.isArray(entries)) {
     throw new TypeError(`group(): entries must be a plain object, got ${typeof entries}`);
   }
 
   const { type, preview } = normalizeTypeArg(typeArg);
 
   const result = Object.entries(entries).map(([name, input]) =>
-    withPreview(
-      {
-        ...resolveTokenInput(name, input),
-        type,
-        group: type,
-      },
-      preview,
-    ),
+    withPreview({ ...resolveTokenInput(name, input), type, group: type }, preview),
   );
 
   for (const token of result) {
@@ -145,9 +140,11 @@ export const group = <E extends Record<string, TokenInput>>(
         `group(): token name "${token.name}" conflicts with Array.prototype.${token.name}. Rename the token to avoid shadowing built-in array behavior.`,
       );
     }
+
     if (isArrayIndex(token.name)) {
       continue;
     }
+
     Object.defineProperty(result, token.name, { value: token.value, enumerable: false });
   }
 
@@ -178,7 +175,7 @@ export const scale = (
   values: Record<string, TokenInput> | number[],
   options?: { names?: string[]; transform?: (n: number) => TokenValue; usage?: string },
 ): Token[] => {
-  if (!Array.isArray(values) && (typeof values !== "object" || values === null)) {
+  if (!Array.isArray(values) && (typeof values !== 'object' || values === null)) {
     throw new TypeError(`scale(): values must be a plain object or array, got ${typeof values}`);
   }
 
@@ -186,6 +183,7 @@ export const scale = (
 
   if (Array.isArray(values)) {
     const { names, transform = (n: number) => n, usage } = options ?? {};
+
     return values.map((v, i) => {
       const name = names?.[i] ?? String(i);
       const token: Token = { name, value: transform(v), type, group: type };
@@ -218,6 +216,7 @@ export const composite = (
   entries: Record<string, CompositeTokenInput>,
 ): Token[] => {
   const { type, preview } = normalizeTypeArg(typeArg);
+
   return Object.entries(entries).map(([name, input]) => {
     const token = withPreview(
       { ...resolveCompositeInput(name, input), type, group: type },
@@ -226,14 +225,14 @@ export const composite = (
     const compositeValue = token.value;
 
     if (
-      typeof compositeValue === "object" &&
+      typeof compositeValue === 'object' &&
       compositeValue !== null &&
       !isFirstClassValue(compositeValue) &&
       !Array.isArray(compositeValue)
     ) {
       for (const [field, fieldVal] of Object.entries(compositeValue as Record<string, unknown>)) {
         if (
-          typeof fieldVal === "object" &&
+          typeof fieldVal === 'object' &&
           fieldVal !== null &&
           !isFirstClassValue(fieldVal) &&
           !Array.isArray(fieldVal)
@@ -330,7 +329,7 @@ export const dp = (px: number): Dimension => {
     throw new Error(`dp(): value must be a finite number, got ${px}`);
   }
 
-  return new Dimension(px / 16, "rem");
+  return new Dimension(px / 16, 'rem');
 };
 
 /**
@@ -348,7 +347,7 @@ export const dim = (value: number, unit: DimensionUnit): Dimension => {
   }
 
   if (!allUnits.has(unit)) {
-    throw new Error(`dim(): invalid unit "${unit}". Valid units: ${[...allUnits].join(", ")}`);
+    throw new Error(`dim(): invalid unit "${unit}". Valid units: ${[...allUnits].join(', ')}`);
   }
 
   return new Dimension(value, unit);
@@ -369,7 +368,7 @@ export const dur = (value: number, unit: DurationUnit): Duration => {
   }
 
   if (!durationUnits.has(unit)) {
-    throw new Error(`dur(): invalid unit "${unit}". Valid units: ${[...durationUnits].join(", ")}`);
+    throw new Error(`dur(): invalid unit "${unit}". Valid units: ${[...durationUnits].join(', ')}`);
   }
 
   return new Duration(value, unit);
@@ -400,21 +399,22 @@ export const theme = (
   overrides: Record<string, TokenValue>,
 ): ThemeLayer => {
   const isTokenArray = Array.isArray(source);
-  const tokenNames = isTokenArray ? source.map((token) => tokenKey(token)) : source.tokenNames;
+  const tokenNames = isTokenArray ? source.map(token => tokenKey(token)) : source.tokenNames;
   const keyIndex = buildKeyAliasIndex(tokenNames);
   const resolvedOverrides: Record<string, TokenValue> = {};
 
   for (const key of Object.keys(overrides)) {
     const resolved = resolveKey(key, keyIndex);
-    if (resolved.status === "missing") {
+
+    if (resolved.status === 'missing') {
       throw new Error(
-        `Theme "${name}": unknown token "${key}". Available: ${tokenNames.join(", ")}`,
+        `Theme "${name}": unknown token "${key}". Available: ${tokenNames.join(', ')}`,
       );
     }
 
-    if (resolved.status === "ambiguous") {
+    if (resolved.status === 'ambiguous') {
       throw new Error(
-        `Theme "${name}": ambiguous token name "${key}". Matches: ${resolved.candidates.join(", ")}. ` +
+        `Theme "${name}": ambiguous token name "${key}". Matches: ${resolved.candidates.join(', ')}. ` +
           `Use the qualified name (e.g. "${resolved.candidates[0]}") to disambiguate, or rename one of the tokens.`,
       );
     }
@@ -423,6 +423,7 @@ export const theme = (
   }
 
   const merged = isTokenArray ? resolvedOverrides : { ...source.overrides, ...resolvedOverrides };
+
   return { name, tokenNames, overrides: merged };
 };
 
@@ -440,13 +441,15 @@ export const theme = (
  * ```
  */
 export const ref = (tokenName: string, usage?: string): TokenInputObject => {
-  if (!tokenName || typeof tokenName !== "string") {
+  if (!tokenName || typeof tokenName !== 'string') {
     throw new Error(`ref(): token name must be a non-empty string`);
   }
 
   const result: TokenInputObject = { value: `{${tokenName}}` };
+
   if (usage) {
     result.usage = usage;
   }
+
   return result;
 };

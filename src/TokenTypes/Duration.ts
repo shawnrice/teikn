@@ -1,12 +1,12 @@
-import { assertNotRef } from "./ref-guard.js";
+import { assertNotRef } from './ref-guard.js';
 
 // ─── Unit Type ──────────────────────────────────────────────
 
-export type DurationUnit = "ms" | "s";
+export type DurationUnit = 'ms' | 's';
 
-export const durationUnits: ReadonlySet<DurationUnit> = new Set<DurationUnit>(["ms", "s"]);
+export const durationUnits: ReadonlySet<DurationUnit> = new Set<DurationUnit>(['ms', 's']);
 
-export const isDurationUnit = (unit: string): unit is DurationUnit => unit === "ms" || unit === "s";
+export const isDurationUnit = (unit: string): unit is DurationUnit => unit === 'ms' || unit === 's';
 
 // ─── Conversion ─────────────────────────────────────────────
 // ms is canonical (like px for Dimension, RGB for Color).
@@ -15,7 +15,8 @@ export const convertDuration = (value: number, from: DurationUnit, to: DurationU
   if (from === to) {
     return value;
   }
-  return from === "ms" ? value / 1000 : value * 1000;
+
+  return from === 'ms' ? value / 1000 : value * 1000;
 };
 
 // ─── Parsing ────────────────────────────────────────────────
@@ -24,9 +25,11 @@ const PARSE_RE = /^(-?\d+(?:\.\d+)?)(ms|s)$/;
 
 const parseCss = (css: string): { value: number; unit: DurationUnit } => {
   const m = css.trim().match(PARSE_RE);
+
   if (!m) {
     throw new Error(`Invalid duration: "${css}"`);
   }
+
   return { value: parseFloat(m[1]!), unit: m[2]! as DurationUnit };
 };
 
@@ -46,26 +49,30 @@ export class Duration {
     if (first instanceof Duration) {
       this.#value = first.#value;
       this.#unit = first.#unit;
+
       return;
     }
 
-    if (typeof first === "string") {
-      assertNotRef(first, "Duration");
+    if (typeof first === 'string') {
+      assertNotRef(first, 'Duration');
       const parsed = parseCss(first);
       this.#value = parsed.value;
       this.#unit = parsed.unit;
+
       return;
     }
 
-    if (typeof first === "object") {
+    if (typeof first === 'object') {
       this.#value = first.value;
       this.#unit = first.unit;
+
       return;
     }
 
     if (unit === undefined) {
       throw new Error('Duration(number) requires a unit: "ms" or "s"');
     }
+
     this.#value = first;
     this.#unit = unit;
   }
@@ -84,15 +91,15 @@ export class Duration {
   }
 
   toMs(): Duration {
-    return this.to("ms");
+    return this.to('ms');
   }
 
   toS(): Duration {
-    return this.to("s");
+    return this.to('s');
   }
 
   ms(): number {
-    return this.#unit === "ms" ? this.#value : this.#value * 1000;
+    return this.#unit === 'ms' ? this.#value : this.#value * 1000;
   }
 
   // ─── Math ───────────────────────────────────────────────────
@@ -105,7 +112,9 @@ export class Duration {
     if (this.#unit === other.#unit) {
       return new Duration(this.#value + other.#value, this.#unit);
     }
+
     const converted = other.to(this.#unit);
+
     return new Duration(this.#value + converted.value, this.#unit);
   }
 
@@ -113,7 +122,9 @@ export class Duration {
     if (this.#unit === other.#unit) {
       return new Duration(this.#value - other.#value, this.#unit);
     }
+
     const converted = other.to(this.#unit);
+
     return new Duration(this.#value - converted.value, this.#unit);
   }
 
@@ -135,14 +146,15 @@ export class Duration {
 
   // ─── Static helpers ──────────────────────────────────────────
 
-  static zero(unit: DurationUnit = "ms"): Duration {
+  static zero(unit: DurationUnit = 'ms'): Duration {
     return new Duration(0, unit);
   }
 
   static from(value: Duration | DurationInput | string): Duration {
-    if (typeof value === "object" && !(value instanceof Duration)) {
+    if (typeof value === 'object' && !(value instanceof Duration)) {
       return new Duration(value);
     }
+
     return new Duration(value);
   }
 

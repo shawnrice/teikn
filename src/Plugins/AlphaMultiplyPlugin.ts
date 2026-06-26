@@ -1,13 +1,11 @@
-import type { Token } from "../Token.js";
-import { Color } from "../TokenTypes/Color/index.js";
-import { Plugin } from "./Plugin.js";
+import type { Token } from '../Token.js';
+import { Color } from '../TokenTypes/Color/index.js';
+import { Plugin } from './Plugin.js';
 
-type AlphaMultiplyPluginOptions = {
-  background?: string;
-} & Record<string, unknown>;
+type AlphaMultiplyPluginOptions = { background?: string } & Record<string, unknown>;
 
 export class AlphaMultiplyPlugin extends Plugin<AlphaMultiplyPluginOptions> {
-  tokenType: string = "color";
+  tokenType: string = 'color';
   outputType: RegExp = /.*/;
 
   constructor(options: AlphaMultiplyPluginOptions = {}) {
@@ -15,7 +13,7 @@ export class AlphaMultiplyPlugin extends Plugin<AlphaMultiplyPluginOptions> {
   }
 
   override transform(token: Token): Token {
-    const { background = "#ffffff" } = this.options;
+    const { background = '#ffffff' } = this.options;
 
     const fg = token.value instanceof Color ? token.value : new Color(token.value as string);
 
@@ -30,9 +28,6 @@ export class AlphaMultiplyPlugin extends Plugin<AlphaMultiplyPluginOptions> {
     const g = Math.round(fg.green * a + bg.green * (1 - a));
     const b = Math.round(fg.blue * a + bg.blue * (1 - a));
 
-    return {
-      ...token,
-      value: new Color(r, g, b).toString(),
-    };
+    return { ...token, value: new Color(r, g, b).toString() };
   }
 }

@@ -1,10 +1,7 @@
-import type { Token } from "./Token.js";
-import { tokenKey } from "./token-keys.js";
+import { tokenKey } from './token-keys.js';
+import type { Token } from './Token.js';
 
-export type TokenSet = {
-  name: string;
-  tokens: Token[];
-};
+export type TokenSet = { name: string; tokens: Token[] };
 
 /**
  * Create a named token set from one or more token arrays.

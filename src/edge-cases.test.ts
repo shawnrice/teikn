@@ -1,17 +1,17 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from 'bun:test';
 
-import { Color } from "./TokenTypes/Color/index.js";
-import { LinearGradient, RadialGradient } from "./TokenTypes/Gradient.js";
-import { PalettePlugin } from "./Plugins/PalettePlugin.js";
-import type { Token } from "./Token.js";
+import { PalettePlugin } from './Plugins/PalettePlugin.js';
+import type { Token } from './Token.js';
+import { Color } from './TokenTypes/Color/index.js';
+import { LinearGradient, RadialGradient } from './TokenTypes/Gradient.js';
 
 // ─── PalettePlugin edge cases ────────────────────────────────
 
-describe("PalettePlugin edge cases", () => {
+describe('PalettePlugin edge cases', () => {
   const plugin = new PalettePlugin();
 
-  test("generates palette from pure white without NaN/Infinity", () => {
-    const tokens: Token[] = [{ name: "white", type: "color", value: "#ffffff" }];
+  test('generates palette from pure white without NaN/Infinity', () => {
+    const tokens: Token[] = [{ name: 'white', type: 'color', value: '#ffffff' }];
     const result = plugin.expand(tokens);
 
     for (const token of result) {
@@ -22,8 +22,8 @@ describe("PalettePlugin edge cases", () => {
     }
   });
 
-  test("generates palette from pure black without NaN/Infinity", () => {
-    const tokens: Token[] = [{ name: "black", type: "color", value: "#000000" }];
+  test('generates palette from pure black without NaN/Infinity', () => {
+    const tokens: Token[] = [{ name: 'black', type: 'color', value: '#000000' }];
     const result = plugin.expand(tokens);
 
     for (const token of result) {
@@ -37,14 +37,14 @@ describe("PalettePlugin edge cases", () => {
 
 // ─── Gradient edge cases ─────────────────────────────────────
 
-describe("Gradient edge cases", () => {
-  test("LinearGradient with empty stops throws", () => {
+describe('Gradient edge cases', () => {
+  test('LinearGradient with empty stops throws', () => {
     const g = new LinearGradient(90, []);
-    expect(() => g.toString()).toThrow("at least one color stop");
+    expect(() => g.toString()).toThrow('at least one color stop');
   });
 
-  test("RadialGradient with empty stops throws", () => {
+  test('RadialGradient with empty stops throws', () => {
     const g = new RadialGradient({}, []);
-    expect(() => g.toString()).toThrow("at least one color stop");
+    expect(() => g.toString()).toThrow('at least one color stop');
   });
 });

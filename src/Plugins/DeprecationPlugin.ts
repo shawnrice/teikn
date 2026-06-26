@@ -1,9 +1,7 @@
-import type { Token } from "../Token.js";
-import { Plugin } from "./Plugin.js";
+import type { Token } from '../Token.js';
+import { Plugin } from './Plugin.js';
 
-type DeprecationPluginOptions = {
-  tokens: Record<string, string | true>;
-} & Record<string, unknown>;
+type DeprecationPluginOptions = { tokens: Record<string, string | true> } & Record<string, unknown>;
 
 export class DeprecationPlugin extends Plugin<DeprecationPluginOptions> {
   tokenType: RegExp = /.*/;
@@ -17,16 +15,11 @@ export class DeprecationPlugin extends Plugin<DeprecationPluginOptions> {
       return token;
     }
 
-    const replacement = typeof entry === "string" ? entry : undefined;
-    const notice = replacement ? `DEPRECATED: use "${replacement}" instead.` : "DEPRECATED.";
+    const replacement = typeof entry === 'string' ? entry : undefined;
+    const notice = replacement ? `DEPRECATED: use "${replacement}" instead.` : 'DEPRECATED.';
 
     const usage = token.usage ? `${notice} ${token.usage}` : notice;
 
-    return {
-      ...token,
-      deprecated: true,
-      ...(replacement ? { replacement } : {}),
-      usage,
-    };
+    return { ...token, deprecated: true, ...(replacement ? { replacement } : {}), usage };
   }
 }

@@ -25,5 +25,6 @@ export const flip = <T extends Record<string, string>>(obj: T): Flip<T> =>
   Object.keys(obj).reduce((acc, name) => {
     // @ts-expect-error -- this is fine
     acc[obj[name]] = name;
+
     return acc;
   }, {} as Flip<T>);

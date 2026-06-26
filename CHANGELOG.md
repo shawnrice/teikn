@@ -4,104 +4,97 @@
 
 ### Added
 
-- **`Typography` and `Border` value types.** The two remaining DTCG composite
-  types are now first-class. Construct them from objects —
-  `new Typography({ fontFamily, fontSize, fontWeight, lineHeight, letterSpacing })`
-  and `new Border({ width, style, color })` — or parse a `Border` from the CSS
-  shorthand (`new Border("1px solid #e0e0e0")`). They serialize to the CSS `font`
-  / `border` shorthands, emit structured `$value` objects in the `Dtcg`
-  generator, and get dedicated swatches in the `Html` and `Storybook` docs.
-- **Per-field references inside composite wrappers.** Any field of a `Typography`
-  or `Border` may be a `{token}` reference — e.g.
-  `new Border({ width: dp(1), style: "solid", color: "{color.line}" })`. Fields
-  are resolved individually (circular references included) and emit `var(--…)`
-  (CSS/SCSS) or `{alias}` (DTCG) just like a shared composite value. A
-  whole-value reference is still the token value itself, not a wrapper.
-- **`layer` option on `CssVars`.** Wrap the emitted custom properties in a named
-  CSS cascade layer — `new CssVars({ layer: "tokens" })` produces
-  `@layer tokens { :root { … } }`. Because an unlayered declaration always beats
-  a layered one regardless of source order, downstream consumers can re-skin with
-  a plain `:root { --color-accent: … }` that reliably wins — no `!important`, no
-  specificity games, no import-order juggling. The wrapper covers the base
-  `:root` block and every mode/theme block, nesting `@media` at-rules one level
-  deeper inside the layer. The object form `{ name, statement: true }` also emits
-  a leading `@layer tokens;` statement so the layer's cascade position is fixed
-  even when the sheet is imported late. Default off (unlayered, unchanged). Not
-  added to `ScssVars`: SCSS variables are compile-time and never reach the
-  cascade, so a layer would be meaningless there.
+- **`Typography` and `Border` value types.** The two remaining DTCG composite types are now
+  first-class. Construct them from objects —
+  `new Typography({ fontFamily, fontSize, fontWeight, lineHeight, letterSpacing })` and
+  `new Border({ width, style, color })` — or parse a `Border` from the CSS shorthand
+  (`new Border("1px solid #e0e0e0")`). They serialize to the CSS `font` / `border` shorthands, emit
+  structured `$value` objects in the `Dtcg` generator, and get dedicated swatches in the `Html` and
+  `Storybook` docs.
+- **Per-field references inside composite wrappers.** Any field of a `Typography` or `Border` may be
+  a `{token}` reference — e.g.
+  `new Border({ width: dp(1), style: "solid", color: "{color.line}" })`. Fields are resolved
+  individually (circular references included) and emit `var(--…)` (CSS/SCSS) or `{alias}` (DTCG)
+  just like a shared composite value. A whole-value reference is still the token value itself, not a
+  wrapper.
+- **`layer` option on `CssVars`.** Wrap the emitted custom properties in a named CSS cascade layer —
+  `new CssVars({ layer: "tokens" })` produces `@layer tokens { :root { … } }`. Because an unlayered
+  declaration always beats a layered one regardless of source order, downstream consumers can
+  re-skin with a plain `:root { --color-accent: … }` that reliably wins — no `!important`, no
+  specificity games, no import-order juggling. The wrapper covers the base `:root` block and every
+  mode/theme block, nesting `@media` at-rules one level deeper inside the layer. The object form
+  `{ name, statement: true }` also emits a leading `@layer tokens;` statement so the layer's cascade
+  position is fixed even when the sheet is imported late. Default off (unlayered, unchanged). Not
+  added to `ScssVars`: SCSS variables are compile-time and never reach the cascade, so a layer would
+  be meaningless there.
 
 ## 2.0.0-beta.4
 
 ### Fixed
 
-- **Group accessor guard.** The generated `groups: true` accessors checked
-  `name in _group`, which walks the prototype chain — `color("toString")` and
-  the like slipped past the guard and returned an inherited function instead of
-  throwing. Now uses `Object.prototype.hasOwnProperty.call(...)` (spelled out
-  rather than `Object.hasOwn`, since the output may run on pre-ES2022 runtimes).
-- **Declaration return types.** `.d.ts` group accessors were all typed
-  `=> string`, even for numeric groups (`z-index`, `font-weight`). They now
-  return the actual primitive (`number`, `string`, or a union for mixed groups).
+- **Group accessor guard.** The generated `groups: true` accessors checked `name in _group`, which
+  walks the prototype chain — `color("toString")` and the like slipped past the guard and returned
+  an inherited function instead of throwing. Now uses `Object.prototype.hasOwnProperty.call(...)`
+  (spelled out rather than `Object.hasOwn`, since the output may run on pre-ES2022 runtimes).
+- **Declaration return types.** `.d.ts` group accessors were all typed `=> string`, even for numeric
+  groups (`z-index`, `font-weight`). They now return the actual primitive (`number`, `string`, or a
+  union for mixed groups).
 
 ### Changed
 
-- **Generated output style.** Accessor functions are now braced (lint-clean,
-  consistent with the rest of the codebase), and generated string literals are
-  single-quoted so font stacks like `"Times New Roman", serif` are no longer
-  emitted with escaped quotes.
+- **Generated output style.** Accessor functions are now braced (lint-clean, consistent with the
+  rest of the codebase), and generated string literals are single-quoted so font stacks like
+  `"Times New Roman", serif` are no longer emitted with escaped quotes.
 
 ## 2.0.0-beta.3
 
 ### Added
 
-- **Documentation `preview` hint.** Pass `group({ type, preview }, …)` (also on
-  `scale`/`composite`) to override how a token is visualized in the `Storybook`
-  and `Html` generators — e.g. `{ type: "elevation", preview: "shadow" }`. It's
-  presentational only and never affects CSS/SCSS/JS/DTCG output; when omitted,
-  the kind is inferred from `type` as before.
+- **Documentation `preview` hint.** Pass `group({ type, preview }, …)` (also on `scale`/`composite`)
+  to override how a token is visualized in the `Storybook` and `Html` generators — e.g.
+  `{ type: "elevation", preview: "shadow" }`. It's presentational only and never affects
+  CSS/SCSS/JS/DTCG output; when omitted, the kind is inferred from `type` as before.
 
 ### Fixed
 
-- **Storybook dark mode.** The theme wrapper now paints its own
-  background/color, so cards no longer float on a white canvas. Added a
-  `darkMode` option to opt out of the dark chrome entirely.
-- **Shadow swatches in dark mode.** Box-shadows now render on a light stage so
-  the semi-transparent shadow stays visible.
-- **`border-width`, `border-style`, and bare `radius` tokens.** These rendered
-  as a plain table; they now get proper visual samples.
-- **`Html` crash with no `dateFn`.** `header()` no longer assumes the optional
-  `dateFn` is present.
+- **Storybook dark mode.** The theme wrapper now paints its own background/color, so cards no longer
+  float on a white canvas. Added a `darkMode` option to opt out of the dark chrome entirely.
+- **Shadow swatches in dark mode.** Box-shadows now render on a light stage so the semi-transparent
+  shadow stays visible.
+- **`border-width`, `border-style`, and bare `radius` tokens.** These rendered as a plain table;
+  they now get proper visual samples.
+- **`Html` crash with no `dateFn`.** `header()` no longer assumes the optional `dateFn` is present.
 
 ### Changed
 
-- **Single source of truth for token-type classification.** The per-generator
-  regex ladders are replaced by `classifyTokenType` + `resolvePreviewKind`;
-  behavior is unchanged for existing token sets.
+- **Single source of truth for token-type classification.** The per-generator regex ladders are
+  replaced by `classifyTokenType` + `resolvePreviewKind`; behavior is unchanged for existing token
+  sets.
 
 ## 2.0.0-beta.2
 
 ### Fixed
 
-- **Color alpha precision.** Alpha channel now rounds to 4 decimal places
-  in all color format serializers (rgba, hsla, lab, lch).
-- **Noisy `runAfter` warnings removed.** Missing targets are silently
-  skipped — they're ordering hints, not requirements.
+- **Color alpha precision.** Alpha channel now rounds to 4 decimal places in all color format
+  serializers (rgba, hsla, lab, lch).
+- **Noisy `runAfter` warnings removed.** Missing targets are silently skipped — they're ordering
+  hints, not requirements.
 
 ## 2.0.0-beta.1
 
 ### Fixed
 
-- **Generated SCSS passes Stylelint.** Blank line before `@return`, dropped
-  `@if` parens, number precision capped at 4, final newline on all files.
-- **Dropped wall-clock date from generated headers.** No more spurious diffs
-  on every CI run. `dateFn` still available as an opt-in.
+- **Generated SCSS passes Stylelint.** Blank line before `@return`, dropped `@if` parens, number
+  precision capped at 4, final newline on all files.
+- **Dropped wall-clock date from generated headers.** No more spurious diffs on every CI run.
+  `dateFn` still available as an opt-in.
 
 ## 2.0.0-beta.0
 
 ### Changed
 
-- **`filenames()` is a hard contract.** Generators that emit or omit files
-  not matching their declaration now throw.
+- **`filenames()` is a hard contract.** Generators that emit or omit files not matching their
+  declaration now throw.
 - **Dot forbidden in token name/group.** Duplicate qualified keys are errors.
 - **Reject `{ref}` strings inside first-class value wrappers.**
 - **Plugin errors include plugin name + token name.**
@@ -122,70 +115,56 @@
 
 ### Added
 
-- **`prefix` and `separator` options on `CssVars`, `Scss`, and `ScssVars`.**
-  Namespaces global symbols to prevent collisions when teikn-generated
-  output coexists with other CSS/SCSS that owns the same global namespace.
-  Accepts a single segment or an array (stacked left-to-right outermost):
+- **`prefix` and `separator` options on `CssVars`, `Scss`, and `ScssVars`.** Namespaces global
+  symbols to prevent collisions when teikn-generated output coexists with other CSS/SCSS that owns
+  the same global namespace. Accepts a single segment or an array (stacked left-to-right outermost):
 
   ```ts
-  new CssVars({ prefix: "company" });
+  new CssVars({ prefix: 'company' });
   // --company-color-primary: ...
 
-  new ScssVars({ prefix: ["company", "abc"], separator: "_" });
+  new ScssVars({ prefix: ['company', 'abc'], separator: '_' });
   // $company_abc_color-primary: ...
   ```
 
-  Each segment runs through the generator's `nameTransformer`, so
-  authoring style is style-agnostic (`prefix: "myCompany"` yields
-  `--my-company-…` under the default `kebabCase`). References between
-  tokens (e.g. a `Transition` referencing a `Duration` token) pick up
-  the prefix automatically — the prefix is composed at emit time, not
-  baked into `token.name`. Group accessors (`color('primary')`) keep
-  using authored short-names; the underlying lookup resolves to the
-  prefixed variable.
+  Each segment runs through the generator's `nameTransformer`, so authoring style is style-agnostic
+  (`prefix: "myCompany"` yields `--my-company-…` under the default `kebabCase`). References between
+  tokens (e.g. a `Transition` referencing a `Duration` token) pick up the prefix automatically — the
+  prefix is composed at emit time, not baked into `token.name`. Group accessors (`color('primary')`)
+  keep using authored short-names; the underlying lookup resolves to the prefixed variable.
 
-  `JavaScript`, `Json`, `Dtcg`, and `TypeScriptDeclarations` do not
-  accept the option — they have their own namespace mechanisms (module
-  scope, JSON keys, ambient declarations) and don't need it.
+  `JavaScript`, `Json`, `Dtcg`, and `TypeScriptDeclarations` do not accept the option — they have
+  their own namespace mechanisms (module scope, JSON keys, ambient declarations) and don't need it.
 
 ### Changed
 
-- **`ScssVars` mode separator now follows the `separator` option.**
-  Previously hardcoded as `--` (e.g. `$color-surface--dark`). Now uses
-  the same separator as the prefix join, defaulting to `-`
-  (`$color-surface-dark`). This is a breaking change to the SCSS
-  variables output; consumers reading mode variables by name need to
-  update references. The double-hyphen pattern was a visual
-  disambiguation borrowed from CSS custom-property syntax, but it had
-  no semantic value in SCSS and produced inconsistency once the
-  `separator` option arrived.
+- **`ScssVars` mode separator now follows the `separator` option.** Previously hardcoded as `--`
+  (e.g. `$color-surface--dark`). Now uses the same separator as the prefix join, defaulting to `-`
+  (`$color-surface-dark`). This is a breaking change to the SCSS variables output; consumers reading
+  mode variables by name need to update references. The double-hyphen pattern was a visual
+  disambiguation borrowed from CSS custom-property syntax, but it had no semantic value in SCSS and
+  produced inconsistency once the `separator` option arrived.
 
 ### Fixed
 
-- **Node ESM resolution.** The published `lib/` is `"type": "module"`
-  but TypeScript was emitting extensionless relative imports
-  (`export * from './src/Teikn'`), which Node's strict ESM resolver
-  rejects with `ERR_MODULE_NOT_FOUND`. Bun resolves them silently, so
-  the issue only surfaced under Node. All 126 affected source files
-  now use explicit `.js` extensions on relative imports, and
-  `tsconfig.json` switched to `"module": "nodenext"` to enforce this
-  going forward.
+- **Node ESM resolution.** The published `lib/` is `"type": "module"` but TypeScript was emitting
+  extensionless relative imports (`export * from './src/Teikn'`), which Node's strict ESM resolver
+  rejects with `ERR_MODULE_NOT_FOUND`. Bun resolves them silently, so the issue only surfaced under
+  Node. All 126 affected source files now use explicit `.js` extensions on relative imports, and
+  `tsconfig.json` switched to `"module": "nodenext"` to enforce this going forward.
 
-- **`group()` builder corrupted the result array on numeric token
-  names.** `Object.defineProperty(arr, "0", { value })` writes through
-  to the array index slot, overwriting the token wrapper at index 0
-  with the raw value and breaking iteration on the next `for…of` step.
-  Numeric-string names now skip the by-name property shortcut; the
-  array contents themselves are unaffected. Access values by
-  `result.find(t => t.name === "0")` for numerically-named tokens.
+- **`group()` builder corrupted the result array on numeric token names.**
+  `Object.defineProperty(arr, "0", { value })` writes through to the array index slot, overwriting
+  the token wrapper at index 0 with the raw value and breaking iteration on the next `for…of` step.
+  Numeric-string names now skip the by-name property shortcut; the array contents themselves are
+  unaffected. Access values by `result.find(t => t.name === "0")` for numerically-named tokens.
 
-- **`Json.describe()` documented import is valid Node ESM.** Now
-  emits `import tokens from './tokens.json' with { type: 'json' };`
-  instead of the extension-less form Node rejects.
+- **`Json.describe()` documented import is valid Node ESM.** Now emits
+  `import tokens from './tokens.json' with { type: 'json' };` instead of the extension-less form
+  Node rejects.
 
-- **`TypeScriptDeclarations.describe()` documented import paths use
-  the `.js` extension** so the displayed example resolves correctly
-  under Node ESM consumers.
+- **`TypeScriptDeclarations.describe()` documented import paths use the `.js` extension** so the
+  displayed example resolves correctly under Node ESM consumers.
 
 - **Typo in the SCSS generator file header** (`commited` → `committed`).
 
@@ -193,200 +172,163 @@
 
 ### Fixed
 
-- **SCSS output no longer emits deprecated global map functions.** `Scss`
-  and `ScssVars` previously emitted `map-get`, `map-has-key`, and
-  `map-keys`, which Dart Sass 2.x warns about and Dart Sass 3.0 removes.
-  Output now loads the `sass:map` module with `@use "sass:map";` and
-  calls the namespaced `map.get` / `map.has-key` / `map.keys` forms. The
-  `@use` directive is emitted only when the output actually uses map
-  functions (`Scss` always; `ScssVars` only with `groups: true`).
+- **SCSS output no longer emits deprecated global map functions.** `Scss` and `ScssVars` previously
+  emitted `map-get`, `map-has-key`, and `map-keys`, which Dart Sass 2.x warns about and Dart Sass
+  3.0 removes. Output now loads the `sass:map` module with `@use "sass:map";` and calls the
+  namespaced `map.get` / `map.has-key` / `map.keys` forms. The `@use` directive is emitted only when
+  the output actually uses map functions (`Scss` always; `ScssVars` only with `groups: true`).
 
 ### Compatibility
 
-- Generated SCSS requires **Dart Sass 1.23+** (Oct 2019), which covers
-  current `sass`, `sass-embedded`, and modern `sass-loader` setups.
-  Projects still on LibSass / `node-sass` (EOL since Oct 2020) will not
-  parse `@use "sass:map"` — they need to migrate to Dart Sass.
+- Generated SCSS requires **Dart Sass 1.23+** (Oct 2019), which covers current `sass`,
+  `sass-embedded`, and modern `sass-loader` setups. Projects still on LibSass / `node-sass` (EOL
+  since Oct 2020) will not parse `@use "sass:map"` — they need to migrate to Dart Sass.
 
 ## 2.0.0-alpha.12
 
 ### Fixed
 
-- **`NameConventionPlugin` rename now reaches references inside composed
-  values.** `ScssVars` and `CssVars` previously built their reference map
-  from pre-plugin token names, so a token like `easeOut` referenced inside
-  a `Transition` would emit as `$easeOut` while the variable definition
-  correctly emitted as `$ease-out` (kebab-case plugin) — broken cross-reference.
-  Both generators now build the reference map from post-plugin tokens so
-  references always match their definitions.
+- **`NameConventionPlugin` rename now reaches references inside composed values.** `ScssVars` and
+  `CssVars` previously built their reference map from pre-plugin token names, so a token like
+  `easeOut` referenced inside a `Transition` would emit as `$easeOut` while the variable definition
+  correctly emitted as `$ease-out` (kebab-case plugin) — broken cross-reference. Both generators now
+  build the reference map from post-plugin tokens so references always match their definitions.
 
 ## 2.0.0-alpha.11
 
 ### Breaking Changes
 
-- **`EsModule` generator removed.** Use `JavaScript` instead, which now
-  defaults to ESM. For CommonJS output, pass `module: "cjs"`.
-- **`JavaScript` generator defaults to ESM (`.mjs`).** The previous
-  CJS-default behavior is still available via `new JavaScript({ module: "cjs" })`,
-  which emits `.cjs`. Consumers who relied on the old `.js` default
-  need to either accept `.mjs` or override `ext` explicitly.
-- **`TypeScript` generator is now a meta-generator that emits both
-  runtime and declarations.** The previous declarations-only behavior
-  moved to a new `TypeScriptDeclarations` generator. Users constructing
-  `new TypeScript()` previously got a single `.d.ts`; now they get a
-  `.mjs` runtime _and_ a `.d.ts` from a single construction, which is
-  what the name suggests. To restore the old declarations-only output,
-  switch to `new TypeScriptDeclarations()`.
-- **`TypeScriptDeclarations` emits literal types by default.** Values
-  become their literal type (`readonly primary: "#0066cc"` instead of
-  `primary: string`). This enables exhaustive unions like
-  `type TokenColor = typeof tokens[keyof typeof tokens]`. To restore
-  the old widened-primitive output, pass `loose: true`.
-- **`TypeScriptDeclarations` emits `export declare const` with
-  `readonly` fields.** The previous `export const tokens: {...}`
-  ambient form is replaced with the explicit `export declare const`,
-  and every field carries `readonly` (top-level tokens, composite
-  fields, modes map). Consumers reading the `.d.ts` directly may need
-  to adapt; type-level consumers are unaffected.
-- **`composeTokenSetsAsModes` throws when a mode set introduces tokens
-  missing from the base.** Previously these were added silently with
-  `value: undefined`, producing a landmine for every downstream generator.
-  The new error message is
+- **`EsModule` generator removed.** Use `JavaScript` instead, which now defaults to ESM. For
+  CommonJS output, pass `module: "cjs"`.
+- **`JavaScript` generator defaults to ESM (`.mjs`).** The previous CJS-default behavior is still
+  available via `new JavaScript({ module: "cjs" })`, which emits `.cjs`. Consumers who relied on the
+  old `.js` default need to either accept `.mjs` or override `ext` explicitly.
+- **`TypeScript` generator is now a meta-generator that emits both runtime and declarations.** The
+  previous declarations-only behavior moved to a new `TypeScriptDeclarations` generator. Users
+  constructing `new TypeScript()` previously got a single `.d.ts`; now they get a `.mjs` runtime
+  _and_ a `.d.ts` from a single construction, which is what the name suggests. To restore the old
+  declarations-only output, switch to `new TypeScriptDeclarations()`.
+- **`TypeScriptDeclarations` emits literal types by default.** Values become their literal type
+  (`readonly primary: "#0066cc"` instead of `primary: string`). This enables exhaustive unions like
+  `type TokenColor = typeof tokens[keyof typeof tokens]`. To restore the old widened-primitive
+  output, pass `loose: true`.
+- **`TypeScriptDeclarations` emits `export declare const` with `readonly` fields.** The previous
+  `export const tokens: {...}` ambient form is replaced with the explicit `export declare const`,
+  and every field carries `readonly` (top-level tokens, composite fields, modes map). Consumers
+  reading the `.d.ts` directly may need to adapt; type-level consumers are unaffected.
+- **`composeTokenSetsAsModes` throws when a mode set introduces tokens missing from the base.**
+  Previously these were added silently with `value: undefined`, producing a landmine for every
+  downstream generator. The new error message is
   `composeTokenSetsAsModes(): missing base token "X" for mode "Y"`.
-- **`composeTokenSets` and `composeTokenSetsAsModes` key tokens by
-  qualified name (`group.name`).** Two grouped tokens with the same
-  short name in different groups (e.g. `color.primary` and `size.primary`)
-  now coexist instead of silently collapsing last-wins. Override matching
-  in `composeTokenSets` and mode matching in `composeTokenSetsAsModes`
-  both use qualified keys; the latter's missing-base error message now
-  reports the qualified name.
-- **`TypeScript` meta generator throws if given an `ext` option.** The
-  meta emits `.mjs`/`.cjs` (from `module`) plus `.d.ts`; an `ext` option
-  has no meaningful target and previously was silently ignored. Use
-  `module` to switch the runtime extension, or construct `JavaScript` /
+- **`composeTokenSets` and `composeTokenSetsAsModes` key tokens by qualified name (`group.name`).**
+  Two grouped tokens with the same short name in different groups (e.g. `color.primary` and
+  `size.primary`) now coexist instead of silently collapsing last-wins. Override matching in
+  `composeTokenSets` and mode matching in `composeTokenSetsAsModes` both use qualified keys; the
+  latter's missing-base error message now reports the qualified name.
+- **`TypeScript` meta generator throws if given an `ext` option.** The meta emits `.mjs`/`.cjs`
+  (from `module`) plus `.d.ts`; an `ext` option has no meaningful target and previously was silently
+  ignored. Use `module` to switch the runtime extension, or construct `JavaScript` /
   `TypeScriptDeclarations` directly for per-file `ext` control.
-- **`ThemeLayer.tokenNames` now stores qualified names** (e.g.
-  `color.background` instead of `background`) when tokens live inside a
-  group. Code that inspected `tokenNames` directly may need to adapt;
-  code that only passes the `ThemeLayer` through the rest of the pipeline
-  is unaffected.
+- **`ThemeLayer.tokenNames` now stores qualified names** (e.g. `color.background` instead of
+  `background`) when tokens live inside a group. Code that inspected `tokenNames` directly may need
+  to adapt; code that only passes the `ThemeLayer` through the rest of the pipeline is unaffected.
 
 ### Added
 
-- **Multi-file generator emission.** Generators may now emit more than
-  one output file from a single construction via the new
-  `generateFiles()` contract on the `Generator` base class. Existing
-  single-file generators keep their current behavior through the
-  default implementation; only the new `TypeScript` meta-generator
-  opts into multiple files.
-- **`TypeScript` meta-generator.** A single construction produces both
-  a `JavaScript` runtime and a `TypeScriptDeclarations` output, wired
-  with matching filenames and name transforms:
+- **Multi-file generator emission.** Generators may now emit more than one output file from a single
+  construction via the new `generateFiles()` contract on the `Generator` base class. Existing
+  single-file generators keep their current behavior through the default implementation; only the
+  new `TypeScript` meta-generator opts into multiple files.
+- **`TypeScript` meta-generator.** A single construction produces both a `JavaScript` runtime and a
+  `TypeScriptDeclarations` output, wired with matching filenames and name transforms:
 
   ```ts
-  new Teikn.generators.TypeScript({ filename: "tokens" });
+  new Teikn.generators.TypeScript({ filename: 'tokens' });
   // → tokens.mjs + tokens.d.ts
 
-  new Teikn.generators.TypeScript({ module: "cjs" });
+  new Teikn.generators.TypeScript({ module: 'cjs' });
   // → tokens.cjs + tokens.d.ts
 
   new Teikn.generators.TypeScript({ loose: true });
   // → tokens.mjs + tokens.d.ts (widened primitive types)
   ```
 
-  Users who want runtime-only construct `JavaScript` directly; users
-  who want declarations-only construct `TypeScriptDeclarations`
-  directly.
+  Users who want runtime-only construct `JavaScript` directly; users who want declarations-only
+  construct `TypeScriptDeclarations` directly.
 
-- **`JavaScript.module` option.** `"esm"` (default, emits `.mjs` with
-  `export const` / `export default`) or `"cjs"` (emits `.cjs` with
-  `module.exports`). File extension derives from the module system
-  but remains overrideable via `ext`.
-- **`TypeScriptDeclarations.loose` option.** Restores widened
-  primitive types (`string`, `number`, `boolean`) for consumers who
-  need them. Default is `false` — literal narrow types.
-- **Group-aware reference resolution.** `{primary}` resolves to
-  `color.primary` when a token's bare name is unambiguous across groups.
-  When ambiguous, you can disambiguate by writing the qualified
-  reference: `{color.primary}` resolves directly to that token regardless
-  of how many other groups share the bare name. Ambiguous bare references
-  still throw with a diagnostic listing the candidates
-  (e.g. `Ambiguous token reference: {primary} matches color.primary, size.primary`).
-  Works in `resolveReferences`, `validate`, `theme(...)` overrides, and
-  internal theme application. The `theme()` `overrides` map also accepts
-  qualified keys (`{ "color.primary": "#3399ff" }`) for the same
-  disambiguation reason.
-- **`KeyAliasIndex` type exported from `token-keys.ts`.** Previously
-  consumers had to use `ReturnType<typeof buildKeyAliasIndex>`; the
-  named type is now part of the public surface for anyone writing
-  custom resolvers.
-- **DTCG `$extensions.mode` parsing.** `parseDtcg` now reads mode
-  variants from `$extensions.mode` and converts each entry into a Teikn
-  mode value, preserving aliases verbatim. Lets DTCG documents with
-  theme-mode variants round-trip into Teikn without manual mode
-  reconstruction.
+- **`JavaScript.module` option.** `"esm"` (default, emits `.mjs` with `export const` /
+  `export default`) or `"cjs"` (emits `.cjs` with `module.exports`). File extension derives from the
+  module system but remains overrideable via `ext`.
+- **`TypeScriptDeclarations.loose` option.** Restores widened primitive types (`string`, `number`,
+  `boolean`) for consumers who need them. Default is `false` — literal narrow types.
+- **Group-aware reference resolution.** `{primary}` resolves to `color.primary` when a token's bare
+  name is unambiguous across groups. When ambiguous, you can disambiguate by writing the qualified
+  reference: `{color.primary}` resolves directly to that token regardless of how many other groups
+  share the bare name. Ambiguous bare references still throw with a diagnostic listing the
+  candidates (e.g. `Ambiguous token reference: {primary} matches color.primary, size.primary`).
+  Works in `resolveReferences`, `validate`, `theme(...)` overrides, and internal theme application.
+  The `theme()` `overrides` map also accepts qualified keys (`{ "color.primary": "#3399ff" }`) for
+  the same disambiguation reason.
+- **`KeyAliasIndex` type exported from `token-keys.ts`.** Previously consumers had to use
+  `ReturnType<typeof buildKeyAliasIndex>`; the named type is now part of the public surface for
+  anyone writing custom resolvers.
+- **DTCG `$extensions.mode` parsing.** `parseDtcg` now reads mode variants from `$extensions.mode`
+  and converts each entry into a Teikn mode value, preserving aliases verbatim. Lets DTCG documents
+  with theme-mode variants round-trip into Teikn without manual mode reconstruction.
 
 ### Fixed
 
-- **`JavaScript` and `TypeScriptDeclarations` quote transformed token
-  keys that are not valid identifiers.** A kebab-case `nameTransformer`
-  (e.g. converting `colorPrimary` → `color-primary`) previously produced
-  invalid JS/TS output like `color-primary: "#fff",`. The generators now
-  single-quote any key that is not a valid identifier. Originally shipped
-  across the pre-rename generators (`EsModule`, old CJS `JavaScript`,
-  old `TypeScript`); carried through to the merged/renamed classes.
-- **Storybook detects a `TypeScript` meta sibling for import-path
-  resolution.** Previously only `instanceof JavaScript` was checked, so
-  a pipeline of `[Storybook, TypeScript]` always fell back to
-  `./tokens` even when the meta's filename was customized. Storybook
-  now reads the runtime base from the meta's `filenames()` list.
-- **`TypeScriptDeclarations` emits `null` for null values** instead of
-  `object` (which is what `typeof null` returns). Edge case — null
-  isn't a valid `TokenValue` — but the previous output was misleading.
+- **`JavaScript` and `TypeScriptDeclarations` quote transformed token keys that are not valid
+  identifiers.** A kebab-case `nameTransformer` (e.g. converting `colorPrimary` → `color-primary`)
+  previously produced invalid JS/TS output like `color-primary: "#fff",`. The generators now
+  single-quote any key that is not a valid identifier. Originally shipped across the pre-rename
+  generators (`EsModule`, old CJS `JavaScript`, old `TypeScript`); carried through to the
+  merged/renamed classes.
+- **Storybook detects a `TypeScript` meta sibling for import-path resolution.** Previously only
+  `instanceof JavaScript` was checked, so a pipeline of `[Storybook, TypeScript]` always fell back
+  to `./tokens` even when the meta's filename was customized. Storybook now reads the runtime base
+  from the meta's `filenames()` list.
+- **`TypeScriptDeclarations` emits `null` for null values** instead of `object` (which is what
+  `typeof null` returns). Edge case — null isn't a valid `TokenValue` — but the previous output was
+  misleading.
 
 ## 2.0.0-alpha.10
 
 ### Breaking Changes
 
-- **`Duration.amount` and `Dimension.amount` renamed to `.value`.** The
-  getter name now matches the `{ value, unit }` field names on the new
-  object constructors, eliminating the naming inconsistency.
-- **`Transition` getters return `Duration` instances.** `duration` and
-  `delay` getters previously returned strings; they now return `Duration`
-  objects. The constructor and setters still accept `Duration | string`
-  (backward compatible), but downstream code reading the getters must
-  call `.toString()` or use the `Duration` API directly.
+- **`Duration.amount` and `Dimension.amount` renamed to `.value`.** The getter name now matches the
+  `{ value, unit }` field names on the new object constructors, eliminating the naming
+  inconsistency.
+- **`Transition` getters return `Duration` instances.** `duration` and `delay` getters previously
+  returned strings; they now return `Duration` objects. The constructor and setters still accept
+  `Duration | string` (backward compatible), but downstream code reading the getters must call
+  `.toString()` or use the `Duration` API directly.
 
 ### Added
 
-- **Consistent value-type API across `Color`, `Duration`, `Dimension`,
-  `CubicBezier`, `LinearGradient`, `RadialGradient`, `BoxShadow`,
-  `Transition`.** Every first-class value now supports the same surface:
-  `new T(positional)`, `new T({ named })`, `new T("css")`, and
-  `T.from(T | Options | string)`. List types (`BoxShadowList`,
-  `TransitionList`, `GradientList`) gained `from()` helpers.
-- **`Transition` math operations.** `scale(k)` uniformly dilates duration
-  and delay, `shift(Δ)` offsets the delay (useful for staggered entry),
-  `reverse()` reverses the easing curve, and `totalTime` returns
-  `duration + delay`. Transitions now store `Duration` objects
-  internally so these operations are exact, not string-reparsed.
-- **Named value access on `group()`.** `group()` still returns a
-  `Token[]`, but the returned array now carries non-enumerable properties
-  for each token's value, letting higher-level value types reference
-  values from other groups by identity:
+- **Consistent value-type API across `Color`, `Duration`, `Dimension`, `CubicBezier`,
+  `LinearGradient`, `RadialGradient`, `BoxShadow`, `Transition`.** Every first-class value now
+  supports the same surface: `new T(positional)`, `new T({ named })`, `new T("css")`, and
+  `T.from(T | Options | string)`. List types (`BoxShadowList`, `TransitionList`, `GradientList`)
+  gained `from()` helpers.
+- **`Transition` math operations.** `scale(k)` uniformly dilates duration and delay, `shift(Δ)`
+  offsets the delay (useful for staggered entry), `reverse()` reverses the easing curve, and
+  `totalTime` returns `duration + delay`. Transitions now store `Duration` objects internally so
+  these operations are exact, not string-reparsed.
+- **Named value access on `group()`.** `group()` still returns a `Token[]`, but the returned array
+  now carries non-enumerable properties for each token's value, letting higher-level value types
+  reference values from other groups by identity:
   ```ts
-  const durations = group("duration", { fast: new Duration(100, "ms") });
-  const easings = group("timing", { standard: CubicBezier.standard });
-  const transitions = group("transition", {
+  const durations = group('duration', { fast: new Duration(100, 'ms') });
+  const easings = group('timing', { standard: CubicBezier.standard });
+  const transitions = group('transition', {
     fade: new Transition(durations.fast, easings.standard),
   });
   ```
-  The hidden properties don't appear in `Object.keys`, `for...in`,
-  `JSON.stringify`, or array spread — iteration still sees only the
-  token array.
-- **Composed token values emit references in generator output.** When a
-  `Transition` or `BoxShadow` component matches another token by
-  identity, the CssVars, ScssVars, and DTCG generators now emit
+  The hidden properties don't appear in `Object.keys`, `for...in`, `JSON.stringify`, or array spread
+  — iteration still sees only the token array.
+- **Composed token values emit references in generator output.** When a `Transition` or `BoxShadow`
+  component matches another token by identity, the CssVars, ScssVars, and DTCG generators now emit
   references instead of inlining the value:
   ```css
   --transition-fade: var(--duration-fast) var(--timing-standard);
@@ -399,69 +341,62 @@
     "$value": { "duration": "{fast}", "timingFunction": "{standard}" }
   }
   ```
-  The ScssVars generator topologically sorts output so referenced tokens
-  are declared before the tokens that reference them — SCSS variables
-  resolve at compile time, so order matters.
-- **Documentation rework.** Added `docs/getting-started.md` (five-step
-  guide), `docs/concepts.md` (mental model), `docs/api/values.md` and
-  `docs/api/builders.md` (API reference), and
-  `docs/recipes/composition.md` (shadow derivation, transition math,
-  staggered animations, reduced-motion recipes). The old
-  `docs/quick-start.md` is removed — superseded by the new structure.
+  The ScssVars generator topologically sorts output so referenced tokens are declared before the
+  tokens that reference them — SCSS variables resolve at compile time, so order matters.
+- **Documentation rework.** Added `docs/getting-started.md` (five-step guide), `docs/concepts.md`
+  (mental model), `docs/api/values.md` and `docs/api/builders.md` (API reference), and
+  `docs/recipes/composition.md` (shadow derivation, transition math, staggered animations,
+  reduced-motion recipes). The old `docs/quick-start.md` is removed — superseded by the new
+  structure.
 
 ### Fixed
 
-- **`group()` rejects `Array.prototype`-colliding names.** Naming a
-  token `length`, `push`, `map`, etc. now throws instead of silently
-  shadowing an array method on the returned `Token[]`.
-- **Runtime guard on `Duration`/`Dimension` with missing unit.**
-  Calling `new Duration(100)` or `new Dimension(16)` from JavaScript
-  (where TypeScript's required-unit check doesn't apply) now throws
-  instead of producing a nonsensical `"100undefined"` string.
-- **DTCG serialization no longer double-aliases transition components.**
-  `transitionToDtcg` previously re-wrapped already-resolved references;
-  now it binds each component to a local variable before deciding
-  whether to emit an alias.
+- **`group()` rejects `Array.prototype`-colliding names.** Naming a token `length`, `push`, `map`,
+  etc. now throws instead of silently shadowing an array method on the returned `Token[]`.
+- **Runtime guard on `Duration`/`Dimension` with missing unit.** Calling `new Duration(100)` or
+  `new Dimension(16)` from JavaScript (where TypeScript's required-unit check doesn't apply) now
+  throws instead of producing a nonsensical `"100undefined"` string.
+- **DTCG serialization no longer double-aliases transition components.** `transitionToDtcg`
+  previously re-wrapped already-resolved references; now it binds each component to a local variable
+  before deciding whether to emit an alias.
 
 ## 2.0.0-alpha.9
 
 ### Fixed
 
-- **`modeSelectors` no longer produces invalid CSS for at-rules** (#29). Passing
-  a `@media` or `@supports` query as a `modeSelectors` value now automatically
-  wraps variables in `:root` inside the at-rule block. Previously, variables were
-  placed directly inside the at-rule with no selector, producing CSS that browsers
-  silently ignored.
+- **`modeSelectors` no longer produces invalid CSS for at-rules** (#29). Passing a `@media` or
+  `@supports` query as a `modeSelectors` value now automatically wraps variables in `:root` inside
+  the at-rule block. Previously, variables were placed directly inside the at-rule with no selector,
+  producing CSS that browsers silently ignored.
 
 ### Added
 
 - **`ModeSelector` object form** for `modeSelectors` values. Use
-  `{ atRule: "@media ...", selector: ".app" }` to control both the at-rule wrapper
-  and the inner selector. The `selector` field defaults to `:root`.
+  `{ atRule: "@media ...", selector: ".app" }` to control both the at-rule wrapper and the inner
+  selector. The `selector` field defaults to `:root`.
 
 ## 2.0.0-alpha.8
 
 ### Breaking Changes
 
-- **`Plugin.toJSON()` renamed to `Plugin.transform()`.** Custom plugins must
-  rename their `toJSON` method to `transform`. The `toJSON` name was misleading —
-  it transforms tokens, not JSON.
-- **`Generator.convertColorToString()` renamed to `stringifyValues()`.** Custom
-  generators overriding this method must update the name.
-- **`Dimension.value` and `Duration.value` renamed to `.amount`.** These getters
-  collided with the token config `{ value: ... }` shape, causing silent
-  destructuring bugs. Use `.amount` to access the numeric value.
-- **`isFirstClassValue()` now uses a brand check instead of `instanceof`.**
-  Custom first-class value types must add `readonly __teikn_fcv__: true = true`
-  to opt in. The old `instanceof` chain is removed.
-- **`Token.value` type tightened from `any` to `TokenValue | CompositeValue`.**
-  Code passing arbitrary values may need type assertions.
-- **`Plugin.transform()` is no longer abstract.** The base class provides a
-  default no-op. Audit-only plugins no longer need to override it.
-- **`PerceptualDistancePlugin` now auto-groups by `token.group`** instead of
-  comparing all color tokens globally. Pass `groups` option for manual control.
-- **`TouchTargetPlugin` no longer checks `"icon"` type by default.** Opt in
-  with `types: ["size", "touch-target", "icon"]`.
+- **`Plugin.toJSON()` renamed to `Plugin.transform()`.** Custom plugins must rename their `toJSON`
+  method to `transform`. The `toJSON` name was misleading — it transforms tokens, not JSON.
+- **`Generator.convertColorToString()` renamed to `stringifyValues()`.** Custom generators
+  overriding this method must update the name.
+- **`Dimension.value` and `Duration.value` renamed to `.amount`.** These getters collided with the
+  token config `{ value: ... }` shape, causing silent destructuring bugs. Use `.amount` to access
+  the numeric value.
+- **`isFirstClassValue()` now uses a brand check instead of `instanceof`.** Custom first-class value
+  types must add `readonly __teikn_fcv__: true = true` to opt in. The old `instanceof` chain is
+  removed.
+- **`Token.value` type tightened from `any` to `TokenValue | CompositeValue`.** Code passing
+  arbitrary values may need type assertions.
+- **`Plugin.transform()` is no longer abstract.** The base class provides a default no-op.
+  Audit-only plugins no longer need to override it.
+- **`PerceptualDistancePlugin` now auto-groups by `token.group`** instead of comparing all color
+  tokens globally. Pass `groups` option for manual control.
+- **`TouchTargetPlugin` no longer checks `"icon"` type by default.** Opt in with
+  `types: ["size", "touch-target", "icon"]`.
 
 ### Added
 
@@ -469,186 +404,167 @@
 - **`Color.desaturate(amount)`** — decrease saturation.
 - **`Color.grayscale()`** — fully desaturate.
 - **`Color.isLight()`** / **`Color.isDark()`** — luminance-based light/dark check.
-- **`TokenNames` compound type** in TypeScript generator output. Provides
-  per-group token name unions (`TokenNames['Color']`, `TokenNames['Spacing']`)
-  and a combined `TokenNames['All']` for type-safe CSS variable helpers.
-- **Builder input validation** — `dp()`, `dim()`, `dur()` reject `NaN`/`Infinity`.
-  `dim()`/`dur()` validate units against known CSS unit sets. `group()`/`scale()`
-  validate input types. `composite()` detects nested objects. `ref()` rejects
-  empty strings.
-- **`Teikn` constructor detects duplicate generator filenames** and throws
-  with a helpful message.
-- **Automatic validation** — `transform()` and `generateToStrings()` run
-  `validate()` by default. Opt out with `validate: false`.
+- **`TokenNames` compound type** in TypeScript generator output. Provides per-group token name
+  unions (`TokenNames['Color']`, `TokenNames['Spacing']`) and a combined `TokenNames['All']` for
+  type-safe CSS variable helpers.
+- **Builder input validation** — `dp()`, `dim()`, `dur()` reject `NaN`/`Infinity`. `dim()`/`dur()`
+  validate units against known CSS unit sets. `group()`/`scale()` validate input types.
+  `composite()` detects nested objects. `ref()` rejects empty strings.
+- **`Teikn` constructor detects duplicate generator filenames** and throws with a helpful message.
+- **Automatic validation** — `transform()` and `generateToStrings()` run `validate()` by default.
+  Opt out with `validate: false`.
 - **`ColorTransformPlugin` audit** warns when hex output drops alpha channel.
 
 ### Changed
 
-- **`onColor()` uses WCAG contrast ratio** instead of a luminance > 0.5
-  threshold. Picks whichever of dark/light text gives better contrast,
-  fixing incorrect text color for mid-lightness backgrounds (teal, yellow,
-  orange).
+- **`onColor()` uses WCAG contrast ratio** instead of a luminance > 0.5 threshold. Picks whichever
+  of dark/light text gives better contrast, fixing incorrect text color for mid-lightness
+  backgrounds (teal, yellow, orange).
 - **`ColorTransformPlugin` skips ref() strings** instead of crashing with
   `"Invalid color constructor arguments"`.
 
 ### Fixed
 
-- **`isTokenInputObject` unwrapping Dimension/Duration** — `Dimension` has a
-  `.value` getter, so `'value' in dimension` was `true`, causing builders to
-  destructure `dp(16)` into the bare number `1` instead of preserving the
-  Dimension object. Root cause of unitless spacing output.
-- **CssVars mode values bypassing `cssValue()`** — mode values used template
-  literal `${val}` directly instead of the serializer function.
-- **`RemUnitPlugin` replacing Color/CubicBezier/BoxShadow with `{}`** in
-  composite tokens — `Object.values()` on private-field objects returns `[]`.
-- **DTCG generator bypassing plugin topological sort and mode plugin
-  application** — `prepareTokens` override was a simplified copy that skipped
-  `sortPlugins()` and `applyPlugin()`.
-- **`applyPlugin` building synthetic mode tokens from original** instead of
-  transformed token — plugins that rename tokens now see consistent names
-  in mode processing.
-- **`maybeQuote` not escaping** single quotes, backslashes, and newlines in
-  generated JS/MJS output.
-- **TypeScript generator emitting `object`** for composite token types —
-  now produces proper inline shape types.
+- **`isTokenInputObject` unwrapping Dimension/Duration** — `Dimension` has a `.value` getter, so
+  `'value' in dimension` was `true`, causing builders to destructure `dp(16)` into the bare number
+  `1` instead of preserving the Dimension object. Root cause of unitless spacing output.
+- **CssVars mode values bypassing `cssValue()`** — mode values used template literal `${val}`
+  directly instead of the serializer function.
+- **`RemUnitPlugin` replacing Color/CubicBezier/BoxShadow with `{}`** in composite tokens —
+  `Object.values()` on private-field objects returns `[]`.
+- **DTCG generator bypassing plugin topological sort and mode plugin application** — `prepareTokens`
+  override was a simplified copy that skipped `sortPlugins()` and `applyPlugin()`.
+- **`applyPlugin` building synthetic mode tokens from original** instead of transformed token —
+  plugins that rename tokens now see consistent names in mode processing.
+- **`maybeQuote` not escaping** single quotes, backslashes, and newlines in generated JS/MJS output.
+- **TypeScript generator emitting `object`** for composite token types — now produces proper inline
+  shape types.
 - **DTCG `describe()` using "Dtcg"** instead of "DTCG" for the acronym.
 - **Double validation** in `transform()` — removed redundant `validate()` call.
-- **README API mismatches** — `lighten`/`darken` use 0–1 range (not 0–100),
-  `rotate` → `rotateHue`, `contrast` → `contrastRatio`.
+- **README API mismatches** — `lighten`/`darken` use 0–1 range (not 0–100), `rotate` → `rotateHue`,
+  `contrast` → `contrastRatio`.
 - **CLI help text recommending deprecated `PrefixTypePlugin`.**
 
 ### Internal
 
 - Value serializers (`cssValue`, `maybeQuote`, `quoteKey`) extracted to shared
   `value-serializers.ts` — was duplicated across 5 generator files.
-- `commentHeader()` and `buildModeMap()` extracted to Generator base class —
-  was duplicated across 5 generators.
+- `commentHeader()` and `buildModeMap()` extracted to Generator base class — was duplicated across 5
+  generators.
 - Shared `testOpts` fixture replaces 40+ inline `{ dateFn, version }` objects.
 - Removed stale files: `__mocks__/fs.ts`, `.husky/`, `prettier.config.js`.
 - npm package trimmed from 293 → 148 files (excluded sourcemaps and tsbuildinfo).
-- Test coverage: 1137 → 1513 tests (+376) across 14 new test files covering
-  generators, builders, plugins, CLI, integration, round-trip, misuse patterns,
-  error experience, and output validation.
+- Test coverage: 1137 → 1513 tests (+376) across 14 new test files covering generators, builders,
+  plugins, CLI, integration, round-trip, misuse patterns, error experience, and output validation.
 
 ## 2.0.0-alpha.7
 
 ### Breaking Changes
 
-- **`transform()` now returns `TransformResult` instead of `void`.** Callers
-  that awaited `transform()` for side effects only are unaffected, but the
-  method no longer logs to stdout/stderr. Use the returned `auditIssues`,
-  `files`, and `errors` arrays for programmatic access.
-- **`CSSVars({ groups: true })` now throws** instead of silently ignoring
-  the option. CSS has no function syntax — use Scss or ScssVars instead.
-- **`PrefixTypePlugin` in Teikn plugins now throws** instead of being
-  silently filtered. Remove it from your plugins array; type prefixing is
-  built in.
-- **Public API names were normalized for casing consistency.** Acronym-heavy
-  names were converted to mixed-case forms across generators, plugins, and
-  Dtcg helpers. Examples: `CSSVars` → `CssVars`, `ESModule` → `EsModule`,
-  `HTML` → `Html`, `DTCGGenerator` → `DtcgGenerator`,
-  `SCSSQuoteValuePlugin` → `ScssQuoteValuePlugin`, `parseDTCG` → `parseDtcg`,
-  and `serializeDTCG` → `serializeDtcg`. Related exports, registry keys,
-  file names, and `DTCG*` helper types/constants were updated to match.
-- **Storybook generator supports JSX output.** Pass `ext: "stories.jsx"` for
-  JavaScript projects. Default remains `stories.tsx`.
+- **`transform()` now returns `TransformResult` instead of `void`.** Callers that awaited
+  `transform()` for side effects only are unaffected, but the method no longer logs to
+  stdout/stderr. Use the returned `auditIssues`, `files`, and `errors` arrays for programmatic
+  access.
+- **`CSSVars({ groups: true })` now throws** instead of silently ignoring the option. CSS has no
+  function syntax — use Scss or ScssVars instead.
+- **`PrefixTypePlugin` in Teikn plugins now throws** instead of being silently filtered. Remove it
+  from your plugins array; type prefixing is built in.
+- **Public API names were normalized for casing consistency.** Acronym-heavy names were converted to
+  mixed-case forms across generators, plugins, and Dtcg helpers. Examples: `CSSVars` → `CssVars`,
+  `ESModule` → `EsModule`, `HTML` → `Html`, `DTCGGenerator` → `DtcgGenerator`,
+  `SCSSQuoteValuePlugin` → `ScssQuoteValuePlugin`, `parseDTCG` → `parseDtcg`, and `serializeDTCG` →
+  `serializeDtcg`. Related exports, registry keys, file names, and `DTCG*` helper types/constants
+  were updated to match.
+- **Storybook generator supports JSX output.** Pass `ext: "stories.jsx"` for JavaScript projects.
+  Default remains `stories.tsx`.
 
 ### Added
 
-- **`teikn/storybook` subpath export** — ships themed React components
-  (`Swatch`, `SpacingBar`, `ShadowBox`, `ModeTable`, etc.) for Storybook
-  token visualization. Components use CSS custom properties and respond
-  to Storybook dark mode automatically.
-- **`TransformResult` type** — returned by `transform()`, contains
-  `auditIssues`, `files` (paths + sizes), and `errors`.
+- **`teikn/storybook` subpath export** — ships themed React components (`Swatch`, `SpacingBar`,
+  `ShadowBox`, `ModeTable`, etc.) for Storybook token visualization. Components use CSS custom
+  properties and respond to Storybook dark mode automatically.
+- **`TransformResult` type** — returned by `transform()`, contains `auditIssues`, `files` (paths +
+  sizes), and `errors`.
 
 ### Changed
 
-- **Storybook generator refactored** — generated stories import from
-  `teikn/storybook` instead of inlining ~400 lines of component code.
-  Generated files are ~60% smaller. All stories wrapped in `TokenStory`
-  for theme support.
-- **Breakpoint bar visualization** — uses DOM measurement for accurate
-  widths across all CSS units. Dynamic values (max, calc, clamp) show a
-  live "(Npx at current viewport)" annotation that updates on resize.
+- **Storybook generator refactored** — generated stories import from `teikn/storybook` instead of
+  inlining ~400 lines of component code. Generated files are ~60% smaller. All stories wrapped in
+  `TokenStory` for theme support.
+- **Breakpoint bar visualization** — uses DOM measurement for accurate widths across all CSS units.
+  Dynamic values (max, calc, clamp) show a live "(Npx at current viewport)" annotation that updates
+  on resize.
 
 ### Fixed
 
 - **Empty gradient stops** now throw instead of producing invalid CSS.
 - **Watch mode file handle leak** — watcher is now closed on SIGINT.
-- **Storybook string injection** — `storyTitle` and `importPath` are
-  properly escaped with `JSON.stringify`.
-- **CLI `extractTokens`** gives a clear error when the module doesn't
-  export tokens, instead of a cryptic TypeError downstream.
+- **Storybook string injection** — `storyTitle` and `importPath` are properly escaped with
+  `JSON.stringify`.
+- **CLI `extractTokens`** gives a clear error when the module doesn't export tokens, instead of a
+  cryptic TypeError downstream.
 - **Empty string values** trigger a validation warning.
 
 ## 2.0.0-alpha.5
 
 ### Breaking Changes
 
-- **`NameConventionPlugin` now transforms mode keys.** Mode keys like
-  `high-contrast` are renamed to match the convention (e.g. `highContrast`
-  with camelCase). Previously only the token name was transformed.
+- **`NameConventionPlugin` now transforms mode keys.** Mode keys like `high-contrast` are renamed to
+  match the convention (e.g. `highContrast` with camelCase). Previously only the token name was
+  transformed.
 
 ### Added
 
-- **Plugin ordering via `runAfter` declarations.** Plugins can declare
-  dependencies on other plugins by class name. The pipeline topologically
-  sorts plugins before applying them, so input order no longer matters.
-  Official plugins declare their ordering constraints automatically.
-- **Injectable `version` on generators.** Pass `version: "test"` to any
-  generator to stabilize snapshot output across version bumps.
+- **Plugin ordering via `runAfter` declarations.** Plugins can declare dependencies on other plugins
+  by class name. The pipeline topologically sorts plugins before applying them, so input order no
+  longer matters. Official plugins declare their ordering constraints automatically.
+- **Injectable `version` on generators.** Pass `version: "test"` to any generator to stabilize
+  snapshot output across version bumps.
 
 ### Fixed
 
-- **Mode values now go through the full plugin pipeline.** Previously,
-  plugins like `ColorTransformPlugin` and `RemUnitPlugin` only transformed
-  `token.value`, silently skipping mode values. All plugins now transform
-  mode values identically to base values.
-- **First-class values in modes are now stringified.** `convertColorToString()`
-  now processes mode values, preventing object instances from reaching
-  generator output.
-- **Circular references in modes are now detected by `validate()`.** A token
-  with `modes: { dark: '{self}' }` previously passed validation but threw
-  at resolve time. Now caught during validation.
-- **`applyPlugin` respects plugin-renamed mode keys.** Plugins that rename
-  mode keys (like `NameConventionPlugin`) no longer have their changes
-  overwritten by the pipeline.
+- **Mode values now go through the full plugin pipeline.** Previously, plugins like
+  `ColorTransformPlugin` and `RemUnitPlugin` only transformed `token.value`, silently skipping mode
+  values. All plugins now transform mode values identically to base values.
+- **First-class values in modes are now stringified.** `convertColorToString()` now processes mode
+  values, preventing object instances from reaching generator output.
+- **Circular references in modes are now detected by `validate()`.** A token with
+  `modes: { dark: '{self}' }` previously passed validation but threw at resolve time. Now caught
+  during validation.
+- **`applyPlugin` respects plugin-renamed mode keys.** Plugins that rename mode keys (like
+  `NameConventionPlugin`) no longer have their changes overwritten by the pipeline.
 
 ## 2.0.0-alpha.4
 
 ### Breaking Changes
 
-- **Token names are now prefixed with their type by default.** Previously, a token
-  defined as `group('color', { primary: '#0066cc' })` produced the name `primary`.
-  It now produces `color-primary` (formatted by each generator's name convention:
-  `colorPrimary` in JS/JSON, `color-primary` in CSS/SCSS, etc.).
+- **Token names are now prefixed with their type by default.** Previously, a token defined as
+  `group('color', { primary: '#0066cc' })` produced the name `primary`. It now produces
+  `color-primary` (formatted by each generator's name convention: `colorPrimary` in JS/JSON,
+  `color-primary` in CSS/SCSS, etc.).
 
   This prevents silent collisions when multiple groups share keys like `sm`, `md`, `lg`.
 
   To opt out, add `StripTypePrefixPlugin` to your plugins:
 
   ```ts
-  new Teikn({
-    plugins: [new Teikn.plugins.StripTypePrefixPlugin()],
-  });
+  new Teikn({ plugins: [new Teikn.plugins.StripTypePrefixPlugin()] });
   ```
 
-- **`PrefixTypePlugin` is no longer needed when using `Teikn`.** Type prefixing is
-  now built into the core pipeline. If you had `PrefixTypePlugin` in your plugins
-  array, remove it — it will be filtered out with a warning to prevent double-prefixed
-  names. `PrefixTypePlugin` still exists for direct generator usage outside of `Teikn`.
+- **`PrefixTypePlugin` is no longer needed when using `Teikn`.** Type prefixing is now built into
+  the core pipeline. If you had `PrefixTypePlugin` in your plugins array, remove it — it will be
+  filtered out with a warning to prevent double-prefixed names. `PrefixTypePlugin` still exists for
+  direct generator usage outside of `Teikn`.
 
 ### Added
 
-- `StripTypePrefixPlugin` — opt-out plugin that removes the type prefix from token
-  names for users whose names are already globally unique.
+- `StripTypePrefixPlugin` — opt-out plugin that removes the type prefix from token names for users
+  whose names are already globally unique.
 
 ### Fixed
 
-- `deriveShortName` no longer false-positives on names that happen to extend the
-  type string (e.g. a token named `colors` with type `color` was incorrectly
-  shortened to `s`).
+- `deriveShortName` no longer false-positives on names that happen to extend the type string (e.g. a
+  token named `colors` with type `color` was incorrectly shortened to `s`).
 
 ## 2.0.0-alpha.3
 
@@ -671,38 +587,36 @@ This is a ground-up rewrite of teikn for v2.
 
 ### Breaking Changes
 
-- **`Color.mix()`** now uses premultiplied alpha interpolation per the CSS `color-mix`
-  spec. Alpha channels are no longer rounded to 0 or 1.
-- **`BoxShadow`**: replaced individual `setX()` methods with `.with({ offsetX, ... })`
-  immutable update API.
-- **`Color.toString()`** respects the requested format literally — `'rgb'` always
-  returns `rgb()`, `'rgba'` always returns `rgba()`, regardless of opacity.
+- **`Color.mix()`** now uses premultiplied alpha interpolation per the CSS `color-mix` spec. Alpha
+  channels are no longer rounded to 0 or 1.
+- **`BoxShadow`**: replaced individual `setX()` methods with `.with({ offsetX, ... })` immutable
+  update API.
+- **`Color.toString()`** respects the requested format literally — `'rgb'` always returns `rgb()`,
+  `'rgba'` always returns `rgba()`, regardless of opacity.
 - **All default exports removed.** Use named exports throughout.
 
 ### Added
 
-- **Generators**: SCSS map, SCSS variables, CSS custom properties, ES module,
-  CommonJS, TypeScript declarations, JSON, DTCG, HTML documentation, Storybook.
-- **Token builders**: `group()`, `scale()`, `composite()`, `theme()`, `onColors()`,
-  `ref()` for cross-references, `dp()` for density-independent pixels.
+- **Generators**: SCSS map, SCSS variables, CSS custom properties, ES module, CommonJS, TypeScript
+  declarations, JSON, DTCG, HTML documentation, Storybook.
+- **Token builders**: `group()`, `scale()`, `composite()`, `theme()`, `onColors()`, `ref()` for
+  cross-references, `dp()` for density-independent pixels.
 - **First-class value types**: `Color`, `BoxShadow`, `CubicBezier`, `LinearGradient`,
   `RadialGradient`, `Transition`.
-- **Color science**: CIEDE2000 `deltaE()`, color blindness simulation (protanopia,
-  deuteranopia, tritanopia + anomaly variants), recursive octree spatial index.
+- **Color science**: CIEDE2000 `deltaE()`, color blindness simulation (protanopia, deuteranopia,
+  tritanopia + anomaly variants), recursive octree spatial index.
 - **12 plugins**:
   - Transform: `ColorTransformPlugin`, `RemUnitPlugin`, `AlphaMultiplyPlugin`,
-    `NameConventionPlugin`, `DeprecationPlugin`, `PrefixTypePlugin`,
-    `SCSSQuoteValuePlugin`.
-  - Expand: `PalettePlugin`, `ReducedMotionPlugin`, `ClampPlugin`,
-    `ColorBlindnessPlugin`.
+    `NameConventionPlugin`, `DeprecationPlugin`, `PrefixTypePlugin`, `SCSSQuoteValuePlugin`.
+  - Expand: `PalettePlugin`, `ReducedMotionPlugin`, `ClampPlugin`, `ColorBlindnessPlugin`.
   - Audit: `ContrastValidatorPlugin`, `MinFontSizePlugin`, `TouchTargetPlugin`,
     `PerceptualDistancePlugin`.
-- **`Teikn` orchestrator**: `expand()` and `audit()` run automatically in the
-  pipeline. Themes are applied via `theme()` builder and `themes` option.
+- **`Teikn` orchestrator**: `expand()` and `audit()` run automatically in the pipeline. Themes are
+  applied via `theme()` builder and `themes` option.
 - **`validate()`** function for token validation.
 - **CLI** for generating tokens from the command line.
-- **Tooling**: replaced eslint + prettier with oxlint (153 rules) + oxfmt.
-  CI tests on Bun + Node 20/22/24. Vitest aliases `bun:test` for Node compat.
+- **Tooling**: replaced eslint + prettier with oxlint (153 rules) + oxfmt. CI tests on Bun + Node
+  20/22/24. Vitest aliases `bun:test` for Node compat.
 
 ### Fixed
 

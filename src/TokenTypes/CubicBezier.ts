@@ -1,5 +1,5 @@
-import { clamp } from "../utils.js";
-import { assertNotRef } from "./ref-guard.js";
+import { clamp } from '../utils.js';
+import { assertNotRef } from './ref-guard.js';
 
 const EPSILON = 1e-6;
 const MAX_ITERATIONS = 8;
@@ -32,45 +32,57 @@ const clampX = (v: number): number => clamp(0, 1, v);
 //   B(t) = 3(1-t)^2 * t * p1 + 3(1-t) * t^2 * p2 + t^3
 const bezierAt = (p1: number, p2: number, t: number): number => {
   const mt = 1 - t;
+
   return 3 * mt * mt * t * p1 + 3 * mt * t * t * p2 + t * t * t;
 };
 
 // Derivative: dB/dt
 const bezierDeriv = (p1: number, p2: number, t: number): number => {
   const mt = 1 - t;
+
   return 3 * mt * mt * p1 + 6 * mt * t * (p2 - p1) + 3 * t * t * (1 - p2);
 };
 
 // Solve for parametric t given an x value, using Newton-Raphson with bisection fallback
 const solveX = (x1: number, x2: number, x: number): number => {
   let t = x;
+
   for (let i = 0; i < MAX_ITERATIONS; i++) {
     const err = bezierAt(x1, x2, t) - x;
+
     if (Math.abs(err) < EPSILON) {
       return t;
     }
+
     const d = bezierDeriv(x1, x2, t);
+
     if (Math.abs(d) < EPSILON) {
       break;
     }
+
     t -= err / d;
   }
 
   let lo = 0;
   let hi = 1;
   t = x;
+
   for (let i = 0; i < 20; i++) {
     const v = bezierAt(x1, x2, t);
+
     if (Math.abs(v - x) < EPSILON) {
       return t;
     }
+
     if (v < x) {
       lo = t;
     } else {
       hi = t;
     }
+
     t = (lo + hi) / 2;
   }
+
   return t;
 };
 
@@ -95,32 +107,40 @@ export class CubicBezier {
       this.#y1 = first.#y1;
       this.#x2 = first.#x2;
       this.#y2 = first.#y2;
+
       return;
     }
 
-    if (typeof first === "string") {
-      assertNotRef(first, "CubicBezier");
+    if (typeof first === 'string') {
+      assertNotRef(first, 'CubicBezier');
       const named = presets[first.trim().toLowerCase()];
+
       if (named) {
         [this.#x1, this.#y1, this.#x2, this.#y2] = named;
+
         return;
       }
+
       const m = first.match(RE);
+
       if (!m) {
         throw new Error(`Invalid cubic-bezier: "${first}"`);
       }
+
       this.#x1 = clampX(parseFloat(m[1]!));
       this.#y1 = parseFloat(m[2]!);
       this.#x2 = clampX(parseFloat(m[3]!));
       this.#y2 = parseFloat(m[4]!);
+
       return;
     }
 
-    if (typeof first === "object") {
+    if (typeof first === 'object') {
       this.#x1 = clampX(first.x1);
       this.#y1 = first.y1;
       this.#x2 = clampX(first.x2);
       this.#y2 = first.y2;
+
       return;
     }
 
@@ -133,9 +153,10 @@ export class CubicBezier {
   static from(
     value: CubicBezier | { x1: number; y1: number; x2: number; y2: number } | string,
   ): CubicBezier {
-    if (typeof value === "object" && !(value instanceof CubicBezier)) {
+    if (typeof value === 'object' && !(value instanceof CubicBezier)) {
       return new CubicBezier(value);
     }
+
     return new CubicBezier(value);
   }
 
@@ -164,9 +185,11 @@ export class CubicBezier {
     if (t <= 0) {
       return 0;
     }
+
     if (t >= 1) {
       return 1;
     }
+
     return bezierAt(this.#y1, this.#y2, solveX(this.#x1, this.#x2, t));
   }
 
@@ -192,6 +215,7 @@ export class CubicBezier {
         return name;
       }
     }
+
     return null;
   }
 
@@ -205,14 +229,14 @@ export class CubicBezier {
 
   // ─── Named presets ──────────────────────────────────────────
 
-  static readonly ease: CubicBezier = new CubicBezier(...presets["ease"]!);
-  static readonly easeIn: CubicBezier = new CubicBezier(...presets["ease-in"]!);
-  static readonly easeOut: CubicBezier = new CubicBezier(...presets["ease-out"]!);
-  static readonly easeInOut: CubicBezier = new CubicBezier(...presets["ease-in-out"]!);
-  static readonly linear: CubicBezier = new CubicBezier(...presets["linear"]!);
+  static readonly ease: CubicBezier = new CubicBezier(...presets['ease']!);
+  static readonly easeIn: CubicBezier = new CubicBezier(...presets['ease-in']!);
+  static readonly easeOut: CubicBezier = new CubicBezier(...presets['ease-out']!);
+  static readonly easeInOut: CubicBezier = new CubicBezier(...presets['ease-in-out']!);
+  static readonly linear: CubicBezier = new CubicBezier(...presets['linear']!);
 
   // Material Design standard curves
-  static readonly standard: CubicBezier = new CubicBezier(...presets["standard"]!);
-  static readonly accelerate: CubicBezier = new CubicBezier(...presets["accelerate"]!);
-  static readonly decelerate: CubicBezier = new CubicBezier(...presets["decelerate"]!);
+  static readonly standard: CubicBezier = new CubicBezier(...presets['standard']!);
+  static readonly accelerate: CubicBezier = new CubicBezier(...presets['accelerate']!);
+  static readonly decelerate: CubicBezier = new CubicBezier(...presets['decelerate']!);
 }

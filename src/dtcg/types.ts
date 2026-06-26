@@ -5,29 +5,17 @@ export type DtcgColorValue = {
   alpha?: number;
 };
 
-export type DtcgDimensionValue = {
-  value: number;
-  unit: "px" | "rem";
-};
+export type DtcgDimensionValue = { value: number; unit: 'px' | 'rem' };
 
-export type DtcgDurationValue = {
-  value: number;
-  unit: "ms" | "s";
-};
+export type DtcgDurationValue = { value: number; unit: 'ms' | 's' };
 
 export type DtcgStrokeStyleValue =
   | string
-  | {
-      dashArray: number[];
-      lineCap: "butt" | "round" | "square";
-    };
+  | { dashArray: number[]; lineCap: 'butt' | 'round' | 'square' };
 
 export type DtcgCubicBezierValue = [number, number, number, number];
 
-export type DtcgGradientStop = {
-  color: DtcgColorValue;
-  position: number;
-};
+export type DtcgGradientStop = { color: DtcgColorValue; position: number };
 
 // Composite types
 export type DtcgBorderValue = {
@@ -100,20 +88,20 @@ export type DtcgDocument = Record<
 
 // Type name constants matching the Dtcg spec
 export const DtcgTypes = {
-  color: "color",
-  dimension: "dimension",
-  fontFamily: "fontFamily",
-  fontWeight: "fontWeight",
-  duration: "duration",
-  cubicBezier: "cubicBezier",
-  number: "number",
-  strokeStyle: "strokeStyle",
-  border: "border",
-  transition: "transition",
-  shadow: "shadow",
-  gradient: "gradient",
-  typography: "typography",
-  fontStyle: "fontStyle",
+  color: 'color',
+  dimension: 'dimension',
+  fontFamily: 'fontFamily',
+  fontWeight: 'fontWeight',
+  duration: 'duration',
+  cubicBezier: 'cubicBezier',
+  number: 'number',
+  strokeStyle: 'strokeStyle',
+  border: 'border',
+  transition: 'transition',
+  shadow: 'shadow',
+  gradient: 'gradient',
+  typography: 'typography',
+  fontStyle: 'fontStyle',
 } as const;
 
 export type DtcgTypeName = (typeof DtcgTypes)[keyof typeof DtcgTypes];

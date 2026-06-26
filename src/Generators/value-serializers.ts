@@ -1,9 +1,9 @@
-import type { TokenValue } from "../Token.js";
-import { Border } from "../TokenTypes/Border.js";
-import { BoxShadow } from "../TokenTypes/BoxShadow.js";
-import { Transition } from "../TokenTypes/Transition.js";
-import { Typography } from "../TokenTypes/Typography.js";
-import { isFirstClassValue } from "../type-classifiers.js";
+import type { TokenValue } from '../Token.js';
+import { Border } from '../TokenTypes/Border.js';
+import { BoxShadow } from '../TokenTypes/BoxShadow.js';
+import { Transition } from '../TokenTypes/Transition.js';
+import { Typography } from '../TokenTypes/Typography.js';
+import { isFirstClassValue } from '../type-classifiers.js';
 
 // ─── CSS/SCSS value serialization ────────────────────────────────
 // Shared by CssVars, Scss, and ScssVars generators.
@@ -12,28 +12,35 @@ const MAX_PRECISION = 4;
 
 const roundNumber = (n: number): string => {
   const str = String(n);
-  const dot = str.indexOf(".");
+  const dot = str.indexOf('.');
+
   if (dot === -1 || str.length - dot - 1 <= MAX_PRECISION) {
     return str;
   }
+
   return parseFloat(n.toFixed(MAX_PRECISION)).toString();
 };
 
 export const cssValue = (value: unknown): string => {
-  if (typeof value === "number") {
+  if (typeof value === 'number') {
     return roundNumber(value);
   }
-  if (typeof value !== "object" || value === null) {
+
+  if (typeof value !== 'object' || value === null) {
     return String(value);
   }
+
   if (isFirstClassValue(value)) {
     return String(value);
   }
+
   const obj = value as Record<string, unknown>;
-  if ("width" in obj && "style" in obj && "color" in obj) {
+
+  if ('width' in obj && 'style' in obj && 'color' in obj) {
     // border shorthand: width style color
-    return [obj.width, obj.style, obj.color].filter(Boolean).join(" ");
+    return [obj.width, obj.style, obj.color].filter(Boolean).join(' ');
   }
+
   // Unknown composite shape: space-join the values. This matches CSS
   // shorthand order for typography (`font:` shorthand) when field order
   // is roughly family, size, weight, line-height — fragile but usable
@@ -41,7 +48,7 @@ export const cssValue = (value: unknown): string => {
   // map entry need to wrap the output in parens themselves to keep
   // internal commas from being parsed as map-entry separators; see
   // `cssMapValue` below.
-  return Object.values(obj).join(" ");
+  return Object.values(obj).join(' ');
 };
 
 /**
@@ -58,11 +65,12 @@ export const cssValue = (value: unknown): string => {
 export const cssMapValue = (value: unknown): string => {
   const serialized = cssValue(value);
   const isCompositeObject =
-    typeof value === "object" &&
+    typeof value === 'object' &&
     value !== null &&
     !Array.isArray(value) &&
     !isFirstClassValue(value);
-  return isCompositeObject && serialized.includes(",") ? `(${serialized})` : serialized;
+
+  return isCompositeObject && serialized.includes(',') ? `(${serialized})` : serialized;
 };
 
 // ─── JS value serialization ─────────────────────────────────────
@@ -73,7 +81,7 @@ export const cssMapValue = (value: unknown): string => {
 // single-quoted / double-quoted source strings at parse time. Build
 // the regex via String.fromCharCode so the source file itself doesn't
 // contain literal line terminators.
-const JS_LINE_SEPARATORS = new RegExp(`[${String.fromCharCode(0x2028, 0x2029)}]`, "g");
+const JS_LINE_SEPARATORS = new RegExp(`[${String.fromCharCode(0x2028, 0x2029)}]`, 'g');
 
 // Single-quote a string for emission into generated source. Using single
 // quotes means values containing double quotes (e.g. font stacks like
@@ -84,18 +92,21 @@ export const quoteString = (val: string): string => {
   const escaped = JSON.stringify(val)
     .slice(1, -1)
     .replace(/\\"/g, '"')
-    .replace(JS_LINE_SEPARATORS, (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, "0")}`)
+    .replace(JS_LINE_SEPARATORS, c => `\\u${c.charCodeAt(0).toString(16).padStart(4, '0')}`)
     .replace(/'/g, "\\'");
+
   return `'${escaped}'`;
 };
 
 export const maybeQuote = (val: unknown): string => {
-  if (typeof val === "string") {
+  if (typeof val === 'string') {
     return quoteString(val);
   }
-  if (typeof val === "object" && val !== null) {
+
+  if (typeof val === 'object' && val !== null) {
     return JSON.stringify(val);
   }
+
   return String(val);
 };
 
@@ -109,42 +120,53 @@ export const quoteKey = (name: string): string => (isValidIdentifier(name) ? nam
 
 export type RefResolver = (value: unknown) => string | null;
 
-const fmtLength = (v: number): string => (v === 0 ? "0" : `${v}px`);
+const fmtLength = (v: number): string => (v === 0 ? '0' : `${v}px`);
 
 export const stringifyTransitionWithRefs = (t: Transition, ref: RefResolver): string => {
   const parts: string[] = [];
-  if (t.property !== "all") {
+
+  if (t.property !== 'all') {
     parts.push(t.property);
   }
+
   parts.push(ref(t.duration) ?? t.duration.toString());
   const timing = ref(t.timingFunction);
+
   if (timing) {
     parts.push(timing);
   } else {
     const { keyword } = t.timingFunction;
     parts.push(keyword ?? t.timingFunction.toString());
   }
+
   if (t.delay.value !== 0) {
     parts.push(ref(t.delay) ?? t.delay.toString());
   }
-  return parts.join(" ");
+
+  return parts.join(' ');
 };
 
 export const stringifyBoxShadowWithRefs = (s: BoxShadow, ref: RefResolver): string => {
   const parts: string[] = [];
+
   if (s.inset) {
-    parts.push("inset");
+    parts.push('inset');
   }
+
   parts.push(fmtLength(s.offsetX));
   parts.push(fmtLength(s.offsetY));
+
   if (s.blur !== 0 || s.spread !== 0) {
     parts.push(fmtLength(s.blur));
   }
+
   if (s.spread !== 0) {
     parts.push(fmtLength(s.spread));
   }
+
   parts.push(ref(s.color) ?? s.color.toString());
-  return parts.join(" ");
+
+  return parts.join(' ');
 };
 
 export const stringifyTypographyWithRefs = (t: Typography, ref: RefResolver): string => {
@@ -152,27 +174,32 @@ export const stringifyTypographyWithRefs = (t: Typography, ref: RefResolver): st
     t.lineHeight !== null
       ? `${ref(t.fontSize) ?? t.fontSize.toString()}/${t.lineHeight}`
       : (ref(t.fontSize) ?? t.fontSize.toString());
+
   return [t.fontWeight !== null ? String(t.fontWeight) : null, sizeLine, t.fontFamily]
     .filter((part): part is string => part !== null)
-    .join(" ");
+    .join(' ');
 };
 
 export const stringifyBorderWithRefs = (b: Border, ref: RefResolver): string =>
-  [ref(b.width) ?? b.width.toString(), b.style, ref(b.color) ?? b.color.toString()].join(" ");
+  [ref(b.width) ?? b.width.toString(), b.style, ref(b.color) ?? b.color.toString()].join(' ');
 
 export const stringifyWithRefs = (value: TokenValue, ref: RefResolver): string => {
   if (value instanceof Transition) {
     return stringifyTransitionWithRefs(value, ref);
   }
+
   if (value instanceof BoxShadow) {
     return stringifyBoxShadowWithRefs(value, ref);
   }
+
   if (value instanceof Typography) {
     return stringifyTypographyWithRefs(value, ref);
   }
+
   if (value instanceof Border) {
     return stringifyBorderWithRefs(value, ref);
   }
+
   return String(value);
 };
 
@@ -185,6 +212,7 @@ export const visitComponents = (value: unknown, fn: (v: unknown) => void): void 
   if (value instanceof Transition) {
     fn(value.duration);
     fn(value.timingFunction);
+
     if (value.delay.value !== 0) {
       fn(value.delay);
     }
@@ -204,11 +232,13 @@ export const visitComponents = (value: unknown, fn: (v: unknown) => void): void 
  */
 export const valueDependencies = (value: unknown, refMap: Map<unknown, string>): string[] => {
   const deps: string[] = [];
-  visitComponents(value, (v) => {
+  visitComponents(value, v => {
     const name = refMap.get(v);
+
     if (name) {
       deps.push(name);
     }
   });
+
   return deps;
 };

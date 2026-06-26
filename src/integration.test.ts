@@ -1,28 +1,28 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from 'bun:test';
 
-import { group, scale, composite, tokens, theme, dp, dur } from "./builders.js";
-import { Color } from "./TokenTypes/Color/index.js";
-import { BoxShadow } from "./TokenTypes/BoxShadow.js";
-import { Teikn } from "./Teikn.js";
-import { validate } from "./validate.js";
-import { testOpts } from "./fixtures/testOpts.js";
+import { group, scale, composite, tokens, theme, dp, dur } from './builders.js';
+import { testOpts } from './fixtures/testOpts.js';
+import { Teikn } from './Teikn.js';
+import { BoxShadow } from './TokenTypes/BoxShadow.js';
+import { Color } from './TokenTypes/Color/index.js';
+import { validate } from './validate.js';
 
 // ─── Realistic token set ────────────────────────────────────
 // Modeled on actual consumer usage from the docs.
 
-const colors = group("color", {
-  background: "#fafafa",
-  surface: "#ffffff",
-  textPrimary: "rgba(0, 0, 0, 0.87)",
-  textSecondary: "rgba(0, 0, 0, 0.60)",
-  primary: [new Color("#4a90d9"), "Primary interactive color"],
-  primaryHover: new Color("#3a7bc8"),
-  error: new Color("#f44336"),
-  border: "rgba(0, 0, 0, 0.12)",
-  borderFocus: "#4a90d9",
+const colors = group('color', {
+  background: '#fafafa',
+  surface: '#ffffff',
+  textPrimary: 'rgba(0, 0, 0, 0.87)',
+  textSecondary: 'rgba(0, 0, 0, 0.60)',
+  primary: [new Color('#4a90d9'), 'Primary interactive color'],
+  primaryHover: new Color('#3a7bc8'),
+  error: new Color('#f44336'),
+  border: 'rgba(0, 0, 0, 0.12)',
+  borderFocus: '#4a90d9',
 });
 
-const spacing = scale("spacing", {
+const spacing = scale('spacing', {
   xs: dp(4),
   sm: dp(8),
   md: dp(16),
@@ -31,7 +31,7 @@ const spacing = scale("spacing", {
   xxl: dp(48),
 });
 
-const typography = composite("typography", {
+const typography = composite('typography', {
   displayLg: {
     fontFamily: '"Quicksand", sans-serif',
     fontSize: dp(36),
@@ -52,120 +52,112 @@ const typography = composite("typography", {
   },
 });
 
-const shadows = group("shadow", {
+const shadows = group('shadow', {
   sm: new BoxShadow(0, 1, 2, 0, new Color(0, 0, 0, 0.06)),
   md: new BoxShadow(0, 4, 6, 0, new Color(0, 0, 0, 0.07)),
 });
 
-const radius = scale("radius", {
-  sm: dp(4),
-  md: dp(8),
-  lg: dp(12),
-  full: "9999px",
-});
+const radius = scale('radius', { sm: dp(4), md: dp(8), lg: dp(12), full: '9999px' });
 
-const timing = group("duration", {
-  fast: dur(150, "ms"),
-  normal: dur(300, "ms"),
-});
+const timing = group('duration', { fast: dur(150, 'ms'), normal: dur(300, 'ms') });
 
 const allTokens = tokens(colors, spacing, typography, shadows, radius, timing);
 
 // ─── Themes ────────────────────────────────────────────────
 
-const dark = theme("dark", colors, {
-  background: "#121212",
-  surface: "#1e1e1e",
-  textPrimary: "rgba(255, 255, 255, 0.87)",
-  textSecondary: "rgba(255, 255, 255, 0.60)",
-  primary: "#6db3f8",
-  primaryHover: "#8ec5fa",
-  border: "rgba(255, 255, 255, 0.12)",
-  borderFocus: "#6db3f8",
+const dark = theme('dark', colors, {
+  background: '#121212',
+  surface: '#1e1e1e',
+  textPrimary: 'rgba(255, 255, 255, 0.87)',
+  textSecondary: 'rgba(255, 255, 255, 0.60)',
+  primary: '#6db3f8',
+  primaryHover: '#8ec5fa',
+  border: 'rgba(255, 255, 255, 0.12)',
+  borderFocus: '#6db3f8',
 });
 
 // ─── Validation ─────────────────────────────────────────────
 
-describe("integration: validate", () => {
-  test("all tokens pass validation", () => {
+describe('integration: validate', () => {
+  test('all tokens pass validation', () => {
     const result = validate(allTokens);
     expect(result.valid).toBe(true);
-    expect(result.issues.filter((i) => i.severity === "error")).toHaveLength(0);
+    expect(result.issues.filter(i => i.severity === 'error')).toHaveLength(0);
   });
 });
 
 // ─── Full pipeline per generator ────────────────────────────
 
 const generatorConfigs = [
-  { name: "CssVars", make: () => new Teikn.generators.CssVars(testOpts), file: "tokens.css" },
-  { name: "Scss", make: () => new Teikn.generators.Scss(testOpts), file: "tokens.scss" },
-  { name: "ScssVars", make: () => new Teikn.generators.ScssVars(testOpts), file: "tokens.scss" },
-  { name: "Json", make: () => new Teikn.generators.Json(testOpts), file: "tokens.json" },
+  { name: 'CssVars', make: () => new Teikn.generators.CssVars(testOpts), file: 'tokens.css' },
+  { name: 'Scss', make: () => new Teikn.generators.Scss(testOpts), file: 'tokens.scss' },
+  { name: 'ScssVars', make: () => new Teikn.generators.ScssVars(testOpts), file: 'tokens.scss' },
+  { name: 'Json', make: () => new Teikn.generators.Json(testOpts), file: 'tokens.json' },
   {
-    name: "JavaScript (ESM)",
+    name: 'JavaScript (ESM)',
     make: () => new Teikn.generators.JavaScript(testOpts),
-    file: "tokens.mjs",
+    file: 'tokens.mjs',
   },
   {
-    name: "JavaScript (CJS)",
-    make: () => new Teikn.generators.JavaScript({ ...testOpts, module: "cjs" }),
-    file: "tokens.cjs",
+    name: 'JavaScript (CJS)',
+    make: () => new Teikn.generators.JavaScript({ ...testOpts, module: 'cjs' }),
+    file: 'tokens.cjs',
   },
   {
-    name: "TypeScriptDeclarations",
+    name: 'TypeScriptDeclarations',
     make: () => new Teikn.generators.TypeScriptDeclarations(testOpts),
-    file: "tokens.d.ts",
+    file: 'tokens.d.ts',
   },
 ] as const;
 
-describe("integration: full pipeline", () => {
+describe('integration: full pipeline', () => {
   for (const { name, make, file } of generatorConfigs) {
     describe(name, () => {
       const writer = new Teikn({
         generators: [make()],
         themes: [dark],
-        plugins: [new Teikn.plugins.NameConventionPlugin({ convention: "kebab-case" })],
+        plugins: [new Teikn.plugins.NameConventionPlugin({ convention: 'kebab-case' })],
       });
 
       const output = writer.generateToStrings(allTokens);
       const content = output.get(file)!;
 
-      test("produces output", () => {
+      test('produces output', () => {
         expect(content).toBeDefined();
         expect(content.length).toBeGreaterThan(0);
       });
 
-      test("contains no [object Object]", () => {
-        expect(content).not.toContain("[object Object]");
+      test('contains no [object Object]', () => {
+        expect(content).not.toContain('[object Object]');
       });
 
-      test("contains no empty values", () => {
+      test('contains no empty values', () => {
         // Match CSS-style empty values like ": ;" or ": ,"
         const emptyValuePattern = /:\s*[;,}\n]/;
-        const lines = content.split("\n");
+        const lines = content.split('\n');
         const emptyLines = lines.filter(
-          (line) =>
+          line =>
             emptyValuePattern.test(line) &&
             // Exclude lines that are just closing braces or structure
-            !line.trim().startsWith("}") &&
-            !line.trim().startsWith(")") &&
-            !line.trim().startsWith("*") &&
-            !line.trim().startsWith("//") &&
-            !line.trim().startsWith("/**"),
+            !line.trim().startsWith('}') &&
+            !line.trim().startsWith(')') &&
+            !line.trim().startsWith('*') &&
+            !line.trim().startsWith('//') &&
+            !line.trim().startsWith('/**'),
         );
         expect(emptyLines).toEqual([]);
       });
 
-      if (name !== "TypeScriptDeclarations") {
-        test("contains Dimension values from dp()", () => {
+      if (name !== 'TypeScriptDeclarations') {
+        test('contains Dimension values from dp()', () => {
           // dp(16) = 1rem, dp(8) = 0.5rem
-          expect(content).toContain("1rem");
-          expect(content).toContain("0.5rem");
+          expect(content).toContain('1rem');
+          expect(content).toContain('0.5rem');
         });
 
-        test("contains Duration values from dur()", () => {
-          expect(content).toContain("150ms");
-          expect(content).toContain("300ms");
+        test('contains Duration values from dur()', () => {
+          expect(content).toContain('150ms');
+          expect(content).toContain('300ms');
         });
       }
     });
@@ -174,145 +166,145 @@ describe("integration: full pipeline", () => {
 
 // ─── JSON deep assertions ───────────────────────────────────
 
-describe("integration: JSON output structure", () => {
+describe('integration: JSON output structure', () => {
   const writer = new Teikn({
     generators: [new Teikn.generators.Json()],
     themes: [dark],
-    plugins: [new Teikn.plugins.NameConventionPlugin({ convention: "kebab-case" })],
+    plugins: [new Teikn.plugins.NameConventionPlugin({ convention: 'kebab-case' })],
   });
 
-  const json = JSON.parse(writer.generateToStrings(allTokens).get("tokens.json")!);
+  const json = JSON.parse(writer.generateToStrings(allTokens).get('tokens.json')!);
 
-  test("spacing tokens have rem values from dp()", () => {
-    expect(json.spacingXs.value).toBe("0.25rem");
-    expect(json.spacingSm.value).toBe("0.5rem");
-    expect(json.spacingMd.value).toBe("1rem");
-    expect(json.spacingLg.value).toBe("1.5rem");
-    expect(json.spacingXl.value).toBe("2rem");
-    expect(json.spacingXxl.value).toBe("3rem");
+  test('spacing tokens have rem values from dp()', () => {
+    expect(json.spacingXs.value).toBe('0.25rem');
+    expect(json.spacingSm.value).toBe('0.5rem');
+    expect(json.spacingMd.value).toBe('1rem');
+    expect(json.spacingLg.value).toBe('1.5rem');
+    expect(json.spacingXl.value).toBe('2rem');
+    expect(json.spacingXxl.value).toBe('3rem');
   });
 
-  test("typography composites have rem fontSize from dp()", () => {
-    expect(json.typographyDisplayLg.value.fontSize).toBe("2.25rem");
-    expect(json.typographyHeadingMd.value.fontSize).toBe("1.125rem");
-    expect(json.typographyBodyMd.value.fontSize).toBe("0.875rem");
+  test('typography composites have rem fontSize from dp()', () => {
+    expect(json.typographyDisplayLg.value.fontSize).toBe('2.25rem');
+    expect(json.typographyHeadingMd.value.fontSize).toBe('1.125rem');
+    expect(json.typographyBodyMd.value.fontSize).toBe('0.875rem');
   });
 
-  test("radius tokens have rem values from dp()", () => {
-    expect(json.radiusSm.value).toBe("0.25rem");
-    expect(json.radiusMd.value).toBe("0.5rem");
-    expect(json.radiusLg.value).toBe("0.75rem");
-    expect(json.radiusFull.value).toBe("9999px");
+  test('radius tokens have rem values from dp()', () => {
+    expect(json.radiusSm.value).toBe('0.25rem');
+    expect(json.radiusMd.value).toBe('0.5rem');
+    expect(json.radiusLg.value).toBe('0.75rem');
+    expect(json.radiusFull.value).toBe('9999px');
   });
 
-  test("duration tokens have ms values from dur()", () => {
-    expect(json.durationFast.value).toBe("150ms");
-    expect(json.durationNormal.value).toBe("300ms");
+  test('duration tokens have ms values from dur()', () => {
+    expect(json.durationFast.value).toBe('150ms');
+    expect(json.durationNormal.value).toBe('300ms');
   });
 
-  test("color tokens from Color objects are strings", () => {
+  test('color tokens from Color objects are strings', () => {
     const primaryValue = json.colorPrimary.value;
-    expect(typeof primaryValue).toBe("string");
-    expect(primaryValue).not.toBe("");
+    expect(typeof primaryValue).toBe('string');
+    expect(primaryValue).not.toBe('');
   });
 
-  test("dark mode overrides are present", () => {
-    expect(json.colorBackground.modes.dark).toBe("#121212");
-    expect(json.colorSurface.modes.dark).toBe("#1e1e1e");
-    expect(json.colorPrimary.modes.dark).toBe("#6db3f8");
+  test('dark mode overrides are present', () => {
+    expect(json.colorBackground.modes.dark).toBe('#121212');
+    expect(json.colorSurface.modes.dark).toBe('#1e1e1e');
+    expect(json.colorPrimary.modes.dark).toBe('#6db3f8');
   });
 
-  test("tokens without dark overrides have no modes", () => {
+  test('tokens without dark overrides have no modes', () => {
     expect(json.spacingMd.modes).toBeUndefined();
     expect(json.colorError.modes).toBeUndefined();
   });
 
-  test("shadow tokens serialize BoxShadow objects", () => {
+  test('shadow tokens serialize BoxShadow objects', () => {
     const smValue = json.shadowSm.value;
-    expect(typeof smValue).toBe("string");
-    expect(smValue).not.toBe("");
-    expect(smValue).not.toBe("[object Object]");
+    expect(typeof smValue).toBe('string');
+    expect(smValue).not.toBe('');
+    expect(smValue).not.toBe('[object Object]');
   });
 });
 
 // ─── TypeScript meta generator ──────────────────────────────
 
-describe("integration: TypeScript meta generator", () => {
+describe('integration: TypeScript meta generator', () => {
   const writer = new Teikn({
     generators: [new Teikn.generators.TypeScript(testOpts)],
     themes: [dark],
-    plugins: [new Teikn.plugins.NameConventionPlugin({ convention: "kebab-case" })],
+    plugins: [new Teikn.plugins.NameConventionPlugin({ convention: 'kebab-case' })],
   });
   const output = writer.generateToStrings(allTokens);
 
-  test("emits both runtime and declaration files from a single construction", () => {
-    expect(output.has("tokens.mjs")).toBe(true);
-    expect(output.has("tokens.d.ts")).toBe(true);
+  test('emits both runtime and declaration files from a single construction', () => {
+    expect(output.has('tokens.mjs')).toBe(true);
+    expect(output.has('tokens.d.ts')).toBe(true);
   });
 
-  test("runtime output is a valid ES module with tokens export", () => {
-    const mjs = output.get("tokens.mjs")!;
-    expect(mjs).toContain("export const tokens = {");
-    expect(mjs).toContain("export default tokens;");
-    expect(mjs).not.toContain("[object Object]");
+  test('runtime output is a valid ES module with tokens export', () => {
+    const mjs = output.get('tokens.mjs')!;
+    expect(mjs).toContain('export const tokens = {');
+    expect(mjs).toContain('export default tokens;');
+    expect(mjs).not.toContain('[object Object]');
   });
 
-  test("declaration output is ambient and narrow-typed", () => {
-    const dts = output.get("tokens.d.ts")!;
-    expect(dts).toContain("export declare const tokens: {");
-    expect(dts).toContain("readonly");
+  test('declaration output is ambient and narrow-typed', () => {
+    const dts = output.get('tokens.d.ts')!;
+    expect(dts).toContain('export declare const tokens: {');
+    expect(dts).toContain('readonly');
   });
 
-  test("duplicate construction with same filename errors at Teikn construction", () => {
+  test('duplicate construction with same filename errors at Teikn construction', () => {
     expect(
       () =>
         new Teikn({
           generators: [
-            new Teikn.generators.TypeScript({ filename: "tokens" }),
-            new Teikn.generators.TypeScriptDeclarations({ filename: "tokens" }),
+            new Teikn.generators.TypeScript({ filename: 'tokens' }),
+            new Teikn.generators.TypeScriptDeclarations({ filename: 'tokens' }),
           ],
         }),
-    ).toThrow("Duplicate generator output filenames");
+    ).toThrow('Duplicate generator output filenames');
   });
 });
 
 // ─── CSS output assertions ──────────────────────────────────
 
-describe("integration: CSS output", () => {
+describe('integration: CSS output', () => {
   const writer = new Teikn({
     generators: [new Teikn.generators.CssVars(testOpts)],
     themes: [dark],
-    plugins: [new Teikn.plugins.NameConventionPlugin({ convention: "kebab-case" })],
+    plugins: [new Teikn.plugins.NameConventionPlugin({ convention: 'kebab-case' })],
   });
 
-  const css = writer.generateToStrings(allTokens).get("tokens.css")!;
+  const css = writer.generateToStrings(allTokens).get('tokens.css')!;
 
-  test("has :root block", () => {
-    expect(css).toContain(":root {");
+  test('has :root block', () => {
+    expect(css).toContain(':root {');
   });
 
-  test("has dark theme block", () => {
+  test('has dark theme block', () => {
     expect(css).toContain('[data-theme="dark"]');
   });
 
-  test("spacing custom properties use rem from dp()", () => {
-    expect(css).toContain("--spacing-md: 1rem;");
-    expect(css).toContain("--spacing-sm: 0.5rem;");
+  test('spacing custom properties use rem from dp()', () => {
+    expect(css).toContain('--spacing-md: 1rem;');
+    expect(css).toContain('--spacing-sm: 0.5rem;');
   });
 
-  test("duration custom properties use ms from dur()", () => {
-    expect(css).toContain("--duration-fast: 150ms;");
-    expect(css).toContain("--duration-normal: 300ms;");
+  test('duration custom properties use ms from dur()', () => {
+    expect(css).toContain('--duration-fast: 150ms;');
+    expect(css).toContain('--duration-normal: 300ms;');
   });
 
-  test("dark mode overrides are in theme block", () => {
-    expect(css).toContain("--color-background: #121212;");
+  test('dark mode overrides are in theme block', () => {
+    expect(css).toContain('--color-background: #121212;');
   });
 });
 
 // ─── Multi-generator pipeline ───────────────────────────────
 
-describe("integration: multi-generator output", () => {
+describe('integration: multi-generator output', () => {
   const writer = new Teikn({
     generators: [
       new Teikn.generators.CssVars(testOpts),
@@ -321,29 +313,29 @@ describe("integration: multi-generator output", () => {
     ],
     themes: [dark],
     plugins: [
-      new Teikn.plugins.NameConventionPlugin({ convention: "kebab-case" }),
+      new Teikn.plugins.NameConventionPlugin({ convention: 'kebab-case' }),
       new Teikn.plugins.ScssQuoteValuePlugin(),
     ],
   });
 
   const output = writer.generateToStrings(allTokens);
 
-  test("produces output for each generator", () => {
+  test('produces output for each generator', () => {
     expect(output.size).toBe(3);
-    expect(output.has("tokens.css")).toBe(true);
-    expect(output.has("tokens.json")).toBe(true);
-    expect(output.has("tokens.mjs")).toBe(true);
+    expect(output.has('tokens.css')).toBe(true);
+    expect(output.has('tokens.json')).toBe(true);
+    expect(output.has('tokens.mjs')).toBe(true);
   });
 
-  test("all outputs contain spacing values", () => {
+  test('all outputs contain spacing values', () => {
     for (const [, content] of output) {
-      expect(content).toContain("1rem");
+      expect(content).toContain('1rem');
     }
   });
 
-  test("all outputs contain duration values", () => {
+  test('all outputs contain duration values', () => {
     for (const [, content] of output) {
-      expect(content).toContain("150ms");
+      expect(content).toContain('150ms');
     }
   });
 });

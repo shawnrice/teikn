@@ -1,12 +1,9 @@
-import type { Token } from "../Token.js";
-import { Dimension } from "../TokenTypes/Dimension.js";
-import type { AuditIssue } from "./Plugin.js";
-import { Plugin } from "./Plugin.js";
+import type { Token } from '../Token.js';
+import { Dimension } from '../TokenTypes/Dimension.js';
+import type { AuditIssue } from './Plugin.js';
+import { Plugin } from './Plugin.js';
 
-type MinFontSizePluginOptions = {
-  minPx?: number;
-  basePx?: number;
-} & Record<string, unknown>;
+type MinFontSizePluginOptions = { minPx?: number; basePx?: number } & Record<string, unknown>;
 
 const DIMENSION_RE = /^(-?\d+(?:\.\d+)?)(px|rem|em|pt)$/;
 
@@ -20,15 +17,16 @@ const toPx = (value: unknown, basePx: number): number | null => {
     }
   }
 
-  if (typeof value === "number") {
+  if (typeof value === 'number') {
     return value;
   }
 
-  if (typeof value !== "string") {
+  if (typeof value !== 'string') {
     return null;
   }
 
   const m = value.match(DIMENSION_RE);
+
   if (!m) {
     return null;
   }
@@ -37,13 +35,13 @@ const toPx = (value: unknown, basePx: number): number | null => {
   const unit = m[2]!;
 
   switch (unit) {
-    case "px":
+    case 'px':
       return num;
-    case "rem":
+    case 'rem':
       return num * basePx;
-    case "em":
+    case 'em':
       return num * basePx;
-    case "pt":
+    case 'pt':
       return num * (96 / 72);
     default:
       return null;
@@ -58,9 +56,10 @@ export class MinFontSizePlugin extends Plugin<MinFontSizePluginOptions> {
     const { minPx = 12, basePx = 16 } = this.options;
 
     return tokens
-      .filter((t) => this.tokenType.test(t.type))
-      .flatMap((t) => {
+      .filter(t => this.tokenType.test(t.type))
+      .flatMap(t => {
         const px = toPx(t.value, basePx);
+
         if (px === null) {
           return [];
         }
@@ -68,7 +67,7 @@ export class MinFontSizePlugin extends Plugin<MinFontSizePluginOptions> {
         if (px < minPx) {
           return [
             {
-              severity: "warning" as const,
+              severity: 'warning' as const,
               token: t.name,
               message: `Font size ${t.value} (${px}px) is below minimum of ${minPx}px`,
             },

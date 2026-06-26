@@ -1,5 +1,5 @@
-import type { Token } from "../Token.js";
-import { Plugin } from "./Plugin.js";
+import type { Token } from '../Token.js';
+import { Plugin } from './Plugin.js';
 
 /**
  * Quotes some SCSS values
@@ -11,15 +11,12 @@ export class ScssQuoteValuePlugin extends Plugin {
 
   tokenType: RegExp = /^(font|font-family)$/;
 
-  override readonly runAfter: string[] = ["ColorTransformPlugin", "RemUnitPlugin"];
+  override readonly runAfter: string[] = ['ColorTransformPlugin', 'RemUnitPlugin'];
 
   // oxlint-disable-next-line class-methods-use-this
   override transform(token: Token): Token {
     const { value } = token;
 
-    return {
-      ...token,
-      value: `unquote('#{${value}}')`,
-    };
+    return { ...token, value: `unquote('#{${value}}')` };
   }
 }

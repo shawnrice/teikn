@@ -1,21 +1,21 @@
-import type { Token } from "../Token.js";
-import { Color } from "../TokenTypes/Color/index.js";
-import { Plugin } from "./Plugin.js";
+import type { Token } from '../Token.js';
+import { Color } from '../TokenTypes/Color/index.js';
+import { Plugin } from './Plugin.js';
 
-type ColorBlindnessType = "protanopia" | "deuteranopia" | "tritanopia";
+type ColorBlindnessType = 'protanopia' | 'deuteranopia' | 'tritanopia';
 
-type ColorBlindnessPluginOptions = {
-  types?: ColorBlindnessType[];
-  suffix?: string;
-} & Record<string, unknown>;
+type ColorBlindnessPluginOptions = { types?: ColorBlindnessType[]; suffix?: string } & Record<
+  string,
+  unknown
+>;
 
-const DEFAULT_TYPES: ColorBlindnessType[] = ["protanopia", "deuteranopia", "tritanopia"];
-const DEFAULT_SUFFIX = "-{type}";
+const DEFAULT_TYPES: ColorBlindnessType[] = ['protanopia', 'deuteranopia', 'tritanopia'];
+const DEFAULT_SUFFIX = '-{type}';
 
 const capitalize = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
 
 const buildName = (baseName: string, type: ColorBlindnessType, suffix: string): string =>
-  `${baseName}${suffix.replace("{type}", type)}`;
+  `${baseName}${suffix.replace('{type}', type)}`;
 
 const makeSimulatedToken = (token: Token, type: ColorBlindnessType, suffix: string): Token => {
   const color = token.value instanceof Color ? token.value : new Color(token.value as string);
@@ -31,7 +31,7 @@ const makeSimulatedToken = (token: Token, type: ColorBlindnessType, suffix: stri
 };
 
 export class ColorBlindnessPlugin extends Plugin<ColorBlindnessPluginOptions> {
-  tokenType: string = "color";
+  tokenType: string = 'color';
   outputType: RegExp = /.*/;
 
   constructor(options: ColorBlindnessPluginOptions = {}) {
@@ -42,12 +42,12 @@ export class ColorBlindnessPlugin extends Plugin<ColorBlindnessPluginOptions> {
     const types = this.options.types ?? DEFAULT_TYPES;
     const suffix = this.options.suffix ?? DEFAULT_SUFFIX;
 
-    return tokens.flatMap((token) => {
-      if (token.type !== "color") {
+    return tokens.flatMap(token => {
+      if (token.type !== 'color') {
         return [token];
       }
 
-      const simulated = types.map((type) => makeSimulatedToken(token, type, suffix));
+      const simulated = types.map(type => makeSimulatedToken(token, type, suffix));
 
       return [token, ...simulated];
     });

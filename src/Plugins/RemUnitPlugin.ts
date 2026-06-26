@@ -1,18 +1,15 @@
-import type { Token } from "../Token.js";
-import { isFirstClassValue } from "../type-classifiers.js";
-import { Dimension } from "../TokenTypes/Dimension.js";
-import { Plugin } from "./Plugin.js";
+import type { Token } from '../Token.js';
+import { Dimension } from '../TokenTypes/Dimension.js';
+import { isFirstClassValue } from '../type-classifiers.js';
+import { Plugin } from './Plugin.js';
 
-type RemUnitPluginOptions = {
-  base?: number;
-  targetUnit?: string;
-} & Record<string, unknown>;
+type RemUnitPluginOptions = { base?: number; targetUnit?: string } & Record<string, unknown>;
 
 const PX_RE = /^(-?\d+(?:\.\d+)?)px$/;
 
 const convertValue = (value: unknown, base: number, targetUnit: string): unknown => {
   if (value instanceof Dimension) {
-    return value.unit === "px" ? new Dimension(value.value / base, targetUnit as "rem") : value;
+    return value.unit === 'px' ? new Dimension(value.value / base, targetUnit as 'rem') : value;
   }
 
   // Preserve other first-class values (Color, CubicBezier, BoxShadow, etc.)
@@ -20,18 +17,21 @@ const convertValue = (value: unknown, base: number, targetUnit: string): unknown
     return value;
   }
 
-  if (typeof value === "string") {
+  if (typeof value === 'string') {
     const match = value.match(PX_RE);
+
     if (match) {
       return `${parseFloat(match[1]!) / base}${targetUnit}`;
     }
+
     return value;
   }
 
   // Composite values — recurse into object fields
-  if (value !== null && typeof value === "object" && !Array.isArray(value)) {
+  if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
     const entries = Object.entries(value as Record<string, unknown>);
     const converted = entries.map(([k, v]) => [k, convertValue(v, base, targetUnit)] as const);
+
     return Object.fromEntries(converted);
   }
 
@@ -47,11 +47,8 @@ export class RemUnitPlugin extends Plugin<RemUnitPluginOptions> {
   }
 
   override transform(token: Token): Token {
-    const { base = 16, targetUnit = "rem" } = this.options;
+    const { base = 16, targetUnit = 'rem' } = this.options;
 
-    return {
-      ...token,
-      value: convertValue(token.value, base, targetUnit) as Token["value"],
-    };
+    return { ...token, value: convertValue(token.value, base, targetUnit) as Token['value'] };
   }
 }

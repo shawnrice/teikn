@@ -1,9 +1,9 @@
-import type { Token } from "./Token.js";
+import type { Token } from './Token.js';
 
 export type KeyResolution =
-  | { status: "ok"; key: string; bare: string }
-  | { status: "missing" }
-  | { status: "ambiguous"; candidates: readonly string[] };
+  | { status: 'ok'; key: string; bare: string }
+  | { status: 'missing' }
+  | { status: 'ambiguous'; candidates: readonly string[] };
 
 /**
  * Internal value stored for each bare name in the index. A bare name is
@@ -13,8 +13,8 @@ export type KeyResolution =
  * one of the two maps" cross-field invariant.
  */
 type BareLookup =
-  | { status: "unique"; key: string }
-  | { status: "ambiguous"; candidates: readonly string[] };
+  | { status: 'unique'; key: string }
+  | { status: 'ambiguous'; candidates: readonly string[] };
 
 /**
  * Readonly view of the resolution index. Built by `buildKeyAliasIndex`;
@@ -25,17 +25,19 @@ export type KeyAliasIndex = {
   readonly bareLookup: ReadonlyMap<string, BareLookup>;
 };
 
-const KEY_SEPARATOR = ".";
+const KEY_SEPARATOR = '.';
 
-export const tokenKey = (token: Pick<Token, "name" | "group">): string => {
+export const tokenKey = (token: Pick<Token, 'name' | 'group'>): string => {
   if (!token.name) {
-    return "";
+    return '';
   }
+
   return token.group ? `${token.group}${KEY_SEPARATOR}${token.name}` : token.name;
 };
 
 const bareKey = (key: string): string => {
   const parts = key.split(KEY_SEPARATOR);
+
   return parts[parts.length - 1]!;
 };
 
@@ -50,6 +52,7 @@ export const buildKeyAliasIndex = (keys: string[]): KeyAliasIndex => {
       // `matches primary, primary`.
       continue;
     }
+
     fullKeys.add(key);
     const bare = bareKey(key);
     const list = byBare.get(bare) ?? [];
@@ -58,12 +61,13 @@ export const buildKeyAliasIndex = (keys: string[]): KeyAliasIndex => {
   }
 
   const bareLookup = new Map<string, BareLookup>();
+
   for (const [bare, matches] of byBare) {
     bareLookup.set(
       bare,
       matches.length === 1
-        ? { status: "unique", key: matches[0]! }
-        : { status: "ambiguous", candidates: matches },
+        ? { status: 'unique', key: matches[0]! }
+        : { status: 'ambiguous', candidates: matches },
     );
   }
 
@@ -82,19 +86,22 @@ export const buildKeyAliasIndex = (keys: string[]): KeyAliasIndex => {
  */
 export const resolveKey = (value: string, index: KeyAliasIndex): KeyResolution => {
   if (index.fullKeys.has(value)) {
-    return { status: "ok", key: value, bare: bareKey(value) };
+    return { status: 'ok', key: value, bare: bareKey(value) };
   }
 
   const bare = index.bareLookup.get(value);
+
   if (!bare) {
-    return { status: "missing" };
+    return { status: 'missing' };
   }
-  if (bare.status === "ambiguous") {
-    return { status: "ambiguous", candidates: bare.candidates };
+
+  if (bare.status === 'ambiguous') {
+    return { status: 'ambiguous', candidates: bare.candidates };
   }
-  return { status: "ok", key: bare.key, bare: value };
+
+  return { status: 'ok', key: bare.key, bare: value };
 };
 
 export const ambiguousKeyMessage = (value: string, candidates: readonly string[]): string =>
-  `Ambiguous token reference: {${value}} matches ${candidates.join(", ")}. ` +
+  `Ambiguous token reference: {${value}} matches ${candidates.join(', ')}. ` +
   `Use a qualified reference like {${candidates[0]}} to disambiguate, or rename one of the tokens.`;
