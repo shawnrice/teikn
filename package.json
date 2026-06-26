@@ -51,14 +51,14 @@
     "build": "tsc",
     "format": "oxfmt --write",
     "format:check": "oxfmt --check",
+    "generate-example": "bun example/example-usage.ts",
     "lint": "oxlint src/",
     "lint:fix": "oxlint --fix src/ && oxfmt --write",
     "prepublishOnly": "tsc",
+    "storybook": "storybook dev -p 6006",
     "test": "bun test",
     "test:node": "vitest run",
-    "test:update": "bun test --update-snapshots && vitest run --update",
-    "storybook": "storybook dev -p 6006",
-    "generate-example": "bun example/example-usage.ts"
+    "test:update": "bun test --update-snapshots && vitest run --update"
   },
   "devDependencies": {
     "@storybook/react": "^10.4.6",

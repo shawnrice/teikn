@@ -11,9 +11,9 @@
   "typings": "tokens.d.ts",
   "scripts": {
     "generate:js": "bun example-usage.js",
-    "generate:ts": "bun example-usage.ts",
     "generate:node:js": "node example-usage.js",
     "generate:node:ts": "bun example-usage.ts",
+    "generate:ts": "bun example-usage.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   }
 }

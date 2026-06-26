@@ -1,6 +1,6 @@
-import { deriveShortName } from "../string-utils.js";
-import type { Token } from "../Token.js";
-import { Plugin } from "./Plugin.js";
+import { deriveShortName } from '../string-utils.js';
+import type { Token } from '../Token.js';
+import { Plugin } from './Plugin.js';
 
 /**
  * Strips the type prefix from token names, reversing the default type-prefixing behavior.
@@ -31,9 +31,6 @@ export class StripTypePrefixPlugin extends Plugin {
   tokenType: RegExp = /.*/;
 
   override transform(token: Token): Token {
-    return {
-      ...token,
-      name: deriveShortName(token.name, token.type),
-    };
+    return { ...token, name: deriveShortName(token.name, token.type) };
   }
 }

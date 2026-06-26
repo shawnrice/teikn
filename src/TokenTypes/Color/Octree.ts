@@ -8,16 +8,9 @@
 
 type Point3 = readonly [number, number, number];
 
-export type NearestResult<T> = {
-  data: T;
-  coords: Point3;
-  d2: number;
-};
+export type NearestResult<T> = { data: T; coords: Point3; d2: number };
 
-type Leaf<T> = {
-  point: Point3;
-  data: T;
-};
+type Leaf<T> = { point: Point3; data: T };
 
 type OctreeNode<T> = {
   children: (OctreeNode<T> | null)[];
@@ -45,6 +38,7 @@ const boxDist2 = (p: Point3, node: OctreeNode<unknown>): number => {
   const dy = p[1] < node.minY ? node.minY - p[1] : p[1] > node.maxY ? p[1] - node.maxY : 0;
   // oxlint-disable-next-line no-nested-ternary
   const dz = p[2] < node.minZ ? node.minZ - p[2] : p[2] > node.maxZ ? p[2] - node.maxZ : 0;
+
   return dx * dx + dy * dy + dz * dz;
 };
 
@@ -82,6 +76,7 @@ const childBounds = (
   const yHi = idx & 2 ? parent.maxY : parent.midY;
   const zLo = idx & 1 ? parent.midZ : parent.minZ;
   const zHi = idx & 1 ? parent.maxZ : parent.midZ;
+
   return [xLo, yLo, zLo, xHi, yHi, zHi];
 };
 
@@ -91,9 +86,10 @@ const insert = <T>(node: OctreeNode<T>, leaf: Leaf<T>, depthRemaining: number): 
   // At max depth or under capacity with no children yet: store as leaf
   if (
     depthRemaining <= 0 ||
-    (node.leaves.length < MAX_LEAF_CAPACITY && node.children.every((c) => c === null))
+    (node.leaves.length < MAX_LEAF_CAPACITY && node.children.every(c => c === null))
   ) {
     node.leaves.push(leaf);
+
     return;
   }
 
@@ -101,6 +97,7 @@ const insert = <T>(node: OctreeNode<T>, leaf: Leaf<T>, depthRemaining: number): 
   if (node.leaves.length > 0) {
     const pending = node.leaves;
     node.leaves = [];
+
     for (const existing of pending) {
       insertIntoChild(node, existing, depthRemaining);
     }
@@ -111,22 +108,22 @@ const insert = <T>(node: OctreeNode<T>, leaf: Leaf<T>, depthRemaining: number): 
 
 const insertIntoChild = <T>(node: OctreeNode<T>, leaf: Leaf<T>, depthRemaining: number): void => {
   const idx = octantIndex(leaf.point, node);
+
   if (!node.children[idx]) {
     const [xLo, yLo, zLo, xHi, yHi, zHi] = childBounds(node, idx);
     node.children[idx] = createNode<T>(xLo, yLo, zLo, xHi, yHi, zHi);
   }
+
   insert(node.children[idx]!, leaf, depthRemaining - 1);
 };
 
-type SearchState<T> = {
-  bestD2: number;
-  best: Leaf<T> | null;
-};
+type SearchState<T> = { bestD2: number; best: Leaf<T> | null };
 
 const searchNearest = <T>(node: OctreeNode<T>, query: Point3, state: SearchState<T>): void => {
   // Check leaves at this node
   for (const leaf of node.leaves) {
     const d2 = dist2(query, leaf.point);
+
     if (d2 < state.bestD2) {
       state.bestD2 = d2;
       state.best = leaf;
@@ -141,9 +138,11 @@ const searchNearest = <T>(node: OctreeNode<T>, query: Point3, state: SearchState
     if (!node.children[i]) {
       continue;
     }
+
     if (i === queryIdx) {
       continue;
     }
+
     const bd2 = boxDist2(query, node.children[i]!);
     siblings.push({ idx: i, bd2 });
   }
@@ -161,6 +160,7 @@ const searchNearest = <T>(node: OctreeNode<T>, query: Point3, state: SearchState
     if (bd2 >= state.bestD2) {
       break; // sorted, so all remaining are farther
     }
+
     searchNearest(node.children[idx]!, query, state);
   }
 };

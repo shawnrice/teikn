@@ -1,6 +1,6 @@
-import { Dimension } from "./Dimension.js";
-import type { RefFields } from "./ref-guard.js";
-import { assertNotRef, isRefString } from "./ref-guard.js";
+import { Dimension } from './Dimension.js';
+import type { RefFields } from './ref-guard.js';
+import { assertNotRef, isRefString } from './ref-guard.js';
 
 // ─── Field coercion ──────────────────────────────────────────
 // Every coercion passes a `{ref}` string through untouched: references are
@@ -12,7 +12,7 @@ import { assertNotRef, isRefString } from "./ref-guard.js";
 // string — callers may still author it as `["Inter", "sans-serif"]`. A plain
 // string (including a `{ref}`) passes through.
 const toFamily = (value: string | readonly string[]): string =>
-  Array.isArray(value) ? value.join(", ") : (value as string);
+  Array.isArray(value) ? value.join(', ') : (value as string);
 
 // fontSize / letterSpacing are lengths. We accept a `Dimension` or a CSS
 // string and coerce to `Dimension`, mirroring how `Transition` coerces its
@@ -23,15 +23,18 @@ const toDimension = (value: Dimension | string, field: string): Dimension | stri
   if (value instanceof Dimension) {
     return value;
   }
-  if (typeof value === "number") {
+
+  if (typeof value === 'number') {
     throw new Error(
       `Typography ${field} must carry a unit — pass a Dimension (e.g. \`dp(16)\` or ` +
         `\`dim(16, "px")\`) rather than the bare number ${value}.`,
     );
   }
+
   if (isRefString(value)) {
     return value;
   }
+
   return new Dimension(value);
 };
 
@@ -41,20 +44,24 @@ const toNumber = (value: number | string, field: string): number | string => {
   if (isRefString(value)) {
     return value;
   }
-  const n = typeof value === "number" ? value : Number(value);
+
+  const n = typeof value === 'number' ? value : Number(value);
+
   if (!Number.isFinite(n)) {
     throw new Error(`Typography ${field} must be a finite number, got ${JSON.stringify(value)}`);
   }
+
   return n;
 };
 
 // letterSpacing is a length, except for the `"normal"` keyword which is
 // preserved verbatim. Any other string is coerced to a Dimension.
 const toLetterSpacing = (value: Dimension | string): Dimension | string => {
-  if (value instanceof Dimension || value === "normal" || isRefString(value)) {
+  if (value instanceof Dimension || value === 'normal' || isRefString(value)) {
     return value;
   }
-  return toDimension(value, "letterSpacing");
+
+  return toDimension(value, 'letterSpacing');
 };
 
 // ─── Input ───────────────────────────────────────────────────
@@ -113,11 +120,13 @@ export class Typography implements RefFields {
       this.#fontWeight = input.#fontWeight;
       this.#lineHeight = input.#lineHeight;
       this.#letterSpacing = input.#letterSpacing;
+
       return;
     }
 
-    if (typeof input === "string") {
-      assertNotRef(input, "Typography");
+    if (typeof input === 'string') {
+      assertNotRef(input, 'Typography');
+
       throw new Error(
         `Typography cannot be parsed from a string — there is no unambiguous single-string form ` +
           `(letter-spacing is not part of the CSS \`font\` shorthand). Construct it from an object: ` +
@@ -126,11 +135,11 @@ export class Typography implements RefFields {
     }
 
     this.#fontFamily = toFamily(input.fontFamily);
-    this.#fontSize = toDimension(input.fontSize, "fontSize");
+    this.#fontSize = toDimension(input.fontSize, 'fontSize');
     this.#fontWeight =
-      input.fontWeight !== undefined ? toNumber(input.fontWeight, "fontWeight") : null;
+      input.fontWeight !== undefined ? toNumber(input.fontWeight, 'fontWeight') : null;
     this.#lineHeight =
-      input.lineHeight !== undefined ? toNumber(input.lineHeight, "lineHeight") : null;
+      input.lineHeight !== undefined ? toNumber(input.lineHeight, 'lineHeight') : null;
     this.#letterSpacing =
       input.letterSpacing === undefined ? null : toLetterSpacing(input.letterSpacing);
   }
@@ -159,17 +168,23 @@ export class Typography implements RefFields {
       fontSize: updates.fontSize ?? this.#fontSize,
     };
     const fontWeight = updates.fontWeight ?? this.#fontWeight;
+
     if (fontWeight !== null) {
       next.fontWeight = fontWeight;
     }
+
     const lineHeight = updates.lineHeight ?? this.#lineHeight;
+
     if (lineHeight !== null) {
       next.lineHeight = lineHeight;
     }
+
     const letterSpacing = updates.letterSpacing ?? this.#letterSpacing;
+
     if (letterSpacing !== null) {
       next.letterSpacing = letterSpacing;
     }
+
     return new Typography(next);
   }
 
@@ -181,15 +196,19 @@ export class Typography implements RefFields {
       fontFamily: this.#fontFamily,
       fontSize: this.#fontSize,
     };
+
     if (this.#fontWeight !== null) {
       fields.fontWeight = this.#fontWeight;
     }
+
     if (this.#lineHeight !== null) {
       fields.lineHeight = this.#lineHeight;
     }
+
     if (this.#letterSpacing !== null) {
       fields.letterSpacing = this.#letterSpacing;
     }
+
     return fields;
   }
 
@@ -212,9 +231,10 @@ export class Typography implements RefFields {
   toString(): string {
     const size = String(this.#fontSize);
     const sizeLine = this.#lineHeight !== null ? `${size}/${this.#lineHeight}` : size;
+
     return [this.#fontWeight !== null ? String(this.#fontWeight) : null, sizeLine, this.#fontFamily]
       .filter((part): part is string => part !== null)
-      .join(" ");
+      .join(' ');
   }
 
   // ─── Static helpers ──────────────────────────────────────────

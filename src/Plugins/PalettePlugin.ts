@@ -1,12 +1,11 @@
-import type { Token } from "../Token.js";
-import { Color } from "../TokenTypes/Color/index.js";
-import { Plugin } from "./Plugin.js";
+import type { Token } from '../Token.js';
+import { Color } from '../TokenTypes/Color/index.js';
+import { Plugin } from './Plugin.js';
 
-type PalettePluginOptions = {
-  steps?: number[];
-  lightEnd?: number;
-  darkEnd?: number;
-} & Record<string, unknown>;
+type PalettePluginOptions = { steps?: number[]; lightEnd?: number; darkEnd?: number } & Record<
+  string,
+  unknown
+>;
 
 const DEFAULT_STEPS = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
 const DEFAULT_LIGHT_END = 95;
@@ -25,13 +24,9 @@ const generatePaletteTokens = (
   const minStep = Math.min(...steps);
   const maxStep = Math.max(...steps);
 
-  return steps.map((step) => {
+  return steps.map(step => {
     if (step === midStep) {
-      return {
-        ...token,
-        name: `${token.name}-${step}`,
-        value: baseColor,
-      };
+      return { ...token, name: `${token.name}-${step}`, value: baseColor };
     }
 
     // For steps lighter than 500, tint (mix with white)
@@ -42,6 +37,7 @@ const generatePaletteTokens = (
       const t = (midStep - step) / (midStep - minStep);
       const targetLightness = interpolate(baseColor.lightness * 100, lightEnd, t) / 100;
       const tintAmount = (targetLightness - baseColor.lightness) / (1 - baseColor.lightness);
+
       return {
         ...token,
         name: `${token.name}-${step}`,
@@ -53,6 +49,7 @@ const generatePaletteTokens = (
     const t = (step - midStep) / (maxStep - midStep);
     const targetLightness = interpolate(baseColor.lightness * 100, darkEnd, t) / 100;
     const shadeAmount = (baseColor.lightness - targetLightness) / baseColor.lightness;
+
     return {
       ...token,
       name: `${token.name}-${step}`,
@@ -62,7 +59,7 @@ const generatePaletteTokens = (
 };
 
 export class PalettePlugin extends Plugin<PalettePluginOptions> {
-  tokenType: string = "color";
+  tokenType: string = 'color';
   outputType: RegExp = /.*/;
 
   constructor(options: PalettePluginOptions = {}) {
@@ -74,10 +71,11 @@ export class PalettePlugin extends Plugin<PalettePluginOptions> {
     const lightEnd = this.options.lightEnd ?? DEFAULT_LIGHT_END;
     const darkEnd = this.options.darkEnd ?? DEFAULT_DARK_END;
 
-    return tokens.flatMap((token) => {
-      if (token.type !== "color") {
+    return tokens.flatMap(token => {
+      if (token.type !== 'color') {
         return [token];
       }
+
       return [token, ...generatePaletteTokens(token, steps, lightEnd, darkEnd)];
     });
   }

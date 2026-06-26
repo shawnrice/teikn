@@ -1,12 +1,12 @@
-import { EOL } from "node:os";
+import { EOL } from 'node:os';
 
-import { camelCase, deriveShortName } from "../string-utils.js";
-import type { Token } from "../Token.js";
-import type { GeneratorInfo, GeneratorOptions } from "./Generator.js";
-import { Generator } from "./Generator.js";
-import { maybeQuote, quoteKey } from "./value-serializers.js";
+import { camelCase, deriveShortName } from '../string-utils.js';
+import type { Token } from '../Token.js';
+import type { GeneratorInfo, GeneratorOptions } from './Generator.js';
+import { Generator } from './Generator.js';
+import { maybeQuote, quoteKey } from './value-serializers.js';
 
-export type JavaScriptModule = "esm" | "cjs";
+export type JavaScriptModule = 'esm' | 'cjs';
 
 export type JavaScriptOpts = {
   dateFn?: () => string | null;
@@ -20,7 +20,7 @@ export type JavaScriptOpts = {
   module?: JavaScriptModule;
 } & GeneratorOptions;
 
-const defaultExt = (module: JavaScriptModule): string => (module === "cjs" ? "cjs" : "mjs");
+const defaultExt = (module: JavaScriptModule): string => (module === 'cjs' ? 'cjs' : 'mjs');
 
 /**
  * Emit tokens as a JavaScript module. Defaults to ESM (`.mjs`); pass
@@ -28,13 +28,15 @@ const defaultExt = (module: JavaScriptModule): string => (module === "cjs" ? "cj
  */
 export class JavaScript extends Generator<JavaScriptOpts> {
   constructor(options: Partial<JavaScriptOpts> = {}) {
-    const moduleKind = options.module ?? "esm";
-    if (moduleKind !== "esm" && moduleKind !== "cjs") {
+    const moduleKind = options.module ?? 'esm';
+
+    if (moduleKind !== 'esm' && moduleKind !== 'cjs') {
       throw new Error(
         `JavaScript: invalid \`module\` value ${JSON.stringify(moduleKind)}. ` +
           `Expected "esm" or "cjs".`,
       );
     }
+
     super({
       nameTransformer: camelCase,
       module: moduleKind,
@@ -45,7 +47,7 @@ export class JavaScript extends Generator<JavaScriptOpts> {
 
   override describe(): GeneratorInfo {
     const { module: moduleKind } = this.options;
-    const isCjs = moduleKind === "cjs";
+    const isCjs = moduleKind === 'cjs';
     const importStmt = isCjs
       ? `const { tokens } = require('./${this.file}');`
       : `import { tokens } from './${this.file}';`;
@@ -55,20 +57,21 @@ export class JavaScript extends Generator<JavaScriptOpts> {
       : `import { color } from './${this.file}';`;
     const groupUsage = this.options.groups
       ? `\n\n// Or use typed group accessors\n${groupImport}\ncolor('primary')`
-      : "";
-    return {
-      format: isCjs ? "CommonJS" : "ES Module",
-      usage: base + groupUsage,
-    };
+      : '';
+
+    return { format: isCjs ? 'CommonJS' : 'ES Module', usage: base + groupUsage };
   }
 
   override tokenUsage(token: Token): string | null {
     const { nameTransformer, groups } = this.options;
+
     if (groups) {
       const shortName = deriveShortName(token.name, token.type);
       const groupName = camelCase(token.type);
+
       return `${groupName}('${shortName}')`;
     }
+
     return `tokens.${nameTransformer!(token.name)}`;
   }
 
@@ -80,7 +83,7 @@ export class JavaScript extends Generator<JavaScriptOpts> {
     const { nameTransformer } = this.options;
     const key = quoteKey(nameTransformer!(token.name));
     const deprecationTag = token.deprecated
-      ? `   *  @deprecated${token.replacement ? ` use \`${nameTransformer!(token.replacement)}\` instead` : ""}`
+      ? `   *  @deprecated${token.replacement ? ` use \`${nameTransformer!(token.replacement)}\` instead` : ''}`
       : null;
 
     return [
@@ -97,13 +100,13 @@ export class JavaScript extends Generator<JavaScriptOpts> {
 
   combinator(tokens: Token[]): string {
     const { nameTransformer, groups, module: moduleKind } = this.options;
-    const isCjs = moduleKind === "cjs";
-    const decl = isCjs ? "const" : "export const";
+    const isCjs = moduleKind === 'cjs';
+    const decl = isCjs ? 'const' : 'export const';
 
-    const values = tokens.map((t) => this.generateToken(t));
-    const parts = [`${decl} tokens = {`, values.join(EOL), "};"];
+    const values = tokens.map(t => this.generateToken(t));
+    const parts = [`${decl} tokens = {`, values.join(EOL), '};'];
 
-    const exportNames = ["tokens"];
+    const exportNames = ['tokens'];
 
     if (groups) {
       const groupBlocks = this.tokenGroups(tokens).map(({ groupName, entries }) => {
@@ -114,6 +117,7 @@ export class JavaScript extends Generator<JavaScriptOpts> {
               `  ${quoteKey(shortName)}: tokens.${nameTransformer!(token.name)},`,
           )
           .join(EOL);
+
         return [
           `const _${groupName} = {`,
           mapEntries,
@@ -131,7 +135,7 @@ export class JavaScript extends Generator<JavaScriptOpts> {
           `};`,
         ].join(EOL);
       });
-      parts.push("", ...groupBlocks);
+      parts.push('', ...groupBlocks);
     }
 
     const modeMap = this.buildModeMap(tokens, (key, val) => `    ${key}: ${maybeQuote(val)},`);
@@ -140,15 +144,15 @@ export class JavaScript extends Generator<JavaScriptOpts> {
       const modeEntries = [...modeMap.entries()].map(([mode, entries]) =>
         [`  ${quoteKey(mode)}: {`, ...entries, `  },`].join(EOL),
       );
-      parts.push("", `${decl} modes = {`, ...modeEntries, `};`);
-      exportNames.push("modes");
+      parts.push('', `${decl} modes = {`, ...modeEntries, `};`);
+      exportNames.push('modes');
     }
 
     if (isCjs) {
-      const exportsStr = exportNames.map((n) => `${n}: ${n}`).join(", ");
-      parts.push("", `module.exports = { ${exportsStr}, default: tokens };`);
+      const exportsStr = exportNames.map(n => `${n}: ${n}`).join(', ');
+      parts.push('', `module.exports = { ${exportsStr}, default: tokens };`);
     } else {
-      parts.push("", `export default tokens;`);
+      parts.push('', `export default tokens;`);
     }
 
     return parts.join(EOL);

@@ -1,16 +1,11 @@
-import { camelCase } from "../string-utils.js";
-import type { Token } from "../Token.js";
-import type { GeneratorInfo, GeneratorOptions } from "./Generator.js";
-import { Generator } from "./Generator.js";
+import { camelCase } from '../string-utils.js';
+import type { Token } from '../Token.js';
+import type { GeneratorInfo, GeneratorOptions } from './Generator.js';
+import { Generator } from './Generator.js';
 
-const defaultOptions = {
-  ext: "json",
-  nameTransformer: camelCase,
-};
+const defaultOptions = { ext: 'json', nameTransformer: camelCase };
 
-export type JsonOpts = {
-  nameTransformer?: (name: string) => string;
-} & GeneratorOptions;
+export type JsonOpts = { nameTransformer?: (name: string) => string } & GeneratorOptions;
 
 export class Json extends Generator<JsonOpts> {
   constructor(options = {}) {
@@ -20,12 +15,12 @@ export class Json extends Generator<JsonOpts> {
 
   override describe(): GeneratorInfo {
     return {
-      format: "JSON",
+      format: 'JSON',
       usage: `// Import as a module (Node ESM requires the import attribute)\nimport tokens from './${this.file}' with { type: 'json' };\n\n// Or fetch at runtime\nfetch('./${this.file}').then(r => r.json())`,
     };
   }
 
-  generateToken(token: Token): Record<string, Omit<Token, "name">> {
+  generateToken(token: Token): Record<string, Omit<Token, 'name'>> {
     const { nameTransformer } = this.options;
     const { name, ...values } = token;
     const key = nameTransformer!(name);

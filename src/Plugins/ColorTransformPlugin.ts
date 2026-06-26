@@ -1,13 +1,11 @@
-import type { Token } from "../Token.js";
+import type { Token } from '../Token.js';
 /* eslint-disable @typescript-eslint/no-useless-constructor */
-import { Color } from "../TokenTypes/Color/index.js";
-import type { ColorFormat } from "../TokenTypes/Color/types.js";
-import type { AuditIssue } from "./Plugin.js";
-import { Plugin } from "./Plugin.js";
+import { Color } from '../TokenTypes/Color/index.js';
+import type { ColorFormat } from '../TokenTypes/Color/types.js';
+import type { AuditIssue } from './Plugin.js';
+import { Plugin } from './Plugin.js';
 
-type ColorTransformPluginOptions = {
-  type?: ColorFormat;
-} & Record<string, unknown>;
+type ColorTransformPluginOptions = { type?: ColorFormat } & Record<string, unknown>;
 
 /**
  * Normalizes colors
@@ -15,9 +13,9 @@ type ColorTransformPluginOptions = {
 export class ColorTransformPlugin extends Plugin<ColorTransformPluginOptions> {
   outputType: RegExp = /.*/;
 
-  tokenType: string = "color";
+  tokenType: string = 'color';
 
-  override readonly runAfter: string[] = ["AlphaMultiplyPlugin"];
+  override readonly runAfter: string[] = ['AlphaMultiplyPlugin'];
 
   constructor(options: ColorTransformPluginOptions) {
     super(options);
@@ -28,39 +26,37 @@ export class ColorTransformPlugin extends Plugin<ColorTransformPluginOptions> {
 
     // Skip unresolved references — they'll be resolved later
     if (
-      typeof token.value === "string" &&
-      token.value.startsWith("{") &&
-      token.value.endsWith("}")
+      typeof token.value === 'string' &&
+      token.value.startsWith('{') &&
+      token.value.endsWith('}')
     ) {
       return token;
     }
 
-    return {
-      ...token,
-      value: new Color(token.value as string | Color).toString(type),
-    };
+    return { ...token, value: new Color(token.value as string | Color).toString(type) };
   }
 
   override audit(tokens: Token[]): AuditIssue[] {
     const { type } = this.options;
 
-    if (type !== "hex" && type !== "hex3") {
+    if (type !== 'hex' && type !== 'hex3') {
       return [];
     }
 
     return tokens
-      .filter((t) => t.type === this.tokenType)
-      .flatMap((t) => {
+      .filter(t => t.type === this.tokenType)
+      .flatMap(t => {
         // Skip unresolved references
-        if (typeof t.value === "string" && t.value.startsWith("{") && t.value.endsWith("}")) {
+        if (typeof t.value === 'string' && t.value.startsWith('{') && t.value.endsWith('}')) {
           return [];
         }
 
         const color = new Color(t.value as string | Color);
+
         if (color.alpha < 1) {
           return [
             {
-              severity: "warning" as const,
+              severity: 'warning' as const,
               token: t.name,
               message: `Color has alpha ${color.alpha} but output format "${type}" discards the alpha channel`,
             },

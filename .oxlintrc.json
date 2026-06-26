@@ -1,6 +1,8 @@
 {
   "$schema": "https://raw.githubusercontent.com/oxc-project/oxc/main/npm/oxlint/configuration_schema.json",
+  "jsPlugins": ["./lint-rules/padding-lines.js"],
   "rules": {
+    "padding-lines/before-exit": "error",
     "eqeqeq": ["error", "always", { "null": "ignore" }],
     "no-var": "error",
     "prefer-const": "error",
@@ -131,10 +133,7 @@
   "overrides": [
     {
       "files": ["**/*.test.ts"],
-      "rules": {
-        "unicorn/consistent-function-scoping": "off",
-        "max-statements": "off"
-      }
+      "rules": { "unicorn/consistent-function-scoping": "off", "max-statements": "off" }
     }
   ],
   "ignorePatterns": ["lib/", "node_modules/", "example/dist/"]

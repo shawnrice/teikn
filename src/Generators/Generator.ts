@@ -1,19 +1,20 @@
-import { EOL } from "node:os";
+import { EOL } from 'node:os';
 
-import { version } from "../version.js";
-import { sortPlugins } from "../Plugins/Plugin.js";
-import type { Plugin } from "../Plugins/index.js";
-import { resolveReferences } from "../resolve.js";
-import { camelCase, deriveShortName } from "../string-utils.js";
-import type { ModeValues, Token, TokenValue } from "../Token.js";
-import { isFirstClassValue } from "../type-classifiers.js";
-import { matches } from "../utils.js";
+import type { Plugin } from '../Plugins/index.js';
+import { sortPlugins } from '../Plugins/Plugin.js';
+import { resolveReferences } from '../resolve.js';
+import { camelCase, deriveShortName } from '../string-utils.js';
+import type { ModeValues, Token, TokenValue } from '../Token.js';
+import { isFirstClassValue } from '../type-classifiers.js';
+import { matches } from '../utils.js';
+import { version } from '../version.js';
 
 const runTransform = (plugin: Plugin, input: Token, contextTokenName: string): Token => {
   try {
     return plugin.transform(input);
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
+
     throw new Error(
       `Plugin \`${plugin.constructor.name}\` threw while processing token \`${contextTokenName}\`: ${msg}`,
       { cause: e },
@@ -24,7 +25,7 @@ const runTransform = (plugin: Plugin, input: Token, contextTokenName: string): T
 export const applyPlugin = (plugin: Plugin, token: Token): Token => {
   const transformed = runTransform(plugin, token, token.name);
 
-  if (!transformed || typeof transformed !== "object" || !transformed.name || !transformed.type) {
+  if (!transformed || typeof transformed !== 'object' || !transformed.name || !transformed.type) {
     throw new Error(
       `Plugin \`${plugin.constructor.name}\` returned a malformed token ` +
         `for "${token.name}": result must have \`name\` and \`type\`. ` +
@@ -40,6 +41,7 @@ export const applyPlugin = (plugin: Plugin, token: Token): Token => {
   // but run each mode value through the plugin for value transforms
   const sourceModes = transformed.modes ?? token.modes;
   const transformedModes: ModeValues = {};
+
   for (const [mode, modeVal] of Object.entries(sourceModes)) {
     const { modes: _, ...rest } = transformed;
     const syntheticToken = { ...rest, value: modeVal };
@@ -73,16 +75,11 @@ export type GeneratorOptions = {
   version?: string;
 };
 
-export type RequiredGeneratorOptions = {
-  ext: string;
-};
+export type RequiredGeneratorOptions = { ext: string };
 
 export type RequiredGeneratorOptionNames = keyof RequiredGeneratorOptions;
 
-export type GeneratorInfo = {
-  format: string;
-  usage: string;
-};
+export type GeneratorInfo = { format: string; usage: string };
 
 export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions> {
   options: Opts;
@@ -124,6 +121,7 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
 
     const convertedModes: ModeValues = {};
     let modesChanged = false;
+
     for (const [mode, modeVal] of Object.entries(modes)) {
       if (isFirstClassValue(modeVal)) {
         convertedModes[mode] = this.stringifyTokenValue(modeVal as TokenValue);
@@ -136,6 +134,7 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
     if (convertedValue === value && !modesChanged) {
       return token;
     }
+
     return { ...token, value: convertedValue, modes: modesChanged ? convertedModes : modes };
   }
 
@@ -144,7 +143,7 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
   }
 
   validateOptions(): void {
-    const required: RequiredGeneratorOptions = { ext: "string" };
+    const required: RequiredGeneratorOptions = { ext: 'string' };
 
     const errors: string[] = [];
 
@@ -158,7 +157,8 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
     }
 
     const { filename } = this.options;
-    if (typeof filename === "string" && /[\\/]|(^|\/)\.\.($|\/)/.test(filename)) {
+
+    if (typeof filename === 'string' && /[\\/]|(^|\/)\.\.($|\/)/.test(filename)) {
       errors.push(
         `Error: filename "${filename}" must not contain path separators (\`/\`, \`\\\`) or \`..\` segments. ` +
           `Use the \`outDir\` option to control the output directory.`,
@@ -171,7 +171,7 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
   }
 
   get file(): string {
-    const { ext, filename = "tokens" } = this.options;
+    const { ext, filename = 'tokens' } = this.options;
 
     if (filename.endsWith(`.${ext}`)) {
       return filename;
@@ -184,10 +184,11 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
     return null;
   }
 
-  protected commentHeader(style: "jsdoc" | "scss" = "jsdoc"): string {
+  protected commentHeader(style: 'jsdoc' | 'scss' = 'jsdoc'): string {
     const { dateFn } = this.options as GeneratorOptions & { dateFn?: () => string | null };
     const date = dateFn ? dateFn() : null;
-    if (style === "scss") {
+
+    if (style === 'scss') {
       return [
         `///`,
         `/// ${this.signature()}`,
@@ -200,6 +201,7 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
         .filter(Boolean)
         .join(EOL);
     }
+
     return [
       `/**`,
       ` * ${this.signature()}`,
@@ -220,18 +222,23 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
       nameTransformer?: (name: string) => string;
     };
     const modeMap = new Map<string, string[]>();
+
     for (const token of tokens) {
       if (!token.modes) {
         continue;
       }
+
       const key = nameTransformer?.(token.name) ?? token.name;
+
       for (const [mode, val] of Object.entries(token.modes)) {
         if (!modeMap.has(mode)) {
           modeMap.set(mode, []);
         }
+
         modeMap.get(mode)!.push(formatter(key, val, mode, token));
       }
     }
+
     return modeMap;
   }
 
@@ -247,11 +254,13 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
   // oxlint-disable-next-line class-methods-use-this
   protected buildReferenceMap(tokens: Token[]): Map<unknown, string> {
     const map = new Map<unknown, string>();
+
     for (const token of tokens) {
-      if (typeof token.value === "object" && token.value !== null && !map.has(token.value)) {
+      if (typeof token.value === 'object' && token.value !== null && !map.has(token.value)) {
         map.set(token.value, token.name);
       }
     }
+
     return map;
   }
 
@@ -271,7 +280,8 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
    */
   protected applyPluginPipeline(tokens: Token[], plugins: Plugin[]): Token[] {
     const sorted = sortPlugins(plugins);
-    return tokens.map((token) =>
+
+    return tokens.map(token =>
       sorted.reduce((acc, plugin) => {
         if (!matches(plugin.tokenType, token.type)) {
           return acc;
@@ -288,7 +298,7 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
 
   prepareTokens(tokens: Token[], plugins: Plugin[]): Token[] {
     return this.applyPluginPipeline(
-      tokens.map((t) => this.stringifyValues(t)),
+      tokens.map(t => this.stringifyValues(t)),
       plugins,
     );
   }
@@ -297,6 +307,7 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
     tokens: Token[],
   ): { groupName: string; entries: { shortName: string; token: Token }[] }[] {
     const map = new Map<string, { shortName: string; token: Token }[]>();
+
     for (const token of tokens) {
       const existing = map.get(token.type) ?? [];
       map.set(token.type, [
@@ -304,6 +315,7 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
         { shortName: deriveShortName(token.name, token.type), token },
       ]);
     }
+
     return [...map.entries()].map(([type, entries]) => ({ groupName: camelCase(type), entries }));
   }
 
@@ -327,6 +339,7 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
    */
   generate(tokens: Token[], plugins: Plugin[] = []): string {
     const resolved = resolveReferences(tokens);
+
     return (
       [this.header(), this.combinator(this.prepareTokens(resolved, plugins)), this.footer()]
         .filter(Boolean)

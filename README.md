@@ -1,6 +1,8 @@
 # Teikn
 
-A design token library for defining, validating, and generating design tokens across multiple output formats. Supports first-class color spaces (RGB, HSL, LAB, LCH, XYZ), rich value types, theme modes, token references, and the W3C Design Token Community Group (DTCG) standard.
+A design token library for defining, validating, and generating design tokens across multiple output
+formats. Supports first-class color spaces (RGB, HSL, LAB, LCH, XYZ), rich value types, theme modes,
+token references, and the W3C Design Token Community Group (DTCG) standard.
 
 ## Install
 
@@ -11,17 +13,17 @@ npm install teikn
 ## Quick Start
 
 ```typescript
-import { Teikn, Color, group, scale, dp, tokens, validate } from "teikn";
+import { Teikn, Color, group, scale, dp, tokens, validate } from 'teikn';
 
-const base = new Color("#0066cc");
+const base = new Color('#0066cc');
 
-const colors = group("color", {
-  primary: [base, "Primary brand color"],
+const colors = group('color', {
+  primary: [base, 'Primary brand color'],
   primaryLight: base.tint(0.3),
   primaryDark: base.shade(0.3),
 });
 
-const spacing = scale("spacing", {
+const spacing = scale('spacing', {
   sm: dp(8), // 0.5rem
   md: dp(16), // 1rem
   lg: dp(24), // 1.5rem
@@ -31,7 +33,7 @@ const allTokens = tokens(colors, spacing);
 validate(allTokens);
 
 await new Teikn({
-  outDir: "./dist",
+  outDir: './dist',
   generators: [new Teikn.generators.CssVars(), new Teikn.generators.TypeScript()],
 }).transform(allTokens);
 ```
@@ -42,19 +44,20 @@ typography, shadows, motion, themes, and accessibility audits -- see the
 
 ## Defining Tokens
 
-Tokens are created with builder functions that produce `Token[]` arrays. Each token has a `name`, `value`, `type`, and optional `usage` description.
+Tokens are created with builder functions that produce `Token[]` arrays. Each token has a `name`,
+`value`, `type`, and optional `usage` description.
 
 ### `group(type, entries)`
 
 Create tokens sharing a type. Values can be bare values, `[value, usage]` tuples, or references.
 
 ```typescript
-import { Color, group, ref } from "teikn";
+import { Color, group, ref } from 'teikn';
 
-const colors = group("color", {
-  primary: [new Color("steelblue"), "Primary branding color"],
-  secondary: new Color("crimson"),
-  link: ref("primary"), // references another token by name
+const colors = group('color', {
+  primary: [new Color('steelblue'), 'Primary branding color'],
+  secondary: new Color('crimson'),
+  link: ref('primary'), // references another token by name
   textPrimary: new Color(0, 0, 0, 0.95),
 });
 ```
@@ -64,19 +67,19 @@ const colors = group("color", {
 Create a set of scaled tokens from an array or object.
 
 ```typescript
-import { scale, dp } from "teikn";
+import { scale, dp } from 'teikn';
 
 // From an array with custom names
-const fontSizes = scale("font-size", [10, 12, 14, 16, 20, 24, 36], {
-  names: ["100", "200", "300", "400", "500", "600", "700"],
-  transform: (n) => dp(n),
+const fontSizes = scale('font-size', [10, 12, 14, 16, 20, 24, 36], {
+  names: ['100', '200', '300', '400', '500', '600', '700'],
+  transform: n => dp(n),
 });
 
 // From an object
-const spacing = scale("spacing", {
+const spacing = scale('spacing', {
   xs: dp(4),
   sm: dp(8),
-  md: [dp(16), "Standard spacing"],
+  md: [dp(16), 'Standard spacing'],
   lg: dp(24),
 });
 ```
@@ -86,18 +89,18 @@ const spacing = scale("spacing", {
 Create tokens with structured values (typography, borders, etc.).
 
 ```typescript
-import { composite, dp } from "teikn";
+import { composite, dp } from 'teikn';
 
-const typography = composite("typography", {
+const typography = composite('typography', {
   body: {
     fontFamily: '"Roboto Condensed", sans-serif',
     fontSize: dp(16),
     fontWeight: 400,
     lineHeight: 1.5,
-    letterSpacing: "normal",
+    letterSpacing: 'normal',
   },
   heading: {
-    fontFamily: "Arial, Helvetica, sans-serif",
+    fontFamily: 'Arial, Helvetica, sans-serif',
     fontSize: dp(36),
     fontWeight: 700,
     lineHeight: 1.2,
@@ -110,63 +113,61 @@ const typography = composite("typography", {
 Merge multiple token arrays into one.
 
 ```typescript
-import { tokens } from "teikn";
+import { tokens } from 'teikn';
 
 export const allTokens = tokens(colors, fontSizes, spacing, typography, shadows);
 ```
 
 ### `theme(name, source, overrides)`
 
-Create a named theme layer — a partial override of a token set. Themes are applied as a stack: base tokens → layer A → layer B. Each layer only overrides the tokens it cares about, and keys are validated against the source.
+Create a named theme layer — a partial override of a token set. Themes are applied as a stack: base
+tokens → layer A → layer B. Each layer only overrides the tokens it cares about, and keys are
+validated against the source.
 
 ```typescript
-import { theme, group } from "teikn";
+import { theme, group } from 'teikn';
 
-const colors = group("color", {
-  surface: "#ffffff",
-  background: "#fafafa",
-  onSurface: "rgba(0, 0, 0, .87)",
-  primary: "#0066cc",
+const colors = group('color', {
+  surface: '#ffffff',
+  background: '#fafafa',
+  onSurface: 'rgba(0, 0, 0, .87)',
+  primary: '#0066cc',
 });
 
 // Override only what changes — primary stays the same
-const dark = theme("dark", colors, {
-  surface: "#1a1a1a",
-  background: "#121212",
-  onSurface: "rgba(255, 255, 255, .87)",
+const dark = theme('dark', colors, {
+  surface: '#1a1a1a',
+  background: '#121212',
+  onSurface: 'rgba(255, 255, 255, .87)',
 });
 
 // Derive from another theme — inherits dark's overrides + adds more
-const colorblindDark = theme("colorblind-dark", dark, {
-  primary: "#0077bb",
-});
+const colorblindDark = theme('colorblind-dark', dark, { primary: '#0077bb' });
 ```
 
-`theme()` accepts any `Token[]`, including the merged output of `tokens()`. This lets you theme across groups in a single call:
+`theme()` accepts any `Token[]`, including the merged output of `tokens()`. This lets you theme
+across groups in a single call:
 
 ```typescript
 const allTokens = tokens(colors, spacing, typography);
 
 // Override tokens from any group — no need for separate theme() calls per group
-const dark = theme("dark", allTokens, {
-  surface: "#1a1a1a",
-  background: "#121212",
-  onSurface: "rgba(255, 255, 255, .87)",
+const dark = theme('dark', allTokens, {
+  surface: '#1a1a1a',
+  background: '#121212',
+  onSurface: 'rgba(255, 255, 255, .87)',
 });
 ```
 
 Multiple theme dimensions (color scheme, density, brand) are independent layers:
 
 ```typescript
-const spacing = group("spacing", { gap: "8px", padding: "16px" });
+const spacing = group('spacing', { gap: '8px', padding: '16px' });
 
-const dense = theme("dense", spacing, { gap: "4px", padding: "8px" });
+const dense = theme('dense', spacing, { gap: '4px', padding: '8px' });
 
 // Pass all layers to Teikn — generators output them as scoped overrides
-const writer = new Teikn({
-  themes: [dark, dense, colorblindDark],
-  generators: [new CssVars()],
-});
+const writer = new Teikn({ themes: [dark, dense, colorblindDark], generators: [new CssVars()] });
 await writer.transform(tokens(colors, spacing));
 ```
 
@@ -175,35 +176,35 @@ await writer.transform(tokens(colors, spacing));
 Reference another token by name. References are resolved before generation.
 
 ```typescript
-const colors = group("color", {
-  primary: new Color("steelblue"),
-  link: ref("primary"), // resolved to steelblue
-  linkHover: ref("primary", "Hover state"), // with usage description
+const colors = group('color', {
+  primary: new Color('steelblue'),
+  link: ref('primary'), // resolved to steelblue
+  linkHover: ref('primary', 'Hover state'), // with usage description
 });
 ```
 
 ### `onColors(type, colors)`
 
-Auto-generate contrasting text colors (dark or light) for a set of background colors. Pair this
-with your color group so every branded surface has a readable text color from the start.
+Auto-generate contrasting text colors (dark or light) for a set of background colors. Pair this with
+your color group so every branded surface has a readable text color from the start.
 
 ```typescript
-import { group, onColors, tokens } from "teikn";
+import { group, onColors, tokens } from 'teikn';
 
 const palette = {
-  primary: new Color("steelblue"),
-  secondary: new Color("crimson"),
-  error: new Color("red"),
+  primary: new Color('steelblue'),
+  secondary: new Color('crimson'),
+  error: new Color('red'),
 };
 
-const colors = group("color", {
+const colors = group('color', {
   primary: palette.primary,
   secondary: palette.secondary,
   error: palette.error,
 });
 
 // Generates: onPrimary, onSecondary, onError
-const contrast = onColors("color", palette);
+const contrast = onColors('color', palette);
 
 const allColors = tokens(colors, contrast);
 ```
@@ -211,34 +212,35 @@ const allColors = tokens(colors, contrast);
 ### Helpers
 
 ```typescript
-import { dp, dim, dur } from "teikn";
+import { dp, dim, dur } from 'teikn';
 
 dp(16); // Dimension: 1rem (16px base)
-dim(2, "em"); // Dimension: 2em
-dur(200, "ms"); // Duration: 200ms
+dim(2, 'em'); // Dimension: 2em
+dur(200, 'ms'); // Duration: 200ms
 ```
 
-> **Note:** `dp` stands for _density-independent pixel_, a term from Android's display system.
-> In web terms, it converts a pixel value from your design spec to its `rem` equivalent
-> (assuming a 16px base). `dp(16)` returns `1rem`, `dp(8)` returns `0.5rem`.
+> **Note:** `dp` stands for _density-independent pixel_, a term from Android's display system. In
+> web terms, it converts a pixel value from your design spec to its `rem` equivalent (assuming a
+> 16px base). `dp(16)` returns `1rem`, `dp(8)` returns `0.5rem`.
 
 ## Value Types
 
-Teikn provides first-class value types that carry semantic meaning and enable rich output generation.
+Teikn provides first-class value types that carry semantic meaning and enable rich output
+generation.
 
 ### Color
 
 Supports RGB, HSL, LAB, LCH, and XYZ color spaces with lazy conversion and caching.
 
 ```typescript
-import { Color } from "teikn";
+import { Color } from 'teikn';
 
 // Construction
-const c1 = new Color("steelblue");
-const c2 = new Color("#ff6b35");
-const c3 = new Color("rgb(70, 130, 180)");
-const c4 = new Color("hsl(207, 44%, 49%)");
-const c5 = new Color("lab(54.3, -5.6, -32.1)");
+const c1 = new Color('steelblue');
+const c2 = new Color('#ff6b35');
+const c3 = new Color('rgb(70, 130, 180)');
+const c4 = new Color('hsl(207, 44%, 49%)');
+const c5 = new Color('lab(54.3, -5.6, -32.1)');
 const c6 = new Color(70, 130, 180); // r, g, b
 const c7 = new Color(70, 130, 180, 0.5); // r, g, b, a
 
@@ -264,21 +266,21 @@ c1.isLight(); // luminance > 0.5
 c1.isDark();
 
 // Color blindness simulation
-c1.simulateColorBlindness("protanopia"); // red-blind
-c1.simulateColorBlindness("deuteranopia"); // green-blind
-c1.simulateColorBlindness("tritanopia"); // blue-blind
-c1.simulateColorBlindness("protanomaly"); // partial red-blind
-c1.simulateColorBlindness("deuteranomaly"); // partial green-blind
-c1.simulateColorBlindness("tritanomaly"); // partial blue-blind
+c1.simulateColorBlindness('protanopia'); // red-blind
+c1.simulateColorBlindness('deuteranopia'); // green-blind
+c1.simulateColorBlindness('tritanopia'); // blue-blind
+c1.simulateColorBlindness('protanomaly'); // partial red-blind
+c1.simulateColorBlindness('deuteranomaly'); // partial green-blind
+c1.simulateColorBlindness('tritanomaly'); // partial blue-blind
 
 // Output formats
-c1.toString("hex"); // '#4682b4'
-c1.toString("rgb"); // 'rgb(70, 130, 180)'
-c1.toString("rgba"); // 'rgba(70, 130, 180, 1)'
-c1.toString("hsl"); // 'hsl(207, 44%, 49%)'
-c1.toString("lab"); // 'lab(54.3, -5.6, -32.1)'
-c1.toString("lch"); // 'lch(54.3, 32.6, 260)'
-c1.toString("xkcd"); // nearest XKCD color name
+c1.toString('hex'); // '#4682b4'
+c1.toString('rgb'); // 'rgb(70, 130, 180)'
+c1.toString('rgba'); // 'rgba(70, 130, 180, 1)'
+c1.toString('hsl'); // 'hsl(207, 44%, 49%)'
+c1.toString('lab'); // 'lab(54.3, -5.6, -32.1)'
+c1.toString('lch'); // 'lch(54.3, 32.6, 260)'
+c1.toString('xkcd'); // nearest XKCD color name
 
 // Access raw values
 c1.asRGB(); // [70, 130, 180]
@@ -291,30 +293,30 @@ c1.asXYZ(); // [0.189, 0.200, 0.448]
 Hex strings support 3, 4, 6, and 8-character formats (CSS4 hex-with-alpha):
 
 ```typescript
-new Color("#F00"); // #FF0000
-new Color("#F00A"); // #FF0000 with alpha ~0.67
-new Color("#FF0000AA"); // #FF0000 with alpha ~0.67
+new Color('#F00'); // #FF0000
+new Color('#F00A'); // #FF0000 with alpha ~0.67
+new Color('#FF0000AA'); // #FF0000 with alpha ~0.67
 ```
 
 #### Deriving Colors
 
-Define a base color once and derive related colors with `.shade()`, `.tint()`, and `.mix()`.
-This keeps your palette internally consistent -- when the base changes, everything updates.
+Define a base color once and derive related colors with `.shade()`, `.tint()`, and `.mix()`. This
+keeps your palette internally consistent -- when the base changes, everything updates.
 
 ```typescript
-const brand = new Color("#0066cc");
+const brand = new Color('#0066cc');
 
 brand.tint(0.3); // lighten by mixing 30% white
 brand.shade(0.3); // darken by mixing 30% black
 brand.mix(other, 0.5); // 50/50 blend with another color
 ```
 
-Use `.mix()` for text colors and `.setAlpha()` for overlays. Text at reduced alpha looks washed
-out on colored backgrounds; `.mix()` produces a solid color that stays readable everywhere.
+Use `.mix()` for text colors and `.setAlpha()` for overlays. Text at reduced alpha looks washed out
+on colored backgrounds; `.mix()` produces a solid color that stays readable everywhere.
 
 ```typescript
 // Opaque text: .mix() against white or black
-const textSecondary = dark.mix(new Color("#ffffff"), 0.4);
+const textSecondary = dark.mix(new Color('#ffffff'), 0.4);
 
 // Transparent overlay: .setAlpha()
 const overlay = dark.setAlpha(0.5);
@@ -327,17 +329,17 @@ const overlay = dark.setAlpha(0.5);
 ### BoxShadow
 
 ```typescript
-import { BoxShadow } from "teikn";
+import { BoxShadow } from 'teikn';
 
-const shadow = new BoxShadow(0, 2, 8, 0, "rgba(0,0,0,.12)");
-const inset = new BoxShadow(0, 1, 4, 0, "rgba(0,0,0,.1)", true);
+const shadow = new BoxShadow(0, 2, 8, 0, 'rgba(0,0,0,.12)');
+const inset = new BoxShadow(0, 1, 4, 0, 'rgba(0,0,0,.1)', true);
 
 // From CSS string
-const parsed = new BoxShadow("0 4px 16px rgba(0,0,0,.15)");
+const parsed = new BoxShadow('0 4px 16px rgba(0,0,0,.15)');
 
 // Immutable updates
 shadow.with({ blur: 16, spread: 4 });
-shadow.with({ color: new Color("steelblue"), inset: true });
+shadow.with({ color: new Color('steelblue'), inset: true });
 
 // Properties
 shadow.offsetX; // 0
@@ -354,12 +356,12 @@ shadow.toString(); // '0 2px 8px rgba(0,0,0,0.12)'
 ### CubicBezier
 
 ```typescript
-import { CubicBezier } from "teikn";
+import { CubicBezier } from 'teikn';
 
 const ease = new CubicBezier(0.25, 0.1, 0.25, 1);
 
 // From CSS string
-const parsed = new CubicBezier("cubic-bezier(0.4, 0, 0.2, 1)");
+const parsed = new CubicBezier('cubic-bezier(0.4, 0, 0.2, 1)');
 
 // Built-in presets
 CubicBezier.ease;
@@ -379,24 +381,24 @@ ease.toString(); // 'cubic-bezier(0.25, 0.1, 0.25, 1)'
 ### Dimension
 
 ```typescript
-import { Dimension, dp, dim } from "teikn";
+import { Dimension, dp, dim } from 'teikn';
 
-const d = new Dimension(16, "px");
-const fromString = new Dimension("2.5rem");
+const d = new Dimension(16, 'px');
+const fromString = new Dimension('2.5rem');
 
 // Helpers
 dp(16); // 1rem (converts px to rem, 16px base)
-dim(2, "em"); // 2em
+dim(2, 'em'); // 2em
 
 // Conversion
-d.to("rem"); // Dimension(1, 'rem')
+d.to('rem'); // Dimension(1, 'rem')
 d.toRem(); // Dimension(1, 'rem')
 d.toPx(); // Dimension(16, 'px')
 
 // Arithmetic
 d.scale(2); // 32px
-d.add(new Dimension(8, "px")); // 24px
-d.subtract(new Dimension(4, "px"));
+d.add(new Dimension(8, 'px')); // 24px
+d.subtract(new Dimension(4, 'px'));
 d.negate(); // -16px
 
 // Properties
@@ -406,19 +408,20 @@ d.isAbsolute; // true
 d.isRelative; // false
 ```
 
-Supported units: `px`, `rem`, `em`, `ch`, `ex`, `vw`, `vh`, `vmin`, `vmax`, `cm`, `mm`, `in`, `pt`, `pc`, `%`, `cqi`, `cqb`, `svw`, `svh`, `lvw`, `lvh`, `dvw`, `dvh`, `fr`, `lh`, `rlh`
+Supported units: `px`, `rem`, `em`, `ch`, `ex`, `vw`, `vh`, `vmin`, `vmax`, `cm`, `mm`, `in`, `pt`,
+`pc`, `%`, `cqi`, `cqb`, `svw`, `svh`, `lvw`, `lvh`, `dvw`, `dvh`, `fr`, `lh`, `rlh`
 
 ### Duration
 
 ```typescript
-import { Duration, dur } from "teikn";
+import { Duration, dur } from 'teikn';
 
-const d = new Duration(200, "ms");
-const fromString = new Duration("0.3s");
+const d = new Duration(200, 'ms');
+const fromString = new Duration('0.3s');
 
-dur(200, "ms"); // helper
+dur(200, 'ms'); // helper
 
-d.to("s"); // Duration(0.2, 's')
+d.to('s'); // Duration(0.2, 's')
 d.toMs(); // Duration(200, 'ms')
 d.toS(); // Duration(0.2, 's')
 d.ms(); // 200 (raw number)
@@ -428,17 +431,17 @@ d.toString(); // '200ms'
 ### Gradient
 
 ```typescript
-import { LinearGradient, RadialGradient } from "teikn";
+import { LinearGradient, RadialGradient } from 'teikn';
 
 const linear = new LinearGradient(135, [
-  [new Color("steelblue"), "0%"],
-  [new Color("crimson"), "100%"],
+  [new Color('steelblue'), '0%'],
+  [new Color('crimson'), '100%'],
 ]);
 
-const radial = new RadialGradient({ shape: "circle" }, [
-  ["#0077b6", "0%"],
-  ["#00b4d8", "50%"],
-  ["#90e0ef", "100%"],
+const radial = new RadialGradient({ shape: 'circle' }, [
+  ['#0077b6', '0%'],
+  ['#00b4d8', '50%'],
+  ['#90e0ef', '100%'],
 ]);
 
 linear.toString(); // 'linear-gradient(135deg, #4682b4 0%, #dc143c 100%)'
@@ -447,10 +450,10 @@ linear.toString(); // 'linear-gradient(135deg, #4682b4 0%, #dc143c 100%)'
 ### Transition
 
 ```typescript
-import { Transition, CubicBezier } from "teikn";
+import { Transition, CubicBezier } from 'teikn';
 
 // From values
-const t = new Transition("0.4s", CubicBezier.standard, "0s", "opacity");
+const t = new Transition('0.4s', CubicBezier.standard, '0s', 'opacity');
 
 // Built-in presets
 Transition.fade; // 0.2s ease (all properties)
@@ -458,8 +461,8 @@ Transition.slide; // 0.3s standard curve
 Transition.quick; // 0.1s ease
 
 // Immutable updates
-Transition.fade.setDuration("0.5s");
-Transition.fade.setProperty("color");
+Transition.fade.setDuration('0.5s');
+Transition.fade.setProperty('color');
 Transition.fade.setTimingFunction(CubicBezier.decelerate);
 
 t.toString(); // 'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
@@ -468,17 +471,17 @@ t.toString(); // 'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
 Use presets directly as token values:
 
 ```typescript
-import { group } from "teikn";
+import { group } from 'teikn';
 
-const easings = group("timing", {
+const easings = group('timing', {
   standard: CubicBezier.standard,
   accelerate: CubicBezier.accelerate,
   decelerate: CubicBezier.decelerate,
 });
 
-const transitions = group("transition", {
-  fade: [Transition.fade, "Fade in/out"],
-  slide: [Transition.slide, "Slide animations"],
+const transitions = group('transition', {
+  fade: [Transition.fade, 'Fade in/out'],
+  slide: [Transition.slide, 'Slide animations'],
   quick: Transition.quick,
 });
 ```
@@ -489,7 +492,7 @@ Generators produce output files from your tokens. Each targets a different forma
 
 ```typescript
 const writer = new Teikn({
-  outDir: "./dist",
+  outDir: './dist',
   generators: [
     new Teikn.generators.CssVars(),
     new Teikn.generators.Scss({ groups: true }),
@@ -529,27 +532,27 @@ All generators accept:
 
 ### Generator-Specific Options
 
-**CssVars**: `useMediaQuery?: boolean`, `modeSelectors?: Record<string, string>`
-**Storybook**: `importPath?: string`, `storyTitle?: string`
-**Dtcg**: `hierarchical?: boolean` (default: true), `separator?: string` (default: '.')
+**CssVars**: `useMediaQuery?: boolean`, `modeSelectors?: Record<string, string>` **Storybook**:
+`importPath?: string`, `storyTitle?: string` **Dtcg**: `hierarchical?: boolean` (default: true),
+`separator?: string` (default: '.')
 
 ## Plugins
 
-Plugins transform, expand, and validate tokens before generation. All plugins implement `toJSON(token)` for per-token transforms. Some also provide `expand(tokens)` for generating new tokens or `audit(tokens)` for validation.
+Plugins transform, expand, and validate tokens before generation. All plugins implement
+`toJSON(token)` for per-token transforms. Some also provide `expand(tokens)` for generating new
+tokens or `audit(tokens)` for validation.
 
 ### Transform Plugins
 
 ```typescript
 const writer = new Teikn({
   plugins: [
-    new Teikn.plugins.ColorTransformPlugin({ type: "hsl" }),
+    new Teikn.plugins.ColorTransformPlugin({ type: 'hsl' }),
     new Teikn.plugins.ScssQuoteValuePlugin(),
-    new Teikn.plugins.RemUnitPlugin({ base: 16, targetUnit: "rem" }),
-    new Teikn.plugins.AlphaMultiplyPlugin({ background: "#ffffff" }),
-    new Teikn.plugins.NameConventionPlugin({ convention: "camelCase" }),
-    new Teikn.plugins.DeprecationPlugin({
-      tokens: { oldPrimary: "primary", legacySpacing: true },
-    }),
+    new Teikn.plugins.RemUnitPlugin({ base: 16, targetUnit: 'rem' }),
+    new Teikn.plugins.AlphaMultiplyPlugin({ background: '#ffffff' }),
+    new Teikn.plugins.NameConventionPlugin({ convention: 'camelCase' }),
+    new Teikn.plugins.DeprecationPlugin({ tokens: { oldPrimary: 'primary', legacySpacing: true } }),
   ],
 });
 ```
@@ -566,15 +569,16 @@ const writer = new Teikn({
 
 ### Expand Plugins
 
-These generate additional tokens from existing ones. Call `expand(tokens)` before passing tokens to `Teikn.transform()`.
+These generate additional tokens from existing ones. Call `expand(tokens)` before passing tokens to
+`Teikn.transform()`.
 
 ```typescript
 const palette = new PalettePlugin({ steps: [100, 300, 500, 700, 900] });
-const motion = new ReducedMotionPlugin({ prefix: "reduced-" });
+const motion = new ReducedMotionPlugin({ prefix: 'reduced-' });
 const clamp = new ClampPlugin({
-  pairs: [{ min: "fontSize-100", max: "fontSize-700", output: "fontSize-fluid" }],
+  pairs: [{ min: 'fontSize-100', max: 'fontSize-700', output: 'fontSize-fluid' }],
 });
-const cbSim = new ColorBlindnessPlugin({ types: ["protanopia", "deuteranopia"] });
+const cbSim = new ColorBlindnessPlugin({ types: ['protanopia', 'deuteranopia'] });
 
 let allTokens = tokens(colors, spacing, fontSizes);
 allTokens = palette.expand(allTokens);
@@ -592,13 +596,14 @@ allTokens = cbSim.expand(allTokens);
 
 ### Audit Plugins (Accessibility)
 
-These validate tokens and report issues without modifying them. Call `audit(tokens)` to get a list of issues.
+These validate tokens and report issues without modifying them. Call `audit(tokens)` to get a list
+of issues.
 
 ```typescript
 const contrastCheck = new ContrastValidatorPlugin({
   pairs: [
-    { foreground: "textPrimary", background: "surface", level: "AA" },
-    { foreground: "onPrimary", background: "primary", level: "AAA" },
+    { foreground: 'textPrimary', background: 'surface', level: 'AA' },
+    { foreground: 'onPrimary', background: 'primary', level: 'AAA' },
   ],
 });
 
@@ -613,7 +618,7 @@ const issues = [
   ...distanceCheck.audit(allTokens),
 ];
 
-issues.forEach((i) => console.warn(`[${i.severity}] ${i.token}: ${i.message}`));
+issues.forEach(i => console.warn(`[${i.severity}] ${i.token}: ${i.message}`));
 ```
 
 | Plugin                       | Description                                                                                                                                                                  |
@@ -635,13 +640,14 @@ issues.forEach((i) => console.warn(`[${i.severity}] ${i.token}: ${i.message}`));
 
 ## Dtcg Interoperability
 
-Import and export tokens in the W3C Design Token Community Group format for use with tools like Style Dictionary and Tokens Studio.
+Import and export tokens in the W3C Design Token Community Group format for use with tools like
+Style Dictionary and Tokens Studio.
 
 ```typescript
-import { parseDtcg, serializeDtcg } from "teikn";
+import { parseDtcg, serializeDtcg } from 'teikn';
 
 // Import from Dtcg
-const tokens = parseDtcg(dtcgDocument, { separator: "." });
+const tokens = parseDtcg(dtcgDocument, { separator: '.' });
 
 // Export to Dtcg
 const dtcg = serializeDtcg(tokens, { hierarchical: true });
@@ -652,14 +658,15 @@ const dtcg = serializeDtcg(tokens, { hierarchical: true });
 Validate tokens before generation to catch common issues.
 
 ```typescript
-import { validate } from "teikn";
+import { validate } from 'teikn';
 
 const result = validate(allTokens);
 // result.valid: boolean
 // result.issues: { severity: 'error' | 'warning', token: string, message: string }[]
 ```
 
-Checks for: missing required fields, duplicate names, unparseable colors, invalid references, circular references, and composite token shape validation.
+Checks for: missing required fields, duplicate names, unparseable colors, invalid references,
+circular references, and composite token shape validation.
 
 ## CLI
 
@@ -702,8 +709,17 @@ MIT
 
 Copyright 2019 Shawn Patrick Rice
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+associated documentation files (the "Software"), to deal in the Software without restriction,
+including without limitation the rights to use, copy, modify, merge, publish, distribute,
+sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+The above copyright notice and this permission notice shall be included in all copies or substantial
+portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES
+OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

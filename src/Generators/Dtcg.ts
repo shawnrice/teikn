@@ -1,14 +1,12 @@
-import { serializeDtcg } from "../dtcg/index.js";
-import type { Plugin } from "../Plugins/index.js";
-import { sortPlugins } from "../Plugins/Plugin.js";
-import type { Token } from "../Token.js";
-import { matches } from "../utils.js";
-import type { GeneratorInfo, GeneratorOptions } from "./Generator.js";
-import { Generator, applyPlugin } from "./Generator.js";
+import { serializeDtcg } from '../dtcg/index.js';
+import type { Plugin } from '../Plugins/index.js';
+import { sortPlugins } from '../Plugins/Plugin.js';
+import type { Token } from '../Token.js';
+import { matches } from '../utils.js';
+import type { GeneratorInfo, GeneratorOptions } from './Generator.js';
+import { Generator, applyPlugin } from './Generator.js';
 
-const defaultOptions = {
-  ext: "tokens.json",
-};
+const defaultOptions = { ext: 'tokens.json' };
 
 export type DtcgOpts = {
   /** Use hierarchical grouping based on token names. Default: true */
@@ -24,7 +22,7 @@ export class DtcgGenerator extends Generator<DtcgOpts> {
 
   override describe(): GeneratorInfo {
     return {
-      format: "DTCG",
+      format: 'DTCG',
       usage: `// W3C Design Token Community Group format\n// Import into Style Dictionary, Tokens Studio, or other DTCG-compatible tools`,
     };
   }
@@ -38,7 +36,8 @@ export class DtcgGenerator extends Generator<DtcgOpts> {
   // But it still uses sortPlugins + applyPlugin for correct ordering and mode handling.
   override prepareTokens(tokens: Token[], plugins: Plugin[]): Token[] {
     const sorted = sortPlugins(plugins);
-    return tokens.map((token) =>
+
+    return tokens.map(token =>
       sorted.reduce((acc, plugin) => {
         if (!matches(plugin.tokenType, token.type)) {
           return acc;
@@ -54,14 +53,15 @@ export class DtcgGenerator extends Generator<DtcgOpts> {
   }
 
   generateToken(_: Token): string {
-    return "";
+    return '';
   }
 
   combinator(tokens: Token[]): string {
     const doc = serializeDtcg(tokens, {
       hierarchical: this.options.hierarchical ?? true,
-      separator: this.options.separator ?? ".",
+      separator: this.options.separator ?? '.',
     });
+
     return JSON.stringify(doc, null, 2);
   }
 }

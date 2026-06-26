@@ -1,7 +1,7 @@
-import { Color } from "./Color/index.js";
-import { Dimension } from "./Dimension.js";
-import type { RefFields } from "./ref-guard.js";
-import { assertNotRef, isRefString } from "./ref-guard.js";
+import { Color } from './Color/index.js';
+import { Dimension } from './Dimension.js';
+import type { RefFields } from './ref-guard.js';
+import { assertNotRef, isRefString } from './ref-guard.js';
 
 // ─── Stroke styles ───────────────────────────────────────────
 // The CSS line-style keyword set. These keywords are shared by most
@@ -10,16 +10,16 @@ import { assertNotRef, isRefString } from "./ref-guard.js";
 // into the value layer.
 
 export const borderStyles: ReadonlySet<string> = new Set([
-  "none",
-  "hidden",
-  "solid",
-  "dashed",
-  "dotted",
-  "double",
-  "groove",
-  "ridge",
-  "inset",
-  "outset",
+  'none',
+  'hidden',
+  'solid',
+  'dashed',
+  'dotted',
+  'double',
+  'groove',
+  'ridge',
+  'inset',
+  'outset',
 ]);
 
 export const isBorderStyle = (value: string): boolean => borderStyles.has(value);
@@ -70,15 +70,18 @@ const toWidth = (value: Dimension | string): Dimension | string => {
   if (value instanceof Dimension) {
     return value;
   }
-  if (typeof value === "number") {
+
+  if (typeof value === 'number') {
     throw new Error(
       `Border width must carry a unit — pass a Dimension (e.g. \`dp(1)\` or \`dim(1, "px")\`) ` +
         `rather than the bare number ${value}.`,
     );
   }
+
   if (isRefString(value)) {
     return value;
   }
+
   return new Dimension(value);
 };
 
@@ -86,8 +89,9 @@ const toStyle = (value: string): string => {
   if (isRefString(value) || isBorderStyle(value)) {
     return value;
   }
+
   throw new Error(
-    `Invalid border style "${value}". Valid styles: ${[...borderStyles].join(", ")}.`,
+    `Invalid border style "${value}". Valid styles: ${[...borderStyles].join(', ')}.`,
   );
 };
 
@@ -95,17 +99,14 @@ const toColor = (value: Color | string): Color | string => {
   if (value instanceof Color || isRefString(value)) {
     return value;
   }
+
   return new Color(value);
 };
 
 // ─── Input ───────────────────────────────────────────────────
 
 // Any field also accepts a `{tokenName}` reference string, resolved per-field.
-export type BorderInput = {
-  width: Dimension | string;
-  style: string;
-  color: Color | string;
-};
+export type BorderInput = { width: Dimension | string; style: string; color: Color | string };
 
 // ─── Border ──────────────────────────────────────────────────
 
@@ -138,15 +139,17 @@ export class Border implements RefFields {
       this.#width = input.#width;
       this.#style = input.#style;
       this.#color = input.#color;
+
       return;
     }
 
-    if (typeof input === "string") {
-      assertNotRef(input, "Border");
+    if (typeof input === 'string') {
+      assertNotRef(input, 'Border');
       const parsed = parse(input);
       this.#width = parsed.width;
       this.#style = parsed.style;
       this.#color = parsed.color;
+
       return;
     }
 
@@ -196,7 +199,7 @@ export class Border implements RefFields {
 
   /** CSS `border` shorthand: `width style color`. */
   toString(): string {
-    return [String(this.#width), this.#style, String(this.#color)].join(" ");
+    return [String(this.#width), this.#style, String(this.#color)].join(' ');
   }
 
   // ─── Static helpers ──────────────────────────────────────────

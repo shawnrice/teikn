@@ -5,14 +5,14 @@
  * They use CSS custom properties for theming and respond to
  * Storybook's dark mode automatically.
  */
-import * as React from "react";
+import * as React from 'react';
 
 type El = React.JSX.Element;
 type ElOrNull = React.JSX.Element | null;
 
 // ─── Theme ───────────────────────────────────────────────────
 
-type ColorScheme = "auto" | "light" | "dark";
+type ColorScheme = 'auto' | 'light' | 'dark';
 
 // Palette-independent vars (fonts, accents, radius). These never change
 // between light and dark, so they live on the root unconditionally.
@@ -55,12 +55,14 @@ const rootSurface = `
   box-sizing: border-box;`;
 
 const buildThemeStyles = (colorScheme: ColorScheme): string => {
-  if (colorScheme === "light") {
+  if (colorScheme === 'light') {
     return `.teikn-sb {${constants}${lightVars}${rootSurface}\n  color-scheme: light;\n}`;
   }
-  if (colorScheme === "dark") {
+
+  if (colorScheme === 'dark') {
     return `.teikn-sb {${constants}${darkVars}${rootSurface}\n  color-scheme: dark;\n}`;
   }
+
   return `.teikn-sb {${constants}${lightVars}${rootSurface}
   color-scheme: light dark;
 }
@@ -78,37 +80,37 @@ const buildThemeStyles = (colorScheme: ColorScheme): string => {
 // ─── Primitives ──────────────────────────────────────────────
 
 const card: React.CSSProperties = {
-  background: "var(--tkn-bg)",
-  border: "1px solid var(--tkn-border)",
-  borderRadius: "var(--tkn-radius)",
-  color: "var(--tkn-text)",
+  background: 'var(--tkn-bg)',
+  border: '1px solid var(--tkn-border)',
+  borderRadius: 'var(--tkn-radius)',
+  color: 'var(--tkn-text)',
 };
 
 const code: React.CSSProperties = {
-  background: "var(--tkn-bg-subtle)",
-  padding: "0.125rem 0.375rem",
+  background: 'var(--tkn-bg-subtle)',
+  padding: '0.125rem 0.375rem',
   borderRadius: 3,
-  fontSize: "0.8125rem",
-  fontFamily: "var(--tkn-mono)",
+  fontSize: '0.8125rem',
+  fontFamily: 'var(--tkn-mono)',
 };
 
 const label: React.CSSProperties = {
-  fontSize: "0.875rem",
-  color: "var(--tkn-text-secondary)",
-  marginBottom: "0.5rem",
+  fontSize: '0.875rem',
+  color: 'var(--tkn-text-secondary)',
+  marginBottom: '0.5rem',
 };
 
 const mono: React.CSSProperties = {
-  fontSize: "0.75rem",
-  color: "var(--tkn-text-secondary)",
-  fontFamily: "var(--tkn-mono)",
+  fontSize: '0.75rem',
+  color: 'var(--tkn-text-secondary)',
+  fontFamily: 'var(--tkn-mono)',
 };
 
 // ─── Theme wrapper ───────────────────────────────────────────
 
 export const TokenStory = ({
   children,
-  colorScheme = "auto",
+  colorScheme = 'auto',
 }: {
   children: React.ReactNode;
   colorScheme?: ColorScheme;
@@ -122,26 +124,26 @@ export const TokenStory = ({
 // ─── Grid layouts ────────────────────────────────────────────
 
 export const TokenGrid = ({ children }: { children: React.ReactNode }): El => (
-  <div style={{ display: "flex", flexWrap: "wrap", gap: "1.25rem" }}>{children}</div>
+  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.25rem' }}>{children}</div>
 );
 
 export const TokenList = ({ children }: { children: React.ReactNode }): El => (
-  <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>{children}</div>
+  <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>{children}</div>
 );
 
 // ─── Color ───────────────────────────────────────────────────
 
 export const Swatch = ({ name, value }: { name: string; value: string }): El => (
-  <div style={{ ...card, width: 224, overflow: "hidden" }}>
+  <div style={{ ...card, width: 224, overflow: 'hidden' }}>
     <div
       style={{
         background: value,
         height: 96,
-        borderRadius: "var(--tkn-radius) var(--tkn-radius) 0 0",
+        borderRadius: 'var(--tkn-radius) var(--tkn-radius) 0 0',
       }}
     />
-    <div style={{ padding: "0.875rem" }}>
-      <div style={{ fontWeight: 600, fontSize: "0.9rem", marginBottom: 4 }}>{name}</div>
+    <div style={{ padding: '0.875rem' }}>
+      <div style={{ fontWeight: 600, fontSize: '0.9rem', marginBottom: 4 }}>{name}</div>
       <div style={mono}>{value}</div>
     </div>
   </div>
@@ -150,14 +152,14 @@ export const Swatch = ({ name, value }: { name: string; value: string }): El => 
 // ─── Spacing ─────────────────────────────────────────────────
 
 export const SpacingBar = ({ name, value }: { name: string; value: string }): El => (
-  <div style={{ ...card, padding: "1rem", marginBottom: "0.75rem" }}>
+  <div style={{ ...card, padding: '1rem', marginBottom: '0.75rem' }}>
     <div style={label}>
       {name} <code style={code}>{value}</code>
     </div>
     <div
       style={{
         height: 12,
-        background: "var(--tkn-accent)",
+        background: 'var(--tkn-accent)',
         borderRadius: 3,
         width: value,
         minWidth: 2,
@@ -169,23 +171,23 @@ export const SpacingBar = ({ name, value }: { name: string; value: string }): El
 // ─── Shadow ──────────────────────────────────────────────────
 
 export const ShadowBox = ({ name, value }: { name: string; value: string }): El => (
-  <div style={{ ...card, padding: 0, width: 200, textAlign: "center", overflow: "hidden" }}>
+  <div style={{ ...card, padding: 0, width: 200, textAlign: 'center', overflow: 'hidden' }}>
     {/* Light stage so dark, semi-transparent shadows stay visible in any theme */}
-    <div style={{ background: "var(--tkn-shadow-stage)", padding: "1.75rem 1rem" }}>
+    <div style={{ background: 'var(--tkn-shadow-stage)', padding: '1.75rem 1rem' }}>
       <div
         style={{
           width: 88,
           height: 88,
-          background: "#ffffff",
+          background: '#ffffff',
           borderRadius: 8,
-          margin: "0 auto",
+          margin: '0 auto',
           boxShadow: value,
         }}
       />
     </div>
-    <div style={{ padding: "0.875rem" }}>
-      <div style={{ fontWeight: 600, fontSize: "0.875rem" }}>{name}</div>
-      <div style={{ ...mono, marginTop: "0.25rem", wordBreak: "break-all" }}>{value}</div>
+    <div style={{ padding: '0.875rem' }}>
+      <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{name}</div>
+      <div style={{ ...mono, marginTop: '0.25rem', wordBreak: 'break-all' }}>{value}</div>
     </div>
   </div>
 );
@@ -201,11 +203,11 @@ export const FontSample = ({
   value: string;
   styleProp: string;
 }): El => (
-  <div style={{ ...card, padding: "1rem", marginBottom: "0.75rem" }}>
+  <div style={{ ...card, padding: '1rem', marginBottom: '0.75rem' }}>
     <div style={label}>
       {name} <code style={code}>{value}</code>
     </div>
-    <div style={{ [styleProp]: value, overflow: "hidden", textOverflow: "ellipsis" }}>
+    <div style={{ [styleProp]: value, overflow: 'hidden', textOverflow: 'ellipsis' }}>
       The quick brown fox jumps over the lazy dog
     </div>
   </div>
@@ -224,38 +226,44 @@ export const TypographyBlock = ({
 }): El => {
   // First-class Typography serializes to the `font` shorthand; apply it
   // directly and show it as a single prop row.
-  const fields: Record<string, unknown> = typeof value === "string" ? { font: value } : value;
-  const style: React.CSSProperties = typeof value === "string" ? { font: value } : {};
-  if (typeof value !== "string") {
+  const fields: Record<string, unknown> = typeof value === 'string' ? { font: value } : value;
+  const style: React.CSSProperties = typeof value === 'string' ? { font: value } : {};
+
+  if (typeof value !== 'string') {
     if (value.fontFamily) {
       style.fontFamily = value.fontFamily as string;
     }
+
     if (value.fontSize) {
       style.fontSize = value.fontSize as string;
     }
+
     if (value.fontWeight) {
       style.fontWeight = value.fontWeight as number;
     }
+
     if (value.lineHeight) {
       style.lineHeight = value.lineHeight as number;
     }
+
     if (value.letterSpacing) {
       style.letterSpacing = value.letterSpacing as string;
     }
   }
+
   return (
-    <div style={{ ...card, overflow: "hidden", marginBottom: "0.75rem" }}>
-      <div style={{ padding: "1.5rem", borderBottom: "1px solid var(--tkn-border)", ...style }}>
-        <div style={{ fontSize: "2em", marginBottom: "0.25em" }}>Heading</div>
+    <div style={{ ...card, overflow: 'hidden', marginBottom: '0.75rem' }}>
+      <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--tkn-border)', ...style }}>
+        <div style={{ fontSize: '2em', marginBottom: '0.25em' }}>Heading</div>
         <div>The quick brown fox jumps over the lazy dog.</div>
       </div>
-      <div style={{ padding: "1rem" }}>
-        <div style={{ fontWeight: 600, fontSize: "0.875rem", marginBottom: "0.5rem" }}>{name}</div>
-        <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "0.2rem 0.75rem" }}>
+      <div style={{ padding: '1rem' }}>
+        <div style={{ fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.5rem' }}>{name}</div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '0.2rem 0.75rem' }}>
           {Object.entries(fields).map(([k, v]) => (
             <React.Fragment key={k}>
-              <dt style={{ ...mono, color: "var(--tkn-text-muted)" }}>{k}</dt>
-              <dd style={{ ...mono, margin: 0, fontSize: "0.8125rem" }}>{String(v)}</dd>
+              <dt style={{ ...mono, color: 'var(--tkn-text-muted)' }}>{k}</dt>
+              <dd style={{ ...mono, margin: 0, fontSize: '0.8125rem' }}>{String(v)}</dd>
             </React.Fragment>
           ))}
         </div>
@@ -275,29 +283,30 @@ export const BorderDemo = ({
   // first-class `Border` token.
   value: Record<string, unknown> | string;
 }): El => {
-  const fields: Record<string, unknown> = typeof value === "string" ? { border: value } : value;
+  const fields: Record<string, unknown> = typeof value === 'string' ? { border: value } : value;
   const borderStr =
-    typeof value === "string"
+    typeof value === 'string'
       ? value
-      : [value.width, value.style, value.color].filter(Boolean).join(" ");
+      : [value.width, value.style, value.color].filter(Boolean).join(' ');
+
   return (
-    <div style={{ ...card, padding: "1rem", marginBottom: "0.75rem" }}>
-      <div style={{ fontWeight: 600, fontSize: "0.875rem", marginBottom: "0.25rem" }}>{name}</div>
+    <div style={{ ...card, padding: '1rem', marginBottom: '0.75rem' }}>
+      <div style={{ fontWeight: 600, fontSize: '0.875rem', marginBottom: '0.25rem' }}>{name}</div>
       <div
         style={{
-          width: "100%",
+          width: '100%',
           height: 48,
           borderRadius: 4,
-          background: "var(--tkn-bg-muted)",
-          margin: "0.75rem 0",
+          background: 'var(--tkn-bg-muted)',
+          margin: '0.75rem 0',
           border: borderStr,
         }}
       />
-      <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "0.2rem 0.75rem" }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', gap: '0.2rem 0.75rem' }}>
         {Object.entries(fields).map(([k, v]) => (
           <React.Fragment key={k}>
-            <dt style={{ ...mono, color: "var(--tkn-text-muted)" }}>{k}</dt>
-            <dd style={{ ...mono, margin: 0, fontSize: "0.8125rem" }}>{String(v)}</dd>
+            <dt style={{ ...mono, color: 'var(--tkn-text-muted)' }}>{k}</dt>
+            <dd style={{ ...mono, margin: 0, fontSize: '0.8125rem' }}>{String(v)}</dd>
           </React.Fragment>
         ))}
       </div>
@@ -308,7 +317,7 @@ export const BorderDemo = ({
 // ─── Border Width ────────────────────────────────────────────
 
 export const BorderWidthDemo = ({ name, value }: { name: string; value: string }): El => (
-  <div style={{ ...card, padding: "1rem", marginBottom: "0.75rem" }}>
+  <div style={{ ...card, padding: '1rem', marginBottom: '0.75rem' }}>
     <div style={label}>
       {name} <code style={code}>{value}</code>
     </div>
@@ -316,7 +325,7 @@ export const BorderWidthDemo = ({ name, value }: { name: string; value: string }
       style={{
         height: 56,
         borderRadius: 6,
-        background: "var(--tkn-bg-muted)",
+        background: 'var(--tkn-bg-muted)',
         border: `${value} solid var(--tkn-accent)`,
       }}
     />
@@ -326,7 +335,7 @@ export const BorderWidthDemo = ({ name, value }: { name: string; value: string }
 // ─── Border Style ────────────────────────────────────────────
 
 export const BorderStyleDemo = ({ name, value }: { name: string; value: string }): El => (
-  <div style={{ ...card, padding: "1rem", marginBottom: "0.75rem" }}>
+  <div style={{ ...card, padding: '1rem', marginBottom: '0.75rem' }}>
     <div style={label}>
       {name} <code style={code}>{value}</code>
     </div>
@@ -334,7 +343,7 @@ export const BorderStyleDemo = ({ name, value }: { name: string; value: string }
       style={{
         height: 56,
         borderRadius: 6,
-        background: "var(--tkn-bg-muted)",
+        background: 'var(--tkn-bg-muted)',
         border: `3px ${value} var(--tkn-accent)`,
       }}
     />
@@ -344,17 +353,17 @@ export const BorderStyleDemo = ({ name, value }: { name: string; value: string }
 // ─── Border Radius ───────────────────────────────────────────
 
 export const RadiusBox = ({ name, value }: { name: string; value: string }): El => (
-  <div style={{ ...card, padding: "1rem", width: 140, textAlign: "center" }}>
+  <div style={{ ...card, padding: '1rem', width: 140, textAlign: 'center' }}>
     <div
       style={{
         width: 64,
         height: 64,
-        background: "var(--tkn-accent)",
-        margin: "0.5rem auto",
+        background: 'var(--tkn-accent)',
+        margin: '0.5rem auto',
         borderRadius: value,
       }}
     />
-    <div style={{ fontWeight: 600, fontSize: "0.8rem" }}>{name}</div>
+    <div style={{ fontWeight: 600, fontSize: '0.8rem' }}>{name}</div>
     <div style={mono}>{value}</div>
   </div>
 );
@@ -362,24 +371,24 @@ export const RadiusBox = ({ name, value }: { name: string; value: string }): El 
 // ─── Gradient ────────────────────────────────────────────────
 
 export const GradientSwatch = ({ name, value }: { name: string; value: string }): El => (
-  <div style={{ ...card, overflow: "hidden" }}>
+  <div style={{ ...card, overflow: 'hidden' }}>
     <div
       style={{
-        width: "100%",
+        width: '100%',
         height: 180,
         background: value,
-        borderRadius: "var(--tkn-radius) var(--tkn-radius) 0 0",
+        borderRadius: 'var(--tkn-radius) var(--tkn-radius) 0 0',
       }}
     />
-    <div style={{ padding: "1rem 1.25rem" }}>
-      <div style={{ fontWeight: 600, fontSize: "1rem", marginBottom: "0.5rem" }}>{name}</div>
+    <div style={{ padding: '1rem 1.25rem' }}>
+      <div style={{ fontWeight: 600, fontSize: '1rem', marginBottom: '0.5rem' }}>{name}</div>
       <div
         style={{
           ...mono,
-          background: "var(--tkn-bg-subtle)",
-          padding: "0.5rem 0.75rem",
+          background: 'var(--tkn-bg-subtle)',
+          padding: '0.5rem 0.75rem',
           borderRadius: 6,
-          wordBreak: "break-all",
+          wordBreak: 'break-all',
           lineHeight: 1.5,
         }}
       >
@@ -392,32 +401,32 @@ export const GradientSwatch = ({ name, value }: { name: string; value: string })
 // ─── Opacity ─────────────────────────────────────────────────
 
 export const OpacityDemo = ({ name, value }: { name: string; value: string }): El => (
-  <div style={{ ...card, padding: "1rem", width: 160, textAlign: "center" }}>
+  <div style={{ ...card, padding: '1rem', width: 160, textAlign: 'center' }}>
     <div
       style={{
         width: 80,
         height: 80,
         borderRadius: 8,
-        margin: "0.5rem auto",
-        border: "1px solid var(--tkn-border)",
-        position: "relative",
+        margin: '0.5rem auto',
+        border: '1px solid var(--tkn-border)',
+        position: 'relative',
         backgroundImage:
-          "linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ccc 75%), linear-gradient(-45deg, transparent 75%, #ccc 75%)",
-        backgroundSize: "12px 12px",
-        backgroundPosition: "0 0, 0 6px, 6px -6px, -6px 0",
+          'linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ccc 75%), linear-gradient(-45deg, transparent 75%, #ccc 75%)',
+        backgroundSize: '12px 12px',
+        backgroundPosition: '0 0, 0 6px, 6px -6px, -6px 0',
       }}
     >
       <div
         style={{
-          position: "absolute",
+          position: 'absolute',
           inset: 0,
           borderRadius: 8,
-          background: "var(--tkn-accent)",
+          background: 'var(--tkn-accent)',
           opacity: Number(value),
         }}
       />
     </div>
-    <div style={{ fontWeight: 600, fontSize: "0.875rem" }}>{name}</div>
+    <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{name}</div>
     <div style={mono}>{value}</div>
   </div>
 );
@@ -425,18 +434,18 @@ export const OpacityDemo = ({ name, value }: { name: string; value: string }): E
 // ─── Line Height ─────────────────────────────────────────────
 
 export const LineHeightSample = ({ name, value }: { name: string; value: string }): El => (
-  <div style={{ ...card, padding: "1rem", marginBottom: "0.75rem" }}>
+  <div style={{ ...card, padding: '1rem', marginBottom: '0.75rem' }}>
     <div style={label}>
       {name} <code style={code}>{value}</code>
     </div>
     <div
       style={{
-        fontSize: "0.875rem",
+        fontSize: '0.875rem',
         maxWidth: 420,
-        background: "var(--tkn-bg-muted)",
-        padding: "0.75rem",
+        background: 'var(--tkn-bg-muted)',
+        padding: '0.75rem',
         borderRadius: 4,
-        borderLeft: "3px solid var(--tkn-accent)",
+        borderLeft: '3px solid var(--tkn-accent)',
         lineHeight: value,
       }}
     >
@@ -449,18 +458,18 @@ export const LineHeightSample = ({ name, value }: { name: string; value: string 
 // ─── Letter Spacing ──────────────────────────────────────────
 
 export const LetterSpacingSample = ({ name, value }: { name: string; value: string }): El => (
-  <div style={{ ...card, padding: "1rem", marginBottom: "0.75rem" }}>
+  <div style={{ ...card, padding: '1rem', marginBottom: '0.75rem' }}>
     <div style={label}>
       {name} <code style={code}>{value}</code>
     </div>
     <div
       style={{
-        fontSize: "1rem",
-        textTransform: "uppercase",
-        background: "var(--tkn-bg-muted)",
-        padding: "0.75rem",
+        fontSize: '1rem',
+        textTransform: 'uppercase',
+        background: 'var(--tkn-bg-muted)',
+        padding: '0.75rem',
         borderRadius: 4,
-        borderLeft: "3px solid #6366f1",
+        borderLeft: '3px solid #6366f1',
         letterSpacing: value,
       }}
     >
@@ -477,18 +486,19 @@ export const DurationBar = ({ name, value }: { name: string; value: string }): E
     setPlaying(false);
     requestAnimationFrame(() => requestAnimationFrame(() => setPlaying(true)));
   };
+
   return (
-    <div style={{ ...card, borderRadius: 12, padding: "1.25rem", marginBottom: "1rem" }}>
+    <div style={{ ...card, borderRadius: 12, padding: '1.25rem', marginBottom: '1rem' }}>
       <div
-        style={{ display: "flex", alignItems: "baseline", gap: "0.75rem", marginBottom: "0.75rem" }}
+        style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem', marginBottom: '0.75rem' }}
       >
-        <div style={{ fontWeight: 700, fontSize: "1rem" }}>{name}</div>
+        <div style={{ fontWeight: 700, fontSize: '1rem' }}>{name}</div>
         <div
           style={{
-            fontSize: "1.5rem",
+            fontSize: '1.5rem',
             fontWeight: 700,
-            fontFamily: "var(--tkn-mono)",
-            color: "var(--tkn-accent)",
+            fontFamily: 'var(--tkn-mono)',
+            color: 'var(--tkn-accent)',
           }}
         >
           {value}
@@ -497,21 +507,21 @@ export const DurationBar = ({ name, value }: { name: string; value: string }): E
       <div
         style={{
           height: 8,
-          background: "var(--tkn-bg-subtle)",
+          background: 'var(--tkn-bg-subtle)',
           borderRadius: 4,
-          overflow: "hidden",
-          marginBottom: "0.625rem",
+          overflow: 'hidden',
+          marginBottom: '0.625rem',
         }}
       >
         <div
           onAnimationEnd={() => setPlaying(false)}
           style={{
-            height: "100%",
-            width: playing ? "100%" : 0,
+            height: '100%',
+            width: playing ? '100%' : 0,
             background: `linear-gradient(90deg, var(--tkn-accent), var(--tkn-accent-light))`,
             borderRadius: 4,
-            transition: playing ? "none" : undefined,
-            animation: playing ? `teikn-fill-bar ${value} ease forwards` : "none",
+            transition: playing ? 'none' : undefined,
+            animation: playing ? `teikn-fill-bar ${value} ease forwards` : 'none',
           }}
         />
       </div>
@@ -519,13 +529,13 @@ export const DurationBar = ({ name, value }: { name: string; value: string }): E
       <button
         onClick={play}
         style={{
-          background: "none",
-          border: "1px solid var(--tkn-border)",
+          background: 'none',
+          border: '1px solid var(--tkn-border)',
           borderRadius: 4,
-          padding: "0.2rem 0.75rem",
-          fontSize: "0.75rem",
-          color: "var(--tkn-text-secondary)",
-          cursor: "pointer",
+          padding: '0.2rem 0.75rem',
+          fontSize: '0.75rem',
+          color: 'var(--tkn-text-secondary)',
+          cursor: 'pointer',
         }}
       >
         &#9654; Play
@@ -542,18 +552,19 @@ export const TimingDemo = ({ name, value }: { name: string; value: string }): El
     setPlaying(false);
     requestAnimationFrame(() => requestAnimationFrame(() => setPlaying(true)));
   };
+
   return (
-    <div style={{ ...card, borderRadius: 12, padding: "1.25rem", marginBottom: "1rem" }}>
-      <div style={{ fontWeight: 700, fontSize: "1rem", marginBottom: "0.5rem" }}>{name}</div>
+    <div style={{ ...card, borderRadius: 12, padding: '1.25rem', marginBottom: '1rem' }}>
+      <div style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '0.5rem' }}>{name}</div>
       <div
         style={{
           ...mono,
-          fontSize: "0.8125rem",
-          background: "var(--tkn-bg-subtle)",
-          padding: "0.375rem 0.625rem",
+          fontSize: '0.8125rem',
+          background: 'var(--tkn-bg-subtle)',
+          padding: '0.375rem 0.625rem',
           borderRadius: 6,
-          display: "inline-block",
-          marginBottom: "0.75rem",
+          display: 'inline-block',
+          marginBottom: '0.75rem',
         }}
       >
         {value}
@@ -561,10 +572,10 @@ export const TimingDemo = ({ name, value }: { name: string; value: string }): El
       <div
         style={{
           height: 6,
-          background: "var(--tkn-bg-subtle)",
+          background: 'var(--tkn-bg-subtle)',
           borderRadius: 3,
-          position: "relative",
-          marginBottom: "0.5rem",
+          position: 'relative',
+          marginBottom: '0.5rem',
         }}
       >
         <div
@@ -572,14 +583,14 @@ export const TimingDemo = ({ name, value }: { name: string; value: string }): El
           style={{
             width: 20,
             height: 20,
-            background: "linear-gradient(135deg, #818cf8, #6366f1)",
-            borderRadius: "50%",
-            position: "absolute",
-            top: "50%",
-            left: playing ? "calc(100% - 20px)" : 0,
-            transform: "translateY(-50%)",
-            boxShadow: "0 2px 8px rgba(99,102,241,0.4)",
-            animation: playing ? `teikn-slide-right 1.5s ${value} forwards` : "none",
+            background: 'linear-gradient(135deg, #818cf8, #6366f1)',
+            borderRadius: '50%',
+            position: 'absolute',
+            top: '50%',
+            left: playing ? 'calc(100% - 20px)' : 0,
+            transform: 'translateY(-50%)',
+            boxShadow: '0 2px 8px rgba(99,102,241,0.4)',
+            animation: playing ? `teikn-slide-right 1.5s ${value} forwards` : 'none',
           }}
         />
       </div>
@@ -587,13 +598,13 @@ export const TimingDemo = ({ name, value }: { name: string; value: string }): El
       <button
         onClick={play}
         style={{
-          background: "none",
-          border: "1px solid var(--tkn-border)",
+          background: 'none',
+          border: '1px solid var(--tkn-border)',
           borderRadius: 4,
-          padding: "0.2rem 0.75rem",
-          fontSize: "0.75rem",
-          color: "var(--tkn-text-secondary)",
-          cursor: "pointer",
+          padding: '0.2rem 0.75rem',
+          fontSize: '0.75rem',
+          color: 'var(--tkn-text-secondary)',
+          cursor: 'pointer',
         }}
       >
         &#9654; Play
@@ -605,42 +616,42 @@ export const TimingDemo = ({ name, value }: { name: string; value: string }): El
 // ─── Transition ──────────────────────────────────────────────
 
 export const TransitionDemo = ({ name, value }: { name: string; value: string }): El => (
-  <div style={{ ...card, borderRadius: 12, padding: "1.25rem", marginBottom: "1rem" }}>
+  <div style={{ ...card, borderRadius: 12, padding: '1.25rem', marginBottom: '1rem' }}>
     <div
-      style={{ display: "flex", alignItems: "baseline", gap: "0.75rem", marginBottom: "0.75rem" }}
+      style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem', marginBottom: '0.75rem' }}
     >
-      <div style={{ fontWeight: 700, fontSize: "1rem" }}>{name}</div>
+      <div style={{ fontWeight: 700, fontSize: '1rem' }}>{name}</div>
       <div
         style={{
           ...mono,
-          fontSize: "0.8125rem",
-          background: "var(--tkn-bg-subtle)",
-          padding: "0.375rem 0.625rem",
+          fontSize: '0.8125rem',
+          background: 'var(--tkn-bg-subtle)',
+          padding: '0.375rem 0.625rem',
           borderRadius: 6,
         }}
       >
         {value}
       </div>
     </div>
-    <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
       <div
         style={{
           width: 60,
           height: 60,
-          background: "var(--tkn-accent)",
+          background: 'var(--tkn-accent)',
           borderRadius: 8,
           transition: value,
         }}
-        onMouseEnter={(e) => {
-          (e.target as HTMLElement).style.transform = "scale(1.15)";
-          (e.target as HTMLElement).style.background = "var(--tkn-accent-light)";
+        onMouseEnter={e => {
+          (e.target as HTMLElement).style.transform = 'scale(1.15)';
+          (e.target as HTMLElement).style.background = 'var(--tkn-accent-light)';
         }}
-        onMouseLeave={(e) => {
-          (e.target as HTMLElement).style.transform = "";
-          (e.target as HTMLElement).style.background = "var(--tkn-accent)";
+        onMouseLeave={e => {
+          (e.target as HTMLElement).style.transform = '';
+          (e.target as HTMLElement).style.background = 'var(--tkn-accent)';
         }}
       />
-      <span style={{ fontSize: "0.75rem", color: "var(--tkn-text-muted)" }}>Hover to preview</span>
+      <span style={{ fontSize: '0.75rem', color: 'var(--tkn-text-muted)' }}>Hover to preview</span>
     </div>
   </div>
 );
@@ -658,12 +669,16 @@ const useMeasuredPx = (
     if (!ref.current) {
       return undefined;
     }
+
     setPx(ref.current.getBoundingClientRect().width);
+
     if (!isStatic) {
       const onResize = () => setPx(ref.current?.getBoundingClientRect().width ?? 0);
-      window.addEventListener("resize", onResize);
-      return () => window.removeEventListener("resize", onResize);
+      window.addEventListener('resize', onResize);
+
+      return () => window.removeEventListener('resize', onResize);
     }
+
     return undefined;
   }, [value, isStatic]);
 
@@ -673,26 +688,27 @@ const useMeasuredPx = (
 export const BreakpointBar = ({ name, value }: { name: string; value: string }): El => {
   const { px, isDynamic, ref } = useMeasuredPx(value);
   const pct = px > 0 ? Math.min((px / 1280) * 100, 100) : 0;
+
   return (
-    <div style={{ ...card, padding: "1rem", marginBottom: "0.75rem" }}>
+    <div style={{ ...card, padding: '1rem', marginBottom: '0.75rem' }}>
       <div style={label}>
         {name} <code style={code}>{value}</code>
         {isDynamic && (
           <span
-            style={{ fontSize: "0.6875rem", color: "var(--tkn-text-muted)", marginLeft: "0.5rem" }}
+            style={{ fontSize: '0.6875rem', color: 'var(--tkn-text-muted)', marginLeft: '0.5rem' }}
           >
             ({Math.round(px)}px at current viewport)
           </span>
         )}
       </div>
-      <div ref={ref} style={{ position: "absolute", visibility: "hidden", width: value }} />
+      <div ref={ref} style={{ position: 'absolute', visibility: 'hidden', width: value }} />
       <div
         style={{
           height: 12,
           borderRadius: 3,
-          transition: "width 0.2s ease",
+          transition: 'width 0.2s ease',
           background: isDynamic
-            ? "linear-gradient(90deg, #6366f1, #a78bfa)"
+            ? 'linear-gradient(90deg, #6366f1, #a78bfa)'
             : `linear-gradient(90deg, var(--tkn-accent), var(--tkn-accent-light))`,
           width: `${pct}%`,
         }}
@@ -704,17 +720,17 @@ export const BreakpointBar = ({ name, value }: { name: string; value: string }):
 // ─── Size ────────────────────────────────────────────────────
 
 export const SizeBox = ({ name, value }: { name: string; value: string }): El => (
-  <div style={{ ...card, padding: "1rem", width: 140, textAlign: "center" }}>
+  <div style={{ ...card, padding: '1rem', width: 140, textAlign: 'center' }}>
     <div
       style={{
         width: value,
         height: value,
-        background: "var(--tkn-accent)",
+        background: 'var(--tkn-accent)',
         borderRadius: 4,
-        margin: "0.5rem auto",
+        margin: '0.5rem auto',
       }}
     />
-    <div style={{ fontWeight: 600, fontSize: "0.8rem" }}>{name}</div>
+    <div style={{ fontWeight: 600, fontSize: '0.8rem' }}>{name}</div>
     <div style={mono}>{value}</div>
   </div>
 );
@@ -722,23 +738,24 @@ export const SizeBox = ({ name, value }: { name: string; value: string }): El =>
 // ─── Aspect Ratio ────────────────────────────────────────────
 
 export const RatioBox = ({ name, value }: { name: string; value: string }): El => {
-  const parts = value.split("/").map((s) => parseFloat(s.trim()));
+  const parts = value.split('/').map(s => parseFloat(s.trim()));
   const w = parts[0] ?? 1;
   const h = parts[1] ?? 1;
   const boxW = 120;
   const boxH = Math.round(boxW * (h / w));
+
   return (
-    <div style={{ ...card, padding: "1rem", width: 180, textAlign: "center" }}>
+    <div style={{ ...card, padding: '1rem', width: 180, textAlign: 'center' }}>
       <div
         style={{
           width: boxW,
           height: Math.min(boxH, 160),
           background: `linear-gradient(135deg, var(--tkn-accent), var(--tkn-accent-light))`,
           borderRadius: 4,
-          margin: "0.5rem auto",
+          margin: '0.5rem auto',
         }}
       />
-      <div style={{ fontWeight: 600, fontSize: "0.875rem" }}>{name}</div>
+      <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{name}</div>
       <div style={mono}>{value}</div>
     </div>
   );
@@ -747,40 +764,41 @@ export const RatioBox = ({ name, value }: { name: string; value: string }): El =
 // ─── Z-Layer ─────────────────────────────────────────────────
 
 const layerColors = [
-  "#6366f1",
-  "#8b5cf6",
-  "#a855f7",
-  "#d946ef",
-  "#ec4899",
-  "#f43f5e",
-  "#f97316",
-  "#eab308",
+  '#6366f1',
+  '#8b5cf6',
+  '#a855f7',
+  '#d946ef',
+  '#ec4899',
+  '#f43f5e',
+  '#f97316',
+  '#eab308',
 ];
 
 export const ZLayerStack = ({ items }: { items: Array<{ name: string; value: string }> }): El => (
   <div
     style={{
-      display: "flex",
-      flexDirection: "column",
+      display: 'flex',
+      flexDirection: 'column',
       gap: 0,
-      paddingLeft: "5rem",
-      position: "relative",
+      paddingLeft: '5rem',
+      position: 'relative',
     }}
   >
     {items.map(({ name, value }, i) => {
       const color = layerColors[i % layerColors.length]!;
       const widthPct = 40 + Math.round((i / Math.max(items.length - 1, 1)) * 55);
+
       return (
         <div
           key={name}
-          style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "0.5rem" }}
+          style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}
         >
           <span
             style={{
-              position: "absolute",
+              position: 'absolute',
               left: 0,
-              width: "4.5rem",
-              textAlign: "right",
+              width: '4.5rem',
+              textAlign: 'right',
               ...mono,
               fontWeight: 600,
             }}
@@ -791,12 +809,12 @@ export const ZLayerStack = ({ items }: { items: Array<{ name: string; value: str
             style={{
               height: 44,
               borderRadius: 8,
-              display: "flex",
-              alignItems: "center",
-              padding: "0 1rem",
+              display: 'flex',
+              alignItems: 'center',
+              padding: '0 1rem',
               fontWeight: 600,
-              fontSize: "0.8125rem",
-              color: "#fff",
+              fontSize: '0.8125rem',
+              color: '#fff',
               background: color,
               width: `${widthPct}%`,
               minWidth: 120,
@@ -813,20 +831,20 @@ export const ZLayerStack = ({ items }: { items: Array<{ name: string; value: str
 // ─── Mode Table ──────────────────────────────────────────────
 
 const thStyle: React.CSSProperties = {
-  textAlign: "left",
-  padding: "0.375rem 0.625rem",
-  background: "var(--tkn-bg-subtle)",
-  borderBottom: "2px solid var(--tkn-border)",
+  textAlign: 'left',
+  padding: '0.375rem 0.625rem',
+  background: 'var(--tkn-bg-subtle)',
+  borderBottom: '2px solid var(--tkn-border)',
   fontWeight: 600,
-  fontSize: "0.6875rem",
-  textTransform: "uppercase",
-  letterSpacing: "0.03em",
-  color: "var(--tkn-text-secondary)",
+  fontSize: '0.6875rem',
+  textTransform: 'uppercase',
+  letterSpacing: '0.03em',
+  color: 'var(--tkn-text-secondary)',
 };
 
 const tdStyle: React.CSSProperties = {
-  padding: "0.375rem 0.625rem",
-  borderBottom: "1px solid var(--tkn-border)",
+  padding: '0.375rem 0.625rem',
+  borderBottom: '1px solid var(--tkn-border)',
 };
 
 export const ModeTable = ({
@@ -836,18 +854,20 @@ export const ModeTable = ({
   tokenKeys: readonly string[];
   modesData: Record<string, Record<string, string>>;
 }): ElOrNull => {
-  const relevant = tokenKeys.filter((k) => modesData[k]);
+  const relevant = tokenKeys.filter(k => modesData[k]);
+
   if (relevant.length === 0) {
     return null;
   }
+
   return (
     <div
-      style={{ marginTop: "1.5rem", borderTop: "1px solid var(--tkn-border)", paddingTop: "1rem" }}
+      style={{ marginTop: '1.5rem', borderTop: '1px solid var(--tkn-border)', paddingTop: '1rem' }}
     >
-      <div style={{ fontSize: "0.875rem", fontWeight: 600, marginBottom: "0.75rem" }}>
+      <div style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '0.75rem' }}>
         Mode Variants
       </div>
-      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.8125rem" }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.8125rem' }}>
         <thead>
           <tr>
             <th style={thStyle}>Token</th>
@@ -856,24 +876,24 @@ export const ModeTable = ({
           </tr>
         </thead>
         <tbody>
-          {relevant.flatMap((key) =>
+          {relevant.flatMap(key =>
             Object.entries(modesData[key]!).map(([mode, val]) => (
               <tr key={`${key}-${mode}`}>
                 <td style={{ ...tdStyle, fontWeight: 500 }}>{key}</td>
                 <td style={tdStyle}>
                   <span
                     style={{
-                      fontSize: "0.6875rem",
-                      padding: "0.125rem 0.375rem",
-                      background: "var(--tkn-bg-subtle)",
+                      fontSize: '0.6875rem',
+                      padding: '0.125rem 0.375rem',
+                      background: 'var(--tkn-bg-subtle)',
                       borderRadius: 3,
-                      fontFamily: "var(--tkn-mono)",
+                      fontFamily: 'var(--tkn-mono)',
                     }}
                   >
                     {mode}
                   </span>
                 </td>
-                <td style={{ ...tdStyle, fontFamily: "var(--tkn-mono)" }}>{val}</td>
+                <td style={{ ...tdStyle, fontFamily: 'var(--tkn-mono)' }}>{val}</td>
               </tr>
             )),
           )}
@@ -886,7 +906,7 @@ export const ModeTable = ({
 // ─── Fallback table ──────────────────────────────────────────
 
 export const TokenTable = ({ items }: { items: Array<{ name: string; value: string }> }): El => (
-  <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.875rem" }}>
+  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
     <thead>
       <tr>
         <th style={thStyle}>Name</th>
@@ -897,7 +917,7 @@ export const TokenTable = ({ items }: { items: Array<{ name: string; value: stri
       {items.map(({ name, value }) => (
         <tr key={name}>
           <td style={{ ...tdStyle, fontWeight: 500 }}>{name}</td>
-          <td style={{ ...tdStyle, fontFamily: "var(--tkn-mono)" }}>{value}</td>
+          <td style={{ ...tdStyle, fontFamily: 'var(--tkn-mono)' }}>{value}</td>
         </tr>
       ))}
     </tbody>

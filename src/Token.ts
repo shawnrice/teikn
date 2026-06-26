@@ -1,12 +1,12 @@
-import type { Border } from "./TokenTypes/Border.js";
-import type { BoxShadow, BoxShadowList } from "./TokenTypes/BoxShadow.js";
-import type { Color } from "./TokenTypes/Color/index.js";
-import type { CubicBezier } from "./TokenTypes/CubicBezier.js";
-import type { Dimension } from "./TokenTypes/Dimension.js";
-import type { Duration } from "./TokenTypes/Duration.js";
-import type { GradientList, LinearGradient, RadialGradient } from "./TokenTypes/Gradient.js";
-import type { Transition, TransitionList } from "./TokenTypes/Transition.js";
-import type { Typography } from "./TokenTypes/Typography.js";
+import type { Border } from './TokenTypes/Border.js';
+import type { BoxShadow, BoxShadowList } from './TokenTypes/BoxShadow.js';
+import type { Color } from './TokenTypes/Color/index.js';
+import type { CubicBezier } from './TokenTypes/CubicBezier.js';
+import type { Dimension } from './TokenTypes/Dimension.js';
+import type { Duration } from './TokenTypes/Duration.js';
+import type { GradientList, LinearGradient, RadialGradient } from './TokenTypes/Gradient.js';
+import type { Transition, TransitionList } from './TokenTypes/Transition.js';
+import type { Typography } from './TokenTypes/Typography.js';
 
 export type TokenValue =
   | string
@@ -36,29 +36,29 @@ export type ModeValues = Record<string, TokenValue | CompositeValue>;
  * doc generators infer it from `type` (see `classifyTokenType`).
  */
 export type PreviewKind =
-  | "color"
-  | "typography"
-  | "fontSize"
-  | "fontFamily"
-  | "fontWeight"
-  | "letterSpacing"
-  | "lineHeight"
-  | "borderWidth"
-  | "borderStyle"
-  | "borderRadius"
-  | "border"
-  | "shadow"
-  | "duration"
-  | "timing"
-  | "spacing"
-  | "gradient"
-  | "opacity"
-  | "breakpoint"
-  | "size"
-  | "aspectRatio"
-  | "zLayer"
-  | "transition"
-  | "table";
+  | 'color'
+  | 'typography'
+  | 'fontSize'
+  | 'fontFamily'
+  | 'fontWeight'
+  | 'letterSpacing'
+  | 'lineHeight'
+  | 'borderWidth'
+  | 'borderStyle'
+  | 'borderRadius'
+  | 'border'
+  | 'shadow'
+  | 'duration'
+  | 'timing'
+  | 'spacing'
+  | 'gradient'
+  | 'opacity'
+  | 'breakpoint'
+  | 'size'
+  | 'aspectRatio'
+  | 'zLayer'
+  | 'transition'
+  | 'table';
 
 /**
  * The first argument to the group builders (`group`, `scale`, `composite`).

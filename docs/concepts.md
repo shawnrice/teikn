@@ -12,7 +12,7 @@ duration without parsing first. Value objects carry their data in structured for
 is a method call away:
 
 ```typescript
-const blue = new Color("#0066cc");
+const blue = new Color('#0066cc');
 blue.tint(0.3); // lighten by mixing with white
 blue.shade(0.3); // darken by mixing with black
 blue.setAlpha(0.5); // transparent variant
@@ -22,8 +22,8 @@ spacing.scale(2); // Dimension(2, 'rem')
 spacing.toPx(); // Dimension(32, 'px')
 ```
 
-Every value type is **immutable** --- methods return new instances. Every value type serializes
-to its CSS representation via `.toString()`, so they work seamlessly in template literals,
+Every value type is **immutable** --- methods return new instances. Every value type serializes to
+its CSS representation via `.toString()`, so they work seamlessly in template literals,
 `JSON.stringify`, and generator output.
 
 ### Construction patterns
@@ -32,22 +32,22 @@ Every value type supports the same set of construction patterns:
 
 ```typescript
 // Positional arguments
-new Duration(200, "ms");
+new Duration(200, 'ms');
 new BoxShadow(0, 2, 8, 0, shadowColor);
 
 // Object with named properties
-new Duration({ value: 200, unit: "ms" });
+new Duration({ value: 200, unit: 'ms' });
 new BoxShadow({ offsetY: 2, blur: 8, color: shadowColor });
 
 // CSS string
-new Duration("200ms");
-new BoxShadow("0 2px 8px rgba(0,0,0,.12)");
+new Duration('200ms');
+new BoxShadow('0 2px 8px rgba(0,0,0,.12)');
 
 // Copy from existing instance
 new Duration(existingDuration);
 
 // Static factory (accepts any of the above)
-Duration.from("200ms");
+Duration.from('200ms');
 BoxShadow.from({ offsetY: 2, blur: 8 });
 ```
 
@@ -68,10 +68,10 @@ create them for you and handle metadata like descriptions and modes.
 values as named properties:
 
 ```typescript
-const durations = group("duration", {
-  fast: new Duration(100, "ms"),
-  normal: new Duration(200, "ms"),
-  slow: new Duration(300, "ms"),
+const durations = group('duration', {
+  fast: new Duration(100, 'ms'),
+  normal: new Duration(200, 'ms'),
+  slow: new Duration(300, 'ms'),
 });
 
 // Array of tokens --- pass to tokens(), theme(), validate(), generators
@@ -88,13 +88,9 @@ This dual nature is the key to composability. The array form feeds the generatio
 named form feeds other value constructors:
 
 ```typescript
-const easings = group("timing", {
-  standard: CubicBezier.standard,
-});
+const easings = group('timing', { standard: CubicBezier.standard });
 
-const transitions = group("transition", {
-  fade: new Transition(durations.fast, easings.standard),
-});
+const transitions = group('transition', { fade: new Transition(durations.fast, easings.standard) });
 ```
 
 The named properties are **non-enumerable**, so they don't appear in `for...in`, `Object.keys()`,
@@ -105,8 +101,8 @@ The named properties are **non-enumerable**, so they don't appear in `for...in`,
 When you pass `durations.fast` into `new Transition(...)`, two things happen:
 
 1. The Transition stores the actual `Duration` object (not a copy, not a string).
-2. Generators that support references detect this shared identity and emit references
-   instead of inlining the value.
+2. Generators that support references detect this shared identity and emit references instead of
+   inlining the value.
 
 In CSS, this means the generated output uses `var()`:
 
@@ -131,10 +127,7 @@ In DTCG, aliases:
 ```json
 {
   "transition-fade": {
-    "$value": {
-      "duration": "{duration-fast}",
-      "timingFunction": "{timing-standard}"
-    }
+    "$value": { "duration": "{duration-fast}", "timingFunction": "{timing-standard}" }
   }
 }
 ```
@@ -143,27 +136,25 @@ No special syntax or `ref()` calls needed. The relationship is discovered automa
 JavaScript object identity --- if two tokens share the same value object, generators know about it.
 
 When a value is _not_ registered as a token (e.g., you created a `Duration` inline rather than
-pulling it from a group), generators inline the value as they always have. References are
-opt-in by construction, not by configuration.
+pulling it from a group), generators inline the value as they always have. References are opt-in by
+construction, not by configuration.
 
 ## Themes are override layers
 
 A **theme** overrides specific token values without replacing the full set:
 
 ```typescript
-const dark = theme("dark", colors, {
+const dark = theme('dark', colors, {
   surface: darkSurface,
   background: darkSurface.shade(0.3),
-  textPrimary: new Color("#e0e0e0"),
+  textPrimary: new Color('#e0e0e0'),
 });
 ```
 
 Themes stack --- derive a high-contrast variant from your dark theme:
 
 ```typescript
-const highContrast = theme("high-contrast", dark, {
-  textPrimary: new Color("#ffffff"),
-});
+const highContrast = theme('high-contrast', dark, { textPrimary: new Color('#ffffff') });
 ```
 
 Generators emit theme overrides in the format that makes sense for each output:
@@ -194,23 +185,23 @@ Generators that support references (CssVars, ScssVars, DTCG) automatically emit 
 
 ## Plugins transform tokens
 
-**Plugins** transform tokens between creation and generation. They run in a defined order and
-can rename tokens, convert units, validate accessibility, and more.
+**Plugins** transform tokens between creation and generation. They run in a defined order and can
+rename tokens, convert units, validate accessibility, and more.
 
 ```typescript
 const writer = new Teikn({
   generators: [new Teikn.generators.CssVars()],
   plugins: [
-    new Teikn.plugins.NameConventionPlugin({ convention: "kebab-case" }),
+    new Teikn.plugins.NameConventionPlugin({ convention: 'kebab-case' }),
     new Teikn.plugins.ContrastValidatorPlugin({
-      pairs: [{ foreground: "textPrimary", background: "surface", level: "AA" }],
+      pairs: [{ foreground: 'textPrimary', background: 'surface', level: 'AA' }],
     }),
   ],
 });
 ```
 
-Plugins see tokens _after_ stringification, so they work with string values. The reference map
-is built _before_ plugins run, so references are unaffected by name transformations.
+Plugins see tokens _after_ stringification, so they work with string values. The reference map is
+built _before_ plugins run, so references are unaffected by name transformations.
 
 ## The pipeline
 

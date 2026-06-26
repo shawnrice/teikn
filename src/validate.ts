@@ -1,48 +1,42 @@
-import type { CompositeValue, Token } from "./Token.js";
-import { Color } from "./TokenTypes/Color/index.js";
-import { hasRefFields } from "./TokenTypes/ref-guard.js";
-import type { KeyAliasIndex } from "./token-keys.js";
-import { ambiguousKeyMessage, buildKeyAliasIndex, resolveKey, tokenKey } from "./token-keys.js";
-import { isFirstClassValue } from "./type-classifiers.js";
+import type { KeyAliasIndex } from './token-keys.js';
+import { ambiguousKeyMessage, buildKeyAliasIndex, resolveKey, tokenKey } from './token-keys.js';
+import type { CompositeValue, Token } from './Token.js';
+import { Color } from './TokenTypes/Color/index.js';
+import { hasRefFields } from './TokenTypes/ref-guard.js';
+import { isFirstClassValue } from './type-classifiers.js';
 
-export type ValidationSeverity = "error" | "warning";
+export type ValidationSeverity = 'error' | 'warning';
 
-export type ValidationIssue = {
-  severity: ValidationSeverity;
-  token: string;
-  message: string;
-};
+export type ValidationIssue = { severity: ValidationSeverity; token: string; message: string };
 
-export type ValidationResult = {
-  valid: boolean;
-  issues: ValidationIssue[];
-};
+export type ValidationResult = { valid: boolean; issues: ValidationIssue[] };
 
 const REF_PATTERN = /^\{([^}]+)\}$/;
 
 const isComposite = (v: unknown): v is CompositeValue =>
-  typeof v === "object" && v !== null && !isFirstClassValue(v) && !Array.isArray(v);
+  typeof v === 'object' && v !== null && !isFirstClassValue(v) && !Array.isArray(v);
 
 const isRef = (value: unknown): value is string =>
-  typeof value === "string" && REF_PATTERN.test(value);
+  typeof value === 'string' && REF_PATTERN.test(value);
 
-const COLOR_TYPES = new Set(["color"]);
-const COMPOSITE_TYPES = new Set(["typography", "border", "shadow", "transition", "gradient"]);
+const COLOR_TYPES = new Set(['color']);
+const COMPOSITE_TYPES = new Set(['typography', 'border', 'shadow', 'transition', 'gradient']);
 
 const TYPOGRAPHY_FIELDS = new Set([
-  "fontFamily",
-  "fontSize",
-  "fontWeight",
-  "lineHeight",
-  "letterSpacing",
+  'fontFamily',
+  'fontSize',
+  'fontWeight',
+  'lineHeight',
+  'letterSpacing',
 ]);
-const BORDER_FIELDS = new Set(["width", "style", "color"]);
-const SHADOW_FIELDS = new Set(["color", "offsetX", "offsetY", "blur", "spread"]);
-const TRANSITION_FIELDS = new Set(["duration", "timingFunction"]);
+const BORDER_FIELDS = new Set(['width', 'style', 'color']);
+const SHADOW_FIELDS = new Set(['color', 'offsetX', 'offsetY', 'blur', 'spread']);
+const TRANSITION_FIELDS = new Set(['duration', 'timingFunction']);
 
 const tryParseColor = (value: string): boolean => {
   try {
     new Color(value);
+
     return true;
   } catch {
     return false;
@@ -52,22 +46,24 @@ const tryParseColor = (value: string): boolean => {
 const validateCompositeShape = (type: string, value: CompositeValue): string | null => {
   const keys = new Set(Object.keys(value));
   const check = (expected: Set<string>, label: string) => {
-    const missing = [...expected].filter((k) => !keys.has(k));
+    const missing = [...expected].filter(k => !keys.has(k));
+
     if (missing.length > 0) {
-      return `${label} composite is missing fields: ${missing.join(", ")}`;
+      return `${label} composite is missing fields: ${missing.join(', ')}`;
     }
+
     return null;
   };
 
   switch (type) {
-    case "typography":
-      return check(TYPOGRAPHY_FIELDS, "Typography");
-    case "border":
-      return check(BORDER_FIELDS, "Border");
-    case "shadow":
-      return check(SHADOW_FIELDS, "Shadow");
-    case "transition":
-      return check(TRANSITION_FIELDS, "Transition");
+    case 'typography':
+      return check(TYPOGRAPHY_FIELDS, 'Typography');
+    case 'border':
+      return check(BORDER_FIELDS, 'Border');
+    case 'shadow':
+      return check(SHADOW_FIELDS, 'Shadow');
+    case 'transition':
+      return check(TRANSITION_FIELDS, 'Transition');
     default:
       return null;
   }
@@ -83,18 +79,21 @@ const checkRef = (
 ): void => {
   const refName = refValue.match(REF_PATTERN)![1]!;
   const resolved = resolveKey(refName, tokenKeys);
+
   switch (resolved.status) {
-    case "ok":
+    case 'ok':
       return;
-    case "missing":
-      issue("error", tokenName, `${labelPrefix}${missingDescription}: {${refName}}`);
+    case 'missing':
+      issue('error', tokenName, `${labelPrefix}${missingDescription}: {${refName}}`);
+
       return;
-    case "ambiguous":
+    case 'ambiguous':
       issue(
-        "error",
+        'error',
         tokenName,
         `${labelPrefix}${ambiguousKeyMessage(refName, resolved.candidates)}`,
       );
+
       return;
   }
 };
@@ -107,27 +106,28 @@ const validateValue = (
   tokenKeys: KeyAliasIndex,
   issue: (severity: ValidationSeverity, tokenName: string, message: string) => void,
 ): void => {
-  if (value === "") {
-    issue("warning", token.name, `${label}Empty string value`);
+  if (value === '') {
+    issue('warning', token.name, `${label}Empty string value`);
   }
 
   if (
     COLOR_TYPES.has(token.type) &&
-    typeof value === "string" &&
+    typeof value === 'string' &&
     !isRef(value) &&
     !tryParseColor(value)
   ) {
-    issue("warning", token.name, `${label}Color value "${value}" could not be parsed`);
+    issue('warning', token.name, `${label}Color value "${value}" could not be parsed`);
   }
 
   if (isRef(value)) {
-    checkRef(value, tokenKeys, token.name, "Unresolved reference", label, issue);
+    checkRef(value, tokenKeys, token.name, 'Unresolved reference', label, issue);
   }
 
   if (COMPOSITE_TYPES.has(token.type) && isComposite(value)) {
     const shapeError = validateCompositeShape(token.type, value as CompositeValue);
+
     if (shapeError) {
-      issue("warning", token.name, `${label}${shapeError}`);
+      issue('warning', token.name, `${label}${shapeError}`);
     }
   }
 
@@ -199,25 +199,29 @@ export const validate = (tokens: Token[]): ValidationResult => {
     const label = token.name || `[index ${i}]`;
 
     if (!token.name) {
-      issue("error", label, "Missing required field: name");
+      issue('error', label, 'Missing required field: name');
     }
+
     if (token.value === undefined || token.value === null) {
-      issue("error", label, "Missing required field: value");
+      issue('error', label, 'Missing required field: value');
     }
+
     if (!token.type) {
-      issue("error", label, "Missing required field: type");
+      issue('error', label, 'Missing required field: type');
     }
-    if (token.name?.includes(".")) {
+
+    if (token.name?.includes('.')) {
       issue(
-        "error",
+        'error',
         label,
         `Token name must not contain "." — the dot is reserved as the group/name separator. ` +
           `Rename the token, or split the path into \`group\` + \`name\`.`,
       );
     }
-    if (token.group?.includes(".")) {
+
+    if (token.group?.includes('.')) {
       issue(
-        "error",
+        'error',
         label,
         `Token group "${token.group}" must not contain "." — the dot is reserved as the group/name separator.`,
       );
@@ -227,14 +231,16 @@ export const validate = (tokens: Token[]): ValidationResult => {
       const qualifiedName = tokenKey(token);
       const count = (names.get(qualifiedName) ?? 0) + 1;
       names.set(qualifiedName, count);
+
       if (count === 2) {
         issue(
-          "error",
+          'error',
           token.name,
           `Duplicate qualified token name "${qualifiedName}" — two tokens resolve to the same key. ` +
             `The resolver picks one non-deterministically; rename one of the tokens.`,
         );
       }
+
       tokenMap.set(qualifiedName, token);
     }
   }
@@ -247,7 +253,7 @@ export const validate = (tokens: Token[]): ValidationResult => {
       continue;
     }
 
-    validateValue(token.value, token, "", tokenKeys, issue);
+    validateValue(token.value, token, '', tokenKeys, issue);
 
     if (token.modes) {
       for (const [mode, modeValue] of Object.entries(token.modes)) {
@@ -269,6 +275,7 @@ export const validate = (tokens: Token[]): ValidationResult => {
           return true;
         }
       }
+
       return false;
     }
 
@@ -278,6 +285,7 @@ export const validate = (tokens: Token[]): ValidationResult => {
           return true;
         }
       }
+
       return false;
     }
 
@@ -287,12 +295,14 @@ export const validate = (tokens: Token[]): ValidationResult => {
 
     const refName = value.match(REF_PATTERN)![1]!;
     const resolved = resolveKey(refName, tokenKeys);
-    if (resolved.status !== "ok") {
+
+    if (resolved.status !== 'ok') {
       return false;
     }
 
     if (visited.has(resolved.key)) {
-      issue("error", originName, `Circular reference: ${[...visited, refName].join(" -> ")}`);
+      issue('error', originName, `Circular reference: ${[...visited, refName].join(' -> ')}`);
+
       return true;
     }
 
@@ -320,6 +330,7 @@ export const validate = (tokens: Token[]): ValidationResult => {
     if (!token.name) {
       continue;
     }
+
     const visited = new Set([tokenKey(token)]);
 
     checkCircularValue(token.value, token.name, visited);
@@ -331,8 +342,5 @@ export const validate = (tokens: Token[]): ValidationResult => {
     }
   }
 
-  return {
-    valid: issues.filter((i) => i.severity === "error").length === 0,
-    issues,
-  };
+  return { valid: issues.filter(i => i.severity === 'error').length === 0, issues };
 };

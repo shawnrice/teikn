@@ -18,22 +18,22 @@ import {
   Transition,
   group,
   tokens,
-} from "teikn";
+} from 'teikn';
 
 // Primitive tokens
-const durations = group("duration", {
-  fast: new Duration(100, "ms"),
-  normal: new Duration(200, "ms"),
-  slow: new Duration(300, "ms"),
+const durations = group('duration', {
+  fast: new Duration(100, 'ms'),
+  normal: new Duration(200, 'ms'),
+  slow: new Duration(300, 'ms'),
 });
 
-const easings = group("timing", {
+const easings = group('timing', {
   standard: CubicBezier.standard,
   decelerate: CubicBezier.decelerate,
 });
 
 // Composed tokens --- reference primitives by name
-const transitions = group("transition", {
+const transitions = group('transition', {
   fade: new Transition(durations.fast, easings.standard),
   slide: new Transition(durations.slow, easings.decelerate),
 });
@@ -58,12 +58,12 @@ Generated CSS:
 For transitions with many fields, the object form reads better:
 
 ```typescript
-const transitions = group("transition", {
+const transitions = group('transition', {
   custom: new Transition({
     duration: durations.normal,
     timingFunction: easings.standard,
     delay: durations.fast,
-    property: "opacity",
+    property: 'opacity',
   }),
 });
 ```
@@ -74,9 +74,9 @@ Colors referenced in shadows produce `var()` references too:
 
 ```typescript
 const shadowColor = new Color(0, 0, 0, 0.12);
-const colors = group("color", { shadow: shadowColor });
+const colors = group('color', { shadow: shadowColor });
 
-const shadows = group("shadow", {
+const shadows = group('shadow', {
   sm: new BoxShadow({ offsetY: 1, blur: 2, color: colors.shadow }),
   md: new BoxShadow({ offsetY: 2, blur: 8, color: colors.shadow }),
   lg: new BoxShadow({ offsetY: 4, blur: 16, color: colors.shadow }),
@@ -95,7 +95,7 @@ const shadows = group("shadow", {
 Use `BoxShadowList` for multi-layer shadows:
 
 ```typescript
-const elevation = group("shadow", {
+const elevation = group('shadow', {
   raised: new BoxShadowList([
     new BoxShadow({ offsetY: 2, blur: 4, color: new Color(0, 0, 0, 0.1) }),
     new BoxShadow({ offsetY: 8, blur: 16, color: new Color(0, 0, 0, 0.08) }),
@@ -110,7 +110,7 @@ Use `.scale()` and `.with()` to derive from a base:
 ```typescript
 const base = new BoxShadow({ offsetY: 2, blur: 8, color: shadowColor });
 
-const shadows = group("shadow", {
+const shadows = group('shadow', {
   sm: base.scale(0.5), // halve all dimensions
   md: base,
   lg: base.scale(2), // double all dimensions
@@ -143,10 +143,10 @@ Use `.shift()` to offset delays for sequenced animations:
 
 ```typescript
 const base = new Transition(durations.normal, easings.decelerate);
-const gap = new Duration(50, "ms");
+const gap = new Duration(50, 'ms');
 
 // Each item enters 50ms after the previous
-const staggered = [0, 1, 2, 3, 4].map((i) => base.shift(gap.scale(i)));
+const staggered = [0, 1, 2, 3, 4].map(i => base.shift(gap.scale(i)));
 // staggered[0].delay → 0ms
 // staggered[1].delay → 50ms
 // staggered[2].delay → 100ms
@@ -175,8 +175,8 @@ t.totalTime; // Duration: 200ms + 100ms = 300ms
 References are detected by JavaScript object identity. When you write
 `new Transition(durations.fast, ...)`, the Transition stores the _same_ `Duration` object that
 `durations.fast` points to. At generation time, the generator builds a map from value objects to
-token names. If a Transition's duration field is the same object as another token's value, it
-emits a reference.
+token names. If a Transition's duration field is the same object as another token's value, it emits
+a reference.
 
 This means:
 
@@ -186,8 +186,8 @@ This means:
 - **First-registered wins**: if the same object appears in two tokens, the reference points to
   whichever was registered first (i.e., appears first in `tokens(...)`).
 
-No special API needed. Compose values through JavaScript variable sharing, and references
-emerge automatically.
+No special API needed. Compose values through JavaScript variable sharing, and references emerge
+automatically.
 
 ## Which generators emit references?
 

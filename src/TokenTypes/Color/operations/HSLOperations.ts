@@ -1,6 +1,6 @@
-import type { Color, InternalCreate } from "../Color.js";
-import type { HSL } from "../types.js";
-import { degreeRange, percentRange } from "../util.js";
+import type { Color, InternalCreate } from '../Color.js';
+import type { HSL } from '../types.js';
+import { degreeRange, percentRange } from '../util.js';
 
 export class HSLOperations {
   #color: Color;
@@ -21,8 +21,10 @@ export class HSLOperations {
     if (value === undefined) {
       return this.#hsl()[0];
     }
+
     const [, s, l] = this.#hsl();
-    return this.#new("hsl", [degreeRange(value), s, l], this.#color.alpha);
+
+    return this.#new('hsl', [degreeRange(value), s, l], this.#color.alpha);
   }
 
   saturation(): number;
@@ -31,8 +33,10 @@ export class HSLOperations {
     if (value === undefined) {
       return this.#hsl()[1];
     }
+
     const [h, , l] = this.#hsl();
-    return this.#new("hsl", [h, percentRange(value), l], this.#color.alpha);
+
+    return this.#new('hsl', [h, percentRange(value), l], this.#color.alpha);
   }
 
   lightness(): number;
@@ -41,12 +45,15 @@ export class HSLOperations {
     if (value === undefined) {
       return this.#hsl()[2];
     }
+
     const [h, s] = this.#hsl();
-    return this.#new("hsl", [h, s, percentRange(value)], this.#color.alpha);
+
+    return this.#new('hsl', [h, s, percentRange(value)], this.#color.alpha);
   }
 
   rotateHue(degrees: number): Color {
     const newHue = (this.hue() + degrees) % 360;
+
     return this.hue(newHue < 0 ? newHue + 360 : newHue);
   }
 
@@ -56,6 +63,7 @@ export class HSLOperations {
 
   lighten(amount: number): Color {
     const l = this.lightness();
+
     return this.lightness(l + amount * l);
   }
 
@@ -64,6 +72,6 @@ export class HSLOperations {
   }
 
   toString(): string {
-    return this.#color.toString("hsl");
+    return this.#color.toString('hsl');
   }
 }

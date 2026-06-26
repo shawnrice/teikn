@@ -1,7 +1,7 @@
-import fs from "node:fs";
-import path from "node:path";
+import fs from 'node:fs';
+import path from 'node:path';
 
-import { ensureDirectory } from "./ensure-directory.js";
+import { ensureDirectory } from './ensure-directory.js';
 import {
   CssVars,
   DtcgGenerator,
@@ -14,8 +14,8 @@ import {
   Storybook,
   TypeScript,
   TypeScriptDeclarations,
-} from "./Generators/index.js";
-import type { AuditIssue } from "./Plugins/index.js";
+} from './Generators/index.js';
+import type { AuditIssue } from './Plugins/index.js';
 import {
   AlphaMultiplyPlugin,
   ClampPlugin,
@@ -34,22 +34,19 @@ import {
   ScssQuoteValuePlugin,
   StripTypePrefixPlugin,
   TouchTargetPlugin,
-} from "./Plugins/index.js";
-import { resolveReferences } from "./resolve.js";
-import { buildKeyAliasIndex, resolveKey, tokenKey } from "./token-keys.js";
-import type { ThemeLayer, Token, TokenValue } from "./Token.js";
-import type { ValidationResult } from "./validate.js";
-import { validate } from "./validate.js";
+} from './Plugins/index.js';
+import { resolveReferences } from './resolve.js';
+import { buildKeyAliasIndex, resolveKey, tokenKey } from './token-keys.js';
+import type { ThemeLayer, Token, TokenValue } from './Token.js';
+import type { ValidationResult } from './validate.js';
+import { validate } from './validate.js';
 
 /**
  * Prefix each token's name with its type, joined by a hyphen.
  * Generators' nameTransformers (kebabCase, camelCase, etc.) handle final formatting.
  */
 const prefixTokenNames = (tokens: Token[]): Token[] =>
-  tokens.map((token) => ({
-    ...token,
-    name: `${token.type}-${token.name}`,
-  }));
+  tokens.map(token => ({ ...token, name: `${token.type}-${token.name}` }));
 
 /**
  * Apply theme layers to tokens, merging each layer's overrides into token.modes.
@@ -59,45 +56,47 @@ const applyThemes = (themes: ThemeLayer[], tokens: Token[]): Token[] => {
     return tokens;
   }
 
-  const tokenKeys = buildKeyAliasIndex(tokens.map((token) => tokenKey(token)).filter(Boolean));
+  const tokenKeys = buildKeyAliasIndex(tokens.map(token => tokenKey(token)).filter(Boolean));
   const modeUpdates = new Map<string, Record<string, TokenValue>>();
+
   for (const layer of themes) {
     for (const [name, value] of Object.entries(layer.overrides)) {
       const resolved = resolveKey(name, tokenKeys);
+
       switch (resolved.status) {
-        case "missing":
+        case 'missing':
           throw new Error(
             `Theme "${layer.name}" references unknown token "${name}" during apply. ` +
               `The token may have been removed from the token set after the theme was created.`,
           );
-        case "ambiguous":
+        case 'ambiguous':
           // Unreachable via `theme()` (which qualifies keys at construction
           // so they hit `fullKeys` here), but kept for consumers who hand-build
           // a `ThemeLayer` literal with bare override keys against an ambiguous
           // token universe.
           throw new Error(
             `Theme "${layer.name}" override key "${name}" is ambiguous during apply. ` +
-              `Matches: ${resolved.candidates.join(", ")}.`,
+              `Matches: ${resolved.candidates.join(', ')}.`,
           );
-        case "ok":
+        case 'ok':
           if (!modeUpdates.has(resolved.key)) {
             modeUpdates.set(resolved.key, {});
           }
+
           modeUpdates.get(resolved.key)![layer.name] = value;
           break;
       }
     }
   }
 
-  return tokens.map((token) => {
+  return tokens.map(token => {
     const updates = modeUpdates.get(tokenKey(token));
+
     if (!updates) {
       return token;
     }
-    return {
-      ...token,
-      modes: { ...token.modes, ...updates },
-    };
+
+    return { ...token, modes: { ...token.modes, ...updates } };
   });
 };
 
@@ -210,17 +209,20 @@ export class Teikn {
       const own = g.filenames();
       const seen = new Set<string>();
       const dupes = new Set<string>();
+
       for (const filename of own) {
         const key = filename.toLowerCase();
+
         if (seen.has(key)) {
           dupes.add(filename);
         } else {
           seen.add(key);
         }
       }
+
       if (dupes.size > 0) {
         throw new Error(
-          `Generator \`${g.constructor.name}\` declared duplicate output filenames: ${[...dupes].join(", ")}. ` +
+          `Generator \`${g.constructor.name}\` declared duplicate output filenames: ${[...dupes].join(', ')}. ` +
             `This is a bug in the generator's filenames() implementation, not user configuration.`,
         );
       }
@@ -232,10 +234,12 @@ export class Teikn {
     // (macOS, Windows) where both writes would target the same file.
     const seen = new Map<string, string>();
     const dupes: string[] = [];
+
     for (const g of this.generators) {
       for (const filename of g.filenames()) {
         const key = filename.toLowerCase();
         const prior = seen.get(key);
+
         if (prior !== undefined) {
           dupes.push(prior === filename ? filename : `${prior} / ${filename}`);
         } else {
@@ -243,19 +247,22 @@ export class Teikn {
         }
       }
     }
+
     if (dupes.length > 0) {
       throw new Error(
-        `Duplicate generator output filenames: ${[...new Set(dupes)].join(", ")}. Use the "filename" option to differentiate.`,
+        `Duplicate generator output filenames: ${[...new Set(dupes)].join(', ')}. Use the "filename" option to differentiate.`,
       );
     }
 
-    const hasPrefixPlugin = plugins.some((p) => p instanceof PrefixTypePlugin);
+    const hasPrefixPlugin = plugins.some(p => p instanceof PrefixTypePlugin);
+
     if (hasPrefixPlugin) {
       throw new Error(
-        "PrefixTypePlugin is no longer needed — type prefixing is now built in. " +
-          "Remove it from your plugins array. To opt out of prefixing, use StripTypePrefixPlugin instead.",
+        'PrefixTypePlugin is no longer needed — type prefixing is now built in. ' +
+          'Remove it from your plugins array. To opt out of prefixing, use StripTypePrefixPlugin instead.',
       );
     }
+
     this.plugins = plugins;
     this.themes = themes ?? [];
     this.outDir = outDir ?? process.cwd();
@@ -268,29 +275,34 @@ export class Teikn {
   /** Run expand() on all plugins that support it, returning the expanded token set. */
   expand(tokens: Token[]): Token[] {
     let result = tokens;
+
     for (const plugin of this.plugins) {
-      if ("expand" in plugin && typeof plugin.expand === "function") {
+      if ('expand' in plugin && typeof plugin.expand === 'function') {
         try {
           result = plugin.expand(result);
         } catch (cause) {
           const { name } = plugin.constructor;
+
           throw new Error(`Plugin \`${name}\` threw during expand(): ${(cause as Error).message}`, {
             cause,
           });
         }
       }
     }
+
     return result;
   }
 
   /** Run audit() on all plugins that support it, returning all issues. */
   audit(tokens: Token[]): AuditIssue[] {
     const issues: AuditIssue[] = [];
+
     for (const plugin of this.plugins) {
       if (plugin.audit) {
         issues.push(...plugin.audit(tokens));
       }
     }
+
     return issues;
   }
 
@@ -302,10 +314,11 @@ export class Teikn {
     // the input and behavior is unchanged.
     if (this.options.validate !== false) {
       const result = validate(expanded);
-      const errors = result.issues.filter((i) => i.severity === "error");
+      const errors = result.issues.filter(i => i.severity === 'error');
+
       if (errors.length > 0) {
         throw new Error(
-          `Token validation failed:\n${errors.map((e) => `  ${e.token}: ${e.message}`).join("\n")}`,
+          `Token validation failed:\n${errors.map(e => `  ${e.token}: ${e.message}`).join('\n')}`,
         );
       }
     }
@@ -314,27 +327,31 @@ export class Teikn {
     const resolved = resolveReferences(withThemes);
     const named = prefixTokenNames(resolved);
 
-    this.generators.forEach((g) => {
+    this.generators.forEach(g => {
       g.siblings = this.generators;
     });
 
     const results = new Map<string, string>();
+
     for (const generator of this.generators) {
       const declared = new Set(generator.filenames());
       const produced = generator.generateFiles(named, this.plugins);
       const emitted = new Set(produced.keys());
 
-      const undeclared = [...emitted].filter((k) => !declared.has(k));
+      const undeclared = [...emitted].filter(k => !declared.has(k));
+
       if (undeclared.length > 0) {
         throw new Error(
-          `Generator \`${generator.constructor.name}\` emitted file(s) it did not declare in filenames(): ${undeclared.join(", ")}. ` +
+          `Generator \`${generator.constructor.name}\` emitted file(s) it did not declare in filenames(): ${undeclared.join(', ')}. ` +
             `This is a bug in the generator's generateFiles() implementation — declared keys and emitted keys must match.`,
         );
       }
-      const missing = [...declared].filter((k) => !emitted.has(k));
+
+      const missing = [...declared].filter(k => !emitted.has(k));
+
       if (missing.length > 0) {
         throw new Error(
-          `Generator \`${generator.constructor.name}\` declared filename(s) in filenames() but did not emit them from generateFiles(): ${missing.join(", ")}. ` +
+          `Generator \`${generator.constructor.name}\` declared filename(s) in filenames() but did not emit them from generateFiles(): ${missing.join(', ')}. ` +
             `This is a bug in the generator's generateFiles() implementation — declared keys and emitted keys must match.`,
         );
       }
@@ -343,6 +360,7 @@ export class Teikn {
         results.set(filename, content);
       }
     }
+
     return results;
   }
 
@@ -350,13 +368,14 @@ export class Teikn {
     // generateToStrings() handles validation, so we don't duplicate it here
     const auditIssues = this.audit(tokens);
     const generated = this.generateToStrings(tokens);
-    const files: TransformResult["files"] = [];
-    const errors: TransformResult["errors"] = [];
+    const files: TransformResult['files'] = [];
+    const errors: TransformResult['errors'] = [];
 
     await ensureDirectory(this.outDir);
     await Promise.all(
       [...generated.entries()].map(async ([file, content]) => {
         const filename = path.resolve(this.outDir, file);
+
         try {
           await fs.promises.writeFile(filename, content);
           files.push({ path: filename, size: content.length });

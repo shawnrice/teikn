@@ -1,24 +1,19 @@
-import type { Token } from "../Token.js";
-import { Color } from "../TokenTypes/Color/index.js";
+import type { Token } from '../Token.js';
+import { Color } from '../TokenTypes/Color/index.js';
 
 const tokenSet1: Token[] = [
   {
-    name: "body",
-    type: "font-family",
-    usage: "Use for body fonts",
+    name: 'body',
+    type: 'font-family',
+    usage: 'Use for body fonts',
     value: '"Roboto Condensed", Arial, sans',
   },
+  { name: 'primary', type: 'color', usage: 'the primary branding color', value: 'aliceblue' },
   {
-    name: "primary",
-    type: "color",
-    usage: "the primary branding color",
-    value: "aliceblue",
-  },
-  {
-    name: "secondary",
-    type: "color",
-    usage: "the secondary branding color",
-    value: new Color("mediumaquamarine"),
+    name: 'secondary',
+    type: 'color',
+    usage: 'the secondary branding color',
+    value: new Color('mediumaquamarine'),
   },
 ];
 

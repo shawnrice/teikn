@@ -1,35 +1,38 @@
-import { splitTopLevel } from "../string-utils.js";
-import { CubicBezier } from "./CubicBezier.js";
-import { Duration } from "./Duration.js";
-import { assertNotRef } from "./ref-guard.js";
+import { splitTopLevel } from '../string-utils.js';
+import { CubicBezier } from './CubicBezier.js';
+import { Duration } from './Duration.js';
+import { assertNotRef } from './ref-guard.js';
 
 const timeRe = /^(\d+(?:\.\d+)?)(ms|s)$/;
 
-const timingKeywords = new Set(["ease", "ease-in", "ease-out", "ease-in-out", "linear"]);
+const timingKeywords = new Set(['ease', 'ease-in', 'ease-out', 'ease-in-out', 'linear']);
 
 const splitRespectingParens = (s: string): string[] => {
   const parts: string[] = [];
-  let current = "";
+  let current = '';
   let depth = 0;
+
   for (const ch of s) {
-    if (ch === "(") {
+    if (ch === '(') {
       depth++;
       current += ch;
-    } else if (ch === ")") {
+    } else if (ch === ')') {
       depth--;
       current += ch;
-    } else if (ch === " " && depth === 0) {
+    } else if (ch === ' ' && depth === 0) {
       if (current.length > 0) {
         parts.push(current);
-        current = "";
+        current = '';
       }
     } else {
       current += ch;
     }
   }
+
   if (current.length > 0) {
     parts.push(current);
   }
+
   return parts;
 };
 
@@ -37,12 +40,7 @@ const isTimeValue = (s: string): boolean => timeRe.test(s);
 
 const parse = (
   css: string,
-): {
-  duration: string;
-  timingFunction: CubicBezier;
-  delay: string;
-  property: string;
-} => {
+): { duration: string; timingFunction: CubicBezier; delay: string; property: string } => {
   const parts = splitRespectingParens(css.trim());
   const times: string[] = [];
   let timing: string | null = null;
@@ -53,7 +51,7 @@ const parse = (
       times.push(part);
     } else if (
       timingKeywords.has(part.toLowerCase()) ||
-      part.toLowerCase().startsWith("cubic-bezier(")
+      part.toLowerCase().startsWith('cubic-bezier(')
     ) {
       timing = part;
     } else {
@@ -62,10 +60,10 @@ const parse = (
   }
 
   return {
-    duration: times[0] ?? "0s",
-    timingFunction: new CubicBezier(timing ?? "ease"),
-    delay: times[1] ?? "0s",
-    property: property ?? "all",
+    duration: times[0] ?? '0s',
+    timingFunction: new CubicBezier(timing ?? 'ease'),
+    delay: times[1] ?? '0s',
+    property: property ?? 'all',
   };
 };
 
@@ -105,29 +103,32 @@ export class Transition {
       this.#timingFunction = first.#timingFunction;
       this.#delay = first.#delay;
       this.#property = first.#property;
+
       return;
     }
 
-    if (typeof first === "string" && timingFunction === undefined) {
-      assertNotRef(first, "Transition");
+    if (typeof first === 'string' && timingFunction === undefined) {
+      assertNotRef(first, 'Transition');
       const parsed = parse(first);
       this.#duration = new Duration(parsed.duration);
       this.#timingFunction = parsed.timingFunction;
       this.#delay = new Duration(parsed.delay);
       this.#property = parsed.property;
+
       return;
     }
 
     // Object input: { duration, timingFunction, delay?, property? }
-    if (typeof first === "object" && !(first instanceof Duration)) {
+    if (typeof first === 'object' && !(first instanceof Duration)) {
       const opts = first as TransitionInput;
       this.#duration = toDuration(opts.duration);
       this.#timingFunction =
         opts.timingFunction instanceof CubicBezier
           ? opts.timingFunction
           : new CubicBezier(opts.timingFunction);
-      this.#delay = opts.delay !== undefined ? toDuration(opts.delay) : new Duration(0, "s");
-      this.#property = opts.property ?? "all";
+      this.#delay = opts.delay !== undefined ? toDuration(opts.delay) : new Duration(0, 's');
+      this.#property = opts.property ?? 'all';
+
       return;
     }
 
@@ -135,9 +136,9 @@ export class Transition {
     this.#timingFunction =
       timingFunction instanceof CubicBezier
         ? timingFunction
-        : new CubicBezier(timingFunction ?? "ease");
-    this.#delay = delay !== undefined ? toDuration(delay) : new Duration(0, "s");
-    this.#property = property ?? "all";
+        : new CubicBezier(timingFunction ?? 'ease');
+    this.#delay = delay !== undefined ? toDuration(delay) : new Duration(0, 's');
+    this.#property = property ?? 'all';
   }
 
   get duration(): Duration {
@@ -216,34 +217,39 @@ export class Transition {
 
   toString(): string {
     const parts: string[] = [];
-    if (this.#property !== "all") {
+
+    if (this.#property !== 'all') {
       parts.push(this.#property);
     }
+
     parts.push(this.#duration.toString());
     const { keyword } = this.#timingFunction;
     parts.push(keyword ?? this.#timingFunction.toString());
+
     if (this.#delay.value !== 0) {
       parts.push(this.#delay.toString());
     }
-    return parts.join(" ");
+
+    return parts.join(' ');
   }
 
   // ─── Static presets ──────────────────────────────────────────
 
   static from(value: Transition | TransitionInput | string): Transition {
     if (
-      typeof value === "object" &&
+      typeof value === 'object' &&
       !(value instanceof Transition) &&
       !(value instanceof Duration)
     ) {
       return new Transition(value as TransitionInput);
     }
+
     return new Transition(value as Transition | string);
   }
 
-  static readonly fade: Transition = new Transition("0.2s", "ease");
-  static readonly slide: Transition = new Transition("0.3s", CubicBezier.standard);
-  static readonly quick: Transition = new Transition("0.1s", "ease");
+  static readonly fade: Transition = new Transition('0.2s', 'ease');
+  static readonly slide: Transition = new Transition('0.3s', CubicBezier.standard);
+  static readonly quick: Transition = new Transition('0.1s', 'ease');
 }
 
 // ─── TransitionList ───────────────────────────────────────────
@@ -257,12 +263,14 @@ export class TransitionList {
   constructor(first: Transition[] | string | TransitionList) {
     if (first instanceof TransitionList) {
       this.#layers = first.#layers;
+
       return;
     }
 
-    if (typeof first === "string") {
-      assertNotRef(first, "TransitionList");
-      this.#layers = splitTopLevel(first).map((s) => new Transition(s));
+    if (typeof first === 'string') {
+      assertNotRef(first, 'TransitionList');
+      this.#layers = splitTopLevel(first).map(s => new Transition(s));
+
       return;
     }
 
@@ -289,7 +297,7 @@ export class TransitionList {
   }
 
   toString(): string {
-    return this.#layers.map((t) => t.toString()).join(", ");
+    return this.#layers.map(t => t.toString()).join(', ');
   }
 
   static from(value: TransitionList | string | Transition[]): TransitionList {

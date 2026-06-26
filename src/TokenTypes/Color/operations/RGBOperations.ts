@@ -1,5 +1,5 @@
-import type { Color, InternalCreate } from "../Color.js";
-import type { RGB } from "../types.js";
+import type { Color, InternalCreate } from '../Color.js';
+import type { RGB } from '../types.js';
 
 export class RGBOperations {
   #color: Color;
@@ -20,8 +20,10 @@ export class RGBOperations {
     if (value === undefined) {
       return this.#rgb()[0];
     }
+
     const [, g, b] = this.#rgb();
-    return this.#new("rgb", [value, g, b], this.#color.alpha);
+
+    return this.#new('rgb', [value, g, b], this.#color.alpha);
   }
 
   green(): number;
@@ -30,8 +32,10 @@ export class RGBOperations {
     if (value === undefined) {
       return this.#rgb()[1];
     }
+
     const [r, , b] = this.#rgb();
-    return this.#new("rgb", [r, value, b], this.#color.alpha);
+
+    return this.#new('rgb', [r, value, b], this.#color.alpha);
   }
 
   blue(): number;
@@ -40,8 +44,10 @@ export class RGBOperations {
     if (value === undefined) {
       return this.#rgb()[2];
     }
+
     const [r, g] = this.#rgb();
-    return this.#new("rgb", [r, g, value], this.#color.alpha);
+
+    return this.#new('rgb', [r, g, value], this.#color.alpha);
   }
 
   mix(color: Color | string, amount = 0.5): Color {
@@ -53,6 +59,6 @@ export class RGBOperations {
   }
 
   toString(): string {
-    return this.#color.toString("rgb");
+    return this.#color.toString('rgb');
   }
 }

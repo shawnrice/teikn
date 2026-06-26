@@ -1,15 +1,16 @@
-import { EOL } from "node:os";
+import { EOL } from 'node:os';
 
-import { camelCase, deriveShortName, kebabCase } from "../string-utils.js";
-import type { Token, TokenValue } from "../Token.js";
-import type { Generator, GeneratorInfo } from "./Generator.js";
-import { composeSymbol } from "./prefix-utils.js";
-import { Scss } from "./Scss.js";
-import { cssValue, stringifyWithRefs, valueDependencies } from "./value-serializers.js";
+import { camelCase, deriveShortName, kebabCase } from '../string-utils.js';
+import type { Token, TokenValue } from '../Token.js';
+import type { Generator, GeneratorInfo } from './Generator.js';
+import { composeSymbol } from './prefix-utils.js';
+import { Scss } from './Scss.js';
+import { cssValue, stringifyWithRefs, valueDependencies } from './value-serializers.js';
 
 const topoSort = (tokens: Token[], refMap: Map<unknown, string>): Token[] => {
-  const byName = new Map(tokens.map((t) => [t.name, t]));
+  const byName = new Map(tokens.map(t => [t.name, t]));
   const deps = new Map<string, string[]>();
+
   for (const token of tokens) {
     deps.set(token.name, valueDependencies(token.value, refMap));
   }
@@ -22,16 +23,21 @@ const topoSort = (tokens: Token[], refMap: Map<unknown, string>): Token[] => {
     if (visited.has(name)) {
       return;
     }
+
     if (visiting.has(name)) {
       return; // cycle — skip silently (shouldn't happen with identity refs)
     }
+
     visiting.add(name);
+
     for (const dep of deps.get(name) ?? []) {
       visit(dep);
     }
+
     visiting.delete(name);
     visited.add(name);
     const token = byName.get(name);
+
     if (token) {
       sorted.push(token);
     }
@@ -49,6 +55,7 @@ export class ScssVars extends Scss {
 
   #ref(value: unknown): string | null {
     const name = this.#refMap.get(value);
+
     return name ? `$${this.#emit(name)}` : null;
   }
 
@@ -57,10 +64,10 @@ export class ScssVars extends Scss {
   // identity transform here so the prefix composes with the name as-is and
   // existing snapshots remain stable.
   #emit(name: string): string {
-    return composeSymbol(name, (s) => s, this.options);
+    return composeSymbol(name, s => s, this.options);
   }
 
-  override prepareTokens(...args: Parameters<Generator["prepareTokens"]>): Token[] {
+  override prepareTokens(...args: Parameters<Generator['prepareTokens']>): Token[] {
     // Run plugins first so the refMap captures any name changes (e.g., from
     // NameConventionPlugin). Otherwise references inside composed values
     // (Transition, BoxShadow) point at the pre-rename names while the
@@ -68,47 +75,50 @@ export class ScssVars extends Scss {
     const transformed = this.applyPluginPipeline(args[0], args[1]);
     this.#refMap = this.buildReferenceMap(transformed);
     const sorted = topoSort(transformed, this.#refMap);
-    return sorted.map((t) => this.stringifyValues(t));
+
+    return sorted.map(t => this.stringifyValues(t));
   }
 
   protected override stringifyTokenValue(value: TokenValue): string {
-    return stringifyWithRefs(value, (v) => this.#ref(v));
+    return stringifyWithRefs(value, v => this.#ref(v));
   }
 
   override describe(): GeneratorInfo | null {
-    const base = `@use '${this.options.filename ?? "tokens"}';\n\n// Access variables with namespace\ntokens.$tokenName`;
+    const base = `@use '${this.options.filename ?? 'tokens'}';\n\n// Access variables with namespace\ntokens.$tokenName`;
     const groupUsage = this.options.groups
       ? `\n\n// Or use typed group accessors\ntokens.color('primary')`
-      : "";
-    return {
-      format: "SCSS Variables",
-      usage: base + groupUsage,
-    };
+      : '';
+
+    return { format: 'SCSS Variables', usage: base + groupUsage };
   }
 
   override tokenUsage(token: Token): string | null {
     const { groups } = this.options;
+
     if (groups) {
       const shortName = deriveShortName(token.name, token.type);
       const groupName = camelCase(token.type);
       const groupKebab = kebabCase(groupName);
+
       return `${groupKebab}('${kebabCase(shortName)}')`;
     }
+
     return `$${this.#emit(token.name)}`;
   }
 
   override generateToken(token: Token): string {
     const { usage, value } = token;
+
     return [usage && `/// ${usage}`, `$${this.#emit(token.name)}: ${cssValue(value)};`]
       .filter(Boolean)
       .join(EOL);
   }
 
   override combinator(tokens: Token[]): string {
-    const values = tokens.map((token) => this.generateToken(token));
+    const values = tokens.map(token => this.generateToken(token));
     const lines = [values.join(EOL)];
 
-    const { separator = "-" } = this.options;
+    const { separator = '-' } = this.options;
     const modeMap = this.buildModeMap(
       tokens,
       (_key, val, mode, token) =>
@@ -116,7 +126,7 @@ export class ScssVars extends Scss {
     );
 
     for (const [mode, entries] of modeMap) {
-      lines.push("");
+      lines.push('');
       lines.push(`// Mode: ${mode}`);
       lines.push(...entries);
     }
@@ -129,10 +139,12 @@ export class ScssVars extends Scss {
   }
 
   override header(): string | null {
-    const base = this.commentHeader("scss");
+    const base = this.commentHeader('scss');
+
     if (this.options.groups) {
       return `${base}@use "sass:map";${EOL}${EOL}`;
     }
+
     return base;
   }
 
@@ -149,11 +161,12 @@ export class ScssVars extends Scss {
         const mapEntries = entries
           .map(({ shortName, token }) => `  ${kebabCase(shortName)}: $${this.#emit(token.name)},`)
           .join(EOL);
+
         return [
           `$${groupKebab}-values: (`,
           mapEntries,
           `);`,
-          "",
+          '',
           `@function ${groupKebab}($name) {`,
           `  @if not map.has-key($${groupKebab}-values, $name) {`,
           `    @error "Unknown ${groupKebab} token '#{$name}'. Available: #{map.keys($${groupKebab}-values)}";`,

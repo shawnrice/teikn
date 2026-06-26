@@ -11,7 +11,7 @@ export class Matrix {
   /** @internal */
   constructor(rows: number, cols: number, data: number[]);
   constructor(first: number | number[][], second?: number, third?: number[]) {
-    if (typeof first === "number") {
+    if (typeof first === 'number') {
       this.rows = first;
       this.cols = second!;
       this.#data = third!;
@@ -43,11 +43,14 @@ export class Matrix {
 
     for (let i = 0; i < aRows; i++) {
       const rowOffset = i * aCols;
+
       for (let j = 0; j < bCols; j++) {
         let sum = 0;
+
         for (let k = 0; k < aCols; k++) {
           sum += aData[rowOffset + k]! * bData[k * bCols + j]!;
         }
+
         data[i * bCols + j] = sum;
       }
     }
@@ -58,9 +61,11 @@ export class Matrix {
   /** Convert to 2D array */
   toArray(): number[][] {
     const result: number[][] = [];
+
     for (let i = 0; i < this.rows; i++) {
       result.push(this.#data.slice(i * this.cols, (i + 1) * this.cols));
     }
+
     return result;
   }
 }

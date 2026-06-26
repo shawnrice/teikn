@@ -1,6 +1,6 @@
-import { convert } from "./ColorSpace.js";
-import { parseColorString } from "./parseColorString.js";
-import type { RGBA } from "./types.js";
+import { convert } from './ColorSpace.js';
+import { parseColorString } from './parseColorString.js';
+import type { RGBA } from './types.js';
 
 /**
  * Takes a string and converts it to an RGBA tuple.
@@ -18,6 +18,7 @@ import type { RGBA } from "./types.js";
  */
 export const stringToRGBA = (c: string): RGBA => {
   const parsed = parseColorString(c);
-  const rgb = parsed.space === "rgb" ? parsed.data : convert(parsed.space, "rgb", parsed.data);
+  const rgb = parsed.space === 'rgb' ? parsed.data : convert(parsed.space, 'rgb', parsed.data);
+
   return [...(rgb as readonly [number, number, number]), parsed.alpha] as unknown as RGBA;
 };

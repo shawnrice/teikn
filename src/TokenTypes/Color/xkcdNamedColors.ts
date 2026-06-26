@@ -1,13 +1,13 @@
-import type { Color } from "./Color.js";
+import type { Color } from './Color.js';
 /**
  * xkcd colors from the rgb color survey
  *
  * @see https://xkcd.com/color/rgb/
  * @source https://xkcd.com/color/rgb.txt
  */
-import { hexToRGB } from "./conversions.js";
-import { Octree } from "./Octree.js";
-import { isHex as isHexColor } from "./util.js";
+import { hexToRGB } from './conversions.js';
+import { Octree } from './Octree.js';
+import { isHex as isHexColor } from './util.js';
 
 // 'cspell':disable
 
@@ -969,7 +969,7 @@ export type XKCDColor = keyof typeof xkcdColors;
 export type XKCDColorValue = (typeof xkcdColors)[XKCDColor];
 
 const colors = Object.entries(xkcdColors).map(([name, hex]) => ({ name, hex }));
-const index = new Octree(colors, (item) => hexToRGB(item.hex));
+const index = new Octree(colors, item => hexToRGB(item.hex));
 
 export type XKCDColorSearchResult = {
   name: XKCDColor;
@@ -981,21 +981,24 @@ export type XKCDColorSearchResult = {
 export const closest = (color: Color | string): XKCDColorSearchResult | null => {
   let hex: string;
 
-  if (typeof color === "string") {
+  if (typeof color === 'string') {
     if (!isHexColor(color)) {
-      throw new Error("Invalid color, must be a hex");
+      throw new Error('Invalid color, must be a hex');
     }
-    hex = color.startsWith("#") ? color : `#${color}`;
+
+    hex = color.startsWith('#') ? color : `#${color}`;
+
     // Expand 3-digit hex to 6-digit
     if (hex.length === 4) {
       const [, r, g, b] = hex;
       hex = `#${r}${r}${g}${g}${b}${b}`;
     }
   } else {
-    hex = color.toString("hex");
+    hex = color.toString('hex');
   }
 
   const result = index.closest(hexToRGB(hex));
+
   if (!result) {
     return null;
   }
