@@ -1,15 +1,15 @@
-import * as path from 'node:path';
+import * as path from "node:path";
 
-import { Teikn, validate } from '../index';
+import { Teikn, validate } from "../index";
 
-import { allTokens, themes } from './raw-tokens';
+import { allTokens, themes } from "./raw-tokens";
 
 // ─── Validate first ─────────────────────────────────────────
 
 const result = validate(allTokens);
 if (!result.valid) {
-  console.error('Token validation failed:');
-  result.issues.forEach(i => console.error(`  [${i.severity}] ${i.token}: ${i.message}`));
+  console.error("Token validation failed:");
+  result.issues.forEach((i) => console.error(`  [${i.severity}] ${i.token}: ${i.message}`));
   process.exit(1);
 }
 
@@ -33,11 +33,11 @@ const writer = new Teikn({
     new Teikn.generators.Dtcg(),
   ],
   plugins: [
-    new Teikn.plugins.ColorTransformPlugin({ type: 'rgba' }),
+    new Teikn.plugins.ColorTransformPlugin({ type: "rgba" }),
     new Teikn.plugins.ScssQuoteValuePlugin(),
   ],
   themes,
-  outDir: path.resolve(import.meta.dirname!, 'dist'),
+  outDir: path.resolve(import.meta.dirname!, "dist"),
 });
 
 await writer.transform(allTokens);

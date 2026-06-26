@@ -1,5 +1,23 @@
 # Changelog
 
+## 2.0.0-beta.5
+
+### Added
+
+- **`Typography` and `Border` value types.** The two remaining DTCG composite
+  types are now first-class. Construct them from objects —
+  `new Typography({ fontFamily, fontSize, fontWeight, lineHeight, letterSpacing })`
+  and `new Border({ width, style, color })` — or parse a `Border` from the CSS
+  shorthand (`new Border("1px solid #e0e0e0")`). They serialize to the CSS `font`
+  / `border` shorthands, emit structured `$value` objects in the `Dtcg`
+  generator, and get dedicated swatches in the `Html` and `Storybook` docs.
+- **Per-field references inside composite wrappers.** Any field of a `Typography`
+  or `Border` may be a `{token}` reference — e.g.
+  `new Border({ width: dp(1), style: "solid", color: "{color.line}" })`. Fields
+  are resolved individually (circular references included) and emit `var(--…)`
+  (CSS/SCSS) or `{alias}` (DTCG) just like a shared composite value. A
+  whole-value reference is still the token value itself, not a wrapper.
+
 ## 2.0.0-beta.4
 
 ### Fixed

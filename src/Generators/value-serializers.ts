@@ -1,6 +1,8 @@
 import type { TokenValue } from "../Token.js";
+import { Border } from "../TokenTypes/Border.js";
 import { BoxShadow } from "../TokenTypes/BoxShadow.js";
 import { Transition } from "../TokenTypes/Transition.js";
+import { Typography } from "../TokenTypes/Typography.js";
 import { isFirstClassValue } from "../type-classifiers.js";
 
 // ─── CSS/SCSS value serialization ────────────────────────────────
@@ -145,12 +147,31 @@ export const stringifyBoxShadowWithRefs = (s: BoxShadow, ref: RefResolver): stri
   return parts.join(" ");
 };
 
+export const stringifyTypographyWithRefs = (t: Typography, ref: RefResolver): string => {
+  const sizeLine =
+    t.lineHeight !== null
+      ? `${ref(t.fontSize) ?? t.fontSize.toString()}/${t.lineHeight}`
+      : (ref(t.fontSize) ?? t.fontSize.toString());
+  return [t.fontWeight !== null ? String(t.fontWeight) : null, sizeLine, t.fontFamily]
+    .filter((part): part is string => part !== null)
+    .join(" ");
+};
+
+export const stringifyBorderWithRefs = (b: Border, ref: RefResolver): string =>
+  [ref(b.width) ?? b.width.toString(), b.style, ref(b.color) ?? b.color.toString()].join(" ");
+
 export const stringifyWithRefs = (value: TokenValue, ref: RefResolver): string => {
   if (value instanceof Transition) {
     return stringifyTransitionWithRefs(value, ref);
   }
   if (value instanceof BoxShadow) {
     return stringifyBoxShadowWithRefs(value, ref);
+  }
+  if (value instanceof Typography) {
+    return stringifyTypographyWithRefs(value, ref);
+  }
+  if (value instanceof Border) {
+    return stringifyBorderWithRefs(value, ref);
   }
   return String(value);
 };
@@ -168,6 +189,11 @@ export const visitComponents = (value: unknown, fn: (v: unknown) => void): void 
       fn(value.delay);
     }
   } else if (value instanceof BoxShadow) {
+    fn(value.color);
+  } else if (value instanceof Typography) {
+    fn(value.fontSize);
+  } else if (value instanceof Border) {
+    fn(value.width);
     fn(value.color);
   }
 };

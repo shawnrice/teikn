@@ -1,4 +1,5 @@
 export * from './src/Teikn.js';
+export * from './src/TokenTypes/Border.js';
 export * from './src/TokenTypes/Color/index.js';
 export * from './src/TokenTypes/CubicBezier.js';
 export * from './src/TokenTypes/BoxShadow.js';
@@ -6,6 +7,7 @@ export * from './src/TokenTypes/Dimension.js';
 export * from './src/TokenTypes/Duration.js';
 export * from './src/TokenTypes/Gradient.js';
 export * from './src/TokenTypes/Transition.js';
+export * from './src/TokenTypes/Typography.js';
 export * from './src/TokenSet.js';
 export * from './src/dtcg/index.js';
 export * from './src/Generators/index.js';

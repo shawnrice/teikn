@@ -1,3 +1,4 @@
+import { Border } from "../TokenTypes/Border.js";
 import { BoxShadow, BoxShadowList } from "../TokenTypes/BoxShadow.js";
 import { Color } from "../TokenTypes/Color/index.js";
 import { CubicBezier } from "../TokenTypes/CubicBezier.js";
@@ -5,6 +6,7 @@ import { Dimension } from "../TokenTypes/Dimension.js";
 import { Duration, isDurationUnit } from "../TokenTypes/Duration.js";
 import { GradientList, LinearGradient, RadialGradient } from "../TokenTypes/Gradient.js";
 import { Transition, TransitionList } from "../TokenTypes/Transition.js";
+import { Typography } from "../TokenTypes/Typography.js";
 import type {
   DtcgColorValue,
   DtcgCubicBezierValue,
@@ -299,6 +301,48 @@ const shadowToDtcgWithRefs = (shadow: BoxShadow, refMap?: DtcgRefMap): DtcgShado
   };
 };
 
+// A wrapper field is a concrete value, OR — when it shares an instance with
+// another token — an identity ref (emitted as a `{alias}`), OR a leftover
+// `{ref}` string (already a valid DTCG alias, passed through verbatim).
+const dimFieldToDtcg = (value: Dimension | string, refMap?: DtcgRefMap): unknown => {
+  const refName = refMap?.get(value);
+  if (refName) {
+    return dtcgAlias(refName);
+  }
+  return value instanceof Dimension ? { value: value.value, unit: value.unit } : value;
+};
+
+const colorFieldToDtcg = (value: Color | string, refMap?: DtcgRefMap): unknown => {
+  const refName = refMap?.get(value);
+  if (refName) {
+    return dtcgAlias(refName);
+  }
+  return value instanceof Color ? colorToDtcg(value) : value;
+};
+
+const typographyToDtcg = (t: Typography, refMap?: DtcgRefMap): Record<string, unknown> => {
+  const result: Record<string, unknown> = {
+    fontFamily: t.fontFamily,
+    fontSize: dimFieldToDtcg(t.fontSize, refMap),
+  };
+  if (t.fontWeight !== null) {
+    result.fontWeight = t.fontWeight;
+  }
+  if (t.lineHeight !== null) {
+    result.lineHeight = t.lineHeight;
+  }
+  if (t.letterSpacing !== null) {
+    result.letterSpacing = dimFieldToDtcg(t.letterSpacing, refMap);
+  }
+  return result;
+};
+
+const borderToDtcg = (b: Border, refMap?: DtcgRefMap): Record<string, unknown> => ({
+  width: dimFieldToDtcg(b.width, refMap),
+  style: b.style,
+  color: colorFieldToDtcg(b.color, refMap),
+});
+
 export const teiknValueToDtcg = (value: any, type: string, refMap?: DtcgRefMap): DtcgValue => {
   if (isAlias(value)) {
     return value;
@@ -315,6 +359,14 @@ export const teiknValueToDtcg = (value: any, type: string, refMap?: DtcgRefMap):
 
   if (value instanceof Transition) {
     return transitionToDtcg(value, refMap) as DtcgValue;
+  }
+
+  if (value instanceof Typography) {
+    return typographyToDtcg(value, refMap) as DtcgValue;
+  }
+
+  if (value instanceof Border) {
+    return borderToDtcg(value, refMap) as DtcgValue;
   }
 
   if (typeof value === "number") {

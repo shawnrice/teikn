@@ -1,5 +1,6 @@
 import type { CompositeValue, Token } from "./Token.js";
 import { Color } from "./TokenTypes/Color/index.js";
+import { hasRefFields } from "./TokenTypes/ref-guard.js";
 import type { KeyAliasIndex } from "./token-keys.js";
 import { ambiguousKeyMessage, buildKeyAliasIndex, resolveKey, tokenKey } from "./token-keys.js";
 import { isFirstClassValue } from "./type-classifiers.js";
@@ -144,6 +145,24 @@ const validateValue = (
       }
     }
   }
+
+  // First-class wrappers (Typography, Border) carry their fields behind private
+  // state; inspect them through the RefFields protocol so per-field references
+  // get the same unresolved/ambiguous checks as plain composites.
+  if (hasRefFields(value)) {
+    for (const [field, fieldValue] of Object.entries(value.__teikn_fields__())) {
+      if (isRef(fieldValue)) {
+        checkRef(
+          fieldValue,
+          tokenKeys,
+          token.name,
+          `Unresolved reference in field "${field}"`,
+          label,
+          issue,
+        );
+      }
+    }
+  }
 };
 
 /**
@@ -246,6 +265,15 @@ export const validate = (tokens: Token[]): ValidationResult => {
   ): boolean => {
     if (isComposite(value)) {
       for (const fieldValue of Object.values(value as CompositeValue)) {
+        if (checkCircularValue(fieldValue, originName, visited)) {
+          return true;
+        }
+      }
+      return false;
+    }
+
+    if (hasRefFields(value)) {
+      for (const fieldValue of Object.values(value.__teikn_fields__())) {
         if (checkCircularValue(fieldValue, originName, visited)) {
           return true;
         }
