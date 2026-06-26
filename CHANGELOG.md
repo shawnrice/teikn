@@ -222,7 +222,7 @@
   runtime and declarations.** The previous declarations-only behavior
   moved to a new `TypeScriptDeclarations` generator. Users constructing
   `new TypeScript()` previously got a single `.d.ts`; now they get a
-  `.mjs` runtime *and* a `.d.ts` from a single construction, which is
+  `.mjs` runtime _and_ a `.d.ts` from a single construction, which is
   what the name suggests. To restore the old declarations-only output,
   switch to `new TypeScriptDeclarations()`.
 - **`TypeScriptDeclarations` emits literal types by default.** Values
@@ -285,6 +285,7 @@
   Users who want runtime-only construct `JavaScript` directly; users
   who want declarations-only construct `TypeScriptDeclarations`
   directly.
+
 - **`JavaScript.module` option.** `"esm"` (default, emits `.mjs` with
   `export const` / `export default`) or `"cjs"` (emits `.cjs` with
   `module.exports`). File extension derives from the module system
@@ -363,7 +364,7 @@
   values from other groups by identity:
   ```ts
   const durations = group("duration", { fast: new Duration(100, "ms") });
-  const easings   = group("timing",   { standard: CubicBezier.standard });
+  const easings = group("timing", { standard: CubicBezier.standard });
   const transitions = group("transition", {
     fade: new Transition(durations.fast, easings.standard),
   });
