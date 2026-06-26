@@ -160,6 +160,48 @@ describe("CssVars Generator tests", () => {
     expect(output).toMatchSnapshot();
   });
 
+  describe("layer option", () => {
+    test("string form wraps the whole sheet in a named cascade layer", () => {
+      const gen = new Generator({ ...testOpts, layer: "tokens" });
+      const testTokens: Token[] = [{ name: "accent", type: "color", value: "#0066cc" }];
+      const output = gen.generate(testTokens);
+      expect(output).toContain("@layer tokens {");
+      expect(output).toContain("  :root {");
+      expect(output).toContain("    --accent: #0066cc;");
+      // no leading statement by default
+      expect(output).not.toContain("@layer tokens;");
+      expect(output).toMatchSnapshot();
+    });
+
+    test("object form with statement emits a leading @layer declaration", () => {
+      const gen = new Generator({ ...testOpts, layer: { name: "tokens", statement: true } });
+      const testTokens: Token[] = [{ name: "accent", type: "color", value: "#0066cc" }];
+      const output = gen.generate(testTokens);
+      expect(output).toContain("@layer tokens;");
+      expect(output).toContain("@layer tokens {");
+    });
+
+    test("layer wraps every mode/theme block, nesting @media inside the layer", () => {
+      const gen = new Generator({ ...testOpts, useMediaQuery: true, layer: "tokens" });
+      const testTokens: Token[] = [
+        { name: "bg", type: "color", value: "#ffffff", modes: { dark: "#1a1a1a" } },
+      ];
+      const output = gen.generate(testTokens);
+      expect(output).toContain("@layer tokens {");
+      // both the data-theme block and the @media at-rule sit inside the layer
+      expect(output).toContain('  [data-theme="dark"] {');
+      expect(output).toContain("  @media (prefers-color-scheme: dark) {");
+      expect(output).toContain("    :root {");
+      expect(output).toMatchSnapshot();
+    });
+
+    test("default (no layer) leaves output unlayered for backwards compatibility", () => {
+      const gen = new Generator(testOpts);
+      const testTokens: Token[] = [{ name: "accent", type: "color", value: "#0066cc" }];
+      expect(gen.generate(testTokens)).not.toContain("@layer");
+    });
+  });
+
   test("Transition references duration and timing tokens by var()", () => {
     const durations = group("duration", { "duration-fast": new Duration(100, "ms") });
     const easings = group("timing", { "timing-standard": CubicBezier.standard });

@@ -15,13 +15,36 @@ const defaultOptions = {
 
 export type ModeSelector = string | { atRule: string; selector?: string };
 
+/**
+ * Wrap the emitted custom properties in a named CSS cascade layer.
+ *
+ * A bare string is the layer name; the object form additionally controls
+ * whether a leading `@layer <name>;` statement is emitted before the block so
+ * the layer's position in the cascade is established even if the sheet is
+ * imported after other layered CSS.
+ */
+export type LayerOption = string | { name: string; statement?: boolean };
+
 export type CssVarsOpts = {
   nameTransformer?: (name: string) => string;
   dateFn?: () => string | null;
   useMediaQuery?: boolean;
   modeSelectors?: Record<string, ModeSelector>;
+  layer?: LayerOption;
 } & GeneratorOptions &
   PrefixOptions;
+
+const parseLayer = (
+  layer: LayerOption | undefined,
+): { name: string; statement: boolean } | null => {
+  if (layer == null) {
+    return null;
+  }
+  if (typeof layer === "string") {
+    return { name: layer, statement: false };
+  }
+  return { name: layer.name, statement: layer.statement ?? false };
+};
 
 const parseModeSelector = (
   raw: ModeSelector | undefined,
@@ -134,6 +157,23 @@ export class CssVars extends Generator<CssVarsOpts> {
       }
     }
 
-    return blocks.join(EOL);
+    const body = blocks.join(EOL);
+
+    const layer = parseLayer(this.options.layer);
+    if (!layer) {
+      return body;
+    }
+
+    // Wrap the whole sheet — base `:root` plus every mode/theme block, including
+    // `@media` at-rules, which simply nest one level deeper inside the layer.
+    const indented = body
+      .split(EOL)
+      .map((line) => (line.length > 0 ? `  ${line}` : line))
+      .join(EOL);
+    const block = `@layer ${layer.name} {${EOL}${indented}${EOL}}`;
+
+    // An optional leading statement fixes the layer's cascade position up front,
+    // independent of where this sheet lands in the consumer's import order.
+    return layer.statement ? `@layer ${layer.name};${EOL}${EOL}${block}` : block;
   }
 }

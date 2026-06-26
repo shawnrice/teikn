@@ -17,6 +17,18 @@
   are resolved individually (circular references included) and emit `var(--…)`
   (CSS/SCSS) or `{alias}` (DTCG) just like a shared composite value. A
   whole-value reference is still the token value itself, not a wrapper.
+- **`layer` option on `CssVars`.** Wrap the emitted custom properties in a named
+  CSS cascade layer — `new CssVars({ layer: "tokens" })` produces
+  `@layer tokens { :root { … } }`. Because an unlayered declaration always beats
+  a layered one regardless of source order, downstream consumers can re-skin with
+  a plain `:root { --color-accent: … }` that reliably wins — no `!important`, no
+  specificity games, no import-order juggling. The wrapper covers the base
+  `:root` block and every mode/theme block, nesting `@media` at-rules one level
+  deeper inside the layer. The object form `{ name, statement: true }` also emits
+  a leading `@layer tokens;` statement so the layer's cascade position is fixed
+  even when the sheet is imported late. Default off (unlayered, unchanged). Not
+  added to `ScssVars`: SCSS variables are compile-time and never reach the
+  cascade, so a layer would be meaningless there.
 
 ## 2.0.0-beta.4
 
