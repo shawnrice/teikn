@@ -97,3 +97,43 @@ exports[`CssVars Generator tests modeSelectors handles mix of selectors and at-r
 }
 "
 `;
+
+exports[`CssVars Generator tests layer option string form wraps the whole sheet in a named cascade layer 1`] = `
+"/**
+ * Teikn vtest
+ * Generated null
+ *
+ * This file is generated and should be committed to source control
+ */
+@layer tokens {
+  :root {
+    --accent: #0066cc;
+  }
+}
+"
+`;
+
+exports[`CssVars Generator tests layer option layer wraps every mode/theme block, nesting @media inside the layer 1`] = `
+"/**
+ * Teikn vtest
+ * Generated null
+ *
+ * This file is generated and should be committed to source control
+ */
+@layer tokens {
+  :root {
+    --bg: #ffffff;
+  }
+
+  [data-theme="dark"] {
+    --bg: #1a1a1a;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #1a1a1a;
+    }
+  }
+}
+"
+`;

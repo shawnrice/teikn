@@ -1,5 +1,35 @@
 # Changelog
 
+## 2.0.0-beta.5
+
+### Added
+
+- **`Typography` and `Border` value types.** The two remaining DTCG composite
+  types are now first-class. Construct them from objects —
+  `new Typography({ fontFamily, fontSize, fontWeight, lineHeight, letterSpacing })`
+  and `new Border({ width, style, color })` — or parse a `Border` from the CSS
+  shorthand (`new Border("1px solid #e0e0e0")`). They serialize to the CSS `font`
+  / `border` shorthands, emit structured `$value` objects in the `Dtcg`
+  generator, and get dedicated swatches in the `Html` and `Storybook` docs.
+- **Per-field references inside composite wrappers.** Any field of a `Typography`
+  or `Border` may be a `{token}` reference — e.g.
+  `new Border({ width: dp(1), style: "solid", color: "{color.line}" })`. Fields
+  are resolved individually (circular references included) and emit `var(--…)`
+  (CSS/SCSS) or `{alias}` (DTCG) just like a shared composite value. A
+  whole-value reference is still the token value itself, not a wrapper.
+- **`layer` option on `CssVars`.** Wrap the emitted custom properties in a named
+  CSS cascade layer — `new CssVars({ layer: "tokens" })` produces
+  `@layer tokens { :root { … } }`. Because an unlayered declaration always beats
+  a layered one regardless of source order, downstream consumers can re-skin with
+  a plain `:root { --color-accent: … }` that reliably wins — no `!important`, no
+  specificity games, no import-order juggling. The wrapper covers the base
+  `:root` block and every mode/theme block, nesting `@media` at-rules one level
+  deeper inside the layer. The object form `{ name, statement: true }` also emits
+  a leading `@layer tokens;` statement so the layer's cascade position is fixed
+  even when the sheet is imported late. Default off (unlayered, unchanged). Not
+  added to `ScssVars`: SCSS variables are compile-time and never reach the
+  cascade, so a layer would be meaningless there.
+
 ## 2.0.0-beta.4
 
 ### Fixed
@@ -204,7 +234,7 @@
   runtime and declarations.** The previous declarations-only behavior
   moved to a new `TypeScriptDeclarations` generator. Users constructing
   `new TypeScript()` previously got a single `.d.ts`; now they get a
-  `.mjs` runtime *and* a `.d.ts` from a single construction, which is
+  `.mjs` runtime _and_ a `.d.ts` from a single construction, which is
   what the name suggests. To restore the old declarations-only output,
   switch to `new TypeScriptDeclarations()`.
 - **`TypeScriptDeclarations` emits literal types by default.** Values
@@ -267,6 +297,7 @@
   Users who want runtime-only construct `JavaScript` directly; users
   who want declarations-only construct `TypeScriptDeclarations`
   directly.
+
 - **`JavaScript.module` option.** `"esm"` (default, emits `.mjs` with
   `export const` / `export default`) or `"cjs"` (emits `.cjs` with
   `module.exports`). File extension derives from the module system
@@ -345,7 +376,7 @@
   values from other groups by identity:
   ```ts
   const durations = group("duration", { fast: new Duration(100, "ms") });
-  const easings   = group("timing",   { standard: CubicBezier.standard });
+  const easings = group("timing", { standard: CubicBezier.standard });
   const transitions = group("transition", {
     fade: new Transition(durations.fast, easings.standard),
   });

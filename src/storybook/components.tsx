@@ -218,23 +218,30 @@ export const TypographyBlock = ({
   value,
 }: {
   name: string;
-  value: Record<string, unknown>;
+  // Plain composite object, or the CSS `font` shorthand string emitted by a
+  // first-class `Typography` token.
+  value: Record<string, unknown> | string;
 }): El => {
-  const style: React.CSSProperties = {};
-  if (value.fontFamily) {
-    style.fontFamily = value.fontFamily as string;
-  }
-  if (value.fontSize) {
-    style.fontSize = value.fontSize as string;
-  }
-  if (value.fontWeight) {
-    style.fontWeight = value.fontWeight as number;
-  }
-  if (value.lineHeight) {
-    style.lineHeight = value.lineHeight as number;
-  }
-  if (value.letterSpacing) {
-    style.letterSpacing = value.letterSpacing as string;
+  // First-class Typography serializes to the `font` shorthand; apply it
+  // directly and show it as a single prop row.
+  const fields: Record<string, unknown> = typeof value === "string" ? { font: value } : value;
+  const style: React.CSSProperties = typeof value === "string" ? { font: value } : {};
+  if (typeof value !== "string") {
+    if (value.fontFamily) {
+      style.fontFamily = value.fontFamily as string;
+    }
+    if (value.fontSize) {
+      style.fontSize = value.fontSize as string;
+    }
+    if (value.fontWeight) {
+      style.fontWeight = value.fontWeight as number;
+    }
+    if (value.lineHeight) {
+      style.lineHeight = value.lineHeight as number;
+    }
+    if (value.letterSpacing) {
+      style.letterSpacing = value.letterSpacing as string;
+    }
   }
   return (
     <div style={{ ...card, overflow: "hidden", marginBottom: "0.75rem" }}>
@@ -245,7 +252,7 @@ export const TypographyBlock = ({
       <div style={{ padding: "1rem" }}>
         <div style={{ fontWeight: 600, fontSize: "0.875rem", marginBottom: "0.5rem" }}>{name}</div>
         <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "0.2rem 0.75rem" }}>
-          {Object.entries(value).map(([k, v]) => (
+          {Object.entries(fields).map(([k, v]) => (
             <React.Fragment key={k}>
               <dt style={{ ...mono, color: "var(--tkn-text-muted)" }}>{k}</dt>
               <dd style={{ ...mono, margin: 0, fontSize: "0.8125rem" }}>{String(v)}</dd>
@@ -264,9 +271,15 @@ export const BorderDemo = ({
   value,
 }: {
   name: string;
-  value: Record<string, unknown>;
+  // Plain composite object, or the CSS `border` shorthand string emitted by a
+  // first-class `Border` token.
+  value: Record<string, unknown> | string;
 }): El => {
-  const borderStr = [value.width, value.style, value.color].filter(Boolean).join(" ");
+  const fields: Record<string, unknown> = typeof value === "string" ? { border: value } : value;
+  const borderStr =
+    typeof value === "string"
+      ? value
+      : [value.width, value.style, value.color].filter(Boolean).join(" ");
   return (
     <div style={{ ...card, padding: "1rem", marginBottom: "0.75rem" }}>
       <div style={{ fontWeight: 600, fontSize: "0.875rem", marginBottom: "0.25rem" }}>{name}</div>
@@ -281,7 +294,7 @@ export const BorderDemo = ({
         }}
       />
       <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: "0.2rem 0.75rem" }}>
-        {Object.entries(value).map(([k, v]) => (
+        {Object.entries(fields).map(([k, v]) => (
           <React.Fragment key={k}>
             <dt style={{ ...mono, color: "var(--tkn-text-muted)" }}>{k}</dt>
             <dd style={{ ...mono, margin: 0, fontSize: "0.8125rem" }}>{String(v)}</dd>

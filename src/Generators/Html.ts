@@ -2,10 +2,12 @@ import { EOL } from "node:os";
 
 import { kebabCase } from "../string-utils.js";
 import type { CompositeValue, PreviewKind, Token, TokenValue } from "../Token.js";
+import { Border } from "../TokenTypes/Border.js";
 import { Color } from "../TokenTypes/Color/index.js";
 import { CubicBezier } from "../TokenTypes/CubicBezier.js";
 import { GradientList, LinearGradient, RadialGradient } from "../TokenTypes/Gradient.js";
 import { Transition } from "../TokenTypes/Transition.js";
+import { Typography } from "../TokenTypes/Typography.js";
 import {
   groupTokens,
   isColorType,
@@ -205,6 +207,39 @@ const transitionProps = (
     return Object.entries(value as Record<string, unknown>).map(([k, v]) => [k, String(v)]);
   }
   return [["value", cssValue]];
+};
+
+// Normalize a typography value — whether a first-class `Typography` instance
+// (private fields, read via getters) or a plain composite object — into an
+// ordered list of `[field, serialized]` pairs for the props table.
+const typographyFields = (value: TokenValue | CompositeValue): [string, string][] => {
+  if (value instanceof Typography) {
+    return [
+      ["fontFamily", value.fontFamily],
+      ["fontSize", value.fontSize.toString()],
+      value.fontWeight !== null
+        ? (["fontWeight", String(value.fontWeight)] as [string, string])
+        : null,
+      value.lineHeight !== null
+        ? (["lineHeight", String(value.lineHeight)] as [string, string])
+        : null,
+      value.letterSpacing !== null
+        ? (["letterSpacing", value.letterSpacing.toString()] as [string, string])
+        : null,
+    ].filter((entry): entry is [string, string] => entry !== null);
+  }
+  return Object.entries(value as Record<string, unknown>).map(([k, v]) => [k, String(v)]);
+};
+
+const borderFields = (value: TokenValue | CompositeValue): [string, string][] => {
+  if (value instanceof Border) {
+    return [
+      ["width", value.width.toString()],
+      ["style", value.style],
+      ["color", value.color.toString()],
+    ];
+  }
+  return Object.entries(value as Record<string, unknown>).map(([k, v]) => [k, String(v)]);
 };
 
 const slugify = (str: string): string =>
@@ -588,20 +623,22 @@ export class Html extends Generator<HtmlOpts> {
 
   private renderTypographyToken(token: Token): string {
     const name = this.options.nameTransformer!(token.name);
-    const val = token.value as Record<string, unknown>;
+    const fields = typographyFields(token.value);
+    const byKey = new Map(fields);
 
     const styleProps = [
-      val["fontFamily"] ? `font-family:${val["fontFamily"]}` : "",
-      val["fontSize"] ? `font-size:${val["fontSize"]}` : "",
-      val["fontWeight"] ? `font-weight:${val["fontWeight"]}` : "",
-      val["lineHeight"] ? `line-height:${val["lineHeight"]}` : "",
-      val["letterSpacing"] ? `letter-spacing:${val["letterSpacing"]}` : "",
+      ["font-family", byKey.get("fontFamily")],
+      ["font-size", byKey.get("fontSize")],
+      ["font-weight", byKey.get("fontWeight")],
+      ["line-height", byKey.get("lineHeight")],
+      ["letter-spacing", byKey.get("letterSpacing")],
     ]
-      .filter(Boolean)
+      .filter(([, v]) => v)
+      .map(([prop, v]) => `${prop}:${v}`)
       .join(";");
 
-    const propEntries = Object.entries(val)
-      .map(([k, v]) => `<dt>${escapeHtml(k)}</dt><dd>${escapeHtml(String(v))}</dd>`)
+    const propEntries = fields
+      .map(([k, v]) => `<dt>${escapeHtml(k)}</dt><dd>${escapeHtml(v)}</dd>`)
       .join(EOL);
 
     return [
@@ -713,11 +750,14 @@ export class Html extends Generator<HtmlOpts> {
 
   private renderBorderToken(token: Token): string {
     const name = this.options.nameTransformer!(token.name);
-    const val = token.value as Record<string, unknown>;
-    const borderStr = [val["width"], val["style"], val["color"]].filter(Boolean).join(" ");
+    const fields = borderFields(token.value);
+    const byKey = new Map(fields);
+    const borderStr = [byKey.get("width"), byKey.get("style"), byKey.get("color")]
+      .filter(Boolean)
+      .join(" ");
 
-    const propEntries = Object.entries(val)
-      .map(([k, v]) => `<dt>${escapeHtml(k)}</dt><dd>${escapeHtml(String(v))}</dd>`)
+    const propEntries = fields
+      .map(([k, v]) => `<dt>${escapeHtml(k)}</dt><dd>${escapeHtml(v)}</dd>`)
       .join(EOL);
 
     return [
@@ -1065,14 +1105,16 @@ export class Html extends Generator<HtmlOpts> {
     switch (resolvePreviewKind(token)) {
       case "color":
         return this.renderColorToken(token);
-      // Typography/border only get a bespoke preview when the value is a
-      // composite object; scalars fall through to the generic fallback.
+      // Typography/border get a bespoke preview for the first-class wrapper
+      // (Typography/Border) or a plain composite object; scalars fall through
+      // to the generic fallback.
       case "typography":
-        return typeof value === "object" && !isFirstClassValue(value)
+        return value instanceof Typography ||
+          (typeof value === "object" && !isFirstClassValue(value))
           ? this.renderTypographyToken(token)
           : this.renderCompositeFallback(token);
       case "border":
-        return typeof value === "object" && !isFirstClassValue(value)
+        return value instanceof Border || (typeof value === "object" && !isFirstClassValue(value))
           ? this.renderBorderToken(token)
           : this.renderCompositeFallback(token);
       case "shadow":

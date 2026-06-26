@@ -1,4 +1,5 @@
 import type { CompositeValue, ModeValues, Token, TokenValue } from "./Token.js";
+import { hasRefFields } from "./TokenTypes/ref-guard.js";
 import type { KeyAliasIndex } from "./token-keys.js";
 import { ambiguousKeyMessage, buildKeyAliasIndex, resolveKey, tokenKey } from "./token-keys.js";
 import { isFirstClassValue } from "./type-classifiers.js";
@@ -38,6 +39,19 @@ const createResolver = (tokenMap: Map<string, Token>, tokenKeys: KeyAliasIndex) 
         resolved[k] = resolveValue({ value: v, seen, currentName });
       }
       return resolved;
+    }
+
+    // First-class composite wrappers (Typography, Border) may hold `{ref}`
+    // strings in their fields. Resolve each field through the same recursion
+    // (so the shared `seen` set still catches circular references) and rebuild
+    // the wrapper from the resolved values.
+    if (hasRefFields(value)) {
+      const fields = value.__teikn_fields__();
+      const resolved: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(fields)) {
+        resolved[k] = resolveValue({ value: v, seen, currentName });
+      }
+      return value.__teikn_fromFields__(resolved);
     }
 
     if (!isRef(value)) {

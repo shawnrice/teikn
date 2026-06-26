@@ -12,22 +12,22 @@ Use `Color` objects to get access to manipulation, contrast checking, and color 
 `group()` creates a typed collection of tokens.
 
 ```typescript
-import { Color, group } from 'teikn';
+import { Color, group } from "teikn";
 
 const palette = {
-  blue: new Color('#0066cc'),
-  orange: new Color('#e85d04'),
-  neutral: new Color('#1a1a2e'),
+  blue: new Color("#0066cc"),
+  orange: new Color("#e85d04"),
+  neutral: new Color("#1a1a2e"),
 };
 
-const colors = group('color', {
-  primary: [palette.blue, 'Primary brand color'],
+const colors = group("color", {
+  primary: [palette.blue, "Primary brand color"],
   primaryLight: palette.blue.tint(0.3),
   primaryDark: palette.blue.shade(0.3),
   secondary: palette.orange,
-  surface: new Color('#ffffff'),
-  background: new Color('#fafafa'),
-  textPrimary: palette.neutral.mix(new Color('#fff'), 0.05),
+  surface: new Color("#ffffff"),
+  background: new Color("#fafafa"),
+  textPrimary: palette.neutral.mix(new Color("#fff"), 0.05),
 });
 ```
 
@@ -37,17 +37,17 @@ const colors = group('color', {
 is resolution-independent.
 
 ```typescript
-import { scale, dp, composite } from 'teikn';
+import { scale, dp, composite } from "teikn";
 
-const spacing = scale('spacing', {
-  xs: dp(4),   // 0.25rem
-  sm: dp(8),   // 0.5rem
-  md: dp(16),  // 1rem
-  lg: dp(24),  // 1.5rem
-  xl: dp(32),  // 2rem
+const spacing = scale("spacing", {
+  xs: dp(4), // 0.25rem
+  sm: dp(8), // 0.5rem
+  md: dp(16), // 1rem
+  lg: dp(24), // 1.5rem
+  xl: dp(32), // 2rem
 });
 
-const typography = composite('typography', {
+const typography = composite("typography", {
   body: {
     fontFamily: '"Inter", sans-serif',
     fontSize: dp(16),
@@ -69,22 +69,22 @@ const typography = composite('typography', {
 hand-picking hex codes.
 
 ```typescript
-import { theme, tokens } from 'teikn';
+import { theme, tokens } from "teikn";
 
-const darkSurface = new Color('#1a1a1a');
+const darkSurface = new Color("#1a1a1a");
 
-const dark = theme('dark', colors, {
+const dark = theme("dark", colors, {
   surface: darkSurface,
   background: darkSurface.shade(0.3),
   primaryLight: palette.blue.tint(0.5),
-  textPrimary: new Color('#e0e0e0'),
+  textPrimary: new Color("#e0e0e0"),
 });
 ```
 
 ## 4. Merge and validate
 
 ```typescript
-import { validate } from 'teikn';
+import { validate } from "teikn";
 
 const allTokens = tokens(colors, spacing, typography);
 
@@ -100,15 +100,12 @@ if (!result.valid) {
 ## 5. Generate output
 
 ```typescript
-import { Teikn } from 'teikn';
+import { Teikn } from "teikn";
 
 const writer = new Teikn({
-  outDir: './dist/tokens',
+  outDir: "./dist/tokens",
   themes: [dark],
-  generators: [
-    new Teikn.generators.CssVars(),
-    new Teikn.generators.Json(),
-  ],
+  generators: [new Teikn.generators.CssVars(), new Teikn.generators.Json()],
 });
 
 await writer.transform(allTokens);

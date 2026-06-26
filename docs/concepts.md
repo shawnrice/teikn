@@ -12,14 +12,14 @@ duration without parsing first. Value objects carry their data in structured for
 is a method call away:
 
 ```typescript
-const blue = new Color('#0066cc');
-blue.tint(0.3);          // lighten by mixing with white
-blue.shade(0.3);         // darken by mixing with black
-blue.setAlpha(0.5);      // transparent variant
+const blue = new Color("#0066cc");
+blue.tint(0.3); // lighten by mixing with white
+blue.shade(0.3); // darken by mixing with black
+blue.setAlpha(0.5); // transparent variant
 
-const spacing = dp(16);  // Dimension(1, 'rem')
-spacing.scale(2);        // Dimension(2, 'rem')
-spacing.toPx();          // Dimension(32, 'px')
+const spacing = dp(16); // Dimension(1, 'rem')
+spacing.scale(2); // Dimension(2, 'rem')
+spacing.toPx(); // Dimension(32, 'px')
 ```
 
 Every value type is **immutable** --- methods return new instances. Every value type serializes
@@ -32,22 +32,22 @@ Every value type supports the same set of construction patterns:
 
 ```typescript
 // Positional arguments
-new Duration(200, 'ms');
+new Duration(200, "ms");
 new BoxShadow(0, 2, 8, 0, shadowColor);
 
 // Object with named properties
-new Duration({ value: 200, unit: 'ms' });
+new Duration({ value: 200, unit: "ms" });
 new BoxShadow({ offsetY: 2, blur: 8, color: shadowColor });
 
 // CSS string
-new Duration('200ms');
-new BoxShadow('0 2px 8px rgba(0,0,0,.12)');
+new Duration("200ms");
+new BoxShadow("0 2px 8px rgba(0,0,0,.12)");
 
 // Copy from existing instance
 new Duration(existingDuration);
 
 // Static factory (accepts any of the above)
-Duration.from('200ms');
+Duration.from("200ms");
 BoxShadow.from({ offsetY: 2, blur: 8 });
 ```
 
@@ -68,31 +68,31 @@ create them for you and handle metadata like descriptions and modes.
 values as named properties:
 
 ```typescript
-const durations = group('duration', {
-  fast: new Duration(100, 'ms'),
-  normal: new Duration(200, 'ms'),
-  slow: new Duration(300, 'ms'),
+const durations = group("duration", {
+  fast: new Duration(100, "ms"),
+  normal: new Duration(200, "ms"),
+  slow: new Duration(300, "ms"),
 });
 
 // Array of tokens --- pass to tokens(), theme(), validate(), generators
-durations.length;      // 3
-durations[0].name;     // 'fast'
-durations[0].type;     // 'duration'
+durations.length; // 3
+durations[0].name; // 'fast'
+durations[0].type; // 'duration'
 
 // Named value access --- use in other value constructors
-durations.fast;        // the Duration(100, 'ms') instance
-durations.slow;        // the Duration(300, 'ms') instance
+durations.fast; // the Duration(100, 'ms') instance
+durations.slow; // the Duration(300, 'ms') instance
 ```
 
 This dual nature is the key to composability. The array form feeds the generation pipeline. The
 named form feeds other value constructors:
 
 ```typescript
-const easings = group('timing', {
+const easings = group("timing", {
   standard: CubicBezier.standard,
 });
 
-const transitions = group('transition', {
+const transitions = group("transition", {
   fade: new Transition(durations.fast, easings.standard),
 });
 ```
@@ -142,7 +142,7 @@ In DTCG, aliases:
 No special syntax or `ref()` calls needed. The relationship is discovered automatically from
 JavaScript object identity --- if two tokens share the same value object, generators know about it.
 
-When a value is *not* registered as a token (e.g., you created a `Duration` inline rather than
+When a value is _not_ registered as a token (e.g., you created a `Duration` inline rather than
 pulling it from a group), generators inline the value as they always have. References are
 opt-in by construction, not by configuration.
 
@@ -151,22 +151,23 @@ opt-in by construction, not by configuration.
 A **theme** overrides specific token values without replacing the full set:
 
 ```typescript
-const dark = theme('dark', colors, {
+const dark = theme("dark", colors, {
   surface: darkSurface,
   background: darkSurface.shade(0.3),
-  textPrimary: new Color('#e0e0e0'),
+  textPrimary: new Color("#e0e0e0"),
 });
 ```
 
 Themes stack --- derive a high-contrast variant from your dark theme:
 
 ```typescript
-const highContrast = theme('high-contrast', dark, {
-  textPrimary: new Color('#ffffff'),
+const highContrast = theme("high-contrast", dark, {
+  textPrimary: new Color("#ffffff"),
 });
 ```
 
 Generators emit theme overrides in the format that makes sense for each output:
+
 - CSS: `[data-theme="dark"] { ... }` or `@media (prefers-color-scheme: dark) { ... }`
 - SCSS: `$token--dark: value;`
 - DTCG: `$extensions.mode`
@@ -175,18 +176,18 @@ Generators emit theme overrides in the format that makes sense for each output:
 
 A **generator** transforms a `Token[]` into a file. Teikn ships with:
 
-| Generator | Output | Use case |
-|-----------|--------|----------|
-| `CssVars` | `tokens.css` | CSS custom properties |
-| `ScssVars` | `tokens.scss` | SCSS variables |
-| `Scss` | `tokens.scss` | SCSS with maps and group functions |
-| `Json` | `tokens.json` | Flat JSON |
-| `Dtcg` | `tokens.tokens.json` | W3C Design Token Community Group format |
-| `JavaScript` | `tokens.mjs` (default) / `tokens.cjs` | JS runtime; ESM by default, CJS via `module: "cjs"` |
-| `TypeScriptDeclarations` | `tokens.d.ts` | Ambient TS declarations, literal types by default |
-| `TypeScript` | `tokens.mjs` + `tokens.d.ts` | Meta generator — emits runtime + declarations as a pair |
-| `Html` | `tokens.html` | Visual documentation page |
-| `Storybook` | `*.stories.tsx` | Storybook stories |
+| Generator                | Output                                | Use case                                                |
+| ------------------------ | ------------------------------------- | ------------------------------------------------------- |
+| `CssVars`                | `tokens.css`                          | CSS custom properties                                   |
+| `ScssVars`               | `tokens.scss`                         | SCSS variables                                          |
+| `Scss`                   | `tokens.scss`                         | SCSS with maps and group functions                      |
+| `Json`                   | `tokens.json`                         | Flat JSON                                               |
+| `Dtcg`                   | `tokens.tokens.json`                  | W3C Design Token Community Group format                 |
+| `JavaScript`             | `tokens.mjs` (default) / `tokens.cjs` | JS runtime; ESM by default, CJS via `module: "cjs"`     |
+| `TypeScriptDeclarations` | `tokens.d.ts`                         | Ambient TS declarations, literal types by default       |
+| `TypeScript`             | `tokens.mjs` + `tokens.d.ts`          | Meta generator — emits runtime + declarations as a pair |
+| `Html`                   | `tokens.html`                         | Visual documentation page                               |
+| `Storybook`              | `*.stories.tsx`                       | Storybook stories                                       |
 
 Generators that support references (CssVars, ScssVars, DTCG) automatically emit `var()`,
 `$variable`, or `{alias}` when they detect composed values. Other generators inline values.
@@ -200,18 +201,16 @@ can rename tokens, convert units, validate accessibility, and more.
 const writer = new Teikn({
   generators: [new Teikn.generators.CssVars()],
   plugins: [
-    new Teikn.plugins.NameConventionPlugin({ convention: 'kebab-case' }),
+    new Teikn.plugins.NameConventionPlugin({ convention: "kebab-case" }),
     new Teikn.plugins.ContrastValidatorPlugin({
-      pairs: [
-        { foreground: 'textPrimary', background: 'surface', level: 'AA' },
-      ],
+      pairs: [{ foreground: "textPrimary", background: "surface", level: "AA" }],
     }),
   ],
 });
 ```
 
-Plugins see tokens *after* stringification, so they work with string values. The reference map
-is built *before* plugins run, so references are unaffected by name transformations.
+Plugins see tokens _after_ stringification, so they work with string values. The reference map
+is built _before_ plugins run, so references are unaffected by name transformations.
 
 ## The pipeline
 

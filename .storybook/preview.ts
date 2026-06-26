@@ -25,7 +25,7 @@ const preview: Preview = {
   },
   decorators: [
     (Story, ctx) => {
-      const theme = ctx.globals.theme;
+      const { theme } = ctx.globals;
       if (theme === "auto") {
         document.documentElement.removeAttribute("data-theme");
       } else {
