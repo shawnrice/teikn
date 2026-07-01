@@ -108,6 +108,31 @@ const formats = {
     ],
     hasOptionalParams: true,
   },
+  // Oklab/Oklch use modern CSS syntax: space-separated, L accepts a unit
+  // number (0-1) or a percentage, a/b are signed. Numeric bounds are kept
+  // permissive since Oklch can legitimately express out-of-sRGB-gamut colors.
+  oklab: {
+    regex:
+      /^oklab\([\s]*([0-9]*\.?[0-9]+%?)[\s,]*([+-]?[0-9]*\.?[0-9]+)[\s,]*([+-]?[0-9]*\.?[0-9]+)(?:[\s]*\/[\s]*([0-9]*\.?[0-9]+))?\)$/i,
+    validators: [
+      (l: number) => inRange(0, 100, l), // L: 0-1 or 0%-100%
+      (a: number) => inRange(-2, 2, a), // a
+      (b: number) => inRange(-2, 2, b), // b
+      inUnit, // alpha: 0 to 1
+    ],
+    hasOptionalParams: true,
+  },
+  oklch: {
+    regex:
+      /^oklch\([\s]*([0-9]*\.?[0-9]+%?)[\s,]*([0-9]*\.?[0-9]+)[\s,]*([+-]?[0-9]*\.?[0-9]+)(?:deg)?(?:[\s]*\/[\s]*([0-9]*\.?[0-9]+))?\)$/i,
+    validators: [
+      (l: number) => inRange(0, 100, l), // L: 0-1 or 0%-100%
+      (c: number) => inRange(0, 2, c), // C
+      inAnyDegrees, // H: any degrees (normalized)
+      inUnit, // alpha: 0 to 1
+    ],
+    hasOptionalParams: true,
+  },
 } as const;
 
 const isValidColor = (format: keyof typeof formats): ((color: string) => boolean) => {
@@ -155,6 +180,8 @@ export const isHSL: (color: string) => boolean = isValidColor('hsl');
 export const isHSLA: (color: string) => boolean = isValidColor('hsla');
 export const isLAB: (color: string) => boolean = isValidColor('lab');
 export const isLCH: (color: string) => boolean = isValidColor('lch');
+export const isOklab: (color: string) => boolean = isValidColor('oklab');
+export const isOklch: (color: string) => boolean = isValidColor('oklch');
 export const isXYZ: (color: string) => boolean = isValidColor('xyz');
 
 /**

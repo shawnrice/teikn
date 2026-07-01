@@ -1,5 +1,29 @@
 # Changelog
 
+## 2.0.0-beta.6
+
+### Added
+
+- **Oklab and Oklch color spaces.** `Color` now speaks Björn Ottosson's perceptual space and its
+  authoring-friendly polar form as first-class spaces, alongside RGB/HSL/XYZ/LAB/LCH. Construct with
+  `Color.fromOklab(L, a, b)` / `Color.fromOklch(L, C, h)` (or tuples), read with `asOklab(A)` /
+  `asOklch(A)`, and parse/serialize CSS syntax — `oklab(L a b)` and `oklch(L C h)`, with `%`
+  lightness, `/ alpha`, and space or comma separators all accepted. Conversion runs through linear
+  sRGB (not XYZ). New operation namespaces mirror the existing ones: `color.oklab` exposes
+  `lightness`/`a`/`b`, the CSS-accurate linear `mix`, and `lighten`/`darken`; `color.oklch` exposes
+  `lightness`/`chroma`/`hue`, `rotateHue`, `lighten`/`darken`, `saturate`/`desaturate`, and
+  `complement` — holding L constant while rotating hue makes even-lightness palettes pleasant to
+  generate.
+- **Gamut mapping on sRGB emit.** When an Oklab/Oklch color falls outside the sRGB gamut, converting
+  it back to `rgb`/`hex` no longer clips per channel. It applies CSS Color 4 gamut mapping — holding
+  L and h while binary-searching a reduced chroma, with a clip + Oklab ΔE (JND ≈ 0.02) fallback — so
+  saturated out-of-gamut inputs land on a faithful displayable color instead of an over-saturated,
+  lightness-distorted one. In-gamut colors are unaffected.
+- **`teikn/color` subpath export.** `import { Color } from "teikn/color"` pulls in just the color
+  toolkit, with an import graph that reaches no generators and no `node:*` builtins — so it
+  tree-shakes clean and bundles for the browser without Node shims. (The main `teikn` barrel still
+  transitively imports `node:os`/`node:fs` via the generators.)
+
 ## 2.0.0-beta.5
 
 ### Added

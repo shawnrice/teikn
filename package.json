@@ -34,6 +34,10 @@
       "import": "./lib/index.js",
       "require": "./lib/index.js"
     },
+    "./color": {
+      "types": "./lib/src/TokenTypes/Color/index.d.ts",
+      "import": "./lib/src/TokenTypes/Color/index.js"
+    },
     "./builders": {
       "import": "./lib/src/builders.js",
       "types": "./lib/src/builders.d.ts"

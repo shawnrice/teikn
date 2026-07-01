@@ -7,6 +7,8 @@ import {
   isHSLA,
   isLAB,
   isLCH,
+  isOklab,
+  isOklch,
   isRGB,
   isRGBA,
   isXYZ,
@@ -26,6 +28,14 @@ const lchRegex =
   /^lch\([\s]*([0-9]+(?:\.[0-9]+)?)[\s,]*([0-9]+(?:\.[0-9]+)?)[\s,]*([0-9]+(?:\.[0-9]+)?)(?:[\s]*\/[\s]*([0-9]*\.?[0-9]+))?\)$/i;
 const xyzRegex =
   /^xyz\([\s]*([0-9]+(?:\.[0-9]+)?)[\s,]*([0-9]+(?:\.[0-9]+)?)[\s,]*([0-9]+(?:\.[0-9]+)?)(?:[\s]*\/[\s]*([0-9]*\.?[0-9]+))?\)$/i;
+const oklabRegex =
+  /^oklab\([\s]*([0-9]*\.?[0-9]+%?)[\s,]*([+-]?[0-9]*\.?[0-9]+)[\s,]*([+-]?[0-9]*\.?[0-9]+)(?:[\s]*\/[\s]*([0-9]*\.?[0-9]+))?\)$/i;
+const oklchRegex =
+  /^oklch\([\s]*([0-9]*\.?[0-9]+%?)[\s,]*([0-9]*\.?[0-9]+)[\s,]*([+-]?[0-9]*\.?[0-9]+)(?:deg)?(?:[\s]*\/[\s]*([0-9]*\.?[0-9]+))?\)$/i;
+
+/** Oklab/Oklch lightness accepts either a 0-1 number or a 0%-100% percentage. */
+const parseOkLightness = (raw: string): number =>
+  raw.trim().endsWith('%') ? parseFloat(raw) / 100 : parseFloat(raw);
 
 const parseHSLString = (c: string): ParsedColor => {
   const m = c.match(hslRegex);
@@ -87,6 +97,36 @@ const parseXYZString = (c: string): ParsedColor => {
   return { space: 'xyz', data: [x, y, z], alpha };
 };
 
+const parseOklabString = (c: string): ParsedColor => {
+  const m = c.match(oklabRegex);
+
+  if (!m) {
+    throw new Error(`Cannot parse Oklab from "${c}"`);
+  }
+
+  const L = parseOkLightness(m[1]!);
+  const a = parseFloat(m[2]!);
+  const b = parseFloat(m[3]!);
+  const alpha = m[4] !== undefined ? parseFloat(m[4]) : 1;
+
+  return { space: 'oklab', data: [L, a, b], alpha };
+};
+
+const parseOklchString = (c: string): ParsedColor => {
+  const m = c.match(oklchRegex);
+
+  if (!m) {
+    throw new Error(`Cannot parse Oklch from "${c}"`);
+  }
+
+  const L = parseOkLightness(m[1]!);
+  const C = parseFloat(m[2]!);
+  const H = normalizeDegrees(parseFloat(m[3]!));
+  const alpha = m[4] !== undefined ? parseFloat(m[4]) : 1;
+
+  return { space: 'oklch', data: [L, C, H], alpha };
+};
+
 export const parseColorString = (c: string): ParsedColor => {
   const trimmed = c.trim();
 
@@ -139,6 +179,16 @@ export const parseColorString = (c: string): ParsedColor => {
   // LCH
   if (isLCH(trimmed)) {
     return parseLCHString(trimmed);
+  }
+
+  // Oklab
+  if (isOklab(trimmed)) {
+    return parseOklabString(trimmed);
+  }
+
+  // Oklch
+  if (isOklch(trimmed)) {
+    return parseOklchString(trimmed);
   }
 
   // XYZ
