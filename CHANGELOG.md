@@ -23,6 +23,15 @@
   toolkit, with an import graph that reaches no generators and no `node:*` builtins — so it
   tree-shakes clean and bundles for the browser without Node shims. (The main `teikn` barrel still
   transitively imports `node:os`/`node:fs` via the generators.)
+- **`buildPlatforms` helper.** Generate a separate flat artifact set per platform (web, iOS,
+  Android, Typst, …) from one shared base plus small per-platform deltas:
+  `buildPlatforms({ base, platforms: { web: null, mobile }, generators: (platform) => […], outDir })`.
+  Each delta is collapsed into the base at build time via `composeTokenSets` — flat values, no
+  `modes` block or `[data-theme]` selector — which suits a different _renderer_ (iOS, Typst) rather
+  than a runtime theme toggle. `generators` (and optional `plugins`/`themes`) is a per-platform
+  factory, not an array, so each `Teikn` build gets fresh, correctly-wired generator instances and a
+  platform can emit an entirely different generator set. Runs sequentially and returns
+  `Map<platform, TransformResult>`.
 
 ## 2.0.0-beta.5
 
