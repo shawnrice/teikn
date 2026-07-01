@@ -7,6 +7,9 @@ export type HSL = readonly [hue: number, saturation: number, lightness: number];
 export type XYZ = readonly [x: number, y: number, z: number];
 export type LAB = readonly [lightness: number, a: number, b: number];
 export type LCH = readonly [lightness: number, chroma: number, hue: number];
+// Oklab / Oklch (Björn Ottosson's perceptual space + its polar form)
+export type Oklab = readonly [lightness: number, a: number, b: number];
+export type Oklch = readonly [lightness: number, chroma: number, hue: number];
 export type CMYK = readonly [cyan: number, magenta: number, yellow: number, black: number];
 
 // Alpha variants using the helper type
@@ -15,6 +18,8 @@ export type HSLA = WithAlpha<HSL>;
 export type XYZA = WithAlpha<XYZ>;
 export type LABA = WithAlpha<LAB>;
 export type LCHA = WithAlpha<LCH>;
+export type OklabA = WithAlpha<Oklab>;
+export type OklchA = WithAlpha<Oklch>;
 export type CMYKA = WithAlpha<CMYK>;
 
 export type ColorBlindnessType =
@@ -42,5 +47,9 @@ export type ColorFormat =
   | 'laba'
   | 'lch'
   | 'lcha'
+  | 'oklab'
+  | 'oklaba'
+  | 'oklch'
+  | 'oklcha'
   | 'named'
   | 'xkcd';

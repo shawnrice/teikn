@@ -7,6 +7,8 @@ import { namedColorsByValue } from './namedColors.js';
 import { HSLOperations } from './operations/HSLOperations.js';
 import { LABOperations } from './operations/LABOperations.js';
 import { LCHOperations } from './operations/LCHOperations.js';
+import { OklabOperations } from './operations/OklabOperations.js';
+import { OklchOperations } from './operations/OklchOperations.js';
 import { RGBOperations } from './operations/RGBOperations.js';
 import { XYZOperations } from './operations/XYZOperations.js';
 import { parseColorString } from './parseColorString.js';
@@ -19,6 +21,10 @@ import type {
   LABA,
   LCH,
   LCHA,
+  Oklab,
+  OklabA,
+  Oklch,
+  OklchA,
   RGB,
   RGBA,
   XYZ,
@@ -36,6 +42,10 @@ export type InternalCreate = (space: Space, data: SpaceData[Space], alpha: numbe
 const PRECISION_ALPHA = 4;
 const PRECISION_LAB = 2;
 const PRECISION_XYZ = 5;
+// Oklab/Oklch L, a, b, C sit in tiny ranges (~0..1 / ~-0.4..0.4) so they need
+// more decimals; hue is in degrees and needs fewer.
+const PRECISION_OKLAB = 5;
+const PRECISION_OK_HUE = 3;
 
 // String formatters — each handles both opaque and alpha variants
 const fmtTriplet = (
@@ -47,6 +57,22 @@ const fmtTriplet = (
   alpha?: number,
 ): string => {
   const core = `${round(precision, a)}, ${round(precision, b)}, ${round(precision, c)}`;
+
+  return alpha !== undefined
+    ? `${name}(${core} / ${round(PRECISION_ALPHA, alpha)})`
+    : `${name}(${core})`;
+};
+
+// Modern CSS oklab()/oklch() use space-separated components (never commas).
+const fmtOkTriplet = (
+  name: string,
+  a: number,
+  b: number,
+  c: number,
+  cPrecision: number,
+  alpha?: number,
+): string => {
+  const core = `${round(PRECISION_OKLAB, a)} ${round(PRECISION_OKLAB, b)} ${round(cPrecision, c)}`;
 
   return alpha !== undefined
     ? `${name}(${core} / ${round(PRECISION_ALPHA, alpha)})`
@@ -91,6 +117,20 @@ const fmt = {
       ? fmtTriplet('xyz', PRECISION_XYZ, x, y, z, values[3])
       : fmtTriplet('xyz', PRECISION_XYZ, x, y, z);
   },
+  oklab: (values: Oklab | OklabA): string => {
+    const [L, a, b] = values;
+
+    return values.length === 4
+      ? fmtOkTriplet('oklab', L, a, b, PRECISION_OKLAB, values[3])
+      : fmtOkTriplet('oklab', L, a, b, PRECISION_OKLAB);
+  },
+  oklch: (values: Oklch | OklchA): string => {
+    const [L, c, h] = values;
+
+    return values.length === 4
+      ? fmtOkTriplet('oklch', L, c, h, PRECISION_OK_HUE, values[3])
+      : fmtOkTriplet('oklch', L, c, h, PRECISION_OK_HUE);
+  },
 };
 
 // sRGB linearization / delinearization helpers
@@ -127,6 +167,8 @@ export class Color {
   #lab?: LABOperations;
   #lch?: LCHOperations;
   #xyz?: XYZOperations;
+  #oklab?: OklabOperations;
+  #oklch?: OklchOperations;
 
   /**
    * Create a color from a string (hex, rgb, hsl, lab, lch, xyz, named color) or Color
@@ -317,6 +359,18 @@ export class Color {
     return Color.#fromSpace('xyz', first, second, third, alpha);
   }
 
+  static fromOklab(l: number, a: number, b: number, alpha?: number): Color;
+  static fromOklab(oklab: Oklab, alpha?: number): Color;
+  static fromOklab(first: number | Oklab, second?: number, third?: number, alpha?: number): Color {
+    return Color.#fromSpace('oklab', first, second, third, alpha);
+  }
+
+  static fromOklch(l: number, c: number, h: number, a?: number): Color;
+  static fromOklch(oklch: Oklch, a?: number): Color;
+  static fromOklch(first: number | Oklch, second?: number, third?: number, alpha?: number): Color {
+    return Color.#fromSpace('oklch', first, second, third, alpha);
+  }
+
   // ─── Space-scoped sub-APIs ─────────────────────────────────
 
   /** RGB-space operations (red, green, blue, mix, invert) */
@@ -362,6 +416,24 @@ export class Color {
     }
 
     return this.#xyz;
+  }
+
+  /** Oklab-space operations (lightness, a, b, mix, lighten, darken) */
+  get oklab(): OklabOperations {
+    if (!this.#oklab) {
+      this.#oklab = new OklabOperations(this, this.#boundCreateInternal);
+    }
+
+    return this.#oklab;
+  }
+
+  /** Oklch-space operations (lightness, chroma, hue, rotateHue, lighten, darken) */
+  get oklch(): OklchOperations {
+    if (!this.#oklch) {
+      this.#oklch = new OklchOperations(this, this.#boundCreateInternal);
+    }
+
+    return this.#oklch;
   }
 
   // ─── RGB mutation methods (backward-compatible) ────────────
@@ -764,6 +836,26 @@ export class Color {
     return [...this.asLCH(), this.#alpha] as unknown as LCHA;
   }
 
+  /** Get the color as an Oklab tuple */
+  asOklab(): Oklab {
+    return this.#resolve('oklab');
+  }
+
+  /** Get the color as an Oklab tuple with alpha */
+  asOklabA(): OklabA {
+    return [...this.asOklab(), this.#alpha] as unknown as OklabA;
+  }
+
+  /** Get the color as an Oklch tuple */
+  asOklch(): Oklch {
+    return this.#resolve('oklch');
+  }
+
+  /** Get the color as an Oklch tuple with alpha */
+  asOklchA(): OklchA {
+    return [...this.asOklch(), this.#alpha] as unknown as OklchA;
+  }
+
   /** Get the color as a 3-digit hex string (if possible) */
   asHex3(): string {
     return `#${RGBToHex(this.asRGB(), true)}`;
@@ -825,6 +917,14 @@ export class Color {
         return fmt.lch(this.asLCH());
       case 'lcha':
         return fmt.lch(this.asLCHA());
+      case 'oklab':
+        return fmt.oklab(this.asOklab());
+      case 'oklaba':
+        return fmt.oklab(this.asOklabA());
+      case 'oklch':
+        return fmt.oklch(this.asOklch());
+      case 'oklcha':
+        return fmt.oklch(this.asOklchA());
       case 'xyz':
         return fmt.xyz(this.asXYZ());
       case 'xyza':
