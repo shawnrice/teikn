@@ -15,7 +15,6 @@ export const ensureDirectory = async (dirPath: string): Promise<void> => {
 
     try {
       await fs.promises.mkdir(dir, { mode: 0o755, recursive: true });
-      console.log(`Created ${dir}.`);
 
       return Promise.resolve();
     } catch (e: unknown) {

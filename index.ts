@@ -14,6 +14,7 @@ export * from './src/Generators/index.js';
 export * from './src/Plugins/index.js';
 export * from './src/Token.js';
 export * from './src/builders.js';
+export * from './src/build-platforms.js';
 export * from './src/type-classifiers.js';
 export { resolveReferences } from './src/resolve.js';
 export { validate } from './src/validate.js';
