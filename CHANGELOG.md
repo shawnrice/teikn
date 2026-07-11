@@ -1,6 +1,24 @@
 # Changelog
 
-## Unreleased
+## 2.0.0-beta.7
+
+### Changed
+
+- **BREAKING: `Color.toString()` now serializes in the color's authored space, not `rgb`.**
+  Previously, calling `toString()` with no format argument always emitted `rgb()`/`rgba()`,
+  discarding the space a color was authored in. It now serializes in the color's native space — so a
+  color created from `oklch(…)` round-trips as `oklch(…)`, one from `hsl(…)` stays `hsl(…)`, and
+  hex/rgb/named colors stay `rgb(…)` (hex, named, and numeric input all parse into the `rgb` space).
+  Reading the native space is a cache hit with no conversion, so this is lossless apart from decimal
+  rounding — it avoids the previous round trip through 8-bit, gamut-clipped `rgb`. This also fixes
+  **box-shadow colors**, whose serializer calls the formatless `toString()`: an oklch-authored
+  shadow color now emits oklch instead of rgb.
+
+  To restore the old behavior, pass an explicit format: `color.toString('rgb')`, or normalize whole
+  token sets with `ColorTransformPlugin({ type: 'rgb' })`. A new `'native'` value of `ColorFormat`
+  names this behavior explicitly (`toString('native')` === `toString()`). Note that color operations
+  return a color in their working space (e.g. `lighten`/`setHue` work in HSL), so their formatless
+  output is now `hsl(…)` — pass an explicit format if you need a specific space.
 
 ### Added
 
@@ -29,24 +47,6 @@
   `GradientStop.color` is now typed `Color | string`. As part of this, `resolveReferences` /
   `validate` now recurse into arrays, so refs buried inside any array-shaped composite field resolve
   and validate.
-
-### Changed
-
-- **BREAKING: `Color.toString()` now serializes in the color's authored space, not `rgb`.**
-  Previously, calling `toString()` with no format argument always emitted `rgb()`/`rgba()`,
-  discarding the space a color was authored in. It now serializes in the color's native space — so a
-  color created from `oklch(…)` round-trips as `oklch(…)`, one from `hsl(…)` stays `hsl(…)`, and
-  hex/rgb/named colors stay `rgb(…)` (hex, named, and numeric input all parse into the `rgb` space).
-  Reading the native space is a cache hit with no conversion, so this is lossless apart from decimal
-  rounding — it avoids the previous round trip through 8-bit, gamut-clipped `rgb`. This also fixes
-  **box-shadow colors**, whose serializer calls the formatless `toString()`: an oklch-authored
-  shadow color now emits oklch instead of rgb.
-
-  To restore the old behavior, pass an explicit format: `color.toString('rgb')`, or normalize whole
-  token sets with `ColorTransformPlugin({ type: 'rgb' })`. A new `'native'` value of `ColorFormat`
-  names this behavior explicitly (`toString('native')` === `toString()`). Note that color operations
-  return a color in their working space (e.g. `lighten`/`setHue` work in HSL), so their formatless
-  output is now `hsl(…)` — pass an explicit format if you need a specific space.
 
 ## 2.0.0-beta.6
 
