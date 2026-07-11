@@ -280,7 +280,17 @@ c1.toString('rgba'); // 'rgba(70, 130, 180, 1)'
 c1.toString('hsl'); // 'hsl(207, 44%, 49%)'
 c1.toString('lab'); // 'lab(54.3, -5.6, -32.1)'
 c1.toString('lch'); // 'lch(54.3, 32.6, 260)'
+c1.toString('oklch'); // 'oklch(0.588 0.09934 245.739)'
 c1.toString('xkcd'); // nearest XKCD color name
+
+// No format? Serializes in the color's *authored* space (lossless — no gamut
+// clip, no 8-bit round trip). So oklch stays oklch and only rounds decimals.
+new Color('oklch(0.7 0.15 200)').toString(); // 'oklch(0.7 0.15 200)'
+new Color('#4682b4').toString(); // 'rgb(70, 130, 180)'  (hex parses to rgb)
+c1.toString('native'); // same as toString() — names the default explicitly
+// This is what box-shadow (and other) serializers use, so an oklch shadow color
+// emits oklch. Want a fixed space everywhere? Pass a format, or use
+// ColorTransformPlugin({ type: 'rgb' }) to normalize a whole token set.
 
 // Access raw values
 c1.asRGB(); // [70, 130, 180]
@@ -337,6 +347,10 @@ const inset = new BoxShadow(0, 1, 4, 0, 'rgba(0,0,0,.1)', true);
 // From CSS string
 const parsed = new BoxShadow('0 4px 16px rgba(0,0,0,.15)');
 
+// The color may be a per-field {ref} — resolved later (→ var(--…) in CSS,
+// a DTCG alias in Dtcg), rather than throwing like a bare Color would.
+const linked = new BoxShadow({ offsetY: 2, blur: 8, color: '{color.ink}' });
+
 // Immutable updates
 shadow.with({ blur: 16, spread: 4 });
 shadow.with({ color: new Color('steelblue'), inset: true });
@@ -346,7 +360,7 @@ shadow.offsetX; // 0
 shadow.offsetY; // 2
 shadow.blur; // 8
 shadow.spread; // 0
-shadow.color; // Color
+shadow.color; // Color | string  (a string when it holds an unresolved {ref})
 shadow.inset; // false
 
 shadow.scale(2); // scale all numeric values
@@ -445,6 +459,13 @@ const radial = new RadialGradient({ shape: 'circle' }, [
 ]);
 
 linear.toString(); // 'linear-gradient(135deg, #4682b4 0%, #dc143c 100%)'
+
+// A stop color may be a per-field {ref} to a color token — resolved later
+// (→ var(--…) in CSS, a DTCG alias in Dtcg), rather than throwing.
+const branded = new LinearGradient(180, [
+  ['{color.brand}', '0%'],
+  ['#000', '100%'],
+]);
 ```
 
 ### Transition
@@ -557,15 +578,15 @@ const writer = new Teikn({
 });
 ```
 
-| Plugin                    | Description                                                                                                           |
-| ------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| **ColorTransformPlugin**  | Normalizes color tokens to a specific format (`hex`, `rgb`, `hsl`, `lab`, `lch`, `xyz`)                               |
-| **StripTypePrefixPlugin** | Opt out of the built-in type prefixing (e.g., keep `primary` as `primary` instead of `color-primary`)                 |
-| **ScssQuoteValuePlugin**  | Wraps font and font-family values in `unquote()` for SCSS compatibility                                               |
-| **RemUnitPlugin**         | Converts px Dimensions to rem (or configurable unit). Options: `base` (default 16), `targetUnit` (default `'rem'`)    |
-| **AlphaMultiplyPlugin**   | Flattens semi-transparent colors against a background via alpha blending. Options: `background` (default `'#ffffff'`) |
-| **NameConventionPlugin**  | Transforms token names to `camelCase`, `kebab-case`, `snake_case`, `PascalCase`, or `SCREAMING_SNAKE`                 |
-| **DeprecationPlugin**     | Marks tokens as deprecated with optional replacement references                                                       |
+| Plugin                    | Description                                                                                                                                               |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **ColorTransformPlugin**  | Normalizes colors to a specific format (`hex`, `rgb`, `hsl`, `lab`, `lch`, `oklab`, `oklch`, `xyz`), including colors nested in shadows/borders/gradients |
+| **StripTypePrefixPlugin** | Opt out of the built-in type prefixing (e.g., keep `primary` as `primary` instead of `color-primary`)                                                     |
+| **ScssQuoteValuePlugin**  | Wraps font and font-family values in `unquote()` for SCSS compatibility                                                                                   |
+| **RemUnitPlugin**         | Converts px Dimensions to rem (or configurable unit). Options: `base` (default 16), `targetUnit` (default `'rem'`)                                        |
+| **AlphaMultiplyPlugin**   | Flattens semi-transparent colors against a background via alpha blending. Options: `background` (default `'#ffffff'`)                                     |
+| **NameConventionPlugin**  | Transforms token names to `camelCase`, `kebab-case`, `snake_case`, `PascalCase`, or `SCREAMING_SNAKE`                                                     |
+| **DeprecationPlugin**     | Marks tokens as deprecated with optional replacement references                                                                                           |
 
 ### Expand Plugins
 

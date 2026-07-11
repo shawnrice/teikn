@@ -4,8 +4,10 @@ import { composite } from '../builders.js';
 import { testOpts } from '../fixtures/testOpts.js';
 import type { Token } from '../Token.js';
 import { Border } from '../TokenTypes/Border.js';
+import { BoxShadow, BoxShadowList } from '../TokenTypes/BoxShadow.js';
 import { Color } from '../TokenTypes/Color/index.js';
 import { Dimension } from '../TokenTypes/Dimension.js';
+import { LinearGradient } from '../TokenTypes/Gradient.js';
 import { Typography } from '../TokenTypes/Typography.js';
 import { validate } from '../validate.js';
 import { CssVars } from './CssVars.js';
@@ -211,6 +213,116 @@ describe('per-field references inside a wrapper resolve (RefFields protocol)', (
     // Resolved to the `line` color token's instance → emitted as a var() ref.
     expect(css).toContain('--border-focus: 2px solid var(--line);');
     expect(css).not.toContain('{line}');
+  });
+
+  test('a BoxShadow color `{ref}` resolves and emits var(--…) in CSS', () => {
+    const tokens: Token[] = [
+      { name: 'ink', type: 'color', value: new Color(0, 0, 0) },
+      {
+        name: 'shadowMd',
+        type: 'shadow',
+        value: new BoxShadow({ offsetY: 2, blur: 8, color: '{ink}' }),
+      },
+    ];
+    const css = new CssVars(testOpts).generate(tokens);
+    expect(css).toContain('--shadow-md: 0 2px 8px var(--ink);');
+    expect(css).not.toContain('{ink}');
+  });
+
+  test('a resolved BoxShadow color `{ref}` becomes a DTCG alias', () => {
+    const tokens: Token[] = [
+      { name: 'ink', type: 'color', value: new Color(0, 0, 0) },
+      {
+        name: 'shadowMd',
+        type: 'shadow',
+        value: new BoxShadow({ offsetY: 2, blur: 8, color: '{ink}' }),
+      },
+    ];
+    const dtcg = JSON.parse(new DtcgGenerator({ hierarchical: false }).generate(tokens));
+    expect(dtcg.shadowMd.$value.color).toBe('{ink}');
+  });
+
+  test('an unresolved BoxShadow color reference is flagged by validate()', () => {
+    const result = validate([
+      {
+        name: 'shadowMd',
+        type: 'shadow',
+        value: new BoxShadow({ offsetY: 2, blur: 8, color: '{nope}' }),
+      },
+    ]);
+    expect(result.valid).toBe(false);
+    expect(result.issues.some(i => /Unresolved reference in field "color"/.test(i.message))).toBe(
+      true,
+    );
+  });
+
+  test('a BoxShadowList layer `{ref}` resolves and emits var(--…) in CSS', () => {
+    const tokens: Token[] = [
+      { name: 'ink', type: 'color', value: new Color(0, 0, 0) },
+      {
+        name: 'elevated',
+        type: 'shadow',
+        value: new BoxShadowList([
+          new BoxShadow({ offsetY: 2, blur: 4, color: '{ink}' }),
+          new BoxShadow({ offsetY: 8, blur: 16, color: new Color(51, 51, 51) }),
+        ]),
+      },
+    ];
+    const css = new CssVars(testOpts).generate(tokens);
+    expect(css).toContain('--elevated: 0 2px 4px var(--ink), 0 8px 16px rgb(51, 51, 51);');
+    expect(css).not.toContain('{ink}');
+  });
+
+  test('a Gradient stop `{ref}` resolves and emits var(--…) in CSS', () => {
+    const tokens: Token[] = [
+      { name: 'brand', type: 'color', value: new Color(70, 130, 180) },
+      {
+        name: 'hero',
+        type: 'gradient',
+        value: new LinearGradient(180, [
+          ['{brand}', '0%'],
+          [new Color(0, 0, 0), '100%'],
+        ]),
+      },
+    ];
+    const css = new CssVars(testOpts).generate(tokens);
+    expect(css).toContain(
+      '--hero: linear-gradient(to bottom, var(--brand) 0%, rgb(0, 0, 0) 100%);',
+    );
+    expect(css).not.toContain('{brand}');
+  });
+
+  test('a resolved Gradient stop `{ref}` becomes a DTCG alias', () => {
+    const tokens: Token[] = [
+      { name: 'brand', type: 'color', value: new Color(70, 130, 180) },
+      {
+        name: 'hero',
+        type: 'gradient',
+        value: new LinearGradient(180, [
+          ['{brand}', '0%'],
+          [new Color(0, 0, 0), '100%'],
+        ]),
+      },
+    ];
+    const dtcg = JSON.parse(new DtcgGenerator({ hierarchical: false }).generate(tokens));
+    expect(dtcg.hero.$value[0].color).toBe('{brand}');
+  });
+
+  test('an unresolved Gradient stop reference is flagged by validate()', () => {
+    const result = validate([
+      {
+        name: 'hero',
+        type: 'gradient',
+        value: new LinearGradient(180, [
+          ['{missing}', '0%'],
+          [new Color(0, 0, 0), '100%'],
+        ]),
+      },
+    ]);
+    expect(result.valid).toBe(false);
+    expect(
+      result.issues.some(i => /Unresolved reference in field "stops\.color"/.test(i.message)),
+    ).toBe(true);
   });
 
   test('a Typography fontSize `{ref}` resolves to the referenced dimension', () => {

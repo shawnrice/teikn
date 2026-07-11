@@ -133,6 +133,19 @@ const fmt = {
   },
 };
 
+// Maps each stored color space to the CSS format that round-trips it losslessly.
+// Used by `toString('native')` (and the formatless default) to preserve the
+// space a color was authored in rather than flattening everything to rgb.
+const NATIVE_FORMAT: Record<Space, ColorFormat> = {
+  rgb: 'rgb',
+  hsl: 'hsl',
+  xyz: 'xyz',
+  lab: 'lab',
+  lch: 'lch',
+  oklab: 'oklab',
+  oklch: 'oklch',
+};
+
 // sRGB linearization / delinearization helpers
 const linearize = (c: number): number => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
 
@@ -929,8 +942,15 @@ export class Color {
         return fmt.xyz(this.asXYZ());
       case 'xyza':
         return fmt.xyz(this.asXYZA());
-      default:
-        return this.#alpha === 1 ? fmt.rgb(this.asRGB()) : fmt.rgb(this.asRGBA());
+      case 'native':
+      default: {
+        // Serialize in whatever space the color was authored in, so oklch stays
+        // oklch, hex/rgb stays rgb, etc. Reading the native space is a cache hit
+        // (no conversion), so this is lossless apart from decimal rounding.
+        const base = NATIVE_FORMAT[this.#nativeSpace];
+
+        return this.toString(this.#alpha === 1 ? base : (`${base}a` as ColorFormat));
+      }
     }
   }
 }

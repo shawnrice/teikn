@@ -834,7 +834,7 @@ export class Html extends Generator<HtmlOpts> {
               [
                 `<div class="gradient-stop-item">`,
                 `<div class="gradient-stop-swatch" style="background:${escapeHtml(s.color.toString())}"></div>`,
-                `<div class="gradient-stop-hex">${escapeHtml(s.color.hex)}</div>`,
+                `<div class="gradient-stop-hex">${escapeHtml(typeof s.color === 'string' ? s.color : s.color.hex)}</div>`,
                 s.position
                   ? `<div class="gradient-stop-label">${escapeHtml(s.position)}</div>`
                   : '',

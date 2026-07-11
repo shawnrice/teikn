@@ -168,11 +168,34 @@ describe('resolveReferences', () => {
     expect(result[0]!.value).toBe(cb);
   });
 
-  test('BoxShadow values are NOT destructured as composites', () => {
-    const shadow = new BoxShadow(0, 2, 8, 0, new Color(0, 0, 0));
+  test('BoxShadow resolves per-field refs but stays a BoxShadow (not a POJO)', () => {
+    // BoxShadow implements the RefFields protocol (like Border/Typography), so a
+    // ref-free shadow is rebuilt into an equal BoxShadow rather than exploded
+    // into a plain object. The nested Color instance is preserved by identity.
+    const color = new Color(0, 0, 0);
+    const shadow = new BoxShadow(0, 2, 8, 0, color);
     const tokens: Token[] = [{ name: 'shadow', type: 'shadow', value: shadow }];
     const result = resolveReferences(tokens);
-    expect(result[0]!.value).toBe(shadow);
+    expect(result[0]!.value).toBeInstanceOf(BoxShadow);
+    expect((result[0]!.value as BoxShadow).color).toBe(color);
+    expect(result[0]!.value!.toString()).toBe(shadow.toString());
+  });
+
+  test('a BoxShadow color `{ref}` resolves to the referenced color instance', () => {
+    const line = new Color(70, 130, 180);
+    const tokens: Token[] = [
+      { name: 'line', type: 'color', value: line },
+      {
+        name: 'shadow',
+        type: 'shadow',
+        value: new BoxShadow({ offsetY: 2, blur: 8, color: '{line}' }),
+      },
+    ];
+    const result = resolveReferences(tokens);
+    const resolved = result[1]!.value as BoxShadow;
+    expect(resolved).toBeInstanceOf(BoxShadow);
+    // resolved to the `line` token's exact instance → serializers can emit var(--line)
+    expect(resolved.color).toBe(line);
   });
 
   test('Transition values are NOT destructured as composites', () => {
@@ -182,24 +205,50 @@ describe('resolveReferences', () => {
     expect(result[0]!.value).toBe(t);
   });
 
-  test('LinearGradient values are NOT destructured as composites', () => {
+  test('LinearGradient resolves per-stop refs but stays a LinearGradient', () => {
+    // Gradients implement the RefFields protocol, so a ref-free gradient is
+    // rebuilt into an equal instance rather than exploded into a plain object.
+    const c0 = new Color(255, 0, 0);
     const lg = new LinearGradient(180, [
-      [new Color(255, 0, 0), '0%'],
+      [c0, '0%'],
       [new Color(0, 0, 255), '100%'],
     ]);
     const tokens: Token[] = [{ name: 'grad', type: 'gradient', value: lg }];
     const result = resolveReferences(tokens);
-    expect(result[0]!.value).toBe(lg);
+    expect(result[0]!.value).toBeInstanceOf(LinearGradient);
+    expect(result[0]!.value!.toString()).toBe(lg.toString());
+    // literal-only stops keep their color instances
+    expect((result[0]!.value as LinearGradient).stops[0]!.color).toBe(c0);
   });
 
-  test('RadialGradient values are NOT destructured as composites', () => {
+  test('a LinearGradient stop `{ref}` resolves to the referenced color instance', () => {
+    const brand = new Color(70, 130, 180);
+    const tokens: Token[] = [
+      { name: 'brand', type: 'color', value: brand },
+      {
+        name: 'grad',
+        type: 'gradient',
+        value: new LinearGradient(180, [
+          ['{brand}', '0%'],
+          [new Color(0, 0, 0), '100%'],
+        ]),
+      },
+    ];
+    const result = resolveReferences(tokens);
+    const resolved = result[1]!.value as LinearGradient;
+    expect(resolved).toBeInstanceOf(LinearGradient);
+    expect(resolved.stops[0]!.color).toBe(brand);
+  });
+
+  test('RadialGradient resolves per-stop refs but stays a RadialGradient', () => {
     const rg = new RadialGradient({ shape: 'circle' }, [
       new Color(255, 0, 0),
       new Color(0, 0, 255),
     ]);
     const tokens: Token[] = [{ name: 'radGrad', type: 'gradient', value: rg }];
     const result = resolveReferences(tokens);
-    expect(result[0]!.value).toBe(rg);
+    expect(result[0]!.value).toBeInstanceOf(RadialGradient);
+    expect(result[0]!.value!.toString()).toBe(rg.toString());
   });
 
   test('Color values are NOT destructured as composites', () => {
@@ -275,14 +324,35 @@ describe('resolveReferences', () => {
     expect(result[0]!.modes).toBeUndefined();
   });
 
-  test('BoxShadowList values are NOT destructured as composites', () => {
+  test('BoxShadowList resolves per-layer refs but stays a BoxShadowList', () => {
+    // Implements RefFields, so a ref-free list is rebuilt into an equal instance.
     const list = new BoxShadowList([
       new BoxShadow(0, 1, 2, 0, '#000'),
       new BoxShadow(0, 4, 8, 0, '#000'),
     ]);
     const tokens: Token[] = [{ name: 'shadow', type: 'shadow', value: list }];
     const result = resolveReferences(tokens);
-    expect(result[0]!.value).toBe(list);
+    expect(result[0]!.value).toBeInstanceOf(BoxShadowList);
+    expect(result[0]!.value!.toString()).toBe(list.toString());
+  });
+
+  test('a BoxShadowList layer `{ref}` resolves to the referenced color instance', () => {
+    const ink = new Color(0, 0, 0);
+    const tokens: Token[] = [
+      { name: 'ink', type: 'color', value: ink },
+      {
+        name: 'elevated',
+        type: 'shadow',
+        value: new BoxShadowList([
+          new BoxShadow({ offsetY: 2, blur: 4, color: '{ink}' }),
+          new BoxShadow({ offsetY: 8, blur: 16, color: '#333' }),
+        ]),
+      },
+    ];
+    const result = resolveReferences(tokens);
+    const resolved = result[1]!.value as BoxShadowList;
+    expect(resolved).toBeInstanceOf(BoxShadowList);
+    expect(resolved.layers[0]!.color).toBe(ink);
   });
 
   // ─── Ref edge cases ────────────────────────────────────────

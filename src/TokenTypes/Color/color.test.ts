@@ -215,6 +215,30 @@ describe('Color tests', () => {
     expect(new Color('blue').toString('rgb')).toBe('rgb(0, 0, 255)');
   });
 
+  // ─── native-space default serialization ────────────────
+  // toString() with no format serializes in the color's authored space, so
+  // authored space survives to output instead of flattening to rgb.
+
+  test('formatless toString() preserves the authored oklch space', () => {
+    const c = new Color('oklch(0.7 0.15 200)');
+    expect(c.toString()).toBe('oklch(0.7 0.15 200)');
+    expect(c.toString('native')).toBe(c.toString());
+  });
+
+  test('formatless toString() preserves oklch alpha', () => {
+    expect(new Color('oklch(0.7 0.15 200 / 0.5)').toString()).toBe('oklch(0.7 0.15 200 / 0.5)');
+  });
+
+  test('formatless toString() keeps rgb-based colors as rgb', () => {
+    expect(new Color('#4682b4').toString()).toBe('rgb(70, 130, 180)');
+    expect(new Color('rgb(1, 2, 3)').toString()).toBe('rgb(1, 2, 3)');
+  });
+
+  test('native format still round-trips through an explicit format', () => {
+    // oklch authored, requested as rgb — explicit format overrides the native default.
+    expect(new Color('oklch(0.7 0.15 200)').toString('rgb')).toMatch(/^rgb\(/);
+  });
+
   test('Getting named colors works', () => {
     expect(new Color('#ffffff').toString('named')).toBe('white');
   });
@@ -290,11 +314,13 @@ describe('Color tests', () => {
   // ─── HSL mutation tests ──────────────────────────────────
 
   test('Setting Hue works', () => {
-    expect(new Color('green').setHue(200).toString()).toEqual('rgb(0, 85, 128)');
+    // HSL operations return an hsl-native color, so pin the assertion to rgb to
+    // test the operation math rather than the (native) default serialization.
+    expect(new Color('green').setHue(200).toString('rgb')).toEqual('rgb(0, 85, 128)');
   });
 
   test('Setting Saturation works', () => {
-    expect(new Color('green').setSaturation(0.5).toString()).toEqual('rgb(32, 96, 32)');
+    expect(new Color('green').setSaturation(0.5).toString('rgb')).toEqual('rgb(32, 96, 32)');
   });
 
   test('Setting lightness works', () => {
@@ -312,7 +338,7 @@ describe('Color tests', () => {
   });
 
   test('test lightening green', () => {
-    expect(new Color('green').lighten(0.5).toString()).toBe('rgb(0, 192, 0)');
+    expect(new Color('green').lighten(0.5).toString('rgb')).toBe('rgb(0, 192, 0)');
   });
 
   test('Darkening colors works', () => {

@@ -1,18 +1,26 @@
 import { splitTopLevel } from '../string-utils.js';
 import { Color } from './Color/index.js';
-import { assertNotRef } from './ref-guard.js';
+import type { RefFields } from './ref-guard.js';
+import { assertNotRef, isRefString } from './ref-guard.js';
 
 // ─── Shared types ─────────────────────────────────────────────
 
-export type GradientStop = { color: Color; position?: string };
+// A stop color may be a `{ref}` string (resolved per-field by resolve.ts) as
+// well as a concrete Color.
+export type GradientStop = { color: Color | string; position?: string };
 
 export type StopInput = GradientStop | Color | string | [color: Color | string, position: string];
+
+// Coerce a stop color: a `{ref}` passes through untouched, everything else is
+// parsed into a Color.
+const toStopColor = (value: Color | string): Color | string =>
+  value instanceof Color || isRefString(value) ? value : new Color(value);
 
 // ─── Helpers ──────────────────────────────────────────────────
 
 const normalizeStop = (input: StopInput): GradientStop => {
   if (typeof input === 'string') {
-    return { color: new Color(input) };
+    return { color: toStopColor(input) };
   }
 
   if (input instanceof Color) {
@@ -20,9 +28,7 @@ const normalizeStop = (input: StopInput): GradientStop => {
   }
 
   if (Array.isArray(input)) {
-    const color = input[0] instanceof Color ? input[0] : new Color(input[0]);
-
-    return { color, position: input[1] };
+    return { color: toStopColor(input[0]), position: input[1] };
   }
 
   return input;
@@ -50,15 +56,17 @@ const parseStop = (str: string): GradientStop => {
     const after = s.slice(lastSpace + 1).trim();
 
     if (/^\d+(\.\d+)?(%|px|rem|em|vw|vh)$/.test(after)) {
-      return { color: new Color(s.slice(0, lastSpace).trim()), position: after };
+      return { color: toStopColor(s.slice(0, lastSpace).trim()), position: after };
     }
   }
 
-  return { color: new Color(s) };
+  return { color: toStopColor(s) };
 };
 
-const stopToCSS = (stop: GradientStop): string => {
-  const c = stop.color.toString();
+// Render one stop, delegating color rendering so ref-aware serializers can
+// substitute `var(--…)` while `toString()` uses the plain string form.
+const renderStop = (stop: GradientStop, renderColor: (color: Color | string) => string): string => {
+  const c = renderColor(stop.color);
 
   return stop.position ? `${c} ${stop.position}` : c;
 };
@@ -122,7 +130,7 @@ const linearRe = /^linear-gradient\(([\s\S]+)\)$/i;
 
 export type LinearGradientInput = { angle: number; stops: StopInput[] };
 
-export class LinearGradient {
+export class LinearGradient implements RefFields {
   /** @internal brand — do not use directly; see `isFirstClassValue()` */
   readonly __teikn_fcv__: true = true;
   readonly #angle: number;
@@ -208,10 +216,25 @@ export class LinearGradient {
   }
 
   addStop(color: Color | string, position?: string): LinearGradient {
-    const c = color instanceof Color ? color : new Color(color);
+    const c = toStopColor(color);
     const stop: GradientStop = position ? { color: c, position } : { color: c };
 
     return new LinearGradient(this.#angle, [...this.#stops, stop]);
+  }
+
+  // ─── Per-field reference protocol ────────────────────────────
+  // Lets a stop hold a `{ref}` color (resolved per-field by resolve.ts) instead
+  // of erroring, mirroring Border / BoxShadow.
+
+  /** @internal */
+  __teikn_fields__(): Record<string, unknown> {
+    return { angle: this.#angle, stops: [...this.#stops] };
+  }
+
+  /** @internal */
+  // oxlint-disable-next-line class-methods-use-this -- protocol method, detected per-instance
+  __teikn_fromFields__(fields: Record<string, unknown>): LinearGradient {
+    return new LinearGradient(fields.angle as number, fields.stops as StopInput[]);
   }
 
   toJSON(): string {
@@ -219,11 +242,20 @@ export class LinearGradient {
   }
 
   toString(): string {
+    return this.toCSSWith(String);
+  }
+
+  /**
+   * Serialize with a custom color renderer, so ref-aware generators can emit
+   * `var(--…)` for stop colors that reference a token. `toString()` passes
+   * `String`, which renders concrete colors and inlines any `{ref}` verbatim.
+   */
+  toCSSWith(renderColor: (color: Color | string) => string): string {
     if (this.#stops.length === 0) {
       throw new Error('LinearGradient requires at least one color stop');
     }
 
-    const stopsStr = this.#stops.map(stopToCSS).join(', ');
+    const stopsStr = this.#stops.map(s => renderStop(s, renderColor)).join(', ');
     const kw = angleKeywords[this.#angle];
     const dir = kw ?? `${this.#angle}deg`;
 
@@ -251,7 +283,7 @@ const radialRe = /^radial-gradient\(([\s\S]+)\)$/i;
 const isShapeSpec = (str: string): boolean =>
   /^(circle|ellipse|closest|farthest)/i.test(str) || /\bat\s/i.test(str);
 
-export class RadialGradient {
+export class RadialGradient implements RefFields {
   /** @internal brand — do not use directly; see `isFirstClassValue()` */
   readonly __teikn_fcv__: true = true;
   readonly #shape: RadialShape;
@@ -354,7 +386,7 @@ export class RadialGradient {
   }
 
   addStop(color: Color | string, position?: string): RadialGradient {
-    const c = color instanceof Color ? color : new Color(color);
+    const c = toStopColor(color);
     const stop: GradientStop = position ? { color: c, position } : { color: c };
 
     return new RadialGradient({ shape: this.#shape, size: this.#size, position: this.#position }, [
@@ -374,12 +406,42 @@ export class RadialGradient {
     );
   }
 
+  // ─── Per-field reference protocol ────────────────────────────
+
+  /** @internal */
+  __teikn_fields__(): Record<string, unknown> {
+    return {
+      shape: this.#shape,
+      size: this.#size,
+      position: this.#position,
+      stops: [...this.#stops],
+    };
+  }
+
+  /** @internal */
+  // oxlint-disable-next-line class-methods-use-this -- protocol method, detected per-instance
+  __teikn_fromFields__(fields: Record<string, unknown>): RadialGradient {
+    return new RadialGradient(
+      {
+        shape: fields.shape as RadialShape,
+        size: fields.size as RadialSize,
+        position: fields.position as string,
+      },
+      fields.stops as StopInput[],
+    );
+  }
+
   toJSON(): string {
     return this.toString();
   }
 
   toString(): string {
-    const stopsStr = this.#stops.map(stopToCSS).join(', ');
+    return this.toCSSWith(String);
+  }
+
+  /** See {@link LinearGradient.toCSSWith}. */
+  toCSSWith(renderColor: (color: Color | string) => string): string {
+    const stopsStr = this.#stops.map(s => renderStop(s, renderColor)).join(', ');
     const shapeParts: string[] = [];
 
     if (this.#shape !== 'ellipse' || this.#size !== 'farthest-corner') {
@@ -434,7 +496,7 @@ const parseGradient = (str: string): AnyGradient => {
   throw new Error(`Unknown gradient type: "${s}"`);
 };
 
-export class GradientList {
+export class GradientList implements RefFields {
   /** @internal brand — do not use directly; see `isFirstClassValue()` */
   readonly __teikn_fcv__: true = true;
   readonly #layers: readonly AnyGradient[];
@@ -472,12 +534,32 @@ export class GradientList {
     return new GradientList(this.#layers.map(fn));
   }
 
+  // ─── Per-field reference protocol ────────────────────────────
+  // Each layer is itself a RefFields gradient, so exposing the layers lets
+  // resolve.ts descend and resolve per-stop `{ref}` colors.
+
+  /** @internal */
+  __teikn_fields__(): Record<string, unknown> {
+    return { layers: [...this.#layers] };
+  }
+
+  /** @internal */
+  // oxlint-disable-next-line class-methods-use-this -- protocol method, detected per-instance
+  __teikn_fromFields__(fields: Record<string, unknown>): GradientList {
+    return new GradientList(fields.layers as AnyGradient[]);
+  }
+
   toJSON(): string {
     return this.toString();
   }
 
   toString(): string {
     return this.#layers.map(g => g.toString()).join(', ');
+  }
+
+  /** See {@link LinearGradient.toCSSWith}. */
+  toCSSWith(renderColor: (color: Color | string) => string): string {
+    return this.#layers.map(g => g.toCSSWith(renderColor)).join(', ');
   }
 
   static from(value: GradientList | string | (LinearGradient | RadialGradient)[]): GradientList {

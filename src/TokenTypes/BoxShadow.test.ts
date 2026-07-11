@@ -227,6 +227,11 @@ describe('BoxShadow', () => {
     expect(str).toContain('rgba');
   });
 
+  it('toString() preserves an oklch-authored shadow color', () => {
+    const s = new BoxShadow('0 2px 8px oklch(0.7 0.15 200 / 0.5)');
+    expect(s.toString()).toBe('0 2px 8px oklch(0.7 0.15 200 / 0.5)');
+  });
+
   it('toString() omits blur and spread when both zero', () => {
     const s = new BoxShadow(0, 0, 0, 0, '#000');
     const str = s.toString();
