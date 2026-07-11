@@ -235,15 +235,25 @@ const stringDurationToDtcg = (str: string): DtcgDurationValue | string => {
 
 const cubicBezierToDtcg = (cb: CubicBezier): DtcgCubicBezierValue => [cb.x1, cb.y1, cb.x2, cb.y2];
 
-const gradientStopToDtcg = (stop: { color: Color; position?: string }): DtcgGradientStop => {
+const gradientStopToDtcg = (
+  stop: { color: Color | string; position?: string },
+  refMap?: DtcgRefMap,
+): DtcgGradientStop => {
   const posStr = stop.position ?? '0%';
   const posNum = parseFloat(posStr) / 100;
 
-  return { color: colorToDtcg(stop.color), position: isNaN(posNum) ? 0 : posNum };
+  // Handles an identity ref (shared Color → `{alias}`), a leftover `{ref}`
+  // string, or a concrete color — same as shadow/border colors.
+  return {
+    color: colorFieldToDtcg(stop.color, refMap) as DtcgGradientStop['color'],
+    position: isNaN(posNum) ? 0 : posNum,
+  };
 };
 
-const gradientToDtcg = (gradient: LinearGradient | RadialGradient): DtcgGradientValue =>
-  [...gradient.stops].map(gradientStopToDtcg);
+const gradientToDtcg = (
+  gradient: LinearGradient | RadialGradient,
+  refMap?: DtcgRefMap,
+): DtcgGradientValue => [...gradient.stops].map(stop => gradientStopToDtcg(stop, refMap));
 
 // Convert a single teikn value (instanceof-based) to its Dtcg representation.
 // Returns null when the value is not a recognized first-class type.
@@ -265,11 +275,11 @@ const convertSingleValue = (value: unknown, refMap?: DtcgRefMap): DtcgValue | nu
   }
 
   if (value instanceof LinearGradient || value instanceof RadialGradient) {
-    return gradientToDtcg(value);
+    return gradientToDtcg(value, refMap);
   }
 
   if (value instanceof GradientList) {
-    return value.layers.map(g => gradientToDtcg(g)) as unknown as DtcgValue;
+    return value.layers.map(g => gradientToDtcg(g, refMap)) as unknown as DtcgValue;
   }
 
   if (value instanceof Dimension) {
@@ -311,12 +321,10 @@ const transitionToDtcg = (t: Transition, refMap?: DtcgRefMap): Record<string, un
 };
 
 const shadowToDtcgWithRefs = (shadow: BoxShadow, refMap?: DtcgRefMap): DtcgShadowValue => {
-  const colorRef = refMap?.get(shadow.color);
-
   return {
-    color: colorRef
-      ? (dtcgAlias(colorRef) as unknown as DtcgColorValue)
-      : colorToDtcg(shadow.color),
+    // Handles an identity ref (shared Color → `{alias}`), a leftover `{ref}`
+    // string, or a concrete color — mirroring how borders serialize their color.
+    color: colorFieldToDtcg(shadow.color, refMap) as DtcgColorValue,
     offsetX: { value: shadow.offsetX, unit: 'px' },
     offsetY: { value: shadow.offsetY, unit: 'px' },
     blur: { value: shadow.blur, unit: 'px' },

@@ -118,10 +118,12 @@ describe('reference stress', () => {
     );
   });
 
-  test('(8) BoxShadow with a ref-string color is rejected via Color', () => {
-    expect(
-      () => new BoxShadow({ offsetX: 0, offsetY: 2, blur: 8, spread: 0, color: '{accent}' }),
-    ).toThrow(/Color cannot be constructed from a reference string/);
+  test('(8) BoxShadow tolerates a ref-string color and re-emits it (RefFields)', () => {
+    // Unlike a leaf Color, BoxShadow holds a per-field `{ref}` (resolved later by
+    // resolve.ts) rather than erroring — mirroring Border/Typography.
+    const shadow = new BoxShadow({ offsetX: 0, offsetY: 2, blur: 8, spread: 0, color: '{accent}' });
+    expect(shadow.color).toBe('{accent}');
+    expect(shadow.toString()).toBe('0 2px 8px {accent}');
   });
 
   // ── Scenario 9: ref points at a composite value ───────────────

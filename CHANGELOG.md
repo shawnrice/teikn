@@ -1,5 +1,53 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- **`ColorTransformPlugin` now normalizes colors nested inside composite tokens**, not just
+  standalone `color` tokens. A box shadow, border, or gradient stop is re-based into the configured
+  space along with the color tokens, so `ColorTransformPlugin({ type: 'oklch' })` no longer leaves a
+  shadow's color as `rgb` while the color tokens become `oklch`. Nested colors are re-based into the
+  target color space; note that purely-notational formats (`hex`, `hex3`, `named`, `xkcd`, and the
+  forced-alpha `rgba`/`hsla`/… variants on opaque colors) have no native space of their own, so a
+  nested color under those renders in the canonical notation of the underlying space (e.g. `hex` →
+  `rgb(…)`), while a standalone `color` token still emits the exact requested notation.
+
+- **`BoxShadow` (and multi-layer `BoxShadowList`) accept a per-field `{ref}` color** instead of
+  throwing, mirroring `Border` / `Typography`.
+  `new BoxShadow({ offsetY: 2, blur: 8, color: '{color.ink}' })` (or the shorthand
+  `"0 2px 8px {color.ink}"`) now holds the reference and resolves it per-field: in CSS it emits
+  `var(--color-ink)`, and in DTCG it emits the `{color.ink}` alias. Both `BoxShadow` and
+  `BoxShadowList` implement the `RefFields` protocol, so `BoxShadow.color` is now typed
+  `Color | string` and a `{ref}` inside any layer of a stacked shadow resolves too.
+
+- **Gradient stops accept per-field `{ref}` colors.** `LinearGradient`, `RadialGradient`, and
+  `GradientList` implement the `RefFields` protocol, so a stop can reference a color token —
+  `new LinearGradient(180, [['{color.brand}', '0%'], ['#000', '100%']])` no longer throws. A
+  referenced stop resolves per-field: `var(--color-brand)` in CSS and a `{color.brand}` alias in
+  DTCG, with `validate()` flagging unresolved stop refs (as `field "stops.color"`).
+  `GradientStop.color` is now typed `Color | string`. As part of this, `resolveReferences` /
+  `validate` now recurse into arrays, so refs buried inside any array-shaped composite field resolve
+  and validate.
+
+### Changed
+
+- **BREAKING: `Color.toString()` now serializes in the color's authored space, not `rgb`.**
+  Previously, calling `toString()` with no format argument always emitted `rgb()`/`rgba()`,
+  discarding the space a color was authored in. It now serializes in the color's native space — so a
+  color created from `oklch(…)` round-trips as `oklch(…)`, one from `hsl(…)` stays `hsl(…)`, and
+  hex/rgb/named colors stay `rgb(…)` (hex, named, and numeric input all parse into the `rgb` space).
+  Reading the native space is a cache hit with no conversion, so this is lossless apart from decimal
+  rounding — it avoids the previous round trip through 8-bit, gamut-clipped `rgb`. This also fixes
+  **box-shadow colors**, whose serializer calls the formatless `toString()`: an oklch-authored
+  shadow color now emits oklch instead of rgb.
+
+  To restore the old behavior, pass an explicit format: `color.toString('rgb')`, or normalize whole
+  token sets with `ColorTransformPlugin({ type: 'rgb' })`. A new `'native'` value of `ColorFormat`
+  names this behavior explicitly (`toString('native')` === `toString()`). Note that color operations
+  return a color in their working space (e.g. `lighten`/`setHue` work in HSL), so their formatless
+  output is now `hsl(…)` — pass an explicit format if you need a specific space.
+
 ## 2.0.0-beta.6
 
 ### Added

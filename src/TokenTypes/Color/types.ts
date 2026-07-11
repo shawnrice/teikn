@@ -50,4 +50,7 @@ export type ColorFormat =
   | 'oklch'
   | 'oklcha'
   | 'named'
-  | 'xkcd';
+  | 'xkcd'
+  // Serialize in the color's native (authored) space — lossless, no gamut clip.
+  // This is what `toString()` uses when no format is passed.
+  | 'native';

@@ -369,3 +369,39 @@ describe('GradientList', () => {
     expect(list.length).toBe(2);
   });
 });
+
+describe('per-field {ref} colors (RefFields protocol)', () => {
+  it('LinearGradient holds a {ref} stop color instead of throwing', () => {
+    const g = new LinearGradient(180, [
+      ['{color.brand}', '0%'],
+      ['#000', '100%'],
+    ]);
+    expect(g.stops[0]!.color).toBe('{color.brand}');
+    expect(g.toString()).toBe('linear-gradient(to bottom, {color.brand} 0%, rgb(0, 0, 0) 100%)');
+  });
+
+  it('accepts a {ref} via addStop and a bare string stop', () => {
+    const g = new LinearGradient(90, ['#fff']).addStop('{color.brand}', '50%');
+    expect(g.stops[1]!.color).toBe('{color.brand}');
+  });
+
+  it('RadialGradient holds a {ref} stop color', () => {
+    const g = new RadialGradient({ shape: 'circle' }, [
+      ['{color.brand}', '0%'],
+      ['#000', '100%'],
+    ]);
+    expect(g.stops[0]!.color).toBe('{color.brand}');
+    expect(g.toString()).toContain('{color.brand} 0%');
+  });
+
+  it('exposes stops through the RefFields protocol and rebuilds from them', () => {
+    const g = new LinearGradient(180, [
+      ['{color.brand}', '0%'],
+      ['#000', '100%'],
+    ]);
+    const fields = g.__teikn_fields__();
+    expect(Array.isArray(fields.stops)).toBe(true);
+    const rebuilt = g.__teikn_fromFields__(fields);
+    expect(rebuilt.toString()).toBe(g.toString());
+  });
+});

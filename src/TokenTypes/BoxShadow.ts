@@ -1,10 +1,36 @@
 import { splitTopLevel } from '../string-utils.js';
 import { Color } from './Color/index.js';
-import { assertNotRef } from './ref-guard.js';
+import type { RefFields } from './ref-guard.js';
+import { assertNotRef, isRefString } from './ref-guard.js';
+
+// Coerce a color field. A `{ref}` string passes through untouched — references
+// are resolved later by `resolve.ts` (which rebuilds the wrapper via the
+// RefFields protocol), then the resolved concrete color flows back through here.
+const toColor = (value: Color | string | undefined): Color | string => {
+  if (value === undefined) {
+    return new Color(0, 0, 0);
+  }
+
+  if (value instanceof Color || isRefString(value)) {
+    return value;
+  }
+
+  return new Color(value);
+};
 
 const lengthRe = /^(-?\d+(?:\.\d+)?)(px|rem|em)?/;
 
 const fmtLength = (v: number): string => (v === 0 ? '0' : `${v}px`);
+
+// The leftover token after the numeric lengths is the color: a `{ref}` string
+// (kept for per-field resolution), a parsed Color, or black when absent.
+const parseShorthandColor = (s: string): Color | string => {
+  if (s.length === 0) {
+    return new Color(0, 0, 0);
+  }
+
+  return isRefString(s) ? s : new Color(s);
+};
 
 const stripKeyword = (str: string, keyword: string): string => {
   if (str.startsWith(`${keyword} `)) {
@@ -25,7 +51,7 @@ const parse = (
   offsetY: number;
   blur: number;
   spread: number;
-  color: Color;
+  color: Color | string;
   inset: boolean;
 } => {
   const trimmed = str.trim();
@@ -47,7 +73,9 @@ const parse = (
     s = s.slice(m[0].length).trim();
   }
 
-  const color = s.length > 0 ? new Color(s) : new Color(0, 0, 0);
+  // A `{ref}` color in the shorthand (e.g. "0 2px 8px {color.ink}") is kept as a
+  // reference string rather than erroring; it resolves per-field later.
+  const color = parseShorthandColor(s);
 
   return {
     offsetX: nums[0] ?? 0,
@@ -68,14 +96,14 @@ export type BoxShadowOptions = {
   inset?: boolean;
 };
 
-export class BoxShadow {
+export class BoxShadow implements RefFields {
   /** @internal brand — do not use directly; see `isFirstClassValue()` */
   readonly __teikn_fcv__: true = true;
   readonly #offsetX: number;
   readonly #offsetY: number;
   readonly #blur: number;
   readonly #spread: number;
-  readonly #color: Color;
+  readonly #color: Color | string;
   readonly #inset: boolean;
 
   constructor(
@@ -120,12 +148,11 @@ export class BoxShadow {
     }
 
     if (typeof first === 'object') {
-      const c = first.color;
       this.#offsetX = first.offsetX ?? 0;
       this.#offsetY = first.offsetY ?? 0;
       this.#blur = first.blur ?? 0;
       this.#spread = first.spread ?? 0;
-      this.#color = typeof c === 'string' ? new Color(c) : (c ?? new Color(0, 0, 0));
+      this.#color = toColor(first.color);
       this.#inset = first.inset ?? false;
 
       return;
@@ -135,7 +162,7 @@ export class BoxShadow {
     this.#offsetY = offsetY ?? 0;
     this.#blur = blur ?? 0;
     this.#spread = spread ?? 0;
-    this.#color = typeof color === 'string' ? new Color(color) : (color ?? new Color(0, 0, 0));
+    this.#color = toColor(color);
     this.#inset = inset ?? false;
   }
 
@@ -151,11 +178,33 @@ export class BoxShadow {
   get spread(): number {
     return this.#spread;
   }
-  get color(): Color {
+  get color(): Color | string {
     return this.#color;
   }
   get inset(): boolean {
     return this.#inset;
+  }
+
+  // ─── Per-field reference protocol ────────────────────────────
+  // Lets a shadow hold `{ref}` strings in its fields (resolved per-field by
+  // `resolve.ts`) instead of erroring, mirroring Border / Typography.
+
+  /** @internal */
+  __teikn_fields__(): Record<string, unknown> {
+    return {
+      offsetX: this.#offsetX,
+      offsetY: this.#offsetY,
+      blur: this.#blur,
+      spread: this.#spread,
+      color: this.#color,
+      inset: this.#inset,
+    };
+  }
+
+  /** @internal */
+  // oxlint-disable-next-line class-methods-use-this -- protocol method, detected per-instance
+  __teikn_fromFields__(fields: Record<string, unknown>): BoxShadow {
+    return new BoxShadow(fields as BoxShadowOptions);
   }
 
   with(updates: BoxShadowOptions): BoxShadow {
@@ -203,7 +252,7 @@ export class BoxShadow {
       parts.push(fmtLength(this.#spread));
     }
 
-    parts.push(this.#color.toString());
+    parts.push(String(this.#color));
 
     return parts.join(' ');
   }
@@ -222,7 +271,7 @@ export class BoxShadow {
   }
 }
 
-export class BoxShadowList {
+export class BoxShadowList implements RefFields {
   /** @internal brand — do not use directly; see `isFirstClassValue()` */
   readonly __teikn_fcv__: true = true;
   readonly #layers: readonly BoxShadow[];
@@ -258,6 +307,21 @@ export class BoxShadowList {
 
   map(fn: (shadow: BoxShadow, index: number) => BoxShadow): BoxShadowList {
     return new BoxShadowList(this.#layers.map(fn));
+  }
+
+  // ─── Per-field reference protocol ────────────────────────────
+  // Each layer is itself a RefFields BoxShadow, so exposing the layers lets
+  // resolve.ts descend and resolve a per-layer `{ref}` color.
+
+  /** @internal */
+  __teikn_fields__(): Record<string, unknown> {
+    return { layers: [...this.#layers] };
+  }
+
+  /** @internal */
+  // oxlint-disable-next-line class-methods-use-this -- protocol method, detected per-instance
+  __teikn_fromFields__(fields: Record<string, unknown>): BoxShadowList {
+    return new BoxShadowList(fields.layers as BoxShadow[]);
   }
 
   toJSON(): string {

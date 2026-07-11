@@ -1,6 +1,7 @@
 import type { TokenValue } from '../Token.js';
 import { Border } from '../TokenTypes/Border.js';
-import { BoxShadow } from '../TokenTypes/BoxShadow.js';
+import { BoxShadow, BoxShadowList } from '../TokenTypes/BoxShadow.js';
+import { GradientList, LinearGradient, RadialGradient } from '../TokenTypes/Gradient.js';
 import { Transition } from '../TokenTypes/Transition.js';
 import { Typography } from '../TokenTypes/Typography.js';
 import { isFirstClassValue } from '../type-classifiers.js';
@@ -169,6 +170,9 @@ export const stringifyBoxShadowWithRefs = (s: BoxShadow, ref: RefResolver): stri
   return parts.join(' ');
 };
 
+export const stringifyBoxShadowListWithRefs = (s: BoxShadowList, ref: RefResolver): string =>
+  s.layers.map(layer => stringifyBoxShadowWithRefs(layer, ref)).join(', ');
+
 export const stringifyTypographyWithRefs = (t: Typography, ref: RefResolver): string => {
   const sizeLine =
     t.lineHeight !== null
@@ -183,6 +187,13 @@ export const stringifyTypographyWithRefs = (t: Typography, ref: RefResolver): st
 export const stringifyBorderWithRefs = (b: Border, ref: RefResolver): string =>
   [ref(b.width) ?? b.width.toString(), b.style, ref(b.color) ?? b.color.toString()].join(' ');
 
+// Render each stop color through the ref resolver so a stop that references a
+// color token emits `var(--…)` instead of the inlined color.
+export const stringifyGradientWithRefs = (
+  g: LinearGradient | RadialGradient | GradientList,
+  ref: RefResolver,
+): string => g.toCSSWith(color => ref(color) ?? String(color));
+
 export const stringifyWithRefs = (value: TokenValue, ref: RefResolver): string => {
   if (value instanceof Transition) {
     return stringifyTransitionWithRefs(value, ref);
@@ -190,6 +201,18 @@ export const stringifyWithRefs = (value: TokenValue, ref: RefResolver): string =
 
   if (value instanceof BoxShadow) {
     return stringifyBoxShadowWithRefs(value, ref);
+  }
+
+  if (value instanceof BoxShadowList) {
+    return stringifyBoxShadowListWithRefs(value, ref);
+  }
+
+  if (
+    value instanceof LinearGradient ||
+    value instanceof RadialGradient ||
+    value instanceof GradientList
+  ) {
+    return stringifyGradientWithRefs(value, ref);
   }
 
   if (value instanceof Typography) {
@@ -218,11 +241,17 @@ export const visitComponents = (value: unknown, fn: (v: unknown) => void): void 
     }
   } else if (value instanceof BoxShadow) {
     fn(value.color);
+  } else if (value instanceof BoxShadowList) {
+    value.layers.forEach(layer => fn(layer.color));
   } else if (value instanceof Typography) {
     fn(value.fontSize);
   } else if (value instanceof Border) {
     fn(value.width);
     fn(value.color);
+  } else if (value instanceof LinearGradient || value instanceof RadialGradient) {
+    value.stops.forEach(stop => fn(stop.color));
+  } else if (value instanceof GradientList) {
+    value.layers.forEach(layer => layer.stops.forEach(stop => fn(stop.color)));
   }
 };
 

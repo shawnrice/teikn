@@ -23,6 +23,24 @@ type ResolveModesArgs = { modes: ModeValues; tokenName: string };
  */
 const createResolver = (tokenMap: Map<string, Token>, tokenKeys: KeyAliasIndex) => {
   const resolveValue = ({ value, seen, currentName }: ResolveArgs): unknown => {
+    // Arrays (e.g. gradient stops exposed via RefFields) are resolved
+    // element-wise. Identity is preserved when nothing inside changed so the
+    // caller's short-circuit can skip cloning literal-only values.
+    if (Array.isArray(value)) {
+      let changed = false;
+      const resolved = value.map(item => {
+        const next = resolveValue({ value: item, seen, currentName });
+
+        if (next !== item) {
+          changed = true;
+        }
+
+        return next;
+      });
+
+      return changed ? resolved : value;
+    }
+
     if (isCompositeValue(value)) {
       // Use a null-prototype object so a field literally named `__proto__`
       // (possible from JSON-parsed input) is stored as a data property

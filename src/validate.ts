@@ -146,11 +146,13 @@ const validateValue = (
     }
   }
 
-  // First-class wrappers (Typography, Border) carry their fields behind private
-  // state; inspect them through the RefFields protocol so per-field references
-  // get the same unresolved/ambiguous checks as plain composites.
+  // First-class wrappers (Typography, Border, BoxShadow, Gradient) carry their
+  // fields behind private state; inspect them through the RefFields protocol so
+  // per-field references get the same unresolved/ambiguous checks as plain
+  // composites. Recurse into arrays and nested wrappers so refs buried inside a
+  // gradient's stops (an array of `{ color, position }`) are still caught.
   if (hasRefFields(value)) {
-    for (const [field, fieldValue] of Object.entries(value.__teikn_fields__())) {
+    const checkFieldRefs = (field: string, fieldValue: unknown): void => {
       if (isRef(fieldValue)) {
         checkRef(
           fieldValue,
@@ -160,7 +162,33 @@ const validateValue = (
           label,
           issue,
         );
+
+        return;
       }
+
+      if (Array.isArray(fieldValue)) {
+        fieldValue.forEach(item => checkFieldRefs(field, item));
+
+        return;
+      }
+
+      if (hasRefFields(fieldValue)) {
+        for (const [k, v] of Object.entries(fieldValue.__teikn_fields__())) {
+          checkFieldRefs(`${field}.${k}`, v);
+        }
+
+        return;
+      }
+
+      if (isComposite(fieldValue)) {
+        for (const [k, v] of Object.entries(fieldValue as CompositeValue)) {
+          checkFieldRefs(`${field}.${k}`, v);
+        }
+      }
+    };
+
+    for (const [field, fieldValue] of Object.entries(value.__teikn_fields__())) {
+      checkFieldRefs(field, fieldValue);
     }
   }
 };
@@ -269,6 +297,10 @@ export const validate = (tokens: Token[]): ValidationResult => {
     originName: string,
     visited: Set<string>,
   ): boolean => {
+    if (Array.isArray(value)) {
+      return value.some(item => checkCircularValue(item, originName, visited));
+    }
+
     if (isComposite(value)) {
       for (const fieldValue of Object.values(value as CompositeValue)) {
         if (checkCircularValue(fieldValue, originName, visited)) {
