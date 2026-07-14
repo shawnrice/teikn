@@ -1,5 +1,35 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- **`ref(name, { link: true })` emits a live alias instead of flattening.** By default a top-level
+  `ref()` is baked into its resolved value; passing `{ link: true }` makes reference-aware
+  generators emit an alias to the target — `var(--…)` in CssVars, `$…` in ScssVars, and a DTCG
+  `{token}` alias in Dtcg — so a runtime override of the target flows through (the "styling hooks"
+  pattern, and small theme layers that move a shared ramp tier). Value formats (Json, JavaScript,
+  TypeScript) still flatten. Aliasing is orthogonal to auditing: `resolveReferences()` continues to
+  yield the concrete value, and a linked reference to a missing token is still a build-time
+  validation error. The second argument to `ref()` now accepts either a usage string (unchanged) or
+  an options object `{ usage?, link? }`.
+
+### Changed
+
+- **`PerceptualDistancePlugin` no longer manufactures author intent.** It previously compared every
+  color pair within each `token.group` and warned below a ΔE threshold by default, flagging ramp
+  steps and aliases that are _meant_ to be close. It now takes intent explicitly — mirroring
+  `ContrastValidatorPlugin`'s `pairs`:
+  - `sets: [[…]]` — declare peer sets that must be mutually distinguishable; the plugin measures
+    within each and ignores everything else. (Recommended.)
+  - `all: true` — opt in to the old all-pairs gating explicitly.
+  - `report: true` — emit the pairwise ΔE as non-gating `info` findings (most-similar first), with
+    no pass/fail.
+  - With none of these, the plugin compares nothing and emits a single advisory instead of gating.
+
+  The old `groups` option is still honored as a deprecated alias for `sets`. The implicit
+  auto-grouping by `token.group` has been removed.
+
 ## 2.0.0-beta.7
 
 ### Changed

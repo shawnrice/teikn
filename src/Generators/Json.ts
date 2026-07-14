@@ -20,9 +20,12 @@ export class Json extends Generator<JsonOpts> {
     };
   }
 
-  generateToken(token: Token): Record<string, Omit<Token, 'name'>> {
+  generateToken(token: Token): Record<string, Omit<Token, 'name' | 'link'>> {
     const { nameTransformer } = this.options;
-    const { name, ...values } = token;
+    // `link` is an output directive for reference-aware formats (CSS/SCSS/DTCG
+    // aliases), not authored data. JSON is a flat value file, so drop it and
+    // keep the resolved concrete `value`.
+    const { name, link, ...values } = token;
     const key = nameTransformer!(name);
 
     return { [key]: values };

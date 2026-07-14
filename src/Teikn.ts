@@ -44,9 +44,42 @@ import { validate } from './validate.js';
 /**
  * Prefix each token's name with its type, joined by a hyphen.
  * Generators' nameTransformers (kebabCase, camelCase, etc.) handle final formatting.
+ *
+ * A linked reference (`ref(name, { link: true })`) carries the *authored* target
+ * name in `token.link`. Rewrite it here to the target's final prefixed name so
+ * reference-aware generators can emit the alias directly. The rewrite runs
+ * against the pre-prefix key index, matching how the target's own name is
+ * derived, so bare and qualified link targets both resolve.
  */
-const prefixTokenNames = (tokens: Token[]): Token[] =>
-  tokens.map(token => ({ ...token, name: `${token.type}-${token.name}` }));
+const prefixedName = (token: Token): string => `${token.type}-${token.name}`;
+
+const prefixTokenNames = (tokens: Token[]): Token[] => {
+  const finalName = prefixedName;
+  const linked = tokens.some(token => token.link);
+
+  if (!linked) {
+    return tokens.map(token => ({ ...token, name: finalName(token) }));
+  }
+
+  const keyIndex = buildKeyAliasIndex(tokens.map(token => tokenKey(token)).filter(Boolean));
+  const keyToFinal = new Map(tokens.map(token => [tokenKey(token), finalName(token)]));
+
+  return tokens.map(token => {
+    const name = finalName(token);
+
+    if (!token.link) {
+      return { ...token, name };
+    }
+
+    const resolved = resolveKey(token.link, keyIndex);
+    // A missing/ambiguous target is already reported by validate() (which runs
+    // on the pre-resolve tokens). Leave `link` untouched here so that path owns
+    // the error message; generators fall back to the flattened value.
+    const linkFinal = resolved.status === 'ok' ? keyToFinal.get(resolved.key) : undefined;
+
+    return { ...token, name, link: linkFinal ?? token.link };
+  });
+};
 
 /**
  * Apply theme layers to tokens, merging each layer's overrides into token.modes.

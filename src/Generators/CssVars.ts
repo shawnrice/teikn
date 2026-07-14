@@ -124,10 +124,14 @@ export class CssVars extends Generator<CssVarsOpts> {
   }
 
   generateToken(token: Token): string {
-    const { usage, value } = token;
+    const { usage, value, link } = token;
     const key = `--${this.#emit(token.name)}`;
+    // A linked ref (`ref(name, { link: true })`) emits a live `var(--target)`
+    // alias so a runtime override of the target flows through, instead of the
+    // baked-in resolved value.
+    const rhs = link ? `var(--${this.#emit(link)})` : cssValue(value);
 
-    return [usage && `  /* ${usage} */`, `  ${key}: ${cssValue(value)};`].filter(Boolean).join(EOL);
+    return [usage && `  /* ${usage} */`, `  ${key}: ${rhs};`].filter(Boolean).join(EOL);
   }
 
   combinator(tokens: Token[]): string {

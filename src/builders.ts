@@ -47,7 +47,7 @@ const resolveTokenInput = (name: string, input: TokenInput): Omit<Token, 'type'>
   }
 
   if (isTokenInputObject(input)) {
-    const { value, usage, modes } = input;
+    const { value, usage, modes, link } = input;
     const token: Omit<Token, 'type'> = { name, value };
 
     if (usage) {
@@ -56,6 +56,10 @@ const resolveTokenInput = (name: string, input: TokenInput): Omit<Token, 'type'>
 
     if (modes) {
       token.modes = modes;
+    }
+
+    if (link) {
+      token.link = link;
     }
 
     return token;
@@ -427,9 +431,32 @@ export const theme = (
   return { name, tokenNames, overrides: merged };
 };
 
+/** Options for {@link ref}. */
+export type RefOptions = {
+  /** Documentation string, same as passing a bare string as the second arg. */
+  usage?: string;
+  /**
+   * Emit this reference as a live *alias* to the target rather than baking in
+   * its resolved value. Reference-aware generators (CssVars, ScssVars, Dtcg)
+   * emit `var(--target)` / `$target` / `{target}`; every other generator, and
+   * `resolveReferences()`, still see the flattened concrete value. Default:
+   * `false` (flatten).
+   *
+   * Use this for the "styling hooks" pattern — a consumer that overrides the
+   * target token at runtime gets the aliasing token updated live — and for
+   * small theme layers that move a shared ramp tier and let every semantic
+   * token referencing it follow.
+   */
+  link?: boolean;
+};
+
 /**
  * Create a token that references another token by name.
  * References are resolved before plugins run.
+ *
+ * The second argument may be a bare usage string, or an options object. Pass
+ * `{ link: true }` to emit the reference as a live alias in reference-aware
+ * formats instead of flattening it (see {@link RefOptions.link}).
  *
  * @example
  * ```ts
@@ -437,18 +464,29 @@ export const theme = (
  *   primary: '#0066cc',
  *   link: ref('primary'),
  *   linkHover: ref('primary', 'Hover state for links'),
+ *   // Emits `var(--color-primary)` in CSS, resolved by the browser at runtime:
+ *   surface: ref('primary', { link: true }),
  * });
  * ```
  */
-export const ref = (tokenName: string, usage?: string): TokenInputObject => {
+export const ref = (tokenName: string, usageOrOptions?: string | RefOptions): TokenInputObject => {
   if (!tokenName || typeof tokenName !== 'string') {
     throw new Error(`ref(): token name must be a non-empty string`);
   }
+
+  const { usage, link } =
+    typeof usageOrOptions === 'string'
+      ? { usage: usageOrOptions, link: false }
+      : (usageOrOptions ?? {});
 
   const result: TokenInputObject = { value: `{${tokenName}}` };
 
   if (usage) {
     result.usage = usage;
+  }
+
+  if (link) {
+    result.link = tokenName;
   }
 
   return result;

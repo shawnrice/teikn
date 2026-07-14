@@ -171,17 +171,24 @@ const writer = new Teikn({ themes: [dark, dense, colorblindDark], generators: [n
 await writer.transform(tokens(colors, spacing));
 ```
 
-### `ref(tokenName, usage?)`
+### `ref(tokenName, usageOrOptions?)`
 
 Reference another token by name. References are resolved before generation.
 
 ```typescript
 const colors = group('color', {
   primary: new Color('steelblue'),
-  link: ref('primary'), // resolved to steelblue
+  link: ref('primary'), // flattened → resolved to steelblue
   linkHover: ref('primary', 'Hover state'), // with usage description
+  surface: ref('primary', { link: true }), // aliased → var(--color-primary) in CSS
 });
 ```
+
+By default a reference is flattened into its resolved value. Pass `{ link: true }` to emit a live
+alias instead (`var(--…)` in CSS, `$…` in SCSS, a DTCG alias in Dtcg) so a runtime override of the
+target flows through — the "styling hooks" pattern. `resolveReferences()` still yields the concrete
+value, so audits are unaffected. See [`ref()` in the builders API](docs/api/builders.md#ref) for
+details.
 
 ### `onColors(type, colors)`
 
@@ -630,7 +637,12 @@ const contrastCheck = new ContrastValidatorPlugin({
 
 const fontCheck = new MinFontSizePlugin({ minPx: 12 });
 const touchCheck = new TouchTargetPlugin({ minPx: 44 });
-const distanceCheck = new PerceptualDistancePlugin({ minDeltaE: 5.0 });
+// Declare which colors are meant to be told apart; the plugin measures within
+// each set (ramps, aliases, and unrelated families are never compared).
+const distanceCheck = new PerceptualDistancePlugin({
+  sets: [['danger', 'success', 'warning', 'accent']],
+  minDeltaE: 5.0,
+});
 
 const issues = [
   ...contrastCheck.audit(allTokens),
@@ -642,12 +654,12 @@ const issues = [
 issues.forEach(i => console.warn(`[${i.severity}] ${i.token}: ${i.message}`));
 ```
 
-| Plugin                       | Description                                                                                                                                                                  |
-| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **ContrastValidatorPlugin**  | Validates WCAG contrast ratios (AA: 4.5:1, AAA: 7:1) between foreground/background color pairs                                                                               |
-| **MinFontSizePlugin**        | Warns when font-size tokens fall below an accessibility minimum (default 12px)                                                                                               |
-| **TouchTargetPlugin**        | Warns when size/icon tokens are below minimum touch target size (default 44px per WCAG/Apple HIG)                                                                            |
-| **PerceptualDistancePlugin** | Warns when color tokens are too perceptually similar using [CIEDE2000](https://en.wikipedia.org/wiki/Color_difference#CIEDE2000) (Delta E 2000). Default threshold: ΔE < 5.0 |
+| Plugin                       | Description                                                                                                                                                                                                                                                                                                                                                          |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **ContrastValidatorPlugin**  | Validates WCAG contrast ratios (AA: 4.5:1, AAA: 7:1) between foreground/background color pairs                                                                                                                                                                                                                                                                       |
+| **MinFontSizePlugin**        | Warns when font-size tokens fall below an accessibility minimum (default 12px)                                                                                                                                                                                                                                                                                       |
+| **TouchTargetPlugin**        | Warns when size/icon tokens are below minimum touch target size (default 44px per WCAG/Apple HIG)                                                                                                                                                                                                                                                                    |
+| **PerceptualDistancePlugin** | Warns when colors in a declared peer `set` are too perceptually similar, using [CIEDE2000](https://en.wikipedia.org/wiki/Color_difference#CIEDE2000) (Delta E 2000). Takes intent explicitly (like `ContrastValidator`'s `pairs`): pass `sets` to gate, `all: true` to compare every pair, or `report: true` for a non-gating ΔE report. Default threshold: ΔE < 5.0 |
 
 #### Delta E 2000 Thresholds
 
