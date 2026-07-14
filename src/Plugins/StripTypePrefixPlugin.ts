@@ -31,6 +31,16 @@ export class StripTypePrefixPlugin extends Plugin {
   tokenType: RegExp = /.*/;
 
   override transform(token: Token): Token {
-    return { ...token, name: deriveShortName(token.name, token.type) };
+    const result: Token = { ...token, name: deriveShortName(token.name, token.type) };
+
+    // A linked ref stores the target's emitted (type-prefixed) name; strip the
+    // same prefix so the alias still points at the target's stripped name.
+    // Same-type aliases (the common case) share the prefix; a cross-type link
+    // whose target carries a different type prefix is left as-is.
+    if (token.link) {
+      result.link = deriveShortName(token.link, token.type);
+    }
+
+    return result;
   }
 }

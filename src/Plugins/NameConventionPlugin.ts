@@ -42,6 +42,12 @@ export class NameConventionPlugin extends Plugin<NameConventionPluginOptions> {
 
     const result: Token = { ...token, name: convert(token.name) };
 
+    // A linked ref stores the target's emitted name; convert it the same way so
+    // the alias still points at the (renamed) target's variable.
+    if (token.link) {
+      result.link = convert(token.link);
+    }
+
     if (token.modes) {
       const convertedModes: ModeValues = {};
 

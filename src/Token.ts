@@ -88,6 +88,19 @@ export type Token = {
   deprecated?: boolean;
   /** Set by `DeprecationPlugin` when a replacement token is named. */
   replacement?: string;
+  /**
+   * Set by `ref(name, { link: true })`. Marks this token as a *linked*
+   * reference: reference-aware generators emit an alias to the referenced
+   * token (CSS `var(--…)`, SCSS `$…`, a DTCG `{token}` alias) instead of the
+   * flattened value, so a runtime override of the target flows through.
+   *
+   * The stored string is the referenced token's emitted name — the bare
+   * authored name at authoring time, rewritten to the final prefixed name by
+   * the pipeline (see `prefixTokenNames`) so generators can emit it directly.
+   * `value` is still resolved to the concrete value, so audits and
+   * non-aliasing generators are unaffected.
+   */
+  link?: string;
 };
 
 export type TokenInput = TokenValue | [value: TokenValue, usage: string] | TokenInputObject;
@@ -96,6 +109,8 @@ export type TokenInputObject = {
   value: TokenValue | CompositeValue;
   usage?: string;
   modes?: ModeValues;
+  /** Set by `ref(name, { link: true })`; see {@link Token.link}. */
+  link?: string;
 };
 
 export type CompositeInput = Record<string, TokenValue>;

@@ -181,6 +181,37 @@ References use `{tokenName}` syntax and are resolved by `resolveReferences()` (c
 during generation). This is different from the object-identity-based references used in composed
 values (Transition, BoxShadow) --- `ref()` is string-based and works across any token type.
 
+### Aliased references (`{ link: true }`)
+
+By default a reference is **flattened**: the referenced value is baked into the referencing token.
+Pass `{ link: true }` to instead emit a live **alias** in reference-aware formats, so a runtime
+override of the target flows through:
+
+```typescript
+const colors = group('color', { neutral50: '#fafafa', surface: ref('neutral50', { link: true }) });
+```
+
+| Format                         | `ref('neutral50')` (default) | `ref('neutral50', { link: true })`          |
+| ------------------------------ | ---------------------------- | ------------------------------------------- |
+| CssVars                        | `--color-surface: #fafafa;`  | `--color-surface: var(--color-neutral-50);` |
+| ScssVars                       | `$color-surface: #fafafa;`   | `$color-surface: $color-neutral50;`         |
+| Dtcg                           | concrete color               | `"$value": "{color-neutral50}"`             |
+| Json / JavaScript / TypeScript | concrete value               | concrete value (flattened)                  |
+
+This enables two patterns that flattening cannot:
+
+- **Runtime re-skinning** --- a consumer overriding `--color-neutral50` in a wrapper gets `surface`
+  updated live (the "styling hooks" pattern).
+- **Small theme layers over a shared ramp** --- a theme moves a ramp tier and every semantic token
+  that links to it follows, instead of re-listing each one.
+
+Aliasing is **orthogonal to auditing**: `resolveReferences()` still yields the concrete value, so
+build-time audits (contrast, ΔE) measure the real color. A linked reference to a missing token is
+still a build-time validation error.
+
+To attach both a usage string and `link`, use the object form:
+`ref('neutral50', { usage: '…', link: true })`.
+
 ## dp()
 
 Converts a pixel value from a design spec to its `rem` equivalent (assuming 16px base):

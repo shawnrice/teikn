@@ -76,7 +76,11 @@ const hoistGroupTypes = (obj: Record<string, any>): void => {
 
 const tokenToDtcg = (token: Token, refMap?: DtcgRefMap): DtcgToken => {
   const dtcgType = teiknTypeToDtcg(token.type);
-  const dtcgValue = teiknValueToDtcg(token.value, token.type, refMap);
+  // A linked ref (`ref(name, { link: true })`) serializes as a DTCG alias to
+  // the target token, mirroring CSS `var(--…)`, instead of the flattened value.
+  const dtcgValue = token.link
+    ? `{${token.link}}`
+    : teiknValueToDtcg(token.value, token.type, refMap);
 
   const result: DtcgToken = { $value: dtcgValue as any, $type: dtcgType };
 

@@ -12,7 +12,10 @@ const topoSort = (tokens: Token[], refMap: Map<unknown, string>): Token[] => {
   const deps = new Map<string, string[]>();
 
   for (const token of tokens) {
-    deps.set(token.name, valueDependencies(token.value, refMap));
+    // A linked ref emits `$target`, so the target's `$var` must be declared
+    // first — treat `link` as a dependency alongside any in-value refs.
+    const valueDeps = valueDependencies(token.value, refMap);
+    deps.set(token.name, token.link ? [...valueDeps, token.link] : valueDeps);
   }
 
   const sorted: Token[] = [];
@@ -107,9 +110,12 @@ export class ScssVars extends Scss {
   }
 
   override generateToken(token: Token): string {
-    const { usage, value } = token;
+    const { usage, value, link } = token;
+    // A linked ref (`ref(name, { link: true })`) emits a `$target` alias so the
+    // variable tracks the target instead of baking in its resolved value.
+    const rhs = link ? `$${this.#emit(link)}` : cssValue(value);
 
-    return [usage && `/// ${usage}`, `$${this.#emit(token.name)}: ${cssValue(value)};`]
+    return [usage && `/// ${usage}`, `$${this.#emit(token.name)}: ${rhs};`]
       .filter(Boolean)
       .join(EOL);
   }
