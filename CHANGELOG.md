@@ -4,55 +4,35 @@
 
 ### Added
 
-- **`PalettePlugin` can keep a ramp in its authored color space.** It previously always emitted RGB
-  (tint/shade toward white/black). A new `space` option (default `'auto'`) keeps each step in the
-  base color's authored space — an `oklch`-authored base now produces an `oklch` ramp, holding hue
-  and chroma while interpolating lightness for a perceptually even scale; hex/rgb bases are
-  unchanged. Pass an explicit space (`'oklch'`, `'lch'`, `'hsl'`, `'rgb'`, …) to force one. `Color`
-  also gained a `space` getter returning its native (authored) space.
+- **`PalettePlugin` `space` option** — keep a generated ramp in a chosen color space instead of
+  always RGB. Default `'auto'` preserves the base color's authored space (an `oklch` base yields an
+  `oklch` ramp with even lightness; hex/rgb bases are unchanged); pass `'oklch'`/`'lch'`/`'hsl'`/… to
+  force one. Adds a `Color#space` getter for the native (authored) space.
 
 ### Fixed
 
-- **Out-of-sRGB `lab()`/`lch()`/`xyz()` colors no longer produce invalid RGB/hex.** `XYZToRGB`
-  scaled channels without a gamut clamp (unlike the Oklab path), so a legitimate out-of-gamut color
-  yielded negative/over-range channels and an un-parseable hex, corrupting `asHex()`/`luminance()`/
-  `contrastRatio()`. Channels are now clamped per-channel. Non-finite numeric `Color` components are
-  rejected up front instead of emitting `#NaN0000`.
-- **SCSS map (`Scss`) is now valid for composite values containing commas.** Typography, multi-layer
-  shadows/gradients, and font stacks produced an uncompilable `$token-values` map (unparenthesized
-  commas parsed as map-entry separators). Such values are now wrapped in parens.
-- **Generated JS/TS object keys are escaped.** A key containing a quote/backslash/newline (e.g. a
-  mode named `it's dark`) is now escaped instead of producing an unparseable object literal.
-- **Numbers no longer emit scientific notation** (`1e-7`), which isn't valid CSS `<number>` syntax.
-- **DTCG aliases use the hierarchical path.** With a group-reconstructing `separator`, aliases
-  (linked refs and composite/identity refs) emitted the flat name (`{color-primary}`) and dangled;
-  they now emit `{color.primary}`. DTCG serialization also throws a clear error on a name/group
-  collision (one token name is a group prefix of another) instead of silently dropping a token.
-- **Linked refs (`ref(name, { link: true })`) survive name-mangling plugins.** A cross-group
-  semantic alias (a `semantic` token aliasing a `color` token) under `StripTypePrefixPlugin` emitted
-  a dangling `var(--color-blue-500)`; link targets are now remapped to the target's post-plugin name
-  in the ref-aware generators.
-- **Case transforms keep non-ASCII letters.** `camelCase`/`kebabCase` split on `\W` (ASCII-only),
-  silently dropping accented letters (`café` → `caf`) and collapsing distinct names (`aïb`, `aB`) to
-  the same output; splitting is now Unicode-aware.
-- **The `indigo` and `indianred` named colors work.** Their map keys had a trailing space, so
-  `new Color('indigo')` threw and reverse-lookup of `#4b0082` returned the un-re-parseable
-  `'indigo '`.
-- **`Transition` keeps a negative delay.** A negative `transition-delay` (e.g. `… -50ms`) parsed as
-  the `property`, losing both fields; negative times now parse correctly.
-- **`BoxShadow` preserves `rem`/`em` length units** instead of silently emitting them as `px`
-  (`0 0.5rem 1rem …` no longer becomes `0 0.5px 1px …`). Numeric construction still defaults to px.
-- **`Border` accepts space-separated color functions** like `rgb(255 0 0)` (modern CSS syntax),
-  which previously threw because the shorthand was split before paren-awareness.
-- **Hue setters wrap instead of clamping.** `Color.setHue`, `hsl.hue`, `lch.hue`, and `oklch.hue`
-  used a `[0, 360]` clamp, so `setHue(400)` collapsed to `360` (and out-of-range `lch` hues produced
-  a non-re-parseable string). They now wrap, consistent with `parseColorString` and `rotateHue`.
-- **A plugin with a global-flag RegExp `tokenType` now matches every token.** `matches()` reused a
-  stateful `RegExp.test`, so a `/…/g` matcher applied to only every other token.
-- **`ensureDirectory` reports the real error** (permission/not-a-directory) instead of rejecting
-  with `undefined`; the CLI dispatch uses `Object.hasOwn` so a token file named like an
-  `Object.prototype` member isn't mistaken for a subcommand; and `pad0` no longer turns `-5` into
-  `0-5`.
+- Out-of-sRGB `lab()`/`lch()`/`xyz()` colors no longer serialize to an invalid, un-parseable hex
+  (`XYZToRGB` now gamut-clamps); non-finite `Color` components are rejected instead of `#NaN0000`.
+- `Scss` maps compile when a composite value contains commas (typography, multi-layer
+  shadows/gradients, font stacks) — such values are now parenthesized.
+- Generated JS/TS object keys are escaped, so a mode named `it's dark` no longer breaks the output.
+- Numbers emit as plain decimals, never scientific notation (`1e-7` is not valid CSS).
+- DTCG aliases use the hierarchical path (`{color.primary}`, not `{color-primary}`) under a
+  group-reconstructing `separator`, and a name/group collision now throws instead of silently
+  dropping a token.
+- Linked refs (`ref(name, { link: true })`) keep pointing at the right target under name-mangling
+  plugins (e.g. a cross-group alias under `StripTypePrefixPlugin`).
+- `camelCase`/`kebabCase` keep non-ASCII letters — `café` no longer becomes `caf`, and distinct
+  names no longer collide.
+- The `indigo` and `indianred` named colors parse (their keys had a stray trailing space).
+- `Transition` keeps a negative delay instead of misreading it as the `property`.
+- `BoxShadow` preserves `rem`/`em` units instead of silently emitting `px` (numeric input is px).
+- `Border` accepts space-separated color functions like `rgb(255 0 0)`.
+- Hue setters (`Color.setHue`, `hsl`/`lch`/`oklch` `.hue`) wrap out-of-range values instead of
+  clamping.
+- A plugin whose `tokenType` is a global-flag `RegExp` now matches every token, not every other one.
+- `ensureDirectory` surfaces the real error instead of `undefined`; the CLI no longer treats
+  `Object.prototype` names as subcommands; `pad0(-5)` no longer returns `0-5`.
 
 ## 2.0.0-beta.8
 
