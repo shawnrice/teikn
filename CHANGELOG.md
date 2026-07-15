@@ -6,8 +6,8 @@
 
 - **`PalettePlugin` `space` option** — keep a generated ramp in a chosen color space instead of
   always RGB. Default `'auto'` preserves the base color's authored space (an `oklch` base yields an
-  `oklch` ramp with even lightness; hex/rgb bases are unchanged); pass `'oklch'`/`'lch'`/`'hsl'`/… to
-  force one. Adds a `Color#space` getter for the native (authored) space.
+  `oklch` ramp with even lightness; hex/rgb bases are unchanged); pass `'oklch'`/`'lch'`/`'hsl'`/…
+  to force one. Adds a `Color#space` getter for the native (authored) space.
 
 ### Fixed
 
