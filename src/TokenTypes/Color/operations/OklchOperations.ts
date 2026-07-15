@@ -1,5 +1,6 @@
 import type { Color, InternalCreate } from '../Color.js';
 import type { Oklch } from '../types.js';
+import { normalizeDegrees } from '../util.js';
 
 /**
  * Oklch-space operations. Oklch is the authoring-friendly polar form of Oklab:
@@ -52,7 +53,9 @@ export class OklchOperations {
 
     const [l, c] = this.#oklch();
 
-    return this.#new('oklch', [l, c, value], this.#color.alpha);
+    // Wrap the hue for consistency with the other polar spaces (Oklch's parser
+    // already normalizes any-degree hue, so this only affects the stored value).
+    return this.#new('oklch', [l, c, normalizeDegrees(value)], this.#color.alpha);
   }
 
   rotateHue(degrees: number): Color {

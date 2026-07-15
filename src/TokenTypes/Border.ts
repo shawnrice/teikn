@@ -1,3 +1,4 @@
+import { splitTopLevelWhitespace } from '../string-utils.js';
 import { Color } from './Color/index.js';
 import { Dimension } from './Dimension.js';
 import type { RefFields } from './ref-guard.js';
@@ -29,7 +30,9 @@ export const isBorderStyle = (value: string): boolean => borderStyles.has(value)
 const dimensionRe = /^-?\d+(?:\.\d+)?[a-z%]+$/i;
 
 const parse = (css: string): { width: Dimension; style: string; color: Color } => {
-  const parts = css.trim().split(/\s+/);
+  // Paren-aware split so a space-separated color function (`rgb(255 0 0)`) isn't
+  // shredded into `rgb(255`, `0`, `0)`.
+  const parts = splitTopLevelWhitespace(css.trim());
   let width: Dimension | null = null;
   let style: string | null = null;
   let color: Color | null = null;

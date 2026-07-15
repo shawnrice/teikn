@@ -1,6 +1,6 @@
 import type { Color, InternalCreate } from '../Color.js';
 import type { HSL } from '../types.js';
-import { degreeRange, percentRange } from '../util.js';
+import { normalizeDegrees, percentRange } from '../util.js';
 
 export class HSLOperations {
   #color: Color;
@@ -24,7 +24,8 @@ export class HSLOperations {
 
     const [, s, l] = this.#hsl();
 
-    return this.#new('hsl', [degreeRange(value), s, l], this.#color.alpha);
+    // Hue is circular — wrap rather than clamp (see Color.setHue).
+    return this.#new('hsl', [normalizeDegrees(value), s, l], this.#color.alpha);
   }
 
   saturation(): number;

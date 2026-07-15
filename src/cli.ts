@@ -463,7 +463,7 @@ const runFromConfig = async (configPath: string) => {
 };
 
 const main = async () => {
-  if (command in commands) {
+  if (Object.hasOwn(commands, command)) {
     commands[command as keyof typeof commands](...args);
   } else if (command && fs.existsSync(command) && isSupportedFile(command)) {
     await generateTokens();

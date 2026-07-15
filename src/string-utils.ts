@@ -62,6 +62,40 @@ export const splitTopLevel = (str: string, delimiter = ','): string[] => {
   return parts;
 };
 
+/**
+ * Split on runs of whitespace at parenthesis depth 0, so a value containing a
+ * space-separated CSS function (`rgb(255 0 0)`) stays intact. Used to tokenize
+ * shorthand values (border, transition) that may embed modern-syntax colors.
+ */
+export const splitTopLevelWhitespace = (str: string): string[] => {
+  const parts: string[] = [];
+  let current = '';
+  let depth = 0;
+
+  for (const ch of str) {
+    if (ch === '(') {
+      depth++;
+      current += ch;
+    } else if (ch === ')') {
+      depth--;
+      current += ch;
+    } else if (depth === 0 && /\s/.test(ch)) {
+      if (current.length > 0) {
+        parts.push(current);
+        current = '';
+      }
+    } else {
+      current += ch;
+    }
+  }
+
+  if (current.length > 0) {
+    parts.push(current);
+  }
+
+  return parts;
+};
+
 export const deriveShortName = (tokenName: string, type: string): string => {
   // Hyphen-separated prefix (e.g., "color-primary" with type "color")
   const hyphenPrefix = `${type}-`;

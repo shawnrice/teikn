@@ -30,7 +30,7 @@ import type {
   XYZ,
   XYZA,
 } from './types.js';
-import { degreeRange, hexRange, percentRange, round, toPercent } from './util.js';
+import { hexRange, normalizeDegrees, percentRange, round, toPercent } from './util.js';
 import { closest } from './xkcdNamedColors.js';
 
 // Symbol for internal construction — only accessible within this module and operations
@@ -497,7 +497,9 @@ export class Color {
   setHue(hue: number): Color {
     const [, s, l] = this.asHSL();
 
-    return Color.#new('hsl', [degreeRange(hue), s, l] as HSL, this.#alpha);
+    // Hue is circular — wrap out-of-range values (matching parseColorString and
+    // rotateHue) instead of clamping, which would collapse e.g. 400° to 360°.
+    return Color.#new('hsl', [normalizeDegrees(hue), s, l] as HSL, this.#alpha);
   }
 
   /** Create a new color with the hue rotated by the specified degrees */
