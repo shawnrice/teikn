@@ -237,6 +237,19 @@ export class Color {
 
     // Numeric RGB constructor
     if (typeof r === 'number' && typeof g === 'number' && typeof b === 'number') {
+      // Reject NaN/Infinity up front — otherwise they flow through hexRange
+      // (clamp is NaN-preserving) into an invalid hex like `#NaN0000`.
+      if (
+        !Number.isFinite(r) ||
+        !Number.isFinite(g) ||
+        !Number.isFinite(b) ||
+        (a !== undefined && !Number.isFinite(a))
+      ) {
+        throw new Error(
+          `Color: RGB(A) components must be finite numbers, got (${r}, ${g}, ${b}${a === undefined ? '' : `, ${a}`})`,
+        );
+      }
+
       this.#nativeSpace = 'rgb';
       this.#nativeData = [hexRange(r), hexRange(g as number), hexRange(b as number)] as RGB;
       this.#alpha = typeof a === 'number' ? percentRange(a) : 1;

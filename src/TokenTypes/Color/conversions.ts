@@ -62,10 +62,9 @@ export const HSLToRGB = ([hue, saturation, lightness]: HSL): RGB => {
     return lightness - angle * Math.max(Math.min(k - 3, 9 - k, 1), -1);
   };
 
-  return [0, 8, 4]
-    .map(f)
-    .map(x => x * 255)
-    .map(Math.round) as unknown as RGB;
+  // Clamp before scaling: an out-of-range saturation/lightness can push a
+  // channel outside [0, 1], which would otherwise emit an invalid byte.
+  return [0, 8, 4].map(f).map(x => Math.round(clamp(0, 1, x) * 255)) as unknown as RGB;
 };
 
 // ─── RGB ↔ XYZ ──────────────────────────────────────────────
@@ -113,11 +112,14 @@ export const RGBToXYZ = (rgb: RGB): XYZ => {
 export const XYZToRGB = (xyz: XYZ): RGB => {
   const m = xyzToSRGBMatrix;
 
+  // Per-channel clamp to the sRGB gamut, mirroring `linearSRGBToByte`. Any
+  // lab()/lch()/xyz() color outside sRGB (all legitimate CSS) reaches RGB
+  // through this edge; without the clamp its channels fall outside [0, 255]
+  // and produce an invalid, un-parseable hex string.
   return xyz
     .map((_, i) => xyz[0] * m[i]![0] + xyz[1] * m[i]![1] + xyz[2] * m[i]![2])
     .map(applyGamma)
-    .map(x => x * 255)
-    .map(Math.round) as unknown as RGB;
+    .map(x => Math.round(clamp(0, 1, x) * 255)) as unknown as RGB;
 };
 
 // ─── XYZ ↔ LAB ──────────────────────────────────────────────
