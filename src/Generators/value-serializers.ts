@@ -1,3 +1,4 @@
+import { splitTopLevel } from '../string-utils.js';
 import type { TokenValue } from '../Token.js';
 import { Border } from '../TokenTypes/Border.js';
 import { BoxShadow, BoxShadowList } from '../TokenTypes/BoxShadow.js';
@@ -13,6 +14,19 @@ const MAX_PRECISION = 4;
 
 const roundNumber = (n: number): string => {
   const str = String(n);
+
+  // Exponential notation (very small or very large magnitudes) is not valid CSS
+  // `<number>` syntax, so `String(n)` betrays us for |n| < 1e-6 or ≥ 1e21.
+  // Expand to plain decimal: tiny magnitudes round to MAX_PRECISION (collapsing
+  // to "0" when smaller than that), large integers expand to full digits.
+  if (str.includes('e') || str.includes('E')) {
+    if (Math.abs(n) < 1) {
+      return parseFloat(n.toFixed(MAX_PRECISION)).toString();
+    }
+
+    return Number.isInteger(n) ? BigInt(n).toString() : n.toFixed(MAX_PRECISION);
+  }
+
   const dot = str.indexOf('.');
 
   if (dot === -1 || str.length - dot - 1 <= MAX_PRECISION) {
@@ -65,13 +79,19 @@ export const cssValue = (value: unknown): string => {
  */
 export const cssMapValue = (value: unknown): string => {
   const serialized = cssValue(value);
-  const isCompositeObject =
-    typeof value === 'object' &&
-    value !== null &&
-    !Array.isArray(value) &&
-    !isFirstClassValue(value);
 
-  return isCompositeObject && serialized.includes(',') ? `(${serialized})` : serialized;
+  // In a SCSS map, a top-level comma is parsed as a map-entry separator and
+  // mangles the whole map. Wrap any value whose serialization has a comma at
+  // paren depth 0 — typography (`400 1rem/1.5 Inter, system-ui`), multi-layer
+  // shadows/gradients, and font stacks — in parens so SCSS reads it as one
+  // nested list. Commas inside function syntax like `rgb(0, 0, 0)` sit at
+  // depth > 0 and are left alone.
+  //
+  // Note: this must key off the serialized string, not the value's type. By the
+  // time a first-class composite reaches here it has already been stringified
+  // (Generator.stringifyValues), so a type check would never fire for the exact
+  // cases this guards.
+  return splitTopLevel(serialized).length > 1 ? `(${serialized})` : serialized;
 };
 
 // ─── JS value serialization ─────────────────────────────────────
@@ -113,7 +133,12 @@ export const maybeQuote = (val: unknown): string => {
 
 export const isValidIdentifier = (name: string): boolean => /^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(name);
 
-export const quoteKey = (name: string): string => (isValidIdentifier(name) ? name : `'${name}'`);
+// Non-identifier keys are quoted. Route them through `quoteString` (rather than
+// a bare `'${name}'`) so a name containing a single quote, backslash, newline,
+// or U+2028/2029 is escaped instead of producing an unparseable object key —
+// e.g. a mode named `it's dark`.
+export const quoteKey = (name: string): string =>
+  isValidIdentifier(name) ? name : quoteString(name);
 
 // ─── Reference-aware serialization ─────────────────────────────
 // Used by CssVars and ScssVars to emit references (var(--x) / $x)
