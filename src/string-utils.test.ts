@@ -30,6 +30,19 @@ describe('camelCase', () => {
   test('preserves multi-word camelCase', () => {
     expect(camelCase('borderTopLeftRadius')).toBe('borderTopLeftRadius');
   });
+
+  test('keeps non-ASCII letters instead of dropping them', () => {
+    // Regression: `\W`-based splitting used to drop accented letters,
+    // corrupting `café` → `caf` and splitting `naïveCase` at the ï.
+    expect(camelCase('café')).toBe('café');
+    expect(camelCase('naïveCase')).toBe('naïveCase');
+  });
+
+  test('non-ASCII names that differ do not collide after transform', () => {
+    // `aïb` and `aB` both collapsed to `a-b` under the old splitter.
+    expect(kebabCase('aïb')).not.toBe(kebabCase('aB'));
+    expect(kebabCase('café')).toBe('café');
+  });
 });
 
 describe('camelToKebabCase', () => {

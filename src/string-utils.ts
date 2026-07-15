@@ -18,8 +18,14 @@ export const kebabCase = (str: string): string => {
 export const camelCase = (str: string): string =>
   lowerFirst(
     str
-      .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
-      .split(/[\W_]/g)
+      // Insert a boundary at a lower/digit → upper transition (Unicode-aware,
+      // so `naïveCase` splits at the `e→C` seam like `naiveCase` does).
+      .replace(/([\p{Ll}\p{N}])(\p{Lu})/gu, '$1_$2')
+      // Split on runs of non-alphanumerics. Using Unicode letter/number classes
+      // (rather than `\W`, which is ASCII-only) keeps accented letters in the
+      // identifier instead of silently dropping them — otherwise `café` → `caf`
+      // and distinct names like `aïb` / `aB` collide to `a-b`.
+      .split(/[^\p{L}\p{N}]+/u)
       .filter(Boolean)
       .map(part => upperFirst(lower(part)))
       .join(''),
