@@ -1,5 +1,32 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- **Out-of-sRGB `lab()`/`lch()`/`xyz()` colors no longer produce invalid RGB/hex.** `XYZToRGB`
+  scaled channels without a gamut clamp (unlike the Oklab path), so a legitimate out-of-gamut color
+  yielded negative/over-range channels and an un-parseable hex, corrupting `asHex()`/`luminance()`/
+  `contrastRatio()`. Channels are now clamped per-channel. Non-finite numeric `Color` components are
+  rejected up front instead of emitting `#NaN0000`.
+- **SCSS map (`Scss`) is now valid for composite values containing commas.** Typography, multi-layer
+  shadows/gradients, and font stacks produced an uncompilable `$token-values` map (unparenthesized
+  commas parsed as map-entry separators). Such values are now wrapped in parens.
+- **Generated JS/TS object keys are escaped.** A key containing a quote/backslash/newline (e.g. a
+  mode named `it's dark`) is now escaped instead of producing an unparseable object literal.
+- **Numbers no longer emit scientific notation** (`1e-7`), which isn't valid CSS `<number>` syntax.
+- **DTCG aliases use the hierarchical path.** With a group-reconstructing `separator`, aliases
+  (linked refs and composite/identity refs) emitted the flat name (`{color-primary}`) and dangled;
+  they now emit `{color.primary}`. DTCG serialization also throws a clear error on a name/group
+  collision (one token name is a group prefix of another) instead of silently dropping a token.
+- **Linked refs (`ref(name, { link: true })`) survive name-mangling plugins.** A cross-group
+  semantic alias (a `semantic` token aliasing a `color` token) under `StripTypePrefixPlugin` emitted
+  a dangling `var(--color-blue-500)`; link targets are now remapped to the target's post-plugin name
+  in the ref-aware generators.
+- **Case transforms keep non-ASCII letters.** `camelCase`/`kebabCase` split on `\W` (ASCII-only),
+  silently dropping accented letters (`café` → `caf`) and collapsing distinct names (`aïb`, `aB`) to
+  the same output; splitting is now Unicode-aware.
+
 ## 2.0.0-beta.8
 
 ### Added
