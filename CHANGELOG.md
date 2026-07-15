@@ -26,6 +26,24 @@
 - **Case transforms keep non-ASCII letters.** `camelCase`/`kebabCase` split on `\W` (ASCII-only),
   silently dropping accented letters (`café` → `caf`) and collapsing distinct names (`aïb`, `aB`) to
   the same output; splitting is now Unicode-aware.
+- **The `indigo` and `indianred` named colors work.** Their map keys had a trailing space, so
+  `new Color('indigo')` threw and reverse-lookup of `#4b0082` returned the un-re-parseable
+  `'indigo '`.
+- **`Transition` keeps a negative delay.** A negative `transition-delay` (e.g. `… -50ms`) parsed as
+  the `property`, losing both fields; negative times now parse correctly.
+- **`BoxShadow` preserves `rem`/`em` length units** instead of silently emitting them as `px`
+  (`0 0.5rem 1rem …` no longer becomes `0 0.5px 1px …`). Numeric construction still defaults to px.
+- **`Border` accepts space-separated color functions** like `rgb(255 0 0)` (modern CSS syntax),
+  which previously threw because the shorthand was split before paren-awareness.
+- **Hue setters wrap instead of clamping.** `Color.setHue`, `hsl.hue`, `lch.hue`, and `oklch.hue`
+  used a `[0, 360]` clamp, so `setHue(400)` collapsed to `360` (and out-of-range `lch` hues produced
+  a non-re-parseable string). They now wrap, consistent with `parseColorString` and `rotateHue`.
+- **A plugin with a global-flag RegExp `tokenType` now matches every token.** `matches()` reused a
+  stateful `RegExp.test`, so a `/…/g` matcher applied to only every other token.
+- **`ensureDirectory` reports the real error** (permission/not-a-directory) instead of rejecting
+  with `undefined`; the CLI dispatch uses `Object.hasOwn` so a token file named like an
+  `Object.prototype` member isn't mistaken for a subcommand; and `pad0` no longer turns `-5` into
+  `0-5`.
 
 ## 2.0.0-beta.8
 
