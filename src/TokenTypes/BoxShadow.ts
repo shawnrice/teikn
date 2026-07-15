@@ -20,7 +20,7 @@ const toColor = (value: Color | string | undefined): Color | string => {
 
 const lengthRe = /^(-?\d+(?:\.\d+)?)(px|rem|em)?/;
 
-const fmtLength = (v: number): string => (v === 0 ? '0' : `${v}px`);
+const fmtLength = (v: number, unit: string): string => (v === 0 ? '0' : `${v}${unit}`);
 
 // The leftover token after the numeric lengths is the color: a `{ref}` string
 // (kept for per-field resolution), a parsed Color, or black when absent.
@@ -53,6 +53,7 @@ const parse = (
   spread: number;
   color: Color | string;
   inset: boolean;
+  unit: string;
 } => {
   const trimmed = str.trim();
 
@@ -60,6 +61,9 @@ const parse = (
   const inset = withoutInset !== trimmed;
 
   const nums: number[] = [];
+  // The lengths share one unit (px unless the shorthand says otherwise). The
+  // first explicit unit wins; `0` is unitless and contributes none.
+  let unit = '';
   let s = withoutInset;
 
   while (s.length > 0) {
@@ -69,7 +73,13 @@ const parse = (
       break;
     }
 
-    nums.push(parseFloat(m[1]!));
+    const [, magnitude, matchedUnit] = m;
+    nums.push(parseFloat(magnitude!));
+
+    if (matchedUnit && !unit) {
+      unit = matchedUnit;
+    }
+
     s = s.slice(m[0].length).trim();
   }
 
@@ -84,6 +94,7 @@ const parse = (
     spread: nums[3] ?? 0,
     color,
     inset,
+    unit: unit || 'px',
   };
 };
 
@@ -94,6 +105,8 @@ export type BoxShadowOptions = {
   spread?: number;
   color?: Color | string;
   inset?: boolean;
+  /** Length unit for the offsets/blur/spread. Default: `px`. */
+  unit?: string;
 };
 
 export class BoxShadow implements RefFields {
@@ -105,6 +118,7 @@ export class BoxShadow implements RefFields {
   readonly #spread: number;
   readonly #color: Color | string;
   readonly #inset: boolean;
+  readonly #unit: string;
 
   constructor(
     offsetX: number,
@@ -130,6 +144,7 @@ export class BoxShadow implements RefFields {
       this.#spread = first.#spread;
       this.#color = first.#color;
       this.#inset = first.#inset;
+      this.#unit = first.#unit;
 
       return;
     }
@@ -143,6 +158,7 @@ export class BoxShadow implements RefFields {
       this.#spread = parsed.spread;
       this.#color = parsed.color;
       this.#inset = parsed.inset;
+      this.#unit = parsed.unit;
 
       return;
     }
@@ -154,16 +170,19 @@ export class BoxShadow implements RefFields {
       this.#spread = first.spread ?? 0;
       this.#color = toColor(first.color);
       this.#inset = first.inset ?? false;
+      this.#unit = first.unit ?? 'px';
 
       return;
     }
 
+    // Positional numeric form: lengths are px by convention.
     this.#offsetX = first;
     this.#offsetY = offsetY ?? 0;
     this.#blur = blur ?? 0;
     this.#spread = spread ?? 0;
     this.#color = toColor(color);
     this.#inset = inset ?? false;
+    this.#unit = 'px';
   }
 
   get offsetX(): number {
@@ -184,6 +203,10 @@ export class BoxShadow implements RefFields {
   get inset(): boolean {
     return this.#inset;
   }
+  /** Length unit shared by the offsets/blur/spread (default `px`). */
+  get unit(): string {
+    return this.#unit;
+  }
 
   // ─── Per-field reference protocol ────────────────────────────
   // Lets a shadow hold `{ref}` strings in its fields (resolved per-field by
@@ -198,6 +221,7 @@ export class BoxShadow implements RefFields {
       spread: this.#spread,
       color: this.#color,
       inset: this.#inset,
+      unit: this.#unit,
     };
   }
 
@@ -208,26 +232,29 @@ export class BoxShadow implements RefFields {
   }
 
   with(updates: BoxShadowOptions): BoxShadow {
-    return new BoxShadow(
-      updates.offsetX ?? this.#offsetX,
-      updates.offsetY ?? this.#offsetY,
-      updates.blur ?? this.#blur,
-      updates.spread ?? this.#spread,
-      updates.color ?? this.#color,
-      updates.inset ?? this.#inset,
-    );
+    // Options form (not positional) so the length unit is carried through.
+    return new BoxShadow({
+      offsetX: updates.offsetX ?? this.#offsetX,
+      offsetY: updates.offsetY ?? this.#offsetY,
+      blur: updates.blur ?? this.#blur,
+      spread: updates.spread ?? this.#spread,
+      color: updates.color ?? this.#color,
+      inset: updates.inset ?? this.#inset,
+      unit: updates.unit ?? this.#unit,
+    });
   }
 
   /** Scale all numeric values (offsets, blur, spread) by a factor */
   scale(factor: number): BoxShadow {
-    return new BoxShadow(
-      this.#offsetX * factor,
-      this.#offsetY * factor,
-      this.#blur * factor,
-      this.#spread * factor,
-      this.#color,
-      this.#inset,
-    );
+    return new BoxShadow({
+      offsetX: this.#offsetX * factor,
+      offsetY: this.#offsetY * factor,
+      blur: this.#blur * factor,
+      spread: this.#spread * factor,
+      color: this.#color,
+      inset: this.#inset,
+      unit: this.#unit,
+    });
   }
 
   toJSON(): string {
@@ -241,15 +268,15 @@ export class BoxShadow implements RefFields {
       parts.push('inset');
     }
 
-    parts.push(fmtLength(this.#offsetX));
-    parts.push(fmtLength(this.#offsetY));
+    parts.push(fmtLength(this.#offsetX, this.#unit));
+    parts.push(fmtLength(this.#offsetY, this.#unit));
 
     if (this.#blur !== 0 || this.#spread !== 0) {
-      parts.push(fmtLength(this.#blur));
+      parts.push(fmtLength(this.#blur, this.#unit));
     }
 
     if (this.#spread !== 0) {
-      parts.push(fmtLength(this.#spread));
+      parts.push(fmtLength(this.#spread, this.#unit));
     }
 
     parts.push(String(this.#color));

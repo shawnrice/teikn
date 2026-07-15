@@ -146,7 +146,7 @@ export const quoteKey = (name: string): string =>
 
 export type RefResolver = (value: unknown) => string | null;
 
-const fmtLength = (v: number): string => (v === 0 ? '0' : `${v}px`);
+const fmtLength = (v: number, unit: string): string => (v === 0 ? '0' : `${v}${unit}`);
 
 export const stringifyTransitionWithRefs = (t: Transition, ref: RefResolver): string => {
   const parts: string[] = [];
@@ -179,15 +179,15 @@ export const stringifyBoxShadowWithRefs = (s: BoxShadow, ref: RefResolver): stri
     parts.push('inset');
   }
 
-  parts.push(fmtLength(s.offsetX));
-  parts.push(fmtLength(s.offsetY));
+  parts.push(fmtLength(s.offsetX, s.unit));
+  parts.push(fmtLength(s.offsetY, s.unit));
 
   if (s.blur !== 0 || s.spread !== 0) {
-    parts.push(fmtLength(s.blur));
+    parts.push(fmtLength(s.blur, s.unit));
   }
 
   if (s.spread !== 0) {
-    parts.push(fmtLength(s.spread));
+    parts.push(fmtLength(s.spread, s.unit));
   }
 
   parts.push(ref(s.color) ?? s.color.toString());

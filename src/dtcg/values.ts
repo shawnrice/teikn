@@ -321,14 +321,18 @@ const transitionToDtcg = (t: Transition, refMap?: DtcgRefMap): Record<string, un
 };
 
 const shadowToDtcgWithRefs = (shadow: BoxShadow, refMap?: DtcgRefMap): DtcgShadowValue => {
+  // DTCG `dimension` only permits px/rem; a rare em shadow can't be represented,
+  // so it coerces to px here (CSS/SCSS output still emits em faithfully).
+  const unit: 'px' | 'rem' = shadow.unit === 'rem' ? 'rem' : 'px';
+
   return {
     // Handles an identity ref (shared Color → `{alias}`), a leftover `{ref}`
     // string, or a concrete color — mirroring how borders serialize their color.
     color: colorFieldToDtcg(shadow.color, refMap) as DtcgColorValue,
-    offsetX: { value: shadow.offsetX, unit: 'px' },
-    offsetY: { value: shadow.offsetY, unit: 'px' },
-    blur: { value: shadow.blur, unit: 'px' },
-    spread: { value: shadow.spread, unit: 'px' },
+    offsetX: { value: shadow.offsetX, unit },
+    offsetY: { value: shadow.offsetY, unit },
+    blur: { value: shadow.blur, unit },
+    spread: { value: shadow.spread, unit },
   };
 };
 

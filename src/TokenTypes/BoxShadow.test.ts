@@ -4,6 +4,27 @@ import { BoxShadow, BoxShadowList } from './BoxShadow.js';
 import { Color } from './Color/index.js';
 
 describe('BoxShadow', () => {
+  // ─── Length units (regression) ───────────────────────────────
+
+  it('preserves rem/em length units instead of coercing to px', () => {
+    expect(new BoxShadow('0 0.5rem 1rem #000').toString()).toBe('0 0.5rem 1rem rgb(0, 0, 0)');
+    expect(new BoxShadow('0 0.25em 0.5em #000').toString()).toBe('0 0.25em 0.5em rgb(0, 0, 0)');
+  });
+
+  it('defaults to px for numeric construction', () => {
+    expect(new BoxShadow(0, 2, 8, 0, '#000').toString()).toBe('0 2px 8px rgb(0, 0, 0)');
+    expect(new BoxShadow(0, 2, 8, 0, '#000').unit).toBe('px');
+  });
+
+  it('carries the unit through scale() and with()', () => {
+    expect(new BoxShadow('0 0.5rem 1rem #000').scale(2).toString()).toBe(
+      '0 1rem 2rem rgb(0, 0, 0)',
+    );
+    expect(new BoxShadow('0 0.5rem 1rem #000').with({ blur: 2 }).toString()).toBe(
+      '0 0.5rem 2rem rgb(0, 0, 0)',
+    );
+  });
+
   // ─── Construction ────────────────────────────────────────────
 
   it('creates from numbers', () => {
