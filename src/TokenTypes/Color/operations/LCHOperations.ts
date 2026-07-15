@@ -1,5 +1,6 @@
 import type { Color, InternalCreate } from '../Color.js';
 import type { LCH } from '../types.js';
+import { normalizeDegrees } from '../util.js';
 
 export class LCHOperations {
   #color: Color;
@@ -47,7 +48,9 @@ export class LCHOperations {
 
     const [l, c] = this.#lch();
 
-    return this.#new('lch', [l, c, value], this.#color.alpha);
+    // Wrap the hue so an out-of-range value still serializes to a re-parseable
+    // lch() string (the LCH parser only accepts 0–360).
+    return this.#new('lch', [l, c, normalizeDegrees(value)], this.#color.alpha);
   }
 
   rotateHue(degrees: number): Color {

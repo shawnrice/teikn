@@ -18,8 +18,14 @@ export const kebabCase = (str: string): string => {
 export const camelCase = (str: string): string =>
   lowerFirst(
     str
-      .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
-      .split(/[\W_]/g)
+      // Insert a boundary at a lower/digit → upper transition (Unicode-aware,
+      // so `naïveCase` splits at the `e→C` seam like `naiveCase` does).
+      .replace(/([\p{Ll}\p{N}])(\p{Lu})/gu, '$1_$2')
+      // Split on runs of non-alphanumerics. Using Unicode letter/number classes
+      // (rather than `\W`, which is ASCII-only) keeps accented letters in the
+      // identifier instead of silently dropping them — otherwise `café` → `caf`
+      // and distinct names like `aïb` / `aB` collide to `a-b`.
+      .split(/[^\p{L}\p{N}]+/u)
       .filter(Boolean)
       .map(part => upperFirst(lower(part)))
       .join(''),
@@ -51,6 +57,40 @@ export const splitTopLevel = (str: string, delimiter = ','): string[] => {
 
   if (last.length > 0) {
     parts.push(last);
+  }
+
+  return parts;
+};
+
+/**
+ * Split on runs of whitespace at parenthesis depth 0, so a value containing a
+ * space-separated CSS function (`rgb(255 0 0)`) stays intact. Used to tokenize
+ * shorthand values (border, transition) that may embed modern-syntax colors.
+ */
+export const splitTopLevelWhitespace = (str: string): string[] => {
+  const parts: string[] = [];
+  let current = '';
+  let depth = 0;
+
+  for (const ch of str) {
+    if (ch === '(') {
+      depth++;
+      current += ch;
+    } else if (ch === ')') {
+      depth--;
+      current += ch;
+    } else if (depth === 0 && /\s/.test(ch)) {
+      if (current.length > 0) {
+        parts.push(current);
+        current = '';
+      }
+    } else {
+      current += ch;
+    }
+  }
+
+  if (current.length > 0) {
+    parts.push(current);
   }
 
   return parts;

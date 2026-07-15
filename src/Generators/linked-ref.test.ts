@@ -137,6 +137,24 @@ describe('linked top-level refs', () => {
     expect(css).toContain('--surface: var(--neutral-50);');
   });
 
+  test('cross-group semantic link tracks a StripTypePrefix rename of the target', () => {
+    // The common pattern: a `semantic` token aliases a `color` token. The link
+    // target is a different type, so it must be remapped to the target's actual
+    // post-plugin name — not stripped with the linking token's own type.
+    const out = new Teikn({
+      generators: [new Teikn.generators.CssVars({ dateFn: () => null })],
+      plugins: [new StripTypePrefixPlugin()],
+      validate: false,
+    }).generateToStrings([
+      ...group('color', { blue500: '#0066cc' }),
+      ...group('semantic', { primary: ref('blue500', { link: true }) }),
+    ]);
+    const css = out.get('tokens.css')!;
+
+    expect(css).toContain('--blue-500: #0066cc;');
+    expect(css).toContain('--primary: var(--blue-500);'); // not the dangling var(--color-blue-500)
+  });
+
   // ─── ref() shape ───────────────────────────────────────────────
 
   test('ref() without link is unchanged (flattened, no link field)', () => {

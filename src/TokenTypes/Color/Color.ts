@@ -30,7 +30,7 @@ import type {
   XYZ,
   XYZA,
 } from './types.js';
-import { degreeRange, hexRange, percentRange, round, toPercent } from './util.js';
+import { hexRange, normalizeDegrees, percentRange, round, toPercent } from './util.js';
 import { closest } from './xkcdNamedColors.js';
 
 // Symbol for internal construction — only accessible within this module and operations
@@ -237,6 +237,19 @@ export class Color {
 
     // Numeric RGB constructor
     if (typeof r === 'number' && typeof g === 'number' && typeof b === 'number') {
+      // Reject NaN/Infinity up front — otherwise they flow through hexRange
+      // (clamp is NaN-preserving) into an invalid hex like `#NaN0000`.
+      if (
+        !Number.isFinite(r) ||
+        !Number.isFinite(g) ||
+        !Number.isFinite(b) ||
+        (a !== undefined && !Number.isFinite(a))
+      ) {
+        throw new Error(
+          `Color: RGB(A) components must be finite numbers, got (${r}, ${g}, ${b}${a === undefined ? '' : `, ${a}`})`,
+        );
+      }
+
       this.#nativeSpace = 'rgb';
       this.#nativeData = [hexRange(r), hexRange(g as number), hexRange(b as number)] as RGB;
       this.#alpha = typeof a === 'number' ? percentRange(a) : 1;
@@ -312,6 +325,15 @@ export class Color {
   /** Lightness component (0-1) */
   get lightness(): number {
     return this.asHSL()[2];
+  }
+
+  /**
+   * The color's native (authored) space — the space its value is stored in and
+   * that `toString()` / `toString('native')` serialize to. Useful for keeping a
+   * derived color in the same space it was authored in.
+   */
+  get space(): Space {
+    return this.#nativeSpace;
   }
 
   // ─── Factory methods ───────────────────────────────────────
@@ -484,7 +506,9 @@ export class Color {
   setHue(hue: number): Color {
     const [, s, l] = this.asHSL();
 
-    return Color.#new('hsl', [degreeRange(hue), s, l] as HSL, this.#alpha);
+    // Hue is circular — wrap out-of-range values (matching parseColorString and
+    // rotateHue) instead of clamping, which would collapse e.g. 400° to 360°.
+    return Color.#new('hsl', [normalizeDegrees(hue), s, l] as HSL, this.#alpha);
   }
 
   /** Create a new color with the hue rotated by the specified degrees */

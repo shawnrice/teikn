@@ -6,7 +6,10 @@ import { CubicBezier } from '../TokenTypes/CubicBezier.js';
 import { Duration } from '../TokenTypes/Duration.js';
 import { Transition } from '../TokenTypes/Transition.js';
 import {
+  cssMapValue,
+  cssValue,
   maybeQuote,
+  quoteKey,
   stringifyBoxShadowWithRefs,
   stringifyTransitionWithRefs,
   stringifyWithRefs,
@@ -15,6 +18,40 @@ import {
 } from './value-serializers.js';
 
 const noRef = () => null;
+
+describe('cssMapValue', () => {
+  test('wraps a value with top-level commas so the SCSS map stays valid', () => {
+    // A stringified typography / font stack — top-level commas must be parenthesized.
+    expect(cssMapValue('400 1rem/1.5 Inter, system-ui, sans-serif')).toBe(
+      '(400 1rem/1.5 Inter, system-ui, sans-serif)',
+    );
+    expect(cssMapValue('Arial, sans-serif')).toBe('(Arial, sans-serif)');
+  });
+
+  test('leaves commas inside function syntax alone', () => {
+    expect(cssMapValue('rgb(0, 0, 0)')).toBe('rgb(0, 0, 0)');
+    expect(cssMapValue('#ffffff')).toBe('#ffffff');
+  });
+});
+
+describe('quoteKey', () => {
+  test('escapes a quote in a non-identifier key', () => {
+    // A mode named "it's dark" must not break the emitted object literal.
+    expect(quoteKey("it's dark")).toBe("'it\\'s dark'");
+  });
+
+  test('leaves valid identifiers unquoted', () => {
+    expect(quoteKey('colorPrimary')).toBe('colorPrimary');
+  });
+});
+
+describe('cssValue number formatting', () => {
+  test('never emits scientific notation', () => {
+    expect(cssValue(0.0000001)).toBe('0');
+    expect(cssValue(1e21)).toBe('1000000000000000000000');
+    expect(cssValue(0.0012)).toBe('0.0012');
+  });
+});
 
 describe('maybeQuote', () => {
   test('escapes backslash', () => {

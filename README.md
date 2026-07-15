@@ -602,6 +602,10 @@ These generate additional tokens from existing ones. Call `expand(tokens)` befor
 
 ```typescript
 const palette = new PalettePlugin({ steps: [100, 300, 500, 700, 900] });
+// Keep the ramp in a perceptual space. `space` defaults to 'auto' (the base
+// color's authored space — an oklch base yields an oklch ramp; a hex/rgb base
+// stays RGB). Pass a space to force it: 'oklch' | 'lch' | 'hsl' | 'rgb' | …
+const perceptualPalette = new PalettePlugin({ space: 'oklch' });
 const motion = new ReducedMotionPlugin({ prefix: 'reduced-' });
 const clamp = new ClampPlugin({
   pairs: [{ min: 'fontSize-100', max: 'fontSize-700', output: 'fontSize-fluid' }],
@@ -615,12 +619,12 @@ allTokens = clamp.expand(allTokens);
 allTokens = cbSim.expand(allTokens);
 ```
 
-| Plugin                   | Description                                                                                                      |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------- |
-| **PalettePlugin**        | Generates shade scales (50–950) from base color tokens using tint/shade. Options: `steps`, `lightEnd`, `darkEnd` |
-| **ReducedMotionPlugin**  | Generates `prefers-reduced-motion` companion tokens: zeroed durations, linear easing. Options: `prefix`          |
-| **ClampPlugin**          | Generates CSS `clamp()` fluid values from min/max token pairs. Options: `viewportMin`, `viewportMax`, `pairs`    |
-| **ColorBlindnessPlugin** | Generates companion tokens simulating color vision deficiencies (protanopia, deuteranopia, tritanopia)           |
+| Plugin                   | Description                                                                                                                                                                                                                                                                          |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **PalettePlugin**        | Generates shade scales (50–950) from base color tokens. In a lightness space (`oklch`/`lch`/`hsl`) it holds hue+chroma and interpolates lightness; otherwise it tints/shades in RGB. Options: `space` (default `'auto'` — the base's authored space), `steps`, `lightEnd`, `darkEnd` |
+| **ReducedMotionPlugin**  | Generates `prefers-reduced-motion` companion tokens: zeroed durations, linear easing. Options: `prefix`                                                                                                                                                                              |
+| **ClampPlugin**          | Generates CSS `clamp()` fluid values from min/max token pairs. Options: `viewportMin`, `viewportMax`, `pairs`                                                                                                                                                                        |
+| **ColorBlindnessPlugin** | Generates companion tokens simulating color vision deficiencies (protanopia, deuteranopia, tritanopia)                                                                                                                                                                               |
 
 ### Audit Plugins (Accessibility)
 

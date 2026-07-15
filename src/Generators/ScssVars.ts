@@ -75,7 +75,7 @@ export class ScssVars extends Scss {
     // NameConventionPlugin). Otherwise references inside composed values
     // (Transition, BoxShadow) point at the pre-rename names while the
     // variable definitions emit the post-rename names — broken output.
-    const transformed = this.applyPluginPipeline(args[0], args[1]);
+    const transformed = this.remapLinks(args[0], this.applyPluginPipeline(args[0], args[1]));
     this.#refMap = this.buildReferenceMap(transformed);
     const sorted = topoSort(transformed, this.#refMap);
 

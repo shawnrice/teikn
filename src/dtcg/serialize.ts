@@ -10,11 +10,27 @@ export type SerializeOptions = {
   hierarchical?: boolean;
 };
 
+const collisionError = (path: string[]): Error =>
+  new Error(
+    `DTCG serialization: token name collision at "${path.join('.')}" — one token's name is a ` +
+      `group prefix of another's (e.g. "a" and "a${'.'}b"). DTCG cannot represent a node that is ` +
+      `both a token and a group; rename so no token name is a prefix segment of another, or pick a ` +
+      `separator that doesn't split these names.`,
+  );
+
 const setNestedValue = (obj: Record<string, any>, path: string[], token: DtcgToken): void => {
   let current = obj;
 
   for (let i = 0; i < path.length - 1; i++) {
     const segment = path[i]!;
+    const existing = current[segment];
+
+    // Descending through a node that is already a token leaf ($value) would
+    // attach a child group to it — invalid DTCG, and the token is silently lost
+    // on reparse. Fail loudly instead. (forward order: `a` then `a.b`.)
+    if (existing && typeof existing === 'object' && '$value' in existing) {
+      throw collisionError(path.slice(0, i + 1));
+    }
 
     if (!(segment in current) || typeof current[segment] !== 'object') {
       current[segment] = {};
@@ -23,7 +39,16 @@ const setNestedValue = (obj: Record<string, any>, path: string[], token: DtcgTok
     current = current[segment];
   }
 
-  current[path[path.length - 1]!] = token;
+  const leaf = path[path.length - 1]!;
+  const existing = current[leaf];
+
+  // The leaf slot is already a group (has children, no $value): placing a token
+  // here would clobber those child tokens. (reverse order: `a.b` then `a`.)
+  if (existing && typeof existing === 'object' && !('$value' in existing)) {
+    throw collisionError(path);
+  }
+
+  current[leaf] = token;
 };
 
 const hoistGroupTypes = (obj: Record<string, any>): void => {
@@ -74,12 +99,18 @@ const hoistGroupTypes = (obj: Record<string, any>): void => {
   }
 };
 
-const tokenToDtcg = (token: Token, refMap?: DtcgRefMap): DtcgToken => {
+const tokenToDtcg = (
+  token: Token,
+  refMap: DtcgRefMap,
+  toAliasPath: (name: string) => string,
+): DtcgToken => {
   const dtcgType = teiknTypeToDtcg(token.type);
   // A linked ref (`ref(name, { link: true })`) serializes as a DTCG alias to
-  // the target token, mirroring CSS `var(--…)`, instead of the flattened value.
+  // the target token, mirroring CSS `var(--…)`. The alias must use the token's
+  // *hierarchical* path (`{group.token}`), not the flat emitted name, or it
+  // dangles when groups are reconstructed.
   const dtcgValue = token.link
-    ? `{${token.link}}`
+    ? `{${toAliasPath(token.link)}}`
     : teiknValueToDtcg(token.value, token.type, refMap);
 
   const result: DtcgToken = { $value: dtcgValue as any, $type: dtcgType };
@@ -101,12 +132,14 @@ const tokenToDtcg = (token: Token, refMap?: DtcgRefMap): DtcgToken => {
   return result;
 };
 
-const buildRefMap = (tokens: Token[]): DtcgRefMap => {
+const buildRefMap = (tokens: Token[], toAliasPath: (name: string) => string): DtcgRefMap => {
   const map: DtcgRefMap = new Map();
 
   for (const token of tokens) {
     if (typeof token.value === 'object' && token.value !== null && !map.has(token.value)) {
-      map.set(token.value, token.name);
+      // Store the hierarchical alias path so identity/composite refs also emit
+      // `{group.token}` rather than the flat emitted name.
+      map.set(token.value, toAliasPath(token.name));
     }
   }
 
@@ -116,12 +149,17 @@ const buildRefMap = (tokens: Token[]): DtcgRefMap => {
 export const serializeDtcg = (tokens: Token[], options?: SerializeOptions): DtcgDocument => {
   const separator = options?.separator ?? '.';
   const hierarchical = options?.hierarchical ?? true;
-  const refMap = buildRefMap(tokens);
+  // DTCG aliases always use `.` as the path separator. When groups are
+  // reconstructed from names, rewrite the emitted name's separator to `.`;
+  // otherwise (flat output) the name is the key verbatim.
+  const toAliasPath = (name: string): string =>
+    hierarchical ? name.split(separator).join('.') : name;
+  const refMap = buildRefMap(tokens, toAliasPath);
 
   const doc: DtcgDocument = {};
 
   for (const token of tokens) {
-    const dtcgToken = tokenToDtcg(token, refMap);
+    const dtcgToken = tokenToDtcg(token, refMap, toAliasPath);
 
     if (hierarchical) {
       const segments = token.name.split(separator);

@@ -1,5 +1,39 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- **`PalettePlugin` `space` option** — keep a generated ramp in a chosen color space instead of
+  always RGB. Default `'auto'` preserves the base color's authored space (an `oklch` base yields an
+  `oklch` ramp with even lightness; hex/rgb bases are unchanged); pass `'oklch'`/`'lch'`/`'hsl'`/…
+  to force one. Adds a `Color#space` getter for the native (authored) space.
+
+### Fixed
+
+- Out-of-sRGB `lab()`/`lch()`/`xyz()` colors no longer serialize to an invalid, un-parseable hex
+  (`XYZToRGB` now gamut-clamps); non-finite `Color` components are rejected instead of `#NaN0000`.
+- `Scss` maps compile when a composite value contains commas (typography, multi-layer
+  shadows/gradients, font stacks) — such values are now parenthesized.
+- Generated JS/TS object keys are escaped, so a mode named `it's dark` no longer breaks the output.
+- Numbers emit as plain decimals, never scientific notation (`1e-7` is not valid CSS).
+- DTCG aliases use the hierarchical path (`{color.primary}`, not `{color-primary}`) under a
+  group-reconstructing `separator`, and a name/group collision now throws instead of silently
+  dropping a token.
+- Linked refs (`ref(name, { link: true })`) keep pointing at the right target under name-mangling
+  plugins (e.g. a cross-group alias under `StripTypePrefixPlugin`).
+- `camelCase`/`kebabCase` keep non-ASCII letters — `café` no longer becomes `caf`, and distinct
+  names no longer collide.
+- The `indigo` and `indianred` named colors parse (their keys had a stray trailing space).
+- `Transition` keeps a negative delay instead of misreading it as the `property`.
+- `BoxShadow` preserves `rem`/`em` units instead of silently emitting `px` (numeric input is px).
+- `Border` accepts space-separated color functions like `rgb(255 0 0)`.
+- Hue setters (`Color.setHue`, `hsl`/`lch`/`oklch` `.hue`) wrap out-of-range values instead of
+  clamping.
+- A plugin whose `tokenType` is a global-flag `RegExp` now matches every token, not every other one.
+- `ensureDirectory` surfaces the real error instead of `undefined`; the CLI no longer treats
+  `Object.prototype` names as subcommands; `pad0(-5)` no longer returns `0-5`.
+
 ## 2.0.0-beta.8
 
 ### Added

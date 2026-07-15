@@ -10,7 +10,9 @@ export const ensureDirectory = async (dirPath: string): Promise<void> => {
     return Promise.resolve();
   } catch (error: unknown) {
     if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
-      return Promise.reject();
+      // Surface the real failure (EACCES, ENOTDIR, …) instead of rejecting with
+      // `undefined`, which reaches the caller as an undiagnosable error.
+      return Promise.reject(error);
     }
 
     try {

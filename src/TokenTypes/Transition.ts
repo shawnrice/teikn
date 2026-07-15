@@ -1,47 +1,20 @@
-import { splitTopLevel } from '../string-utils.js';
+import { splitTopLevel, splitTopLevelWhitespace } from '../string-utils.js';
 import { CubicBezier } from './CubicBezier.js';
 import { Duration } from './Duration.js';
 import { assertNotRef } from './ref-guard.js';
 
-const timeRe = /^(\d+(?:\.\d+)?)(ms|s)$/;
+// Leading `-?` so a negative `transition-delay` (valid CSS) parses as a time
+// rather than falling through to `property`.
+const timeRe = /^(-?\d+(?:\.\d+)?)(ms|s)$/;
 
 const timingKeywords = new Set(['ease', 'ease-in', 'ease-out', 'ease-in-out', 'linear']);
-
-const splitRespectingParens = (s: string): string[] => {
-  const parts: string[] = [];
-  let current = '';
-  let depth = 0;
-
-  for (const ch of s) {
-    if (ch === '(') {
-      depth++;
-      current += ch;
-    } else if (ch === ')') {
-      depth--;
-      current += ch;
-    } else if (ch === ' ' && depth === 0) {
-      if (current.length > 0) {
-        parts.push(current);
-        current = '';
-      }
-    } else {
-      current += ch;
-    }
-  }
-
-  if (current.length > 0) {
-    parts.push(current);
-  }
-
-  return parts;
-};
 
 const isTimeValue = (s: string): boolean => timeRe.test(s);
 
 const parse = (
   css: string,
 ): { duration: string; timingFunction: CubicBezier; delay: string; property: string } => {
-  const parts = splitRespectingParens(css.trim());
+  const parts = splitTopLevelWhitespace(css.trim());
   const times: string[] = [];
   let timing: string | null = null;
   let property: string | null = null;
