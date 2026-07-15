@@ -327,6 +327,15 @@ export class Color {
     return this.asHSL()[2];
   }
 
+  /**
+   * The color's native (authored) space — the space its value is stored in and
+   * that `toString()` / `toString('native')` serialize to. Useful for keeping a
+   * derived color in the same space it was authored in.
+   */
+  get space(): Space {
+    return this.#nativeSpace;
+  }
+
   // ─── Factory methods ───────────────────────────────────────
 
   static from(color: Color | string): Color {

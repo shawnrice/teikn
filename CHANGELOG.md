@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### Added
+
+- **`PalettePlugin` can keep a ramp in its authored color space.** It previously always emitted RGB
+  (tint/shade toward white/black). A new `space` option (default `'auto'`) keeps each step in the
+  base color's authored space — an `oklch`-authored base now produces an `oklch` ramp, holding hue
+  and chroma while interpolating lightness for a perceptually even scale; hex/rgb bases are
+  unchanged. Pass an explicit space (`'oklch'`, `'lch'`, `'hsl'`, `'rgb'`, …) to force one. `Color`
+  also gained a `space` getter returning its native (authored) space.
+
 ### Fixed
 
 - **Out-of-sRGB `lab()`/`lch()`/`xyz()` colors no longer produce invalid RGB/hex.** `XYZToRGB`

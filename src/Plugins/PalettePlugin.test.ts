@@ -121,4 +121,53 @@ describe('PalettePlugin', () => {
     expect(step200!.type).toBe('color');
     expect(step200!.group).toBe('colors');
   });
+
+  // ─── Color space ─────────────────────────────────────────────
+
+  const valueOf = (tokens: Token[], name: string): string =>
+    String(tokens.find(t => t.name === name)!.value);
+
+  test('auto (default) keeps an oklch-authored base in oklch', () => {
+    const token: Token = { name: 'brand', type: 'color', value: new Color('oklch(0.65 0.2 250)') };
+    const result = new PalettePlugin({ steps: [50, 500, 950] }).expand([token]);
+
+    // Every step stays in oklch, holding hue + chroma while lightness moves.
+    for (const name of ['brand-50', 'brand-500', 'brand-950']) {
+      expect(valueOf(result, name)).toMatch(/^oklch\(/);
+      expect(valueOf(result, name)).toContain('0.2 250');
+    }
+
+    expect(new Color(valueOf(result, 'brand-50')).oklch.lightness()).toBeGreaterThan(
+      new Color(valueOf(result, 'brand-950')).oklch.lightness(),
+    );
+  });
+
+  test('auto keeps an rgb/hex base in RGB (backward compatible)', () => {
+    const token: Token = { name: 'brand', type: 'color', value: '#3b82f6' };
+    const result = new PalettePlugin({ steps: [50, 500, 950] }).expand([token]);
+
+    expect(valueOf(result, 'brand-50')).toMatch(/^rgb\(/);
+    expect(valueOf(result, 'brand-950')).toMatch(/^rgb\(/);
+  });
+
+  test('explicit space forces the ramp into that space', () => {
+    const token: Token = { name: 'brand', type: 'color', value: '#3b82f6' };
+    const result = new PalettePlugin({ steps: [50, 500, 950], space: 'oklch' }).expand([token]);
+
+    expect(valueOf(result, 'brand-50')).toMatch(/^oklch\(/);
+    expect(valueOf(result, 'brand-500')).toMatch(/^oklch\(/);
+    expect(valueOf(result, 'brand-950')).toMatch(/^oklch\(/);
+  });
+
+  test('space: hsl holds hue and saturation while moving lightness', () => {
+    const token: Token = { name: 'brand', type: 'color', value: '#3b82f6' };
+    const result = new PalettePlugin({ steps: [50, 500, 950], space: 'hsl' }).expand([token]);
+
+    const light = new Color(valueOf(result, 'brand-50'));
+    const dark = new Color(valueOf(result, 'brand-950'));
+    expect(valueOf(result, 'brand-50')).toMatch(/^hsl\(/);
+    expect(light.lightness).toBeGreaterThan(dark.lightness);
+    // Hue is preserved across the ramp.
+    expect(light.hue).toBeCloseTo(dark.hue, 1);
+  });
 });
