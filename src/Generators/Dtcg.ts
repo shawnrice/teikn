@@ -37,7 +37,7 @@ export class DtcgGenerator extends Generator<DtcgOpts> {
   override prepareTokens(tokens: Token[], plugins: Plugin[]): Token[] {
     const sorted = sortPlugins(plugins);
 
-    return tokens.map(token =>
+    const transformed = tokens.map(token =>
       sorted.reduce((acc, plugin) => {
         if (!matches(plugin.tokenType, token.type)) {
           return acc;
@@ -50,6 +50,10 @@ export class DtcgGenerator extends Generator<DtcgOpts> {
         return applyPlugin(plugin, acc);
       }, token),
     );
+
+    // Rewrite linked-ref targets to their post-plugin names before serialize()
+    // turns them into `{alias}` paths.
+    return this.remapLinks(tokens, transformed);
   }
 
   generateToken(_: Token): string {

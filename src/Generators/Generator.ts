@@ -274,6 +274,39 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
   }
 
   /**
+   * Rewrite each linked ref's `link` (a target token's *pre*-plugin emitted
+   * name) to the target's *post*-plugin name, using the positional
+   * correspondence between the pipeline's input and output tokens.
+   *
+   * Name-mangling plugins (NameConventionPlugin, StripTypePrefixPlugin) rename
+   * tokens, so a `link` captured before the pipeline would otherwise dangle.
+   * Resolving it here — after the plugin pipeline, per generator — is robust to
+   * any rename and to cross-type links, and works for primitive-valued targets
+   * that the identity refMap can't cover. No-op when nothing is linked.
+   */
+  // oxlint-disable-next-line class-methods-use-this
+  protected remapLinks(input: Token[], transformed: Token[]): Token[] {
+    if (!transformed.some(t => t.link)) {
+      return transformed;
+    }
+
+    const rename = new Map<string, string>();
+
+    for (let i = 0; i < input.length; i++) {
+      const before = input[i]?.name;
+      const after = transformed[i]?.name;
+
+      if (before !== undefined && after !== undefined) {
+        rename.set(before, after);
+      }
+    }
+
+    return transformed.map(token =>
+      token.link && rename.has(token.link) ? { ...token, link: rename.get(token.link)! } : token,
+    );
+  }
+
+  /**
    * Run the plugin pipeline (filter by tokenType/outputType, apply transform)
    * without doing any value stringification. Ref-aware generators call this
    * before building their refMap so the map captures post-plugin names.

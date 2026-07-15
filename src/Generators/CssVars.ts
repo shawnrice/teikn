@@ -102,7 +102,7 @@ export class CssVars extends Generator<CssVarsOpts> {
     // Run plugins first so the refMap captures any name changes (e.g., from
     // NameConventionPlugin). Otherwise references inside composed values
     // (Transition, BoxShadow) point at the pre-rename names.
-    const transformed = this.applyPluginPipeline(args[0], args[1]);
+    const transformed = this.remapLinks(args[0], this.applyPluginPipeline(args[0], args[1]));
     this.#refMap = this.buildReferenceMap(transformed);
 
     return transformed.map(t => this.stringifyValues(t));
