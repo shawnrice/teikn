@@ -4,7 +4,7 @@ import path from 'node:path';
 import { ensureDirectory } from './ensure-directory.js';
 import {
   CssVars,
-  DtcgGenerator,
+  Dtcg,
   Generator,
   Html,
   JavaScript,
@@ -171,7 +171,7 @@ const BuiltInPlugins: {
 
 const BuiltInGenerators: {
   CssVars: typeof CssVars;
-  Dtcg: typeof DtcgGenerator;
+  Dtcg: typeof Dtcg;
   Html: typeof Html;
   JavaScript: typeof JavaScript;
   Json: typeof Json;
@@ -182,7 +182,7 @@ const BuiltInGenerators: {
   TypeScriptDeclarations: typeof TypeScriptDeclarations;
 } = {
   CssVars,
-  Dtcg: DtcgGenerator,
+  Dtcg: Dtcg,
   Html,
   JavaScript,
   Json,

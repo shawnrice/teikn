@@ -75,7 +75,7 @@ export type DtcgOpts = {
     /** Separator for reconstructing groups. Default: '.' */
     separator?: string;
 } & GeneratorOptions;
-export declare class DtcgGenerator extends Generator<DtcgOpts> {
+export declare class Dtcg extends Generator<DtcgOpts> {
     constructor(options?: {});
     describe(): GeneratorInfo;
     tokenUsage(_: Token): string | null;
@@ -793,7 +793,7 @@ export { PerceptualDistancePlugin } from './PerceptualDistancePlugin.js';
 export { ColorBlindnessPlugin } from './ColorBlindnessPlugin.js';
 
 // src/Teikn.d.ts
-import { CssVars, DtcgGenerator, Generator, Html, JavaScript, Json, Scss, ScssVars, Storybook, TypeScript, TypeScriptDeclarations } from './Generators/index.js';
+import { CssVars, Dtcg, Generator, Html, JavaScript, Json, Scss, ScssVars, Storybook, TypeScript, TypeScriptDeclarations } from './Generators/index.js';
 import type { AuditIssue } from './Plugins/index.js';
 import { AlphaMultiplyPlugin, ClampPlugin, ColorBlindnessPlugin, ColorTransformPlugin, ContrastValidatorPlugin, DeprecationPlugin, MinFontSizePlugin, NameConventionPlugin, PalettePlugin, PerceptualDistancePlugin, Plugin, PrefixTypePlugin, ReducedMotionPlugin, RemUnitPlugin, ScssQuoteValuePlugin, StripTypePrefixPlugin, TouchTargetPlugin } from './Plugins/index.js';
 import { resolveReferences } from './resolve.js';
@@ -820,7 +820,7 @@ declare const BuiltInPlugins: {
 };
 declare const BuiltInGenerators: {
     CssVars: typeof CssVars;
-    Dtcg: typeof DtcgGenerator;
+    Dtcg: typeof Dtcg;
     Html: typeof Html;
     JavaScript: typeof JavaScript;
     Json: typeof Json;
@@ -2664,7 +2664,7 @@ exports[`runtime export names > "." exports a stable set of names 1`] = `
   "CubicBezier",
   "DeprecationPlugin",
   "Dimension",
-  "DtcgGenerator",
+  "Dtcg",
   "DtcgTypes",
   "Duration",
   "Generator",
@@ -2831,7 +2831,7 @@ exports[`runtime export names > "./color" exports a stable set of names 1`] = `
 exports[`runtime export names > "./generators" exports a stable set of names 1`] = `
 [
   "CssVars",
-  "DtcgGenerator",
+  "Dtcg",
   "Generator",
   "Html",
   "JavaScript",

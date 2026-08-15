@@ -8,7 +8,7 @@ import { describe, expect, it } from 'vitest';
 import { composite, dim, dur, group, ref, theme, tokens as combineTokens } from '../builders.js';
 import {
   CssVars,
-  DtcgGenerator,
+  Dtcg,
   Html,
   JavaScript,
   Json,
@@ -288,7 +288,7 @@ const buildGenerators = (): Generator[] => [
   new ScssVars({ filename: 'tokens-vars', dateFn: fixedDate }),
   new Html({ dateFn: fixedDate }),
   new Json(),
-  new DtcgGenerator(),
+  new Dtcg(),
   new JavaScript({ filename: 'tokens-js', dateFn: fixedDate }),
   new TypeScript({ filename: 'tokens-ts', dateFn: fixedDate }),
   new TypeScriptDeclarations({ filename: 'tokens-decl', dateFn: fixedDate }),

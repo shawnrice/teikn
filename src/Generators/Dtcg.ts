@@ -15,7 +15,7 @@ export type DtcgOpts = {
   separator?: string;
 } & GeneratorOptions;
 
-export class DtcgGenerator extends Generator<DtcgOpts> {
+export class Dtcg extends Generator<DtcgOpts> {
   constructor(options = {}) {
     super(Object.assign({}, defaultOptions, options));
   }
