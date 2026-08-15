@@ -23,7 +23,9 @@
   "files": [
     "lib",
     "!lib/**/*.map",
-    "!lib/tsconfig.tsbuildinfo"
+    "!lib/tsconfig.tsbuildinfo",
+    "!lib/src/**/*.type-test.js",
+    "!lib/src/**/*.type-test.d.ts"
   ],
   "type": "module",
   "main": "lib/index.js",
