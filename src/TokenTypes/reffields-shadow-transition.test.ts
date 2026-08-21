@@ -6,12 +6,12 @@ import { Dtcg } from '../Generators/Dtcg.js';
 import { resolveReferences } from '../resolve.js';
 import type { Token } from '../Token.js';
 import { validate } from '../validate.js';
-import { BoxShadow } from './BoxShadow.js';
+import { BoxShadow, BoxShadowList } from './BoxShadow.js';
 import { Color } from './Color/index.js';
 import { CubicBezier } from './CubicBezier.js';
 import { Duration } from './Duration.js';
 import { hasRefFields } from './ref-guard.js';
-import { Transition } from './Transition.js';
+import { Transition, TransitionList } from './Transition.js';
 
 // Per-field reference (RefFields) support for BoxShadow and Transition — the
 // two first-class value types that gained the protocol so a shared token used
@@ -248,5 +248,105 @@ describe('Transition RefFields', () => {
     expect(
       result.issues.some(i => /Unresolved reference in field "duration"/.test(i.message)),
     ).toBe(true);
+  });
+});
+
+// The list wrappers hold no refs directly, but each layer can — so a `{ref}`
+// inside a layer must resolve, emit a var()/alias, and validate, exactly as it
+// does for a single shadow/transition. The list exposes its layers as fields.
+describe('BoxShadowList / TransitionList RefFields (per-layer)', () => {
+  test('BoxShadowList and TransitionList report hasRefFields', () => {
+    expect(hasRefFields(new BoxShadowList([new BoxShadow({ blur: 2, color: '{ink}' })]))).toBe(
+      true,
+    );
+    expect(
+      hasRefFields(
+        new TransitionList([new Transition({ duration: '{fast}', timingFunction: 'ease' })]),
+      ),
+    ).toBe(true);
+  });
+
+  test('a shared color inside a shadow-list layer emits var(--…) in CSS', () => {
+    const tokens: Token[] = [
+      { name: 'ink', type: 'color', value: new Color(0, 0, 0) },
+      {
+        name: 'stack',
+        type: 'shadow',
+        value: new BoxShadowList([
+          new BoxShadow({ offsetY: 1, blur: 2, color: '{ink}' }),
+          new BoxShadow({ offsetY: 4, blur: 8, color: '{ink}' }),
+        ]),
+      },
+    ];
+    const css = new CssVars(testOpts).generate(tokens);
+    expect(css).toContain('--stack: 0 1px 2px var(--ink), 0 4px 8px var(--ink);');
+    expect(css).not.toContain('{ink}');
+  });
+
+  test('a shared duration inside a transition-list layer emits var(--…) in CSS', () => {
+    const tokens: Token[] = [
+      { name: 'fast', type: 'duration', value: new Duration(100, 'ms') },
+      {
+        name: 'multi',
+        type: 'transition',
+        value: new TransitionList([
+          new Transition({ duration: '{fast}', timingFunction: 'ease' }),
+          new Transition({ duration: '{fast}', timingFunction: 'linear' }),
+        ]),
+      },
+    ];
+    const css = new CssVars(testOpts).generate(tokens);
+    expect(css).toContain('--multi: var(--fast) ease, var(--fast) linear;');
+  });
+
+  test('resolve rebuilds a BoxShadowList with each layer ref resolved', () => {
+    const tokens: Token[] = [
+      { name: 'ink', type: 'color', value: new Color(10, 20, 30) },
+      {
+        name: 'stack',
+        type: 'shadow',
+        value: new BoxShadowList([new BoxShadow({ blur: 2, color: '{ink}' })]),
+      },
+    ];
+    const resolved = resolveReferences(tokens)[1]!.value as BoxShadowList;
+    expect(resolved).toBeInstanceOf(BoxShadowList);
+    expect(resolved.layers[0]!.color).toBeInstanceOf(Color);
+  });
+
+  test('a resolved shadow-list layer {ref} becomes a DTCG alias array entry', () => {
+    const tokens: Token[] = [
+      { name: 'ink', type: 'color', value: new Color(0, 0, 0) },
+      {
+        name: 'stack',
+        type: 'shadow',
+        value: new BoxShadowList([new BoxShadow({ blur: 2, color: '{ink}' })]),
+      },
+    ];
+    const dtcg = JSON.parse(new Dtcg({ hierarchical: false }).generate(tokens));
+    expect(dtcg.stack.$value[0].color).toBe('{ink}');
+  });
+
+  test('a dangling ref inside a list layer is flagged by validate()', () => {
+    const result = validate([
+      {
+        name: 'stack',
+        type: 'shadow',
+        value: new BoxShadowList([new BoxShadow({ blur: 2, color: '{nope}' })]),
+      },
+    ]);
+    expect(result.valid).toBe(false);
+    expect(result.issues.some(i => /Unresolved reference in field "color"/.test(i.message))).toBe(
+      true,
+    );
+  });
+
+  test('__teikn_fromFields__ rebuilds an equivalent list', () => {
+    const list = new BoxShadowList([
+      new BoxShadow({ offsetY: 1, blur: 2, color: new Color(0, 0, 0) }),
+      new BoxShadow({ offsetY: 4, blur: 8, color: new Color(0, 0, 0) }),
+    ]);
+    const rebuilt = list.__teikn_fromFields__(list.__teikn_fields__());
+    expect(rebuilt).toBeInstanceOf(BoxShadowList);
+    expect(String(rebuilt)).toBe(String(list));
   });
 });

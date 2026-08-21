@@ -278,7 +278,7 @@ export class Transition implements RefFields {
 
 // ─── TransitionList ───────────────────────────────────────────
 
-export class TransitionList {
+export class TransitionList implements RefFields {
   /** @internal brand — do not use directly; see `isFirstClassValue()` */
   readonly __teikn_fcv__: true = true;
   readonly #layers: readonly Transition[];
@@ -314,6 +314,22 @@ export class TransitionList {
 
   map(fn: (transition: Transition, index: number) => Transition): TransitionList {
     return new TransitionList(this.#layers.map(fn));
+  }
+
+  // ─── Per-field reference protocol ────────────────────────────
+  // A list has no named fields; its "fields" are its layers. Exposing them
+  // lets resolve.ts / validate.ts (both generic over RefFields) descend into
+  // each layer — which, being a Transition, resolves its own field references.
+
+  /** @internal */
+  __teikn_fields__(): Record<string, unknown> {
+    return { ...this.#layers };
+  }
+
+  /** @internal */
+  // oxlint-disable-next-line class-methods-use-this -- protocol method, detected per-instance
+  __teikn_fromFields__(fields: Record<string, unknown>): TransitionList {
+    return new TransitionList(Object.values(fields) as Transition[]);
   }
 
   toJSON(): string {

@@ -1358,7 +1358,7 @@ export declare class BoxShadow implements RefFields {
     /** Combine multiple shadows into a single CSS value */
     static combine(...shadows: BoxShadow[]): string;
 }
-export declare class BoxShadowList {
+export declare class BoxShadowList implements RefFields {
     #private;
     /** @internal brand — do not use directly; see \`isFirstClassValue()\` */
     readonly __teikn_fcv__: true;
@@ -1367,6 +1367,10 @@ export declare class BoxShadowList {
     get length(): number;
     at(index: number): BoxShadow | undefined;
     map(fn: (shadow: BoxShadow, index: number) => BoxShadow): BoxShadowList;
+    /** @internal */
+    __teikn_fields__(): Record<string, unknown>;
+    /** @internal */
+    __teikn_fromFields__(fields: Record<string, unknown>): BoxShadowList;
     toJSON(): string;
     toString(): string;
     static from(value: BoxShadowList | string | BoxShadow[]): BoxShadowList;
@@ -2234,7 +2238,7 @@ export declare class Transition implements RefFields {
     static readonly slide: Transition;
     static readonly quick: Transition;
 }
-export declare class TransitionList {
+export declare class TransitionList implements RefFields {
     #private;
     /** @internal brand — do not use directly; see \`isFirstClassValue()\` */
     readonly __teikn_fcv__: true;
@@ -2243,6 +2247,10 @@ export declare class TransitionList {
     get length(): number;
     at(index: number): Transition | undefined;
     map(fn: (transition: Transition, index: number) => Transition): TransitionList;
+    /** @internal */
+    __teikn_fields__(): Record<string, unknown>;
+    /** @internal */
+    __teikn_fromFields__(fields: Record<string, unknown>): TransitionList;
     toJSON(): string;
     toString(): string;
     static from(value: TransitionList | string | Transition[]): TransitionList;
