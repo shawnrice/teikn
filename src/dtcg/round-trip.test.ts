@@ -56,12 +56,9 @@ const corpus: Token[] = [
   group('duration', { fast, slow: new Duration(300, 'ms') }),
   group('timing', { ease }),
   group('shadow', {
-    // NOTE: the shadow color is an inline Color, not the shared `color.ink`
-    // token. BoxShadow stores a concrete Color and does not yet support an
-    // aliased color field (RefFields), so a shared color would serialize to a
-    // `{alias}` the parser cannot rebuild. That gap is tracked separately; the
-    // alias round-trip path is covered by the transition tokens below.
-    sm: new BoxShadow({ offsetY: 1, blur: 2, color: new Color(0, 0, 0, 0.12) }),
+    // The shadow color is the shared `color.ink` token, so it serializes to a
+    // `{alias}` — exercising BoxShadow's per-field reference (RefFields) support.
+    sm: new BoxShadow({ offsetY: 1, blur: 2, color: shadowInk }),
     // Multi-layer shadow — serializes to a `$value` array.
     elevated: new BoxShadowList([
       new BoxShadow({ offsetY: 2, blur: 4, color: new Color(0, 0, 0, 0.1) }),
@@ -86,15 +83,15 @@ const corpus: Token[] = [
   }),
   group('transition', {
     // `fade` shares the `fast`/`ease` token instances, so it serializes with
-    // `{alias}` fields — covering the alias round-trip path (a single
-    // transition parses back to a plain composite that preserves the aliases).
+    // `{alias}` fields — a single transition parses back to a plain composite
+    // that preserves the aliases.
     fade: new Transition(fast, ease),
-    // `multi` uses inline instances. A TransitionList is rebuilt into Transition
-    // instances on parse, and Transition (like BoxShadow) does not yet hold an
-    // aliased field, so list layers with shared refs are the same tracked gap.
+    // `multi` shares the same instances inside a list. A TransitionList is
+    // rebuilt into Transition instances on parse, which hold the aliased fields
+    // via the RefFields protocol — so list layers with shared refs round-trip.
     multi: new TransitionList([
-      new Transition(new Duration(150, 'ms'), new CubicBezier(0.4, 0, 0.2, 1)),
-      new Transition(new Duration(300, 'ms'), new CubicBezier(0.4, 0, 0.2, 1)),
+      new Transition(fast, ease),
+      new Transition(new Duration(300, 'ms'), ease),
     ]),
   }),
   group('typography', {
@@ -187,5 +184,20 @@ describe('DTCG round-trip: regression shape pins', () => {
     const doc = serializeDtcg([tokenNamed('shadow.elevated')]);
     const [parsed] = parseDtcg(doc);
     expect(parsed!.value).toBeInstanceOf(BoxShadowList);
+  });
+
+  test('a shared color inside a shadow serializes as a {alias} and round-trips (RefFields)', () => {
+    const shared = new Color(0, 0, 0, 0.2);
+    const tokens = [
+      ...group('color', { ink: shared }),
+      ...group('shadow', { card: new BoxShadow({ offsetY: 2, blur: 8, color: shared }) }),
+    ];
+    const { once, twice } = fixedPoint(tokens);
+    // The shadow's color is emitted as an alias to the shared token (a string),
+    // not an inline color object — and the alias survives the round-trip.
+    const shadowColor = (once as Record<string, any>).card.$value.color;
+    expect(typeof shadowColor).toBe('string');
+    expect(shadowColor).toMatch(/^\{.+\}$/);
+    expect(twice).toEqual(once);
   });
 });

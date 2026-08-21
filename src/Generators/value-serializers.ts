@@ -3,6 +3,7 @@ import type { TokenValue } from '../Token.js';
 import { Border } from '../TokenTypes/Border.js';
 import { BoxShadow, BoxShadowList } from '../TokenTypes/BoxShadow.js';
 import { GradientList, LinearGradient, RadialGradient } from '../TokenTypes/Gradient.js';
+import { isRefString } from '../TokenTypes/ref-guard.js';
 import { Transition } from '../TokenTypes/Transition.js';
 import { Typography } from '../TokenTypes/Typography.js';
 import { isFirstClassValue } from '../type-classifiers.js';
@@ -160,12 +161,16 @@ export const stringifyTransitionWithRefs = (t: Transition, ref: RefResolver): st
 
   if (timing) {
     parts.push(timing);
+  } else if (isRefString(t.timingFunction)) {
+    parts.push(t.timingFunction);
   } else {
     const { keyword } = t.timingFunction;
     parts.push(keyword ?? t.timingFunction.toString());
   }
 
-  if (t.delay.value !== 0) {
+  const delayHasValue = isRefString(t.delay) ? true : t.delay.value !== 0;
+
+  if (delayHasValue) {
     parts.push(ref(t.delay) ?? t.delay.toString());
   }
 
@@ -261,7 +266,7 @@ export const visitComponents = (value: unknown, fn: (v: unknown) => void): void 
     fn(value.duration);
     fn(value.timingFunction);
 
-    if (value.delay.value !== 0) {
+    if (isRefString(value.delay) ? true : value.delay.value !== 0) {
       fn(value.delay);
     }
   } else if (value instanceof BoxShadow) {

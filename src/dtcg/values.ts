@@ -113,8 +113,15 @@ const resolveDim = (d: DtcgDimensionValue | string): number =>
   typeof d === 'string' ? parseFloat(d) : d.value;
 
 const shadowToTeikn = (value: DtcgShadowValue): BoxShadow => {
-  const resolveColor = (c: DtcgColorValue | string): Color =>
-    typeof c === 'string' ? new Color(c) : colorToTeikn(c);
+  // An aliased color (a shared color token) comes back as a `{ref}` string and
+  // is kept as-is — BoxShadow holds it via the RefFields protocol.
+  const resolveColor = (c: DtcgColorValue | string): Color | string => {
+    if (isAlias(c)) {
+      return c;
+    }
+
+    return typeof c === 'string' ? new Color(c) : colorToTeikn(c);
+  };
 
   return new BoxShadow(
     resolveDim(value.offsetX),
@@ -328,17 +335,27 @@ const dtcgAlias = (name: string): string => `{${name}}`;
 const durationToDtcg = (d: Duration): DtcgDurationValue => ({ value: d.value, unit: d.unit });
 
 const transitionToDtcg = (t: Transition, refMap?: DtcgRefMap): Record<string, unknown> => {
-  const ref = (v: unknown) => refMap?.get(v);
-  const durRef = ref(t.duration);
-  const tfRef = ref(t.timingFunction);
-  const result: Record<string, unknown> = {
-    duration: durRef ? dtcgAlias(durRef) : durationToDtcg(t.duration),
-    timingFunction: tfRef ? dtcgAlias(tfRef) : cubicBezierToDtcg(t.timingFunction),
+  // A shared instance → `{alias}`; an already-`{ref}` field (from a parsed
+  // document) passes through verbatim; otherwise the concrete conversion.
+  const field = <T>(value: T | string, toDtcg: (value: T) => unknown): unknown => {
+    const refName = refMap?.get(value);
+
+    if (refName) {
+      return dtcgAlias(refName);
+    }
+
+    return isAlias(value) ? value : toDtcg(value as T);
   };
 
-  if (t.delay.value !== 0) {
-    const delayRef = ref(t.delay);
-    result.delay = delayRef ? dtcgAlias(delayRef) : durationToDtcg(t.delay);
+  const result: Record<string, unknown> = {
+    duration: field(t.duration, durationToDtcg),
+    timingFunction: field(t.timingFunction, cubicBezierToDtcg),
+  };
+
+  const delayHasValue = t.delay instanceof Duration && t.delay.value !== 0;
+
+  if (isAlias(t.delay) || delayHasValue) {
+    result.delay = field(t.delay, durationToDtcg);
   }
 
   if (t.property && t.property !== 'all') {

@@ -202,7 +202,10 @@ describe('resolveReferences', () => {
     const t = new Transition('0.2s', 'ease');
     const tokens: Token[] = [{ name: 'fade', type: 'transition', value: t }];
     const result = resolveReferences(tokens);
-    expect(result[0]!.value).toBe(t);
+    // Transition implements RefFields, so resolve rebuilds it from resolved
+    // fields — an equivalent Transition, never a destructured plain object.
+    expect(result[0]!.value).toBeInstanceOf(Transition);
+    expect(String(result[0]!.value)).toBe(String(t));
   });
 
   test('LinearGradient resolves per-stop refs but stays a LinearGradient', () => {

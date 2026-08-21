@@ -1324,6 +1324,7 @@ export declare class Border implements RefFields {
 
 // src/TokenTypes/BoxShadow.d.ts
 import { Color } from './Color/index.js';
+import type { RefFields } from './ref-guard.js';
 export type BoxShadowOptions = {
     offsetX?: number;
     offsetY?: number;
@@ -1332,7 +1333,7 @@ export type BoxShadowOptions = {
     color?: Color | string;
     inset?: boolean;
 };
-export declare class BoxShadow {
+export declare class BoxShadow implements RefFields {
     #private;
     /** @internal brand — do not use directly; see \`isFirstClassValue()\` */
     readonly __teikn_fcv__: true;
@@ -1342,8 +1343,12 @@ export declare class BoxShadow {
     get offsetY(): number;
     get blur(): number;
     get spread(): number;
-    get color(): Color;
+    get color(): Color | string;
     get inset(): boolean;
+    /** @internal */
+    __teikn_fields__(): Record<string, unknown>;
+    /** @internal */
+    __teikn_fromFields__(fields: Record<string, unknown>): BoxShadow;
     with(updates: BoxShadowOptions): BoxShadow;
     /** Scale all numeric values (offsets, blur, spread) by a factor */
     scale(factor: number): BoxShadow;
@@ -2189,26 +2194,31 @@ export {};
 // src/TokenTypes/Transition.d.ts
 import { CubicBezier } from './CubicBezier.js';
 import { Duration } from './Duration.js';
+import type { RefFields } from './ref-guard.js';
 export type TransitionInput = {
     duration: Duration | string;
     timingFunction: CubicBezier | string;
     delay?: Duration | string;
     property?: string;
 };
-export declare class Transition {
+export declare class Transition implements RefFields {
     #private;
     /** @internal brand — do not use directly; see \`isFirstClassValue()\` */
     readonly __teikn_fcv__: true;
     constructor(duration: Duration | string, timingFunction: CubicBezier | string, delay?: Duration | string, property?: string);
     constructor(input: TransitionInput | Transition | string);
-    get duration(): Duration;
-    get timingFunction(): CubicBezier;
-    get delay(): Duration;
+    get duration(): Duration | string;
+    get timingFunction(): CubicBezier | string;
+    get delay(): Duration | string;
     get property(): string;
     setDuration(duration: Duration | string): Transition;
     setTimingFunction(tf: CubicBezier | string): Transition;
     setDelay(delay: Duration | string): Transition;
     setProperty(property: string): Transition;
+    /** @internal */
+    __teikn_fields__(): Record<string, unknown>;
+    /** @internal */
+    __teikn_fromFields__(fields: Record<string, unknown>): Transition;
     /** T.scale(k) → (d·k, f, δ·k, p) — uniform time dilation */
     scale(factor: number): Transition;
     /** T.shift(Δ) → (d, f, δ+Δ, p) — delay offset */
