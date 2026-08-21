@@ -2,10 +2,12 @@ import { Border } from '../TokenTypes/Border.js';
 import { BoxShadow, BoxShadowList } from '../TokenTypes/BoxShadow.js';
 import { Color } from '../TokenTypes/Color/index.js';
 import { CubicBezier } from '../TokenTypes/CubicBezier.js';
-import { Dimension } from '../TokenTypes/Dimension.js';
+import { Dimension, isDimensionUnit } from '../TokenTypes/Dimension.js';
+import type { DimensionUnit } from '../TokenTypes/Dimension.js';
 import { Duration, isDurationUnit } from '../TokenTypes/Duration.js';
 import { GradientList, LinearGradient, RadialGradient } from '../TokenTypes/Gradient.js';
 import { Transition, TransitionList } from '../TokenTypes/Transition.js';
+import type { TransitionInput } from '../TokenTypes/Transition.js';
 import { Typography } from '../TokenTypes/Typography.js';
 import type {
   DtcgColorValue,
@@ -21,17 +23,20 @@ import { DtcgTypes } from './types.js';
 
 // ─── Helpers ─────────────────────────────────────────────────
 
-const dimensionRe = /^(-?\d+(?:\.\d+)?)(px|rem)$/;
+// Numeric prefix + unit suffix. The unit is validated against teikn's full set
+// of dimension units (not just px/rem) so em, %, vh, etc. serialize to a
+// structured `{value, unit}` DTCG dimension instead of an unparseable string.
+const dimensionRe = /^(-?\d*\.?\d+)([a-z%]+)$/i;
 const durationRe = /^(-?\d+(?:\.\d+)?)(ms|s)$/;
 
-const parseDimension = (str: string): { value: number; unit: 'px' | 'rem' } | null => {
+const parseDimension = (str: string): { value: number; unit: DimensionUnit } | null => {
   const m = str.match(dimensionRe);
 
-  if (!m) {
+  if (!m || !isDimensionUnit(m[2]!)) {
     return null;
   }
 
-  return { value: parseFloat(m[1]!), unit: m[2]! as 'px' | 'rem' };
+  return { value: parseFloat(m[1]!), unit: m[2]! as DimensionUnit };
 };
 
 const parseDuration = (str: string): { value: number; unit: 'ms' | 's' } | null => {
@@ -64,7 +69,10 @@ const teiknToDtcgMap: Record<string, string> = {
   breakpoint: 'dimension',
   'font-size': 'dimension',
   'letter-spacing': 'dimension',
-  'line-height': 'dimension',
+  // Unitless ratio, not a length — DTCG has no line-height type, so `number`
+  // is the faithful (and spec-valid) mapping. A `dimension` type here would
+  // emit a bare number that the parser cannot reconstruct into a Dimension.
+  'line-height': 'number',
   opacity: 'number',
   'z-layer': 'number',
   'z-index': 'number',
@@ -176,7 +184,10 @@ export const dtcgValueToTeikn = (value: DtcgValue, type: string): any => {
     case DtcgTypes.color:
       return colorToTeikn(value as DtcgColorValue);
     case DtcgTypes.dimension:
-      return dimensionToTeikn(value as DtcgDimensionValue);
+      // Structured `{value, unit}` rebuilds a Dimension; anything else (a bare
+      // unitless string like "0", a legacy raw form) passes through untouched
+      // rather than crashing the Dimension constructor.
+      return isDtcgDimension(value) ? dimensionToTeikn(value) : value;
     case DtcgTypes.duration:
       return durationToTeikn(value as DtcgDurationValue);
     case DtcgTypes.cubicBezier:
@@ -192,13 +203,30 @@ export const dtcgValueToTeikn = (value: DtcgValue, type: string): any => {
     case DtcgTypes.fontStyle:
       return value;
     case DtcgTypes.shadow:
-      return shadowToTeikn(value as DtcgShadowValue);
+      // DTCG allows a shadow `$value` to be an array of layers — reconstruct a
+      // BoxShadowList in that case, mirroring how the list is serialized.
+      return Array.isArray(value)
+        ? new BoxShadowList((value as unknown as DtcgShadowValue[]).map(shadowToTeikn))
+        : shadowToTeikn(value as DtcgShadowValue);
     case DtcgTypes.gradient:
-      return gradientToTeikn(value as DtcgGradientValue);
+      // A GradientList serializes to an array of gradients (each itself an
+      // array of stops); a single gradient is a flat array of stops. A nested
+      // array therefore marks the list form.
+      return Array.isArray(value) && Array.isArray(value[0])
+        ? new GradientList((value as unknown as DtcgGradientStop[][]).map(gradientToTeikn))
+        : gradientToTeikn(value as DtcgGradientValue);
     case DtcgTypes.border:
       return convertCompositeFields(value as Record<string, unknown>);
     case DtcgTypes.transition:
-      return convertCompositeFields(value as Record<string, unknown>);
+      // A TransitionList serializes to an array of transition composites;
+      // rebuild each layer into a Transition, mirroring the serialized form.
+      return Array.isArray(value)
+        ? new TransitionList(
+            (value as Record<string, unknown>[]).map(
+              layer => new Transition(convertCompositeFields(layer) as unknown as TransitionInput),
+            ),
+          )
+        : convertCompositeFields(value as Record<string, unknown>);
     case DtcgTypes.typography:
       return convertCompositeFields(value as Record<string, unknown>);
     default:

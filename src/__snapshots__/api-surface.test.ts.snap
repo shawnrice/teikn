@@ -2585,6 +2585,7 @@ export type SerializeOptions = {
 export declare const serializeDtcg: (tokens: Token[], options?: SerializeOptions) => DtcgDocument;
 
 // src/dtcg/types.d.ts
+import type { DimensionUnit } from '../TokenTypes/Dimension.js';
 export type DtcgColorValue = {
     colorSpace: string;
     components: [number, number, number];
@@ -2592,7 +2593,7 @@ export type DtcgColorValue = {
 };
 export type DtcgDimensionValue = {
     value: number;
-    unit: 'px' | 'rem';
+    unit: DimensionUnit;
 };
 export type DtcgDurationValue = {
     value: number;

@@ -109,21 +109,25 @@ describe('public .d.ts type surface', () => {
       stdio: 'pipe',
     });
 
-    const files = collectPublicDts(outDir);
-    expect(files.length).toBeGreaterThan(0);
+    try {
+      const files = collectPublicDts(outDir);
+      expect(files.length).toBeGreaterThan(0);
 
-    // A cheap-to-read manifest: adding or removing a public module is a
-    // one-line diff here, independent of the full-content snapshot below.
-    const manifest = files.map(file => relative(outDir, file)).join('\n');
-    expect(manifest).toMatchSnapshot('module-manifest');
+      // A cheap-to-read manifest: adding or removing a public module is a
+      // one-line diff here, independent of the full-content snapshot below.
+      const manifest = files.map(file => relative(outDir, file)).join('\n');
+      expect(manifest).toMatchSnapshot('module-manifest');
 
-    // The full public type surface, concatenated deterministically.
-    const surface = files
-      .map(file => `// ${relative(outDir, file)}\n${readFileSync(file, 'utf8').trim()}`)
-      .join('\n\n');
-    expect(surface).toMatchSnapshot('declarations');
-
-    rmSync(outDir, { recursive: true, force: true });
+      // The full public type surface, concatenated deterministically.
+      const surface = files
+        .map(file => `// ${relative(outDir, file)}\n${readFileSync(file, 'utf8').trim()}`)
+        .join('\n\n');
+      expect(surface).toMatchSnapshot('declarations');
+    } finally {
+      // Always clean up, even on a snapshot mismatch, so a legitimate diff
+      // doesn't cascade into the scratch-dir guard below.
+      rmSync(outDir, { recursive: true, force: true });
+    }
   });
 });
 
