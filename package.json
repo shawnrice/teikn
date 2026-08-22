@@ -63,6 +63,7 @@
     "prepublishOnly": "tsc",
     "storybook": "storybook dev -p 6006",
     "test": "bun test",
+    "test:coverage": "bun test --coverage",
     "test:node": "vitest run",
     "test:update": "bun test --update-snapshots && vitest run --update"
   },
