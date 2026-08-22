@@ -3,6 +3,7 @@ import { describe, expect, test } from 'bun:test';
 import { testOpts } from '../fixtures/testOpts.js';
 import { CssVars } from '../Generators/CssVars.js';
 import { Dtcg } from '../Generators/Dtcg.js';
+import { ScssVars } from '../Generators/ScssVars.js';
 import { resolveReferences } from '../resolve.js';
 import type { Token } from '../Token.js';
 import { validate } from '../validate.js';
@@ -348,5 +349,44 @@ describe('BoxShadowList / TransitionList RefFields (per-layer)', () => {
     const rebuilt = list.__teikn_fromFields__(list.__teikn_fields__());
     expect(rebuilt).toBeInstanceOf(BoxShadowList);
     expect(String(rebuilt)).toBe(String(list));
+  });
+
+  test('SCSS topo-sort orders a dependency shared inside a list layer first', () => {
+    const ink = new Color(0, 0, 0);
+    // `stack` is declared before `ink`, but its layers share the `ink` instance,
+    // so the dependency walk (visitComponents over the layers) must reorder the
+    // emitted `$` variables so `$ink` precedes `$stack`.
+    const tokens: Token[] = [
+      {
+        name: 'stack',
+        type: 'shadow',
+        value: new BoxShadowList([
+          new BoxShadow({ offsetY: 1, blur: 2, color: ink }),
+          new BoxShadow({ offsetY: 4, blur: 8, color: ink }),
+        ]),
+      },
+      { name: 'ink', type: 'color', value: ink },
+    ];
+    const scss = new ScssVars(testOpts).generate(tokens);
+    expect(scss).toContain('$stack: 0 1px 2px $ink, 0 4px 8px $ink;');
+    expect(scss.indexOf('$ink:')).toBeLessThan(scss.indexOf('$stack:'));
+  });
+
+  test('SCSS topo-sort follows a dependency shared inside a transition-list layer', () => {
+    const fast = new Duration(100, 'ms');
+    const tokens: Token[] = [
+      {
+        name: 'multi',
+        type: 'transition',
+        value: new TransitionList([
+          new Transition({ duration: fast, timingFunction: 'ease' }),
+          new Transition({ duration: fast, timingFunction: 'linear' }),
+        ]),
+      },
+      { name: 'fast', type: 'duration', value: fast },
+    ];
+    const scss = new ScssVars(testOpts).generate(tokens);
+    expect(scss).toContain('$multi: $fast ease, $fast linear;');
+    expect(scss.indexOf('$fast:')).toBeLessThan(scss.indexOf('$multi:'));
   });
 });
