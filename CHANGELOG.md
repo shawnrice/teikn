@@ -1,5 +1,32 @@
 # Changelog
 
+## 2.0.0-beta.10
+
+### Added
+
+- **`Transition` and `TransitionList` support per-field references.** A `{token}` reference in a
+  transition's `duration`, `timingFunction`, or `delay` is now resolved per-field before generation
+  (like `Border`, `Typography`, and `BoxShadow`) instead of being rejected, so a shared duration or
+  easing token used inside a transition emits `var(--…)`/`$…` and round-trips as a DTCG alias. The
+  `duration`/`timingFunction`/`delay` getters may return the `{ref}` string until it is resolved; a
+  whole-value reference passed to the constructor is still rejected.
+
+### Fixed
+
+- **DTCG serialization of `line-height` and font-relative dimensions round-trips.** Unitless
+  `line-height` serializes as a `number` (it was emitted as a `dimension` the parser could not read
+  back), and `em`/`%` dimensions serialize as a structured `{ value, unit }` instead of a bare
+  string.
+
+### Changed
+
+- **`DtcgGenerator` renamed to `Dtcg`.** The class name now matches its `Teikn.generators.Dtcg` key
+  and every other generator. Change any direct `import { DtcgGenerator }` to `import { Dtcg }`; the
+  `Teikn.generators.Dtcg` accessor is unchanged.
+- **Removed the `isXxxType` type-classifier predicates** (`isShadowType`, `isBorderRadiusType`, and
+  the rest). They duplicated the internal `previewRules` table and had no callers. `isColorType` is
+  kept.
+
 ## 2.0.0-beta.9
 
 ### Added
