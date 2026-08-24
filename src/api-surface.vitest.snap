@@ -2527,27 +2527,6 @@ export { BreakpointBar, BorderDemo, BorderStyleDemo, BorderWidthDemo, DurationBa
 import type { PreviewKind, Token } from './Token.js';
 export declare const isFirstClassValue: (value: unknown) => boolean;
 export declare const isColorType: (type: string) => boolean;
-export declare const isFontSizeType: (type: string) => boolean;
-export declare const isFontFamilyType: (type: string) => boolean;
-export declare const isFontWeightType: (type: string) => boolean;
-export declare const isTypographyType: (type: string) => boolean;
-export declare const isBorderRadiusType: (type: string) => boolean;
-export declare const isBorderWidthType: (type: string) => boolean;
-export declare const isBorderStyleType: (type: string) => boolean;
-export declare const isBorderType: (type: string) => boolean;
-export declare const isShadowType: (type: string) => boolean;
-export declare const isDurationType: (type: string) => boolean;
-export declare const isTimingType: (type: string) => boolean;
-export declare const isSpacingType: (type: string) => boolean;
-export declare const isGradientType: (type: string) => boolean;
-export declare const isOpacityType: (type: string) => boolean;
-export declare const isLineHeightType: (type: string) => boolean;
-export declare const isLetterSpacingType: (type: string) => boolean;
-export declare const isBreakpointType: (type: string) => boolean;
-export declare const isSizeType: (type: string) => boolean;
-export declare const isAspectRatioType: (type: string) => boolean;
-export declare const isZLayerType: (type: string) => boolean;
-export declare const isTransitionType: (type: string) => boolean;
 /**
  * Infer a {@link PreviewKind} from a token's \`type\` string. Falls back to
  * \`"table"\` (a generic name/value table) when nothing matches.
@@ -2754,36 +2733,15 @@ exports[`runtime export names > "." exports a stable set of names 1`] = `
   "hexToRGB",
   "hexToRGBWithAlpha",
   "isAbsoluteUnit",
-  "isAspectRatioType",
-  "isBorderRadiusType",
   "isBorderStyle",
-  "isBorderStyleType",
-  "isBorderType",
-  "isBorderWidthType",
-  "isBreakpointType",
   "isColorType",
   "isContainerUnit",
   "isConvertible",
   "isDimensionUnit",
-  "isDurationType",
   "isDurationUnit",
   "isFirstClassValue",
-  "isFontFamilyType",
   "isFontRelativeUnit",
-  "isFontSizeType",
-  "isFontWeightType",
-  "isGradientType",
-  "isLetterSpacingType",
-  "isLineHeightType",
-  "isOpacityType",
-  "isShadowType",
-  "isSizeType",
-  "isSpacingType",
-  "isTimingType",
-  "isTransitionType",
-  "isTypographyType",
   "isViewportUnit",
-  "isZLayerType",
   "namedColors",
   "namedColorsByValue",
   "onColor",
