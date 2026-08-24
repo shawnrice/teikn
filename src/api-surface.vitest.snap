@@ -147,6 +147,18 @@ export declare abstract class Generator<Opts extends GeneratorOptions = Generato
      */
     protected stringifyTokenValue(value: TokenValue): string;
     /**
+     * Rewrite each linked ref's \`link\` (a target token's *pre*-plugin emitted
+     * name) to the target's *post*-plugin name, using the positional
+     * correspondence between the pipeline's input and output tokens.
+     *
+     * Name-mangling plugins (NameConventionPlugin, StripTypePrefixPlugin) rename
+     * tokens, so a \`link\` captured before the pipeline would otherwise dangle.
+     * Resolving it here — after the plugin pipeline, per generator — is robust to
+     * any rename and to cross-type links, and works for primitive-valued targets
+     * that the identity refMap can't cover. No-op when nothing is linked.
+     */
+    protected remapLinks(input: Token[], transformed: Token[]): Token[];
+    /**
      * Run the plugin pipeline (filter by tokenType/outputType, apply transform)
      * without doing any value stringification. Ref-aware generators call this
      * before building their refMap so the map captures post-plugin names.
@@ -275,7 +287,7 @@ export type JsonOpts = {
 export declare class Json extends Generator<JsonOpts> {
     constructor(options?: {});
     describe(): GeneratorInfo;
-    generateToken(token: Token): Record<string, Omit<Token, 'name'>>;
+    generateToken(token: Token): Record<string, Omit<Token, 'name' | 'link'>>;
     combinator(tokens: Token[]): string;
 }
 
@@ -517,11 +529,15 @@ type ColorTransformPluginOptions = {
     type?: ColorFormat;
 } & Record<string, unknown>;
 /**
- * Normalizes colors
+ * Normalizes colors to a single format — including colors nested inside
+ * composite tokens (box shadows, borders, gradients), not just standalone
+ * \`color\` tokens. This keeps a shadow's color in the same space as the color
+ * tokens rather than falling through to the default serialization.
  */
 export declare class ColorTransformPlugin extends Plugin<ColorTransformPluginOptions> {
+    #private;
     outputType: RegExp;
-    tokenType: string;
+    tokenType: RegExp;
     readonly runAfter: string[];
     constructor(options: ColorTransformPluginOptions);
     transform(token: Token): Token;
@@ -593,11 +609,21 @@ export {};
 
 // src/Plugins/PalettePlugin.d.ts
 import type { Token } from '../Token.js';
+import type { ColorFormat } from '../TokenTypes/Color/types.js';
 import { Plugin } from './Plugin.js';
+/**
+ * Output color space for the generated ramp. \`'auto'\` (the default) keeps each
+ * step in the base color's authored space — a color authored in \`oklch\` yields
+ * an \`oklch\` ramp, one authored in hex/rgb keeps the RGB tint/shade output.
+ * Any concrete {@link ColorFormat} forces that space.
+ */
+export type PaletteSpace = ColorFormat | 'auto';
 type PalettePluginOptions = {
     steps?: number[];
     lightEnd?: number;
     darkEnd?: number;
+    /** See {@link PaletteSpace}. Default \`'auto'\`. */
+    space?: PaletteSpace;
 } & Record<string, unknown>;
 export declare class PalettePlugin extends Plugin<PalettePluginOptions> {
     tokenType: string;
@@ -611,9 +637,49 @@ export {};
 import type { Token } from '../Token.js';
 import type { AuditIssue } from './Plugin.js';
 import { Plugin } from './Plugin.js';
+/**
+ * "These two colors are too similar" is a judgment, and judgment needs intent:
+ * it presumes the two colors are *meant* to be told apart. Ramps (adjacent steps
+ * are supposed to be close), aliases (ΔE 0 by design), and unrelated families are
+ * not mutually-distinguishable peers, and there is no reliable way to infer which
+ * tokens are peers from their names or structure without baking one house style
+ * into a general tool.
+ *
+ * So this plugin takes the intent as input — the same model as
+ * \`ContrastValidatorPlugin\`, which never guesses foreground vs. background but is
+ * handed the pairs. Declare the peer \`sets\` that must be mutually distinguishable
+ * and it measures within each. Measurement itself is always fair game, so a
+ * non-gating \`report\` mode is available too. Nothing is compared by default.
+ */
 type PerceptualDistancePluginOptions = {
+    /** Minimum acceptable ΔE00 between two tokens in a peer set. Default: 5.0 */
     minDeltaE?: number;
+    /**
+     * Peer sets: each inner array lists token names that must be mutually
+     * distinguishable. The plugin measures every pair *within* each set and warns
+     * when ΔE00 falls below \`minDeltaE\`. Tokens not in any set are ignored.
+     */
+    sets?: string[][];
+    /**
+     * @deprecated Renamed to {@link PerceptualDistancePluginOptions.sets}.
+     * Still honored (as an alias) for backward compatibility; \`sets\` wins when
+     * both are given.
+     */
     groups?: string[][];
+    /**
+     * Opt in to comparing *every* pair of color tokens and gating below
+     * \`minDeltaE\`. This asserts that all color tokens are mutually-distinguishable
+     * peers — usually false once ramps and aliases exist — so it is off by default
+     * and must be requested explicitly.
+     */
+    all?: boolean;
+    /**
+     * Report mode: emit the pairwise ΔE00 as non-gating \`info\` findings
+     * (worst/most-similar first) with no pass/fail. Measures within \`sets\`/\`groups\`
+     * when provided, otherwise across all color pairs. Takes precedence over
+     * gating — use it to inspect the data and decide intent yourself.
+     */
+    report?: boolean;
 } & Record<string, unknown>;
 export declare class PerceptualDistancePlugin extends Plugin<PerceptualDistancePluginOptions> {
     tokenType: string;
@@ -921,12 +987,27 @@ export type Token = {
     deprecated?: boolean;
     /** Set by \`DeprecationPlugin\` when a replacement token is named. */
     replacement?: string;
+    /**
+     * Set by \`ref(name, { link: true })\`. Marks this token as a *linked*
+     * reference: reference-aware generators emit an alias to the referenced
+     * token (CSS \`var(--…)\`, SCSS \`$…\`, a DTCG \`{token}\` alias) instead of the
+     * flattened value, so a runtime override of the target flows through.
+     *
+     * The stored string is the referenced token's emitted name — the bare
+     * authored name at authoring time, rewritten to the final prefixed name by
+     * the pipeline (see \`prefixTokenNames\`) so generators can emit it directly.
+     * \`value\` is still resolved to the concrete value, so audits and
+     * non-aliasing generators are unaffected.
+     */
+    link?: string;
 };
 export type TokenInput = TokenValue | [value: TokenValue, usage: string] | TokenInputObject;
 export type TokenInputObject = {
     value: TokenValue | CompositeValue;
     usage?: string;
     modes?: ModeValues;
+    /** Set by \`ref(name, { link: true })\`; see {@link Token.link}. */
+    link?: string;
 };
 export type CompositeInput = Record<string, TokenValue>;
 export type CompositeTokenInput = CompositeInput | [value: CompositeInput, usage: string] | {
@@ -1033,6 +1114,8 @@ export type BoxShadowOptions = {
     spread?: number;
     color?: Color | string;
     inset?: boolean;
+    /** Length unit for the offsets/blur/spread. Default: \`px\`. */
+    unit?: string;
 };
 export declare class BoxShadow implements RefFields {
     #private;
@@ -1046,6 +1129,8 @@ export declare class BoxShadow implements RefFields {
     get spread(): number;
     get color(): Color | string;
     get inset(): boolean;
+    /** Length unit shared by the offsets/blur/spread (default \`px\`). */
+    get unit(): string;
     /** @internal */
     __teikn_fields__(): Record<string, unknown>;
     /** @internal */
@@ -1130,6 +1215,12 @@ export declare class Color {
     get saturation(): number;
     /** Lightness component (0-1) */
     get lightness(): number;
+    /**
+     * The color's native (authored) space — the space its value is stored in and
+     * that \`toString()\` / \`toString('native')\` serialize to. Useful for keeping a
+     * derived color in the same space it was authored in.
+     */
+    get space(): Space;
     static from(color: Color | string): Color;
     static fromRGB(r: number, g: number, b: number, a?: number): Color;
     static fromRGB(rgb: RGB, a?: number): Color;
@@ -1384,158 +1475,158 @@ import { type Flip } from './flip.js';
  * @see https://www.w3schools.com/colors/colors_hex.asp
  */
 export declare const namedColors: {
-    readonly black: "#000000";
-    readonly navy: "#000080";
-    readonly darkblue: "#00008b";
-    readonly mediumblue: "#0000cd";
-    readonly blue: "#0000ff";
-    readonly darkgreen: "#006400";
-    readonly green: "#008000";
-    readonly teal: "#008080";
-    readonly darkcyan: "#008b8b";
-    readonly deepskyblue: "#00bfff";
-    readonly darkturquoise: "#00ced1";
-    readonly mediumspringgreen: "#00fa9a";
-    readonly lime: "#00ff00";
-    readonly springgreen: "#00ff7f";
-    readonly aqua: "#00ffff";
-    readonly cyan: "#00ffff";
-    readonly midnightblue: "#191970";
-    readonly dodgerblue: "#1e90ff";
-    readonly lightseagreen: "#20b2aa";
-    readonly forestgreen: "#228b22";
-    readonly seagreen: "#2e8b57";
-    readonly darkslategray: "#2f4f4f";
-    readonly darkslategrey: "#2f4f4f";
-    readonly limegreen: "#32cd32";
-    readonly mediumseagreen: "#3cb371";
-    readonly turquoise: "#40e0d0";
-    readonly royalblue: "#4169e1";
-    readonly steelblue: "#4682b4";
-    readonly darkslateblue: "#483d8b";
-    readonly mediumturquoise: "#48d1cc";
-    readonly 'indigo ': "#4b0082";
-    readonly darkolivegreen: "#556b2f";
-    readonly cadetblue: "#5f9ea0";
-    readonly cornflowerblue: "#6495ed";
-    readonly rebeccapurple: "#663399";
-    readonly mediumaquamarine: "#66cdaa";
-    readonly dimgray: "#696969";
-    readonly dimgrey: "#696969";
-    readonly slateblue: "#6a5acd";
-    readonly olivedrab: "#6b8e23";
-    readonly slategray: "#708090";
-    readonly slategrey: "#708090";
-    readonly lightslategray: "#778899";
-    readonly lightslategrey: "#778899";
-    readonly mediumslateblue: "#7b68ee";
-    readonly lawngreen: "#7cfc00";
-    readonly chartreuse: "#7fff00";
-    readonly aquamarine: "#7fffd4";
-    readonly maroon: "#800000";
-    readonly purple: "#800080";
-    readonly olive: "#808000";
-    readonly gray: "#808080";
-    readonly grey: "#808080";
-    readonly skyblue: "#87ceeb";
-    readonly lightskyblue: "#87cefa";
-    readonly blueviolet: "#8a2be2";
-    readonly darkred: "#8b0000";
-    readonly darkmagenta: "#8b008b";
-    readonly saddlebrown: "#8b4513";
-    readonly darkseagreen: "#8fbc8f";
-    readonly lightgreen: "#90ee90";
-    readonly mediumpurple: "#9370db";
-    readonly darkviolet: "#9400d3";
-    readonly palegreen: "#98fb98";
-    readonly darkorchid: "#9932cc";
-    readonly yellowgreen: "#9acd32";
-    readonly sienna: "#a0522d";
-    readonly brown: "#a52a2a";
-    readonly darkgray: "#a9a9a9";
-    readonly darkgrey: "#a9a9a9";
-    readonly lightblue: "#add8e6";
-    readonly greenyellow: "#adff2f";
-    readonly paleturquoise: "#afeeee";
-    readonly lightsteelblue: "#b0c4de";
-    readonly powderblue: "#b0e0e6";
-    readonly firebrick: "#b22222";
-    readonly darkgoldenrod: "#b8860b";
-    readonly mediumorchid: "#ba55d3";
-    readonly rosybrown: "#bc8f8f";
-    readonly darkkhaki: "#bdb76b";
-    readonly silver: "#c0c0c0";
-    readonly mediumvioletred: "#c71585";
-    readonly 'indianred ': "#cd5c5c";
-    readonly peru: "#cd853f";
-    readonly chocolate: "#d2691e";
-    readonly tan: "#d2b48c";
-    readonly lightgray: "#d3d3d3";
-    readonly lightgrey: "#d3d3d3";
-    readonly thistle: "#d8bfd8";
-    readonly orchid: "#da70d6";
-    readonly goldenrod: "#daa520";
-    readonly palevioletred: "#db7093";
-    readonly crimson: "#dc143c";
-    readonly gainsboro: "#dcdcdc";
-    readonly plum: "#dda0dd";
-    readonly burlywood: "#deb887";
-    readonly lightcyan: "#e0ffff";
-    readonly lavender: "#e6e6fa";
-    readonly darksalmon: "#e9967a";
-    readonly violet: "#ee82ee";
-    readonly palegoldenrod: "#eee8aa";
-    readonly lightcoral: "#f08080";
-    readonly khaki: "#f0e68c";
-    readonly aliceblue: "#f0f8ff";
-    readonly honeydew: "#f0fff0";
-    readonly azure: "#f0ffff";
-    readonly sandybrown: "#f4a460";
-    readonly wheat: "#f5deb3";
-    readonly beige: "#f5f5dc";
-    readonly whitesmoke: "#f5f5f5";
-    readonly mintcream: "#f5fffa";
-    readonly ghostwhite: "#f8f8ff";
-    readonly salmon: "#fa8072";
-    readonly antiquewhite: "#faebd7";
-    readonly linen: "#faf0e6";
-    readonly lightgoldenrodyellow: "#fafad2";
-    readonly oldlace: "#fdf5e6";
-    readonly red: "#ff0000";
-    readonly fuchsia: "#ff00ff";
-    readonly magenta: "#ff00ff";
-    readonly deeppink: "#ff1493";
-    readonly orangered: "#ff4500";
-    readonly tomato: "#ff6347";
-    readonly hotpink: "#ff69b4";
-    readonly coral: "#ff7f50";
-    readonly darkorange: "#ff8c00";
-    readonly lightsalmon: "#ffa07a";
-    readonly orange: "#ffa500";
-    readonly lightpink: "#ffb6c1";
-    readonly pink: "#ffc0cb";
-    readonly gold: "#ffd700";
-    readonly peachpuff: "#ffdab9";
-    readonly navajowhite: "#ffdead";
-    readonly moccasin: "#ffe4b5";
-    readonly bisque: "#ffe4c4";
-    readonly mistyrose: "#ffe4e1";
-    readonly blanchedalmond: "#ffebcd";
-    readonly papayawhip: "#ffefd5";
-    readonly lavenderblush: "#fff0f5";
-    readonly seashell: "#fff5ee";
-    readonly cornsilk: "#fff8dc";
-    readonly lemonchiffon: "#fffacd";
-    readonly floralwhite: "#fffaf0";
-    readonly snow: "#fffafa";
-    readonly yellow: "#ffff00";
-    readonly lightyellow: "#ffffe0";
-    readonly ivory: "#fffff0";
-    readonly white: "#ffffff";
+    readonly black: '#000000';
+    readonly navy: '#000080';
+    readonly darkblue: '#00008b';
+    readonly mediumblue: '#0000cd';
+    readonly blue: '#0000ff';
+    readonly darkgreen: '#006400';
+    readonly green: '#008000';
+    readonly teal: '#008080';
+    readonly darkcyan: '#008b8b';
+    readonly deepskyblue: '#00bfff';
+    readonly darkturquoise: '#00ced1';
+    readonly mediumspringgreen: '#00fa9a';
+    readonly lime: '#00ff00';
+    readonly springgreen: '#00ff7f';
+    readonly aqua: '#00ffff';
+    readonly cyan: '#00ffff';
+    readonly midnightblue: '#191970';
+    readonly dodgerblue: '#1e90ff';
+    readonly lightseagreen: '#20b2aa';
+    readonly forestgreen: '#228b22';
+    readonly seagreen: '#2e8b57';
+    readonly darkslategray: '#2f4f4f';
+    readonly darkslategrey: '#2f4f4f';
+    readonly limegreen: '#32cd32';
+    readonly mediumseagreen: '#3cb371';
+    readonly turquoise: '#40e0d0';
+    readonly royalblue: '#4169e1';
+    readonly steelblue: '#4682b4';
+    readonly darkslateblue: '#483d8b';
+    readonly mediumturquoise: '#48d1cc';
+    readonly indigo: '#4b0082';
+    readonly darkolivegreen: '#556b2f';
+    readonly cadetblue: '#5f9ea0';
+    readonly cornflowerblue: '#6495ed';
+    readonly rebeccapurple: '#663399';
+    readonly mediumaquamarine: '#66cdaa';
+    readonly dimgray: '#696969';
+    readonly dimgrey: '#696969';
+    readonly slateblue: '#6a5acd';
+    readonly olivedrab: '#6b8e23';
+    readonly slategray: '#708090';
+    readonly slategrey: '#708090';
+    readonly lightslategray: '#778899';
+    readonly lightslategrey: '#778899';
+    readonly mediumslateblue: '#7b68ee';
+    readonly lawngreen: '#7cfc00';
+    readonly chartreuse: '#7fff00';
+    readonly aquamarine: '#7fffd4';
+    readonly maroon: '#800000';
+    readonly purple: '#800080';
+    readonly olive: '#808000';
+    readonly gray: '#808080';
+    readonly grey: '#808080';
+    readonly skyblue: '#87ceeb';
+    readonly lightskyblue: '#87cefa';
+    readonly blueviolet: '#8a2be2';
+    readonly darkred: '#8b0000';
+    readonly darkmagenta: '#8b008b';
+    readonly saddlebrown: '#8b4513';
+    readonly darkseagreen: '#8fbc8f';
+    readonly lightgreen: '#90ee90';
+    readonly mediumpurple: '#9370db';
+    readonly darkviolet: '#9400d3';
+    readonly palegreen: '#98fb98';
+    readonly darkorchid: '#9932cc';
+    readonly yellowgreen: '#9acd32';
+    readonly sienna: '#a0522d';
+    readonly brown: '#a52a2a';
+    readonly darkgray: '#a9a9a9';
+    readonly darkgrey: '#a9a9a9';
+    readonly lightblue: '#add8e6';
+    readonly greenyellow: '#adff2f';
+    readonly paleturquoise: '#afeeee';
+    readonly lightsteelblue: '#b0c4de';
+    readonly powderblue: '#b0e0e6';
+    readonly firebrick: '#b22222';
+    readonly darkgoldenrod: '#b8860b';
+    readonly mediumorchid: '#ba55d3';
+    readonly rosybrown: '#bc8f8f';
+    readonly darkkhaki: '#bdb76b';
+    readonly silver: '#c0c0c0';
+    readonly mediumvioletred: '#c71585';
+    readonly indianred: '#cd5c5c';
+    readonly peru: '#cd853f';
+    readonly chocolate: '#d2691e';
+    readonly tan: '#d2b48c';
+    readonly lightgray: '#d3d3d3';
+    readonly lightgrey: '#d3d3d3';
+    readonly thistle: '#d8bfd8';
+    readonly orchid: '#da70d6';
+    readonly goldenrod: '#daa520';
+    readonly palevioletred: '#db7093';
+    readonly crimson: '#dc143c';
+    readonly gainsboro: '#dcdcdc';
+    readonly plum: '#dda0dd';
+    readonly burlywood: '#deb887';
+    readonly lightcyan: '#e0ffff';
+    readonly lavender: '#e6e6fa';
+    readonly darksalmon: '#e9967a';
+    readonly violet: '#ee82ee';
+    readonly palegoldenrod: '#eee8aa';
+    readonly lightcoral: '#f08080';
+    readonly khaki: '#f0e68c';
+    readonly aliceblue: '#f0f8ff';
+    readonly honeydew: '#f0fff0';
+    readonly azure: '#f0ffff';
+    readonly sandybrown: '#f4a460';
+    readonly wheat: '#f5deb3';
+    readonly beige: '#f5f5dc';
+    readonly whitesmoke: '#f5f5f5';
+    readonly mintcream: '#f5fffa';
+    readonly ghostwhite: '#f8f8ff';
+    readonly salmon: '#fa8072';
+    readonly antiquewhite: '#faebd7';
+    readonly linen: '#faf0e6';
+    readonly lightgoldenrodyellow: '#fafad2';
+    readonly oldlace: '#fdf5e6';
+    readonly red: '#ff0000';
+    readonly fuchsia: '#ff00ff';
+    readonly magenta: '#ff00ff';
+    readonly deeppink: '#ff1493';
+    readonly orangered: '#ff4500';
+    readonly tomato: '#ff6347';
+    readonly hotpink: '#ff69b4';
+    readonly coral: '#ff7f50';
+    readonly darkorange: '#ff8c00';
+    readonly lightsalmon: '#ffa07a';
+    readonly orange: '#ffa500';
+    readonly lightpink: '#ffb6c1';
+    readonly pink: '#ffc0cb';
+    readonly gold: '#ffd700';
+    readonly peachpuff: '#ffdab9';
+    readonly navajowhite: '#ffdead';
+    readonly moccasin: '#ffe4b5';
+    readonly bisque: '#ffe4c4';
+    readonly mistyrose: '#ffe4e1';
+    readonly blanchedalmond: '#ffebcd';
+    readonly papayawhip: '#ffefd5';
+    readonly lavenderblush: '#fff0f5';
+    readonly seashell: '#fff5ee';
+    readonly cornsilk: '#fff8dc';
+    readonly lemonchiffon: '#fffacd';
+    readonly floralwhite: '#fffaf0';
+    readonly snow: '#fffafa';
+    readonly yellow: '#ffff00';
+    readonly lightyellow: '#ffffe0';
+    readonly ivory: '#fffff0';
+    readonly white: '#ffffff';
     /**
      * Not in the inlcuded link, but should work
      */
-    readonly transparent: "rgba(0,0,0,0)";
+    readonly transparent: 'rgba(0,0,0,0)';
 };
 export declare const namedColorsByValue: Flip<typeof namedColors>;
 export type NamedColor = keyof typeof namedColors;
@@ -1687,7 +1778,7 @@ export type LCHA = WithAlpha<LCH>;
 export type OklabA = WithAlpha<Oklab>;
 export type OklchA = WithAlpha<Oklch>;
 export type ColorBlindnessType = 'protanopia' | 'deuteranopia' | 'tritanopia' | 'protanomaly' | 'deuteranomaly' | 'tritanomaly';
-export type ColorFormat = 'rgb' | 'rgba' | 'hex3' | 'hex' | 'hsl' | 'hsla' | 'xyz' | 'xyza' | 'lab' | 'laba' | 'lch' | 'lcha' | 'oklab' | 'oklaba' | 'oklch' | 'oklcha' | 'named' | 'xkcd';
+export type ColorFormat = 'rgb' | 'rgba' | 'hex3' | 'hex' | 'hsl' | 'hsla' | 'xyz' | 'xyza' | 'lab' | 'laba' | 'lch' | 'lcha' | 'oklab' | 'oklaba' | 'oklch' | 'oklcha' | 'named' | 'xkcd' | 'native';
 export {};
 
 // src/TokenTypes/CubicBezier.d.ts
@@ -1831,8 +1922,9 @@ export declare class Duration {
 
 // src/TokenTypes/Gradient.d.ts
 import { Color } from './Color/index.js';
+import type { RefFields } from './ref-guard.js';
 export type GradientStop = {
-    color: Color;
+    color: Color | string;
     position?: string;
 };
 export type StopInput = GradientStop | Color | string | [color: Color | string, position: string];
@@ -1840,7 +1932,7 @@ export type LinearGradientInput = {
     angle: number;
     stops: StopInput[];
 };
-export declare class LinearGradient {
+export declare class LinearGradient implements RefFields {
     #private;
     /** @internal brand — do not use directly; see \`isFirstClassValue()\` */
     readonly __teikn_fcv__: true;
@@ -1851,8 +1943,18 @@ export declare class LinearGradient {
     rotate(degrees: number): LinearGradient;
     reverse(): LinearGradient;
     addStop(color: Color | string, position?: string): LinearGradient;
+    /** @internal */
+    __teikn_fields__(): Record<string, unknown>;
+    /** @internal */
+    __teikn_fromFields__(fields: Record<string, unknown>): LinearGradient;
     toJSON(): string;
     toString(): string;
+    /**
+     * Serialize with a custom color renderer, so ref-aware generators can emit
+     * \`var(--…)\` for stop colors that reference a token. \`toString()\` passes
+     * \`String\`, which renders concrete colors and inlines any \`{ref}\` verbatim.
+     */
+    toCSSWith(renderColor: (color: Color | string) => string): string;
     static from(value: LinearGradient | LinearGradientInput | string): LinearGradient;
 }
 type RadialShape = 'circle' | 'ellipse';
@@ -1862,7 +1964,7 @@ export type RadialGradientOptions = {
     size?: RadialSize;
     position?: string;
 };
-export declare class RadialGradient {
+export declare class RadialGradient implements RefFields {
     #private;
     /** @internal brand — do not use directly; see \`isFirstClassValue()\` */
     readonly __teikn_fcv__: true;
@@ -1876,12 +1978,18 @@ export declare class RadialGradient {
     setPosition(position: string): RadialGradient;
     addStop(color: Color | string, position?: string): RadialGradient;
     reverse(): RadialGradient;
+    /** @internal */
+    __teikn_fields__(): Record<string, unknown>;
+    /** @internal */
+    __teikn_fromFields__(fields: Record<string, unknown>): RadialGradient;
     toJSON(): string;
     toString(): string;
+    /** See {@link LinearGradient.toCSSWith}. */
+    toCSSWith(renderColor: (color: Color | string) => string): string;
     static from(value: RadialGradient | string): RadialGradient;
 }
 type AnyGradient = LinearGradient | RadialGradient;
-export declare class GradientList {
+export declare class GradientList implements RefFields {
     #private;
     /** @internal brand — do not use directly; see \`isFirstClassValue()\` */
     readonly __teikn_fcv__: true;
@@ -1890,8 +1998,14 @@ export declare class GradientList {
     get length(): number;
     at(index: number): AnyGradient | undefined;
     map(fn: (gradient: AnyGradient, index: number) => AnyGradient): GradientList;
+    /** @internal */
+    __teikn_fields__(): Record<string, unknown>;
+    /** @internal */
+    __teikn_fromFields__(fields: Record<string, unknown>): GradientList;
     toJSON(): string;
     toString(): string;
+    /** See {@link LinearGradient.toCSSWith}. */
+    toCSSWith(renderColor: (color: Color | string) => string): string;
     static from(value: GradientList | string | (LinearGradient | RadialGradient)[]): GradientList;
 }
 export {};
@@ -2259,9 +2373,31 @@ export declare const tokens: (...groups: Token[][]) => Token[];
  * \`\`\`
  */
 export declare const theme: (name: string, source: Token[] | ThemeLayer, overrides: Record<string, TokenValue>) => ThemeLayer;
+/** Options for {@link ref}. */
+export type RefOptions = {
+    /** Documentation string, same as passing a bare string as the second arg. */
+    usage?: string;
+    /**
+     * Emit this reference as a live *alias* to the target rather than baking in
+     * its resolved value. Reference-aware generators (CssVars, ScssVars, Dtcg)
+     * emit \`var(--target)\` / \`$target\` / \`{target}\`; every other generator, and
+     * \`resolveReferences()\`, still see the flattened concrete value. Default:
+     * \`false\` (flatten).
+     *
+     * Use this for the "styling hooks" pattern — a consumer that overrides the
+     * target token at runtime gets the aliasing token updated live — and for
+     * small theme layers that move a shared ramp tier and let every semantic
+     * token referencing it follow.
+     */
+    link?: boolean;
+};
 /**
  * Create a token that references another token by name.
  * References are resolved before plugins run.
+ *
+ * The second argument may be a bare usage string, or an options object. Pass
+ * \`{ link: true }\` to emit the reference as a live alias in reference-aware
+ * formats instead of flattening it (see {@link RefOptions.link}).
  *
  * @example
  * \`\`\`ts
@@ -2269,10 +2405,12 @@ export declare const theme: (name: string, source: Token[] | ThemeLayer, overrid
  *   primary: '#0066cc',
  *   link: ref('primary'),
  *   linkHover: ref('primary', 'Hover state for links'),
+ *   // Emits \`var(--color-primary)\` in CSS, resolved by the browser at runtime:
+ *   surface: ref('primary', { link: true }),
  * });
  * \`\`\`
  */
-export declare const ref: (tokenName: string, usage?: string) => TokenInputObject;
+export declare const ref: (tokenName: string, usageOrOptions?: string | RefOptions) => TokenInputObject;
 export {};
 
 // src/dtcg/index.d.ts
@@ -2369,20 +2507,20 @@ export type DtcgGroup = {
 };
 export type DtcgDocument = Record<string, DtcgGroup | DtcgToken | string | boolean | Record<string, unknown> | undefined>;
 export declare const DtcgTypes: {
-    readonly color: "color";
-    readonly dimension: "dimension";
-    readonly fontFamily: "fontFamily";
-    readonly fontWeight: "fontWeight";
-    readonly duration: "duration";
-    readonly cubicBezier: "cubicBezier";
-    readonly number: "number";
-    readonly strokeStyle: "strokeStyle";
-    readonly border: "border";
-    readonly transition: "transition";
-    readonly shadow: "shadow";
-    readonly gradient: "gradient";
-    readonly typography: "typography";
-    readonly fontStyle: "fontStyle";
+    readonly color: 'color';
+    readonly dimension: 'dimension';
+    readonly fontFamily: 'fontFamily';
+    readonly fontWeight: 'fontWeight';
+    readonly duration: 'duration';
+    readonly cubicBezier: 'cubicBezier';
+    readonly number: 'number';
+    readonly strokeStyle: 'strokeStyle';
+    readonly border: 'border';
+    readonly transition: 'transition';
+    readonly shadow: 'shadow';
+    readonly gradient: 'gradient';
+    readonly typography: 'typography';
+    readonly fontStyle: 'fontStyle';
 };
 export type DtcgTypeName = (typeof DtcgTypes)[keyof typeof DtcgTypes];
 
@@ -2536,7 +2674,7 @@ export declare const classifyTokenType: (type: string) => PreviewKind;
  * Resolve how a token should be pictured: an explicit \`preview\` hint wins,
  * otherwise infer from \`type\`. This is the entry point the doc generators use.
  */
-export declare const resolvePreviewKind: (token: Pick<Token, "type" | "preview">) => PreviewKind;
+export declare const resolvePreviewKind: (token: Pick<Token, 'type' | 'preview'>) => PreviewKind;
 export declare const groupTokens: (tokens: Token[]) => Map<string, Token[]>;
 
 // src/validate.d.ts

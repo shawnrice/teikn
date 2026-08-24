@@ -323,13 +323,13 @@ export class TransitionList implements RefFields {
 
   /** @internal */
   __teikn_fields__(): Record<string, unknown> {
-    return { ...this.#layers };
+    return { layers: [...this.#layers] };
   }
 
   /** @internal */
   // oxlint-disable-next-line class-methods-use-this -- protocol method, detected per-instance
   __teikn_fromFields__(fields: Record<string, unknown>): TransitionList {
-    return new TransitionList(Object.values(fields) as Transition[]);
+    return new TransitionList(fields.layers as Transition[]);
   }
 
   toJSON(): string {

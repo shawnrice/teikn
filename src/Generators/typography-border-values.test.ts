@@ -238,7 +238,7 @@ describe('per-field references inside a wrapper resolve (RefFields protocol)', (
         value: new BoxShadow({ offsetY: 2, blur: 8, color: '{ink}' }),
       },
     ];
-    const dtcg = JSON.parse(new DtcgGenerator({ hierarchical: false }).generate(tokens));
+    const dtcg = JSON.parse(new Dtcg({ hierarchical: false }).generate(tokens));
     expect(dtcg.shadowMd.$value.color).toBe('{ink}');
   });
 
@@ -304,7 +304,7 @@ describe('per-field references inside a wrapper resolve (RefFields protocol)', (
         ]),
       },
     ];
-    const dtcg = JSON.parse(new DtcgGenerator({ hierarchical: false }).generate(tokens));
+    const dtcg = JSON.parse(new Dtcg({ hierarchical: false }).generate(tokens));
     expect(dtcg.hero.$value[0].color).toBe('{brand}');
   });
 

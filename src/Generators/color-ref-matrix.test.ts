@@ -9,7 +9,7 @@ import { Color } from '../TokenTypes/Color/index.js';
 import { GradientList, LinearGradient, RadialGradient } from '../TokenTypes/Gradient.js';
 import { validate } from '../validate.js';
 import { CssVars } from './CssVars.js';
-import { DtcgGenerator } from './Dtcg.js';
+import { Dtcg } from './Dtcg.js';
 import { ScssVars } from './ScssVars.js';
 
 // One matrix row per value type that carries a color and supports per-field
@@ -175,7 +175,7 @@ describe('color-ref matrix (all ref-carrying value types)', () => {
           inkToken,
           { name: 'target', type: c.type, value: c.withRef('{ink}') },
         ];
-        const dtcg = JSON.parse(new DtcgGenerator({ hierarchical: false }).generate(tokens));
+        const dtcg = JSON.parse(new Dtcg({ hierarchical: false }).generate(tokens));
         expect(c.dtcgAlias(dtcg.target.$value)).toBe('{ink}');
       });
 

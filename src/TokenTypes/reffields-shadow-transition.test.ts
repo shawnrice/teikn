@@ -45,6 +45,7 @@ describe('BoxShadow RefFields', () => {
       spread: 3,
       color: '{accent}',
       inset: false,
+      unit: 'px',
     });
   });
 
@@ -336,9 +337,11 @@ describe('BoxShadowList / TransitionList RefFields (per-layer)', () => {
       },
     ]);
     expect(result.valid).toBe(false);
-    expect(result.issues.some(i => /Unresolved reference in field "color"/.test(i.message))).toBe(
-      true,
-    );
+    // main's validate reports the nested path (`layers.color`) for a ref inside
+    // a list layer.
+    expect(
+      result.issues.some(i => /Unresolved reference in field "layers\.color"/.test(i.message)),
+    ).toBe(true);
   });
 
   test('__teikn_fromFields__ rebuilds an equivalent list', () => {
