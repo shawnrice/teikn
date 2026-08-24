@@ -112,10 +112,18 @@ describe('reference stress', () => {
     );
   });
 
-  test('(8) Transition object with ref string in a field is rejected via Duration', () => {
-    expect(() => new Transition({ duration: '{motion.fast}', timingFunction: 'ease' })).toThrow(
-      /Duration cannot be constructed from a reference string/,
-    );
+  test('(8) Transition accepts a ref string in a field (RefFields) and resolves it', () => {
+    const t = new Transition({ duration: '{motion.fast}', timingFunction: 'ease' });
+    // The reference is preserved as a field value, not rejected.
+    expect(t.duration).toBe('{motion.fast}');
+
+    const tokens: Token[] = [
+      { name: 'fast', group: 'motion', type: 'duration', value: new Duration(100, 'ms') },
+      { name: 'fade', type: 'transition', value: t },
+    ];
+    const resolved = resolveReferences(tokens)[1]!.value as Transition;
+    expect(resolved.duration).toBeInstanceOf(Duration);
+    expect((resolved.duration as Duration).toString()).toBe('100ms');
   });
 
   test('(8) BoxShadow tolerates a ref-string color and re-emits it (RefFields)', () => {

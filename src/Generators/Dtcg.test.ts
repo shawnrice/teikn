@@ -5,7 +5,7 @@ import type { Token } from '../Token.js';
 import { Color } from '../TokenTypes/Color/index.js';
 import { CubicBezier } from '../TokenTypes/CubicBezier.js';
 import { Dimension } from '../TokenTypes/Dimension.js';
-import { DtcgGenerator } from './Dtcg.js';
+import { Dtcg } from './Dtcg.js';
 
 const sampleTokens: Token[] = [
   {
@@ -22,42 +22,42 @@ const sampleTokens: Token[] = [
   { name: 'opacity.muted', value: 0.5, type: 'opacity' },
 ];
 
-describe('DtcgGenerator tests', () => {
+describe('Dtcg tests', () => {
   test('produces valid JSON', () => {
-    const gen = new DtcgGenerator();
+    const gen = new Dtcg();
     const output = gen.generate(sampleTokens);
     expect(() => JSON.parse(output)).not.toThrow();
   });
 
   test('file extension is .tokens.json', () => {
-    const gen = new DtcgGenerator();
+    const gen = new Dtcg();
     expect(gen.file).toBe('tokens.tokens.json');
   });
 
   test('custom filename works', () => {
-    const gen = new DtcgGenerator({ filename: 'design' });
+    const gen = new Dtcg({ filename: 'design' });
     expect(gen.file).toBe('design.tokens.json');
   });
 
   test('describe() returns correct info', () => {
-    const gen = new DtcgGenerator();
+    const gen = new Dtcg();
     const info = gen.describe();
     expect(info!.format).toBe('DTCG');
     expect(info!.usage).toContain('DTCG');
   });
 
   test('tokenUsage returns null', () => {
-    const gen = new DtcgGenerator();
+    const gen = new Dtcg();
     expect(gen.tokenUsage(sampleTokens[0]!)).toBeNull();
   });
 
   test('snapshot test with standard token set', () => {
-    const gen = new DtcgGenerator();
+    const gen = new Dtcg();
     expect(gen.generate(sampleTokens)).toMatchSnapshot();
   });
 
   test('hierarchical output reconstructs groups', () => {
-    const gen = new DtcgGenerator({ hierarchical: true });
+    const gen = new Dtcg({ hierarchical: true });
     const output = JSON.parse(gen.generate(sampleTokens));
     expect(output.color).toBeDefined();
     expect(output.color.primary).toBeDefined();
@@ -65,7 +65,7 @@ describe('DtcgGenerator tests', () => {
   });
 
   test('flat output mode', () => {
-    const gen = new DtcgGenerator({ hierarchical: false });
+    const gen = new Dtcg({ hierarchical: false });
     const output = JSON.parse(gen.generate(sampleTokens));
     expect(output['color.primary']).toBeDefined();
     expect(output['spacing.sm']).toBeDefined();
@@ -77,7 +77,7 @@ describe('DtcgGenerator tests', () => {
       { name: 'color/primary', value: new Color(255, 0, 0), type: 'color' },
       { name: 'color/secondary', value: new Color(0, 0, 255), type: 'color' },
     ];
-    const gen = new DtcgGenerator({ separator: '/' });
+    const gen = new Dtcg({ separator: '/' });
     const output = JSON.parse(gen.generate(tokens));
     expect(output.color).toBeDefined();
     expect(output.color.primary).toBeDefined();
@@ -92,7 +92,7 @@ describe('DtcgGenerator tests', () => {
         modes: { dark: new Color(26, 26, 26) },
       },
     ];
-    const gen = new DtcgGenerator();
+    const gen = new Dtcg();
     const output = JSON.parse(gen.generate(tokens));
     expect(output.surface.$extensions).toBeDefined();
     expect(output.surface.$extensions.mode.dark).toBeDefined();
@@ -112,7 +112,7 @@ describe('DtcgGenerator tests', () => {
     // AlphaMultiplyPlugin flattens alpha to 1. ColorTransformPlugin
     // might further convert to rgba. Passing them in reverse order
     // verifies runAfter sorting fires correctly.
-    const gen = new DtcgGenerator();
+    const gen = new Dtcg();
     const plugins = [
       new ColorTransformPlugin({ type: 'rgba' }),
       new AlphaMultiplyPlugin({ factor: 2 }),

@@ -1,0 +1,2991 @@
+// Bun Snapshot v1, https://bun.sh/docs/test/snapshots
+
+exports[`runtime export names "." exports a stable set of names 1`] = `
+[
+  "AlphaMultiplyPlugin",
+  "Border",
+  "BoxShadow",
+  "BoxShadowList",
+  "ClampPlugin",
+  "Color",
+  "ColorBlindnessPlugin",
+  "ColorTransformPlugin",
+  "ContrastValidatorPlugin",
+  "CssVars",
+  "CubicBezier",
+  "DeprecationPlugin",
+  "Dimension",
+  "Dtcg",
+  "DtcgTypes",
+  "Duration",
+  "Generator",
+  "GradientList",
+  "HSLToHex",
+  "HSLToRGB",
+  "Html",
+  "JavaScript",
+  "Json",
+  "LABToLCH",
+  "LABToXYZ",
+  "LCHToLAB",
+  "LCHToXYZ",
+  "LinearGradient",
+  "MinFontSizePlugin",
+  "NameConventionPlugin",
+  "OklabToOklch",
+  "OklabToRGB",
+  "OklchToOklab",
+  "PalettePlugin",
+  "PerceptualDistancePlugin",
+  "Plugin",
+  "PrefixTypePlugin",
+  "RGBToHSL",
+  "RGBToHex",
+  "RGBToOklab",
+  "RGBToXYZ",
+  "RadialGradient",
+  "ReducedMotionPlugin",
+  "RemUnitPlugin",
+  "Scss",
+  "ScssQuoteValuePlugin",
+  "ScssVars",
+  "Storybook",
+  "StripTypePrefixPlugin",
+  "Teikn",
+  "TouchTargetPlugin",
+  "Transition",
+  "TransitionList",
+  "TypeScript",
+  "TypeScriptDeclarations",
+  "Typography",
+  "XYZToLAB",
+  "XYZToLCH",
+  "XYZToRGB",
+  "absoluteConversions",
+  "absoluteUnits",
+  "allUnits",
+  "applyPlugin",
+  "borderStyles",
+  "buildPlatforms",
+  "classifyTokenType",
+  "composeTokenSets",
+  "composeTokenSetsAsModes",
+  "composite",
+  "containerUnits",
+  "convertDimension",
+  "convertDuration",
+  "dim",
+  "dp",
+  "dtcgTypeToTeikn",
+  "dtcgValueToTeikn",
+  "dur",
+  "durationUnits",
+  "fontRelativeUnits",
+  "group",
+  "groupTokens",
+  "hexToRGB",
+  "hexToRGBWithAlpha",
+  "isAbsoluteUnit",
+  "isBorderStyle",
+  "isColorType",
+  "isContainerUnit",
+  "isConvertible",
+  "isDimensionUnit",
+  "isDurationUnit",
+  "isFirstClassValue",
+  "isFontRelativeUnit",
+  "isViewportUnit",
+  "namedColors",
+  "namedColorsByValue",
+  "onColor",
+  "onColors",
+  "parseDtcg",
+  "ref",
+  "resolvePreviewKind",
+  "resolveReferences",
+  "scale",
+  "serializeDtcg",
+  "sortPlugins",
+  "teiknTypeToDtcg",
+  "teiknValueToDtcg",
+  "theme",
+  "tokenSet",
+  "tokens",
+  "validate",
+  "viewportUnits",
+]
+`;
+
+exports[`runtime export names "./color" exports a stable set of names 1`] = `
+[
+  "Color",
+  "HSLToHex",
+  "HSLToRGB",
+  "LABToLCH",
+  "LABToXYZ",
+  "LCHToLAB",
+  "LCHToXYZ",
+  "OklabToOklch",
+  "OklabToRGB",
+  "OklchToOklab",
+  "RGBToHSL",
+  "RGBToHex",
+  "RGBToOklab",
+  "RGBToXYZ",
+  "XYZToLAB",
+  "XYZToLCH",
+  "XYZToRGB",
+  "hexToRGB",
+  "hexToRGBWithAlpha",
+  "namedColors",
+  "namedColorsByValue",
+]
+`;
+
+exports[`runtime export names "./builders" exports a stable set of names 1`] = `
+[
+  "composite",
+  "dim",
+  "dp",
+  "dur",
+  "group",
+  "onColor",
+  "onColors",
+  "ref",
+  "scale",
+  "theme",
+  "tokens",
+]
+`;
+
+exports[`runtime export names "./generators" exports a stable set of names 1`] = `
+[
+  "CssVars",
+  "Dtcg",
+  "Generator",
+  "Html",
+  "JavaScript",
+  "Json",
+  "Scss",
+  "ScssVars",
+  "Storybook",
+  "TypeScript",
+  "TypeScriptDeclarations",
+  "applyPlugin",
+]
+`;
+
+exports[`runtime export names "./storybook" exports a stable set of names 1`] = `
+[
+  "BorderDemo",
+  "BorderStyleDemo",
+  "BorderWidthDemo",
+  "BreakpointBar",
+  "DurationBar",
+  "FontSample",
+  "GradientSwatch",
+  "LetterSpacingSample",
+  "LineHeightSample",
+  "ModeTable",
+  "OpacityDemo",
+  "RadiusBox",
+  "RatioBox",
+  "ShadowBox",
+  "SizeBox",
+  "SpacingBar",
+  "Swatch",
+  "TimingDemo",
+  "TokenGrid",
+  "TokenList",
+  "TokenStory",
+  "TokenTable",
+  "TransitionDemo",
+  "TypographyBlock",
+  "ZLayerStack",
+]
+`;
+
+exports[`public .d.ts type surface is unchanged: module-manifest 1`] = `
+"index.d.ts
+src/Generators/CssVars.d.ts
+src/Generators/Dtcg.d.ts
+src/Generators/Generator.d.ts
+src/Generators/Html.d.ts
+src/Generators/JavaScript.d.ts
+src/Generators/Json.d.ts
+src/Generators/Scss.d.ts
+src/Generators/ScssVars.d.ts
+src/Generators/Storybook.d.ts
+src/Generators/TypeScript.d.ts
+src/Generators/TypeScriptDeclarations.d.ts
+src/Generators/index.d.ts
+src/Generators/prefix-utils.d.ts
+src/Plugins/AlphaMultiplyPlugin.d.ts
+src/Plugins/ClampPlugin.d.ts
+src/Plugins/ColorBlindnessPlugin.d.ts
+src/Plugins/ColorTransformPlugin.d.ts
+src/Plugins/ContrastValidatorPlugin.d.ts
+src/Plugins/DeprecationPlugin.d.ts
+src/Plugins/MinFontSizePlugin.d.ts
+src/Plugins/NameConventionPlugin.d.ts
+src/Plugins/PalettePlugin.d.ts
+src/Plugins/PerceptualDistancePlugin.d.ts
+src/Plugins/Plugin.d.ts
+src/Plugins/PrefixTypePlugin.d.ts
+src/Plugins/ReducedMotionPlugin.d.ts
+src/Plugins/RemUnitPlugin.d.ts
+src/Plugins/ScssQuoteValuePlugin.d.ts
+src/Plugins/StripTypePrefixPlugin.d.ts
+src/Plugins/TouchTargetPlugin.d.ts
+src/Plugins/index.d.ts
+src/Teikn.d.ts
+src/Token.d.ts
+src/TokenSet.d.ts
+src/TokenTypes/Border.d.ts
+src/TokenTypes/BoxShadow.d.ts
+src/TokenTypes/Color/Color.d.ts
+src/TokenTypes/Color/ColorSpace.d.ts
+src/TokenTypes/Color/conversions.d.ts
+src/TokenTypes/Color/flip.d.ts
+src/TokenTypes/Color/index.d.ts
+src/TokenTypes/Color/namedColors.d.ts
+src/TokenTypes/Color/operations/HSLOperations.d.ts
+src/TokenTypes/Color/operations/LABOperations.d.ts
+src/TokenTypes/Color/operations/LCHOperations.d.ts
+src/TokenTypes/Color/operations/OklabOperations.d.ts
+src/TokenTypes/Color/operations/OklchOperations.d.ts
+src/TokenTypes/Color/operations/RGBOperations.d.ts
+src/TokenTypes/Color/operations/XYZOperations.d.ts
+src/TokenTypes/Color/types.d.ts
+src/TokenTypes/CubicBezier.d.ts
+src/TokenTypes/Dimension.d.ts
+src/TokenTypes/Duration.d.ts
+src/TokenTypes/Gradient.d.ts
+src/TokenTypes/Transition.d.ts
+src/TokenTypes/Typography.d.ts
+src/TokenTypes/ref-guard.d.ts
+src/build-platforms.d.ts
+src/builders.d.ts
+src/dtcg/index.d.ts
+src/dtcg/parse.d.ts
+src/dtcg/serialize.d.ts
+src/dtcg/types.d.ts
+src/dtcg/values.d.ts
+src/resolve.d.ts
+src/storybook/components.d.ts
+src/storybook/index.d.ts
+src/type-classifiers.d.ts
+src/validate.d.ts"
+`;
+
+exports[`public .d.ts type surface is unchanged: declarations 1`] = `
+"// index.d.ts
+export * from './src/Teikn.js';
+export * from './src/TokenTypes/Border.js';
+export * from './src/TokenTypes/Color/index.js';
+export * from './src/TokenTypes/CubicBezier.js';
+export * from './src/TokenTypes/BoxShadow.js';
+export * from './src/TokenTypes/Dimension.js';
+export * from './src/TokenTypes/Duration.js';
+export * from './src/TokenTypes/Gradient.js';
+export * from './src/TokenTypes/Transition.js';
+export * from './src/TokenTypes/Typography.js';
+export * from './src/TokenSet.js';
+export * from './src/dtcg/index.js';
+export * from './src/Generators/index.js';
+export * from './src/Plugins/index.js';
+export * from './src/Token.js';
+export * from './src/builders.js';
+export * from './src/build-platforms.js';
+export * from './src/type-classifiers.js';
+export { resolveReferences } from './src/resolve.js';
+export { validate } from './src/validate.js';
+export type { ValidationIssue, ValidationResult, ValidationSeverity } from './src/validate.js';
+
+// src/Generators/CssVars.d.ts
+import type { Token, TokenValue } from '../Token.js';
+import type { GeneratorInfo, GeneratorOptions } from './Generator.js';
+import { Generator } from './Generator.js';
+import type { PrefixOptions } from './prefix-utils.js';
+export type ModeSelector = string | {
+    atRule: string;
+    selector?: string;
+};
+/**
+ * Wrap the emitted custom properties in a named CSS cascade layer.
+ *
+ * A bare string is the layer name; the object form additionally controls
+ * whether a leading \`@layer <name>;\` statement is emitted before the block so
+ * the layer's position in the cascade is established even if the sheet is
+ * imported after other layered CSS.
+ */
+export type LayerOption = string | {
+    name: string;
+    statement?: boolean;
+};
+export type CssVarsOpts = {
+    nameTransformer?: (name: string) => string;
+    dateFn?: () => string | null;
+    useMediaQuery?: boolean;
+    modeSelectors?: Record<string, ModeSelector>;
+    layer?: LayerOption;
+} & GeneratorOptions & PrefixOptions;
+export declare class CssVars extends Generator<CssVarsOpts> {
+    #private;
+    constructor(options?: {});
+    protected stringifyTokenValue(value: TokenValue): string;
+    prepareTokens(...args: Parameters<Generator['prepareTokens']>): Token[];
+    describe(): GeneratorInfo;
+    tokenUsage(token: Token): string | null;
+    header(): string;
+    generateToken(token: Token): string;
+    combinator(tokens: Token[]): string;
+}
+
+// src/Generators/Dtcg.d.ts
+import type { Plugin } from '../Plugins/index.js';
+import type { Token } from '../Token.js';
+import type { GeneratorInfo, GeneratorOptions } from './Generator.js';
+import { Generator } from './Generator.js';
+export type DtcgOpts = {
+    /** Use hierarchical grouping based on token names. Default: true */
+    hierarchical?: boolean;
+    /** Separator for reconstructing groups. Default: '.' */
+    separator?: string;
+} & GeneratorOptions;
+export declare class Dtcg extends Generator<DtcgOpts> {
+    constructor(options?: {});
+    describe(): GeneratorInfo;
+    tokenUsage(_: Token): string | null;
+    prepareTokens(tokens: Token[], plugins: Plugin[]): Token[];
+    generateToken(_: Token): string;
+    combinator(tokens: Token[]): string;
+}
+
+// src/Generators/Generator.d.ts
+import type { Plugin } from '../Plugins/index.js';
+import type { Token, TokenValue } from '../Token.js';
+export declare const applyPlugin: (plugin: Plugin, token: Token) => Token;
+export type GeneratorOptions = {
+    /**
+     * The extension for the file
+     *
+     * (this is usually set when the Generator is extended)
+     */
+    ext: string;
+    /**
+     * The basename for the file
+     *
+     * default: \`tokens\`
+     */
+    filename?: string;
+    /**
+     * When true, emit typed getter functions grouped by token type
+     */
+    groups?: boolean;
+    /**
+     * Override the version string in the generated file header.
+     * Useful for tests to avoid snapshot churn on version bumps.
+     */
+    version?: string;
+};
+export type RequiredGeneratorOptions = {
+    ext: string;
+};
+export type RequiredGeneratorOptionNames = keyof RequiredGeneratorOptions;
+export type GeneratorInfo = {
+    format: string;
+    usage: string;
+};
+export declare abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions> {
+    #private;
+    options: Opts;
+    constructor(opts: Opts);
+    get siblings(): Generator[];
+    set siblings(generators: Generator[]);
+    describe(): GeneratorInfo | null;
+    signature(): string;
+    stringifyValues(token: Token): Token;
+    stringifyValue(token: Token): Token;
+    validateOptions(): void;
+    get file(): string;
+    header(): string | null;
+    protected commentHeader(style?: 'jsdoc' | 'scss'): string;
+    protected buildModeMap(tokens: Token[], formatter: (key: string, val: unknown, mode: string, token: Token) => string): Map<string, string[]>;
+    footer(): string | null;
+    /**
+     * Build a map from value object identity → token name.
+     * Used by reference-aware generators (CssVars, ScssVars) to emit
+     * references instead of inlining values.
+     */
+    protected buildReferenceMap(tokens: Token[]): Map<unknown, string>;
+    /**
+     * Stringify a single token value. Override in subclasses to add
+     * reference resolution or other value transforms.
+     */
+    protected stringifyTokenValue(value: TokenValue): string;
+    /**
+     * Rewrite each linked ref's \`link\` (a target token's *pre*-plugin emitted
+     * name) to the target's *post*-plugin name, using the positional
+     * correspondence between the pipeline's input and output tokens.
+     *
+     * Name-mangling plugins (NameConventionPlugin, StripTypePrefixPlugin) rename
+     * tokens, so a \`link\` captured before the pipeline would otherwise dangle.
+     * Resolving it here — after the plugin pipeline, per generator — is robust to
+     * any rename and to cross-type links, and works for primitive-valued targets
+     * that the identity refMap can't cover. No-op when nothing is linked.
+     */
+    protected remapLinks(input: Token[], transformed: Token[]): Token[];
+    /**
+     * Run the plugin pipeline (filter by tokenType/outputType, apply transform)
+     * without doing any value stringification. Ref-aware generators call this
+     * before building their refMap so the map captures post-plugin names.
+     */
+    protected applyPluginPipeline(tokens: Token[], plugins: Plugin[]): Token[];
+    prepareTokens(tokens: Token[], plugins: Plugin[]): Token[];
+    protected tokenGroups(tokens: Token[]): {
+        groupName: string;
+        entries: {
+            shortName: string;
+            token: Token;
+        }[];
+    }[];
+    tokenUsage(_: Token): string | null;
+    abstract generateToken(_: Token): any;
+    abstract combinator(_: Token[]): string;
+    /**
+     * @internal Use {@link Teikn.generateToStrings} (or {@link Teikn.transform})
+     * instead. Calling \`generate\` directly is supported for testing but is not
+     * part of the stable public API; behavior may change between versions.
+     *
+     * Resolves references defensively so plugins always see materialized values,
+     * regardless of whether the caller pre-resolved.
+     * \`resolveReferences\` is idempotent on already-resolved tokens, so calling
+     * this from inside \`Teikn.generateToStrings\` (which also resolves) is safe.
+     */
+    generate(tokens: Token[], plugins?: Plugin[]): string;
+    /**
+     * The set of filenames this generator will emit. Single-file generators
+     * return [this.file]; multi-file generators (e.g. TypeScript meta)
+     * override to list every file they produce.
+     *
+     * Called at Teikn construction time for duplicate-filename detection,
+     * so it must not depend on tokens.
+     */
+    filenames(): string[];
+    /**
+     * @internal Use {@link Teikn.generateToStrings} instead. Produces the full
+     * set of generated files keyed by filename. Default impl emits a single
+     * file at {@link file} with the output of {@link generate}. Multi-file
+     * generators (TypeScript meta) override.
+     */
+    generateFiles(tokens: Token[], plugins?: Plugin[]): Map<string, string>;
+}
+
+// src/Generators/Html.d.ts
+import type { Token } from '../Token.js';
+import type { GeneratorOptions } from './Generator.js';
+import { Generator } from './Generator.js';
+export type HtmlOpts = {
+    nameTransformer?: (name: string) => string;
+    dateFn?: () => string | null;
+} & GeneratorOptions;
+export declare class Html extends Generator<HtmlOpts> {
+    constructor(options?: {});
+    stringifyValue(token: Token): Token;
+    stringifyValues(token: Token): Token;
+    generateToken(token: Token): string;
+    private renderColorToken;
+    private renderFontToken;
+    private renderSpacingToken;
+    private renderTypographyToken;
+    private renderShadowToken;
+    private renderDurationToken;
+    private renderTimingToken;
+    private renderBorderToken;
+    private renderBorderRadiusToken;
+    private renderGradientToken;
+    private renderOpacityToken;
+    private renderLineHeightToken;
+    private renderLetterSpacingToken;
+    private renderBreakpointToken;
+    private renderSizeToken;
+    private renderAspectRatioToken;
+    private renderZLayerToken;
+    private renderTransitionToken;
+    private renderCompositeToken;
+    private renderModeVariants;
+    private addModeVariants;
+    private renderCompositeFallback;
+    private renderVisualization;
+    private wrapWithFlip;
+    private renderSection;
+    private renderGettingStarted;
+    combinator(tokens: Token[]): string;
+    header(): string;
+    footer(): string;
+}
+
+// src/Generators/JavaScript.d.ts
+import type { Token } from '../Token.js';
+import type { GeneratorInfo, GeneratorOptions } from './Generator.js';
+import { Generator } from './Generator.js';
+export type JavaScriptModule = 'esm' | 'cjs';
+export type JavaScriptOpts = {
+    dateFn?: () => string | null;
+    nameTransformer?: (name: string) => string;
+    /**
+     * Module system for the emitted runtime.
+     *
+     * - \`"esm"\` (default) → \`export const tokens = {...}\` with \`.mjs\` extension
+     * - \`"cjs"\` → \`module.exports = { tokens, ... }\` with \`.cjs\` extension
+     */
+    module?: JavaScriptModule;
+} & GeneratorOptions;
+/**
+ * Emit tokens as a JavaScript module. Defaults to ESM (\`.mjs\`); pass
+ * \`module: "cjs"\` for CommonJS (\`.cjs\`).
+ */
+export declare class JavaScript extends Generator<JavaScriptOpts> {
+    constructor(options?: Partial<JavaScriptOpts>);
+    describe(): GeneratorInfo;
+    tokenUsage(token: Token): string | null;
+    header(): string;
+    generateToken(token: Token): string;
+    combinator(tokens: Token[]): string;
+}
+
+// src/Generators/Json.d.ts
+import type { Token } from '../Token.js';
+import type { GeneratorInfo, GeneratorOptions } from './Generator.js';
+import { Generator } from './Generator.js';
+export type JsonOpts = {
+    nameTransformer?: (name: string) => string;
+} & GeneratorOptions;
+export declare class Json extends Generator<JsonOpts> {
+    constructor(options?: {});
+    describe(): GeneratorInfo;
+    generateToken(token: Token): Record<string, Omit<Token, 'name' | 'link'>>;
+    combinator(tokens: Token[]): string;
+}
+
+// src/Generators/Scss.d.ts
+import type { Plugin } from '../Plugins/index.js';
+import type { Token } from '../Token.js';
+import type { GeneratorInfo, GeneratorOptions } from './Generator.js';
+import { Generator } from './Generator.js';
+import type { PrefixOptions } from './prefix-utils.js';
+export type ScssOpts = {
+    nameTransformer?: (name: string) => string;
+    dateFn?: () => string | null;
+} & GeneratorOptions & PrefixOptions;
+export declare class Scss extends Generator<ScssOpts> {
+    #private;
+    constructor(options?: {});
+    describe(): GeneratorInfo | null;
+    tokenUsage(token: Token): string | null;
+    generateToken(token: Token): string;
+    combinator(tokens: Token[]): string;
+    header(): string | null;
+    footer(): string | null;
+    protected generateGroupBlocks(tokens: Token[]): string | null;
+    generate(tokens: Token[], plugins?: Plugin[]): string;
+}
+
+// src/Generators/ScssVars.d.ts
+import type { Token, TokenValue } from '../Token.js';
+import type { Generator, GeneratorInfo } from './Generator.js';
+import { Scss } from './Scss.js';
+export declare class ScssVars extends Scss {
+    #private;
+    prepareTokens(...args: Parameters<Generator['prepareTokens']>): Token[];
+    protected stringifyTokenValue(value: TokenValue): string;
+    describe(): GeneratorInfo | null;
+    tokenUsage(token: Token): string | null;
+    generateToken(token: Token): string;
+    combinator(tokens: Token[]): string;
+    footer(): null;
+    header(): string | null;
+    generateGroupBlocks(tokens: Token[]): string | null;
+}
+
+// src/Generators/Storybook.d.ts
+import type { Token } from '../Token.js';
+import type { GeneratorInfo, GeneratorOptions } from './Generator.js';
+import { Generator } from './Generator.js';
+export type StorybookOpts = {
+    nameTransformer?: (name: string) => string;
+    importPath?: string;
+    storyTitle?: string;
+    dateFn?: () => string | null;
+    /**
+     * Emit the dark-mode "chrome" (the \`prefers-color-scheme\` / \`[data-theme]\`
+     * variants). When \`false\`, stories render with the light palette only.
+     * Defaults to \`true\`.
+     */
+    darkMode?: boolean;
+} & GeneratorOptions;
+export declare class Storybook extends Generator<StorybookOpts> {
+    constructor(options?: {});
+    describe(): GeneratorInfo;
+    tokenUsage(token: Token): string | null;
+    header(): string;
+    footer(): string | null;
+    generateToken(_: Token): string;
+    private detectImportSource;
+    private isTypeScript;
+    combinator(tokens: Token[]): string;
+}
+
+// src/Generators/TypeScript.d.ts
+import type { Plugin } from '../Plugins/index.js';
+import type { Token } from '../Token.js';
+import type { GeneratorInfo, GeneratorOptions } from './Generator.js';
+import { Generator } from './Generator.js';
+import type { JavaScriptModule } from './JavaScript.js';
+export type TypeScriptOpts = {
+    dateFn?: () => string | null;
+    nameTransformer?: (name: string) => string;
+    /**
+     * Module system for the runtime output. Passed through to the
+     * internal JavaScript generator. Default: \`"esm"\`.
+     */
+    module?: JavaScriptModule;
+    /**
+     * When true, the internal TypeScriptDeclarations generator widens
+     * literal types to primitive types. Default: \`false\`.
+     */
+    loose?: boolean;
+} & GeneratorOptions;
+/**
+ * Meta generator that emits both a JavaScript runtime module and a
+ * TypeScript declarations file from a single construction, wired with
+ * matching filename / name transforms / plugins.
+ *
+ * Internally composes \`JavaScript\` (for the runtime, default ESM) and
+ * \`TypeScriptDeclarations\` (for the \`.d.ts\`). Users who want only one
+ * can construct those classes directly.
+ */
+export declare class TypeScript extends Generator<TypeScriptOpts> {
+    #private;
+    constructor(options?: Partial<TypeScriptOpts>);
+    describe(): GeneratorInfo;
+    generateToken(): string;
+    combinator(): string;
+    filenames(): string[];
+    generateFiles(tokens: Token[], plugins?: Plugin[]): Map<string, string>;
+}
+
+// src/Generators/TypeScriptDeclarations.d.ts
+import type { Token } from '../Token.js';
+import type { GeneratorInfo, GeneratorOptions } from './Generator.js';
+import { Generator } from './Generator.js';
+import type { JavaScriptModule } from './JavaScript.js';
+export type TypeScriptDeclarationsOpts = {
+    dateFn?: () => string | null;
+    nameTransformer?: (name: string) => string;
+    /**
+     * When true, emit widened types (\`string\`, \`number\`, \`boolean\`) instead
+     * of literal types. Default: \`false\`.
+     *
+     * Narrow literal types enable exhaustive unions like
+     * \`type TokenColor = typeof tokens[keyof typeof tokens]\`.
+     */
+    loose?: boolean;
+    /**
+     * Pair the declarations file with a specific runtime module format. When
+     * set to \`"cjs"\`, emit \`.d.cts\` instead of \`.d.ts\` so Node's strict
+     * ESM/CJS resolvers (\`moduleResolution: "node16" | "bundler"\`) pick up
+     * the declarations alongside the \`.cjs\` runtime file.
+     */
+    module?: JavaScriptModule;
+} & GeneratorOptions;
+/**
+ * Emit TypeScript ambient declarations (\`.d.ts\`) for tokens. Pair with
+ * \`JavaScript\` for runtime output, or use the \`TypeScript\` meta
+ * generator to produce both at once from a single construction.
+ */
+export declare class TypeScriptDeclarations extends Generator<TypeScriptDeclarationsOpts> {
+    constructor(options?: Partial<TypeScriptDeclarationsOpts>);
+    describe(): GeneratorInfo;
+    tokenUsage(token: Token): string | null;
+    header(): string;
+    generateToken(token: Token): string;
+    combinator(tokens: Token[]): string;
+    footer(): string;
+}
+
+// src/Generators/index.d.ts
+export * from './CssVars.js';
+export * from './Dtcg.js';
+export * from './Generator.js';
+export * from './Html.js';
+export * from './JavaScript.js';
+export * from './Json.js';
+export * from './Scss.js';
+export * from './ScssVars.js';
+export * from './Storybook.js';
+export * from './TypeScript.js';
+export * from './TypeScriptDeclarations.js';
+
+// src/Generators/prefix-utils.d.ts
+/**
+ * Compose a generator's emitted symbol from prefix segments and a token name.
+ *
+ * The prefix is an *output-format* concern — it lives on the generator, not
+ * the token. It's used to namespace global symbols (CSS custom properties,
+ * top-level SCSS variables) so they don't collide with other consumers of
+ * the same global namespace.
+ *
+ * Each segment runs through the same \`transform\` as the token name, so
+ * authoring style (\`prefix: "myCompany"\` vs \`prefix: "my-company"\`) does
+ * not matter — both yield \`my-company-color-primary\` under \`kebabCase\`.
+ */
+export type PrefixOptions = {
+    prefix?: string | string[];
+    separator?: string;
+};
+export declare const composeSymbol: (name: string, transform: (s: string) => string, { prefix, separator }: PrefixOptions) => string;
+
+// src/Plugins/AlphaMultiplyPlugin.d.ts
+import type { Token } from '../Token.js';
+import { Plugin } from './Plugin.js';
+type AlphaMultiplyPluginOptions = {
+    background?: string;
+} & Record<string, unknown>;
+export declare class AlphaMultiplyPlugin extends Plugin<AlphaMultiplyPluginOptions> {
+    tokenType: string;
+    outputType: RegExp;
+    constructor(options?: AlphaMultiplyPluginOptions);
+    transform(token: Token): Token;
+}
+export {};
+
+// src/Plugins/ClampPlugin.d.ts
+import type { Token } from '../Token.js';
+import { Plugin } from './Plugin.js';
+type ClampPair = {
+    min: string;
+    max: string;
+    output: string;
+};
+type ClampPluginOptions = {
+    viewportMin?: number;
+    viewportMax?: number;
+    pairs?: ClampPair[];
+} & Record<string, unknown>;
+export declare class ClampPlugin extends Plugin<ClampPluginOptions> {
+    tokenType: RegExp;
+    outputType: RegExp;
+    constructor(options?: ClampPluginOptions);
+    expand(tokens: Token[]): Token[];
+}
+export {};
+
+// src/Plugins/ColorBlindnessPlugin.d.ts
+import type { Token } from '../Token.js';
+import { Plugin } from './Plugin.js';
+type ColorBlindnessType = 'protanopia' | 'deuteranopia' | 'tritanopia';
+type ColorBlindnessPluginOptions = {
+    types?: ColorBlindnessType[];
+    suffix?: string;
+} & Record<string, unknown>;
+export declare class ColorBlindnessPlugin extends Plugin<ColorBlindnessPluginOptions> {
+    tokenType: string;
+    outputType: RegExp;
+    constructor(options?: ColorBlindnessPluginOptions);
+    expand(tokens: Token[]): Token[];
+}
+export {};
+
+// src/Plugins/ColorTransformPlugin.d.ts
+import type { Token } from '../Token.js';
+import type { ColorFormat } from '../TokenTypes/Color/types.js';
+import type { AuditIssue } from './Plugin.js';
+import { Plugin } from './Plugin.js';
+type ColorTransformPluginOptions = {
+    type?: ColorFormat;
+} & Record<string, unknown>;
+/**
+ * Normalizes colors to a single format — including colors nested inside
+ * composite tokens (box shadows, borders, gradients), not just standalone
+ * \`color\` tokens. This keeps a shadow's color in the same space as the color
+ * tokens rather than falling through to the default serialization.
+ */
+export declare class ColorTransformPlugin extends Plugin<ColorTransformPluginOptions> {
+    #private;
+    outputType: RegExp;
+    tokenType: RegExp;
+    readonly runAfter: string[];
+    constructor(options: ColorTransformPluginOptions);
+    transform(token: Token): Token;
+    audit(tokens: Token[]): AuditIssue[];
+}
+export {};
+
+// src/Plugins/ContrastValidatorPlugin.d.ts
+import type { Token } from '../Token.js';
+import type { AuditIssue } from './Plugin.js';
+import { Plugin } from './Plugin.js';
+type ContrastValidatorPluginOptions = {
+    pairs: {
+        foreground: string;
+        background: string;
+        level?: 'AA' | 'AAA';
+    }[];
+    minRatio?: number;
+} & Record<string, unknown>;
+export declare class ContrastValidatorPlugin extends Plugin<ContrastValidatorPluginOptions> {
+    tokenType: string;
+    outputType: RegExp;
+    audit(tokens: Token[]): AuditIssue[];
+}
+export {};
+
+// src/Plugins/DeprecationPlugin.d.ts
+import type { Token } from '../Token.js';
+import { Plugin } from './Plugin.js';
+type DeprecationPluginOptions = {
+    tokens: Record<string, string | true>;
+} & Record<string, unknown>;
+export declare class DeprecationPlugin extends Plugin<DeprecationPluginOptions> {
+    tokenType: RegExp;
+    outputType: RegExp;
+    transform(token: Token): Token;
+}
+export {};
+
+// src/Plugins/MinFontSizePlugin.d.ts
+import type { Token } from '../Token.js';
+import type { AuditIssue } from './Plugin.js';
+import { Plugin } from './Plugin.js';
+type MinFontSizePluginOptions = {
+    minPx?: number;
+    basePx?: number;
+} & Record<string, unknown>;
+export declare class MinFontSizePlugin extends Plugin<MinFontSizePluginOptions> {
+    tokenType: RegExp;
+    outputType: RegExp;
+    audit(tokens: Token[]): AuditIssue[];
+}
+export {};
+
+// src/Plugins/NameConventionPlugin.d.ts
+import type { Token } from '../Token.js';
+import { Plugin } from './Plugin.js';
+type NameConvention = 'camelCase' | 'kebab-case' | 'snake_case' | 'PascalCase' | 'SCREAMING_SNAKE';
+type NameConventionPluginOptions = {
+    convention: NameConvention;
+} & Record<string, unknown>;
+export declare class NameConventionPlugin extends Plugin<NameConventionPluginOptions> {
+    tokenType: RegExp;
+    outputType: RegExp;
+    readonly runAfter: string[];
+    transform(token: Token): Token;
+}
+export {};
+
+// src/Plugins/PalettePlugin.d.ts
+import type { Token } from '../Token.js';
+import type { ColorFormat } from '../TokenTypes/Color/types.js';
+import { Plugin } from './Plugin.js';
+/**
+ * Output color space for the generated ramp. \`'auto'\` (the default) keeps each
+ * step in the base color's authored space — a color authored in \`oklch\` yields
+ * an \`oklch\` ramp, one authored in hex/rgb keeps the RGB tint/shade output.
+ * Any concrete {@link ColorFormat} forces that space.
+ */
+export type PaletteSpace = ColorFormat | 'auto';
+type PalettePluginOptions = {
+    steps?: number[];
+    lightEnd?: number;
+    darkEnd?: number;
+    /** See {@link PaletteSpace}. Default \`'auto'\`. */
+    space?: PaletteSpace;
+} & Record<string, unknown>;
+export declare class PalettePlugin extends Plugin<PalettePluginOptions> {
+    tokenType: string;
+    outputType: RegExp;
+    constructor(options?: PalettePluginOptions);
+    expand(tokens: Token[]): Token[];
+}
+export {};
+
+// src/Plugins/PerceptualDistancePlugin.d.ts
+import type { Token } from '../Token.js';
+import type { AuditIssue } from './Plugin.js';
+import { Plugin } from './Plugin.js';
+/**
+ * "These two colors are too similar" is a judgment, and judgment needs intent:
+ * it presumes the two colors are *meant* to be told apart. Ramps (adjacent steps
+ * are supposed to be close), aliases (ΔE 0 by design), and unrelated families are
+ * not mutually-distinguishable peers, and there is no reliable way to infer which
+ * tokens are peers from their names or structure without baking one house style
+ * into a general tool.
+ *
+ * So this plugin takes the intent as input — the same model as
+ * \`ContrastValidatorPlugin\`, which never guesses foreground vs. background but is
+ * handed the pairs. Declare the peer \`sets\` that must be mutually distinguishable
+ * and it measures within each. Measurement itself is always fair game, so a
+ * non-gating \`report\` mode is available too. Nothing is compared by default.
+ */
+type PerceptualDistancePluginOptions = {
+    /** Minimum acceptable ΔE00 between two tokens in a peer set. Default: 5.0 */
+    minDeltaE?: number;
+    /**
+     * Peer sets: each inner array lists token names that must be mutually
+     * distinguishable. The plugin measures every pair *within* each set and warns
+     * when ΔE00 falls below \`minDeltaE\`. Tokens not in any set are ignored.
+     */
+    sets?: string[][];
+    /**
+     * @deprecated Renamed to {@link PerceptualDistancePluginOptions.sets}.
+     * Still honored (as an alias) for backward compatibility; \`sets\` wins when
+     * both are given.
+     */
+    groups?: string[][];
+    /**
+     * Opt in to comparing *every* pair of color tokens and gating below
+     * \`minDeltaE\`. This asserts that all color tokens are mutually-distinguishable
+     * peers — usually false once ramps and aliases exist — so it is off by default
+     * and must be requested explicitly.
+     */
+    all?: boolean;
+    /**
+     * Report mode: emit the pairwise ΔE00 as non-gating \`info\` findings
+     * (worst/most-similar first) with no pass/fail. Measures within \`sets\`/\`groups\`
+     * when provided, otherwise across all color pairs. Takes precedence over
+     * gating — use it to inspect the data and decide intent yourself.
+     */
+    report?: boolean;
+} & Record<string, unknown>;
+export declare class PerceptualDistancePlugin extends Plugin<PerceptualDistancePluginOptions> {
+    tokenType: string;
+    outputType: RegExp;
+    audit(tokens: Token[]): AuditIssue[];
+}
+export {};
+
+// src/Plugins/Plugin.d.ts
+import type { Token } from '../Token.js';
+export type AuditIssue = {
+    severity: 'error' | 'warning' | 'info';
+    token: string;
+    message: string;
+};
+export declare abstract class Plugin<Options extends Record<string, unknown> = Record<string, unknown>> {
+    abstract tokenType: string | RegExp;
+    abstract outputType: string | RegExp;
+    /**
+     * Plugin class names that must run before this plugin.
+     * Used for automatic topological sorting in the pipeline.
+     */
+    readonly runAfter: string[];
+    options: Options;
+    constructor(options?: Options);
+    transform(token: Token): Token;
+    audit?(tokens: Token[]): AuditIssue[];
+}
+/**
+ * Topologically sort plugins based on their \`runAfter\` declarations.
+ * Plugins without dependencies preserve their relative input order.
+ * Throws on cycles.
+ */
+export declare const sortPlugins: (plugins: Plugin[]) => Plugin[];
+
+// src/Plugins/PrefixTypePlugin.d.ts
+import type { Token } from '../Token.js';
+import { Plugin } from './Plugin.js';
+/**
+ * Prefixes the token type to the token name
+ *
+ * E.g.
+ *
+ * \`\`\`javascript
+ * {
+ *   type: 'color',
+ *   name: 'primary',
+ *   value: 'orange'
+ * }
+ * \`\`\`
+ * becomes
+ * \`\`\`javascript
+ * {
+ *   type: 'color',
+ *   name: 'colorPrimary',
+ *   value: 'orange'
+ * }
+ * \`\`\`
+ */
+export declare class PrefixTypePlugin extends Plugin {
+    outputType: RegExp;
+    tokenType: RegExp;
+    transform(token: Token): Token;
+}
+
+// src/Plugins/ReducedMotionPlugin.d.ts
+import type { Token } from '../Token.js';
+import { Plugin } from './Plugin.js';
+type ReducedMotionPluginOptions = {
+    prefix?: string;
+    zeroDuration?: boolean;
+} & Record<string, unknown>;
+export declare class ReducedMotionPlugin extends Plugin<ReducedMotionPluginOptions> {
+    tokenType: RegExp;
+    outputType: RegExp;
+    constructor(options?: ReducedMotionPluginOptions);
+    expand(tokens: Token[]): Token[];
+}
+export {};
+
+// src/Plugins/RemUnitPlugin.d.ts
+import type { Token } from '../Token.js';
+import { Plugin } from './Plugin.js';
+type RemUnitPluginOptions = {
+    base?: number;
+    targetUnit?: string;
+} & Record<string, unknown>;
+export declare class RemUnitPlugin extends Plugin<RemUnitPluginOptions> {
+    tokenType: RegExp;
+    outputType: RegExp;
+    constructor(options?: RemUnitPluginOptions);
+    transform(token: Token): Token;
+}
+export {};
+
+// src/Plugins/ScssQuoteValuePlugin.d.ts
+import type { Token } from '../Token.js';
+import { Plugin } from './Plugin.js';
+/**
+ * Quotes some SCSS values
+ *
+ * This is needed for things like font-families to get the right values
+ */
+export declare class ScssQuoteValuePlugin extends Plugin {
+    outputType: RegExp;
+    tokenType: RegExp;
+    readonly runAfter: string[];
+    transform(token: Token): Token;
+}
+
+// src/Plugins/StripTypePrefixPlugin.d.ts
+import type { Token } from '../Token.js';
+import { Plugin } from './Plugin.js';
+/**
+ * Strips the type prefix from token names, reversing the default type-prefixing behavior.
+ *
+ * Use this only when your token names are already globally unique across all groups.
+ *
+ * E.g.
+ *
+ * \`\`\`javascript
+ * {
+ *   type: 'color',
+ *   name: 'color-primary',
+ *   value: 'orange'
+ * }
+ * \`\`\`
+ * becomes
+ * \`\`\`javascript
+ * {
+ *   type: 'color',
+ *   name: 'primary',
+ *   value: 'orange'
+ * }
+ * \`\`\`
+ */
+export declare class StripTypePrefixPlugin extends Plugin {
+    outputType: RegExp;
+    tokenType: RegExp;
+    transform(token: Token): Token;
+}
+
+// src/Plugins/TouchTargetPlugin.d.ts
+import type { Token } from '../Token.js';
+import type { AuditIssue } from './Plugin.js';
+import { Plugin } from './Plugin.js';
+type TouchTargetPluginOptions = {
+    minPx?: number;
+    basePx?: number;
+    types?: string[];
+} & Record<string, unknown>;
+export declare class TouchTargetPlugin extends Plugin<TouchTargetPluginOptions> {
+    tokenType: RegExp;
+    outputType: RegExp;
+    audit(tokens: Token[]): AuditIssue[];
+}
+export {};
+
+// src/Plugins/index.d.ts
+export { Plugin, sortPlugins } from './Plugin.js';
+export type { AuditIssue } from './Plugin.js';
+export { ColorTransformPlugin } from './ColorTransformPlugin.js';
+export { PrefixTypePlugin } from './PrefixTypePlugin.js';
+export { ScssQuoteValuePlugin } from './ScssQuoteValuePlugin.js';
+export { StripTypePrefixPlugin } from './StripTypePrefixPlugin.js';
+export { RemUnitPlugin } from './RemUnitPlugin.js';
+export { AlphaMultiplyPlugin } from './AlphaMultiplyPlugin.js';
+export { NameConventionPlugin } from './NameConventionPlugin.js';
+export { DeprecationPlugin } from './DeprecationPlugin.js';
+export { PalettePlugin } from './PalettePlugin.js';
+export { ReducedMotionPlugin } from './ReducedMotionPlugin.js';
+export { ClampPlugin } from './ClampPlugin.js';
+export { ContrastValidatorPlugin } from './ContrastValidatorPlugin.js';
+export { MinFontSizePlugin } from './MinFontSizePlugin.js';
+export { TouchTargetPlugin } from './TouchTargetPlugin.js';
+export { PerceptualDistancePlugin } from './PerceptualDistancePlugin.js';
+export { ColorBlindnessPlugin } from './ColorBlindnessPlugin.js';
+
+// src/Teikn.d.ts
+import { CssVars, Dtcg, Generator, Html, JavaScript, Json, Scss, ScssVars, Storybook, TypeScript, TypeScriptDeclarations } from './Generators/index.js';
+import type { AuditIssue } from './Plugins/index.js';
+import { AlphaMultiplyPlugin, ClampPlugin, ColorBlindnessPlugin, ColorTransformPlugin, ContrastValidatorPlugin, DeprecationPlugin, MinFontSizePlugin, NameConventionPlugin, PalettePlugin, PerceptualDistancePlugin, Plugin, PrefixTypePlugin, ReducedMotionPlugin, RemUnitPlugin, ScssQuoteValuePlugin, StripTypePrefixPlugin, TouchTargetPlugin } from './Plugins/index.js';
+import { resolveReferences } from './resolve.js';
+import type { ThemeLayer, Token } from './Token.js';
+import type { ValidationResult } from './validate.js';
+import { validate } from './validate.js';
+declare const BuiltInPlugins: {
+    AlphaMultiplyPlugin: typeof AlphaMultiplyPlugin;
+    ClampPlugin: typeof ClampPlugin;
+    ColorBlindnessPlugin: typeof ColorBlindnessPlugin;
+    ColorTransformPlugin: typeof ColorTransformPlugin;
+    ContrastValidatorPlugin: typeof ContrastValidatorPlugin;
+    DeprecationPlugin: typeof DeprecationPlugin;
+    MinFontSizePlugin: typeof MinFontSizePlugin;
+    NameConventionPlugin: typeof NameConventionPlugin;
+    PalettePlugin: typeof PalettePlugin;
+    PerceptualDistancePlugin: typeof PerceptualDistancePlugin;
+    PrefixTypePlugin: typeof PrefixTypePlugin;
+    StripTypePrefixPlugin: typeof StripTypePrefixPlugin;
+    ReducedMotionPlugin: typeof ReducedMotionPlugin;
+    RemUnitPlugin: typeof RemUnitPlugin;
+    ScssQuoteValuePlugin: typeof ScssQuoteValuePlugin;
+    TouchTargetPlugin: typeof TouchTargetPlugin;
+};
+declare const BuiltInGenerators: {
+    CssVars: typeof CssVars;
+    Dtcg: typeof Dtcg;
+    Html: typeof Html;
+    JavaScript: typeof JavaScript;
+    Json: typeof Json;
+    Scss: typeof Scss;
+    ScssVars: typeof ScssVars;
+    Storybook: typeof Storybook;
+    TypeScript: typeof TypeScript;
+    TypeScriptDeclarations: typeof TypeScriptDeclarations;
+};
+export type TeiknOptions = {
+    generators?: Generator[];
+    plugins?: Plugin[];
+    themes?: ThemeLayer[];
+    outDir?: string;
+    validate?: boolean;
+};
+export type TransformResult = {
+    auditIssues: AuditIssue[];
+    files: {
+        path: string;
+        size: number;
+    }[];
+    errors: {
+        path: string;
+        error: unknown;
+    }[];
+};
+export declare class Teikn {
+    generators: Generator[];
+    plugins: Plugin[];
+    themes: ThemeLayer[];
+    outDir: string;
+    static generators: typeof BuiltInGenerators;
+    static plugins: typeof BuiltInPlugins;
+    static Plugin: typeof Plugin;
+    static Generator: typeof Generator;
+    static validate: typeof validate;
+    static resolveReferences: typeof resolveReferences;
+    options: TeiknOptions;
+    constructor(options: TeiknOptions);
+    validate(tokens: Token[]): ValidationResult;
+    /** Run expand() on all plugins that support it, returning the expanded token set. */
+    expand(tokens: Token[]): Token[];
+    /** Run audit() on all plugins that support it, returning all issues. */
+    audit(tokens: Token[]): AuditIssue[];
+    generateToStrings(tokens: Token[]): Map<string, string>;
+    transform(tokens: Token[]): Promise<TransformResult>;
+}
+export {};
+
+// src/Token.d.ts
+import type { Border } from './TokenTypes/Border.js';
+import type { BoxShadow, BoxShadowList } from './TokenTypes/BoxShadow.js';
+import type { Color } from './TokenTypes/Color/index.js';
+import type { CubicBezier } from './TokenTypes/CubicBezier.js';
+import type { Dimension } from './TokenTypes/Dimension.js';
+import type { Duration } from './TokenTypes/Duration.js';
+import type { GradientList, LinearGradient, RadialGradient } from './TokenTypes/Gradient.js';
+import type { Transition, TransitionList } from './TokenTypes/Transition.js';
+import type { Typography } from './TokenTypes/Typography.js';
+export type TokenValue = string | number | Color | CubicBezier | BoxShadow | BoxShadowList | LinearGradient | RadialGradient | GradientList | Transition | TransitionList | Typography | Border | Dimension | Duration;
+export type CompositeValue = Record<string, TokenValue>;
+export type ModeValues = Record<string, TokenValue | CompositeValue>;
+/**
+ * How a token should be *pictured* in the documentation generators
+ * (\`Storybook\`, \`Html\`). This is purely presentational — it never affects
+ * CSS/SCSS/JS/DTCG output. When a token doesn't carry one explicitly, the
+ * doc generators infer it from \`type\` (see \`classifyTokenType\`).
+ */
+export type PreviewKind = 'color' | 'typography' | 'fontSize' | 'fontFamily' | 'fontWeight' | 'letterSpacing' | 'lineHeight' | 'borderWidth' | 'borderStyle' | 'borderRadius' | 'border' | 'shadow' | 'duration' | 'timing' | 'spacing' | 'gradient' | 'opacity' | 'breakpoint' | 'size' | 'aspectRatio' | 'zLayer' | 'transition' | 'table';
+/**
+ * The first argument to the group builders (\`group\`, \`scale\`, \`composite\`).
+ * A bare string is the common case; the object form lets an author attach a
+ * documentation-only \`preview\` hint at declaration time without changing the
+ * builder's arity.
+ */
+export type TypeSpec = {
+    type: string;
+    preview?: PreviewKind;
+};
+export type Token = {
+    name: string;
+    value: TokenValue | CompositeValue;
+    usage?: string;
+    type: string;
+    group?: string;
+    modes?: ModeValues;
+    /**
+     * Documentation-only visualization hint. Set via the object form of a
+     * builder's first argument (\`group({ type, preview }, …)\`). When absent,
+     * doc generators infer the kind from \`type\`.
+     */
+    preview?: PreviewKind;
+    /**
+     * Set by \`DeprecationPlugin\`. When \`true\`, the token is deprecated.
+     * When a string, generators may surface it as a deprecation reason.
+     */
+    deprecated?: boolean;
+    /** Set by \`DeprecationPlugin\` when a replacement token is named. */
+    replacement?: string;
+    /**
+     * Set by \`ref(name, { link: true })\`. Marks this token as a *linked*
+     * reference: reference-aware generators emit an alias to the referenced
+     * token (CSS \`var(--…)\`, SCSS \`$…\`, a DTCG \`{token}\` alias) instead of the
+     * flattened value, so a runtime override of the target flows through.
+     *
+     * The stored string is the referenced token's emitted name — the bare
+     * authored name at authoring time, rewritten to the final prefixed name by
+     * the pipeline (see \`prefixTokenNames\`) so generators can emit it directly.
+     * \`value\` is still resolved to the concrete value, so audits and
+     * non-aliasing generators are unaffected.
+     */
+    link?: string;
+};
+export type TokenInput = TokenValue | [value: TokenValue, usage: string] | TokenInputObject;
+export type TokenInputObject = {
+    value: TokenValue | CompositeValue;
+    usage?: string;
+    modes?: ModeValues;
+    /** Set by \`ref(name, { link: true })\`; see {@link Token.link}. */
+    link?: string;
+};
+export type CompositeInput = Record<string, TokenValue>;
+export type CompositeTokenInput = CompositeInput | [value: CompositeInput, usage: string] | {
+    value: CompositeInput;
+    usage?: string;
+    modes?: ModeValues;
+};
+/** A named partial override layer for theming. */
+export type ThemeLayer = {
+    name: string;
+    tokenNames: string[];
+    overrides: Record<string, TokenValue>;
+};
+
+// src/TokenSet.d.ts
+import type { Token } from './Token.js';
+export type TokenSet = {
+    name: string;
+    tokens: Token[];
+};
+/**
+ * Create a named token set from one or more token arrays.
+ *
+ * @example
+ * \`\`\`ts
+ * const core = tokenSet('core',
+ *   group('color', { primary: '#0066cc', secondary: '#cc6600' }),
+ *   group('spacing', { sm: '8px', md: '16px' }),
+ * );
+ * \`\`\`
+ */
+export declare const tokenSet: (name: string, ...groups: Token[][]) => TokenSet;
+/**
+ * Compose multiple token sets into a single token array.
+ * Later sets override earlier ones by qualified key (\`group.name\`),
+ * so two tokens with the same short name in different groups (e.g.
+ * \`color.primary\` and \`size.primary\`) coexist instead of colliding.
+ * Token order is preserved: overridden tokens appear at the position
+ * of the first occurrence.
+ */
+export declare const composeTokenSets: (...sets: TokenSet[]) => Token[];
+/**
+ * Compose token sets into tokens with mode variants.
+ * The base set provides default values. Additional sets become modes.
+ * Tokens present in mode sets must also exist in the base set, matched
+ * by qualified key (\`group.name\`).
+ */
+export declare const composeTokenSetsAsModes: (base: TokenSet, modeSets: Record<string, TokenSet>) => Token[];
+
+// src/TokenTypes/Border.d.ts
+import { Color } from './Color/index.js';
+import { Dimension } from './Dimension.js';
+import type { RefFields } from './ref-guard.js';
+export declare const borderStyles: ReadonlySet<string>;
+export declare const isBorderStyle: (value: string) => boolean;
+export type BorderInput = {
+    width: Dimension | string;
+    style: string;
+    color: Color | string;
+};
+/**
+ * A composite border value (DTCG \`border\`): width, line style, and color in
+ * one named token, serializing to the CSS \`border\` shorthand.
+ *
+ * Any field may be a \`{tokenName}\` reference string, resolved per-field before
+ * generation (the wrapper implements the {@link RefFields} protocol). A
+ * whole-value reference, by contrast, should be the token value itself, not a
+ * \`Border\` — see {@link assertNotRef}.
+ *
+ * @example
+ * \`\`\`ts
+ * new Border({ width: dp(1), style: "solid", color: "#e0e0e0" }).toString();
+ * // "1px solid #e0e0e0"
+ * new Border("2px dashed steelblue"); // parsed from the shorthand
+ * new Border({ width: dp(1), style: "solid", color: "{color.border}" }); // per-field ref
+ * \`\`\`
+ */
+export declare class Border implements RefFields {
+    #private;
+    /** @internal brand — do not use directly; see \`isFirstClassValue()\` */
+    readonly __teikn_fcv__: true;
+    constructor(input: BorderInput | Border | string);
+    get width(): Dimension | string;
+    get style(): string;
+    get color(): Color | string;
+    with(updates: Partial<BorderInput>): Border;
+    /** @internal */
+    __teikn_fields__(): Record<string, unknown>;
+    /** @internal */
+    __teikn_fromFields__(fields: Record<string, unknown>): Border;
+    toJSON(): string;
+    /** CSS \`border\` shorthand: \`width style color\`. */
+    toString(): string;
+    static from(value: Border | BorderInput | string): Border;
+}
+
+// src/TokenTypes/BoxShadow.d.ts
+import { Color } from './Color/index.js';
+import type { RefFields } from './ref-guard.js';
+export type BoxShadowOptions = {
+    offsetX?: number;
+    offsetY?: number;
+    blur?: number;
+    spread?: number;
+    color?: Color | string;
+    inset?: boolean;
+    /** Length unit for the offsets/blur/spread. Default: \`px\`. */
+    unit?: string;
+};
+export declare class BoxShadow implements RefFields {
+    #private;
+    /** @internal brand — do not use directly; see \`isFirstClassValue()\` */
+    readonly __teikn_fcv__: true;
+    constructor(offsetX: number, offsetY: number, blur?: number, spread?: number, color?: Color | string, inset?: boolean);
+    constructor(input: BoxShadow | BoxShadowOptions | string);
+    get offsetX(): number;
+    get offsetY(): number;
+    get blur(): number;
+    get spread(): number;
+    get color(): Color | string;
+    get inset(): boolean;
+    /** Length unit shared by the offsets/blur/spread (default \`px\`). */
+    get unit(): string;
+    /** @internal */
+    __teikn_fields__(): Record<string, unknown>;
+    /** @internal */
+    __teikn_fromFields__(fields: Record<string, unknown>): BoxShadow;
+    with(updates: BoxShadowOptions): BoxShadow;
+    /** Scale all numeric values (offsets, blur, spread) by a factor */
+    scale(factor: number): BoxShadow;
+    toJSON(): string;
+    toString(): string;
+    static from(value: BoxShadow | BoxShadowOptions | string): BoxShadow;
+    /** Combine multiple shadows into a single CSS value */
+    static combine(...shadows: BoxShadow[]): string;
+}
+export declare class BoxShadowList implements RefFields {
+    #private;
+    /** @internal brand — do not use directly; see \`isFirstClassValue()\` */
+    readonly __teikn_fcv__: true;
+    constructor(value: BoxShadow[] | string | BoxShadowList);
+    get layers(): readonly BoxShadow[];
+    get length(): number;
+    at(index: number): BoxShadow | undefined;
+    map(fn: (shadow: BoxShadow, index: number) => BoxShadow): BoxShadowList;
+    /** @internal */
+    __teikn_fields__(): Record<string, unknown>;
+    /** @internal */
+    __teikn_fromFields__(fields: Record<string, unknown>): BoxShadowList;
+    toJSON(): string;
+    toString(): string;
+    static from(value: BoxShadowList | string | BoxShadow[]): BoxShadowList;
+}
+
+// src/TokenTypes/Color/Color.d.ts
+import type { Space, SpaceData } from './ColorSpace.js';
+import { HSLOperations } from './operations/HSLOperations.js';
+import { LABOperations } from './operations/LABOperations.js';
+import { LCHOperations } from './operations/LCHOperations.js';
+import { OklabOperations } from './operations/OklabOperations.js';
+import { OklchOperations } from './operations/OklchOperations.js';
+import { RGBOperations } from './operations/RGBOperations.js';
+import { XYZOperations } from './operations/XYZOperations.js';
+import type { ColorBlindnessType, ColorFormat, HSL, HSLA, LAB, LABA, LCH, LCHA, Oklab, OklabA, Oklch, OklchA, RGB, RGBA, XYZ, XYZA } from './types.js';
+declare const INTERNAL: unique symbol;
+export type InternalCreate = (space: Space, data: SpaceData[Space], alpha: number) => Color;
+/**
+ * A class for working with colors, supporting RGB, HSL, XYZ, LAB, and LCH formats
+ * with utilities for color manipulation, contrast checking, and format conversion.
+ *
+ * Colors are immutable. All mutation methods return new Color instances.
+ * Internally, colors are stored in whatever space they were created in,
+ * with lazy conversion and caching for other spaces.
+ */
+export declare class Color {
+    #private;
+    /** @internal brand — do not use directly; see \`isFirstClassValue()\` */
+    readonly __teikn_fcv__: true;
+    /**
+     * Create a color from a string (hex, rgb, hsl, lab, lch, xyz, named color) or Color
+     */
+    constructor(color: string | Color);
+    /**
+     * Create a color from RGB(A) values
+     * @param r Red component (0-255)
+     * @param g Green component (0-255)
+     * @param b Blue component (0-255)
+     * @param a Alpha component (0-1), defaults to 1
+     */
+    constructor(r: number, g: number, b: number, a?: number);
+    /** @internal */
+    constructor(brand: typeof INTERNAL, space: Space, data: SpaceData[Space], alpha: number);
+    static isColor(x: unknown): x is Color;
+    /** Red component (0-255) */
+    get red(): number;
+    /** Green component (0-255) */
+    get green(): number;
+    /** Blue component (0-255) */
+    get blue(): number;
+    /** Alpha component (0-1) */
+    get alpha(): number;
+    /** Hue component (0-360) */
+    get hue(): number;
+    /** Saturation component (0-1) */
+    get saturation(): number;
+    /** Lightness component (0-1) */
+    get lightness(): number;
+    /**
+     * The color's native (authored) space — the space its value is stored in and
+     * that \`toString()\` / \`toString('native')\` serialize to. Useful for keeping a
+     * derived color in the same space it was authored in.
+     */
+    get space(): Space;
+    static from(color: Color | string): Color;
+    static fromRGB(r: number, g: number, b: number, a?: number): Color;
+    static fromRGB(rgb: RGB, a?: number): Color;
+    static fromHSL(h: number, s: number, l: number, a?: number): Color;
+    static fromHSL(hsl: HSL, a?: number): Color;
+    static fromLAB(l: number, a: number, b: number, alpha?: number): Color;
+    static fromLAB(lab: LAB, alpha?: number): Color;
+    static fromLCH(l: number, c: number, h: number, a?: number): Color;
+    static fromLCH(lch: LCH, a?: number): Color;
+    static fromXYZ(x: number, y: number, z: number, a?: number): Color;
+    static fromXYZ(xyz: XYZ, a?: number): Color;
+    static fromOklab(l: number, a: number, b: number, alpha?: number): Color;
+    static fromOklab(oklab: Oklab, alpha?: number): Color;
+    static fromOklch(l: number, c: number, h: number, a?: number): Color;
+    static fromOklch(oklch: Oklch, a?: number): Color;
+    /** RGB-space operations (red, green, blue, mix, invert) */
+    get rgb(): RGBOperations;
+    /** HSL-space operations (hue, saturation, lightness, lighten, darken) */
+    get hsl(): HSLOperations;
+    /** LAB-space operations (lightness, a, b, mix, lighten, darken) */
+    get lab(): LABOperations;
+    /** LCH-space operations (lightness, chroma, hue, rotateHue, complement) */
+    get lch(): LCHOperations;
+    /** XYZ-space operations (x, y, z) */
+    get xyz(): XYZOperations;
+    /** Oklab-space operations (lightness, a, b, mix, lighten, darken) */
+    get oklab(): OklabOperations;
+    /** Oklch-space operations (lightness, chroma, hue, rotateHue, lighten, darken) */
+    get oklch(): OklchOperations;
+    /** Create a modified copy with a new red value */
+    setRed(red: number): Color;
+    /** Create a modified copy with a new green value */
+    setGreen(green: number): Color;
+    /** Create a modified copy with a new blue value */
+    setBlue(blue: number): Color;
+    /** Create a modified copy with a new alpha value */
+    setAlpha(alpha: number): Color;
+    /** Create a color with inverted RGB values */
+    invert(): Color;
+    /** Create a new color with the specified hue */
+    setHue(hue: number): Color;
+    /** Create a new color with the hue rotated by the specified degrees */
+    rotateHue(degrees: number): Color;
+    /** Create a complementary color (hue rotated by 180 degrees) */
+    complement(): Color;
+    /** Create a new color with the specified saturation */
+    setSaturation(saturation: number): Color;
+    /** Create a new color with the specified lightness */
+    setLightness(lightness: number): Color;
+    /** Create a new color lightened by the specified amount (0-1) */
+    lighten(amount: number): Color;
+    /** Create a new color darkened by the specified amount (0-1) */
+    darken(amount: number): Color;
+    /** Returns true if luminance > 0.5 */
+    isLight(): boolean;
+    /** Returns true if luminance <= 0.5 */
+    isDark(): boolean;
+    /** Create a new color with saturation increased by the given percentage points (0-100) */
+    saturate(amount: number): Color;
+    /** Create a new color with saturation decreased by the given percentage points (0-100) */
+    desaturate(amount: number): Color;
+    /** Fully desaturate the color to grayscale */
+    grayscale(): Color;
+    /** Create a new color by mixing with white */
+    tint(amount: number): Color;
+    /** Create a new color by mixing with black */
+    shade(amount: number): Color;
+    /**
+     * Calculate the CIEDE2000 color difference between this color and another
+     * @see Sharma, Wu, Dalal (2005) "The CIEDE2000 color-difference formula"
+     */
+    deltaE(other: Color): number;
+    /**
+     * Simulate how this color appears under a color vision deficiency
+     * Uses Brettel/Vienot simulation matrices on linearized sRGB
+     */
+    simulateColorBlindness(type: ColorBlindnessType): Color;
+    /**
+     * Create a new color by mixing with another color
+     * @param color Color to mix with
+     * @param amount Amount to mix (0-1), where 0 is this color and 1 is the other color
+     */
+    mix(color: Color | string, amount?: number): Color;
+    /**
+     * Calculate the perceptual luminance of the color
+     * @see https://www.w3.org/TR/WCAG20-TECHS/G17.html#G17-testsq
+     */
+    luminance(): number;
+    /**
+     * Calculate the contrast ratio between this color and another
+     * @see https://www.w3.org/TR/WCAG21/#dfn-contrast-ratio
+     */
+    contrastRatio(color: Color): number;
+    /**
+     * Check if this color has sufficient contrast with another for WCAG AA text
+     * @param color Color to compare with
+     * @param largeText Whether the text is large (18pt or 14pt bold)
+     */
+    isTextWCAG2CompliantWith(color: Color, largeText?: boolean): boolean;
+    /**
+     * Check if this color has sufficient contrast with another for WCAG AAA text
+     * @param color Color to compare with
+     * @param largeText Whether the text is large (18pt or 14pt bold)
+     */
+    isTextWCAG3CompliantWith(color: Color, largeText?: boolean): boolean;
+    /**
+     * Check if this color has sufficient contrast with another for UI elements
+     * @see https://www.w3.org/TR/WCAG21/#non-text-contrast
+     */
+    isUIWCAGCompliantWith(color: Color): boolean;
+    /** Get the color as an RGB tuple */
+    asRGB(): RGB;
+    /** Get the color as an RGBA tuple */
+    asRGBA(): RGBA;
+    /** Get the color as an HSL tuple */
+    asHSL(): HSL;
+    /** Get the color as an HSLA tuple */
+    asHSLA(): HSLA;
+    /** Get the color as an XYZ tuple */
+    asXYZ(): XYZ;
+    /** Get the color as an XYZA tuple */
+    asXYZA(): XYZA;
+    /** Get the color as a LAB tuple */
+    asLAB(): LAB;
+    /** Get the color as a LABA tuple */
+    asLABA(): LABA;
+    /** Get the color as an LCH tuple */
+    asLCH(): LCH;
+    /** Get the color as an LCHA tuple */
+    asLCHA(): LCHA;
+    /** Get the color as an Oklab tuple */
+    asOklab(): Oklab;
+    /** Get the color as an Oklab tuple with alpha */
+    asOklabA(): OklabA;
+    /** Get the color as an Oklch tuple */
+    asOklch(): Oklch;
+    /** Get the color as an Oklch tuple with alpha */
+    asOklchA(): OklchA;
+    /** Get the color as a 3-digit hex string (if possible) */
+    asHex3(): string;
+    /** Get the color as a 3-digit hex string */
+    get hex3(): string;
+    /** Get the color as a 6-digit hex string */
+    asHex(): string;
+    /** Get the color as a 6-digit hex string */
+    get hex(): string;
+    /** Serialize to a string (defaults to RGB) */
+    toJSON(): string;
+    /** Convert to a string in the specified format */
+    toString(type?: ColorFormat): string;
+}
+export {};
+
+// src/TokenTypes/Color/ColorSpace.d.ts
+import type { HSL, LAB, LCH, Oklab, Oklch, RGB, XYZ } from './types.js';
+export type Space = 'rgb' | 'hsl' | 'xyz' | 'lab' | 'lch' | 'oklab' | 'oklch';
+export type SpaceData = {
+    hsl: HSL;
+    lab: LAB;
+    lch: LCH;
+    oklab: Oklab;
+    oklch: Oklch;
+    rgb: RGB;
+    xyz: XYZ;
+};
+type IntermediateResults = Partial<{
+    [K in Space]: SpaceData[K];
+}>;
+export declare const convert: <To extends Space>(from: Space, to: To, data: SpaceData[Space]) => SpaceData[To];
+export declare const convertWithIntermediates: (from: Space, to: Space, data: SpaceData[Space]) => IntermediateResults;
+export {};
+
+// src/TokenTypes/Color/conversions.d.ts
+import type { HSL, LAB, LCH, Oklab, Oklch, RGB, XYZ } from './types.js';
+export declare const RGBToHSL: (rgb: RGB) => HSL;
+export declare const HSLToRGB: ([hue, saturation, lightness]: HSL) => RGB;
+/**
+ * sRGB to CIE-XYZ
+ * @see https://www.image-engineering.de/library/technotes/958-how-to-convert-between-srgb-and-ciexyz
+ * @see https://peteroupc.github.io/colorgen.html#Transformations_of_RGB_Colors
+ * @see https://mina86.com/2021/srgb-lab-lchab-conversions/
+ */
+export declare const RGBToXYZ: (rgb: RGB) => XYZ;
+/**
+ * CIE-XYZ to sRGB
+ * @see https://www.image-engineering.de/library/technotes/958-how-to-convert-between-srgb-and-ciexyz
+ */
+export declare const XYZToRGB: (xyz: XYZ) => RGB;
+export declare const XYZToLAB: ([x, y, z]: XYZ) => LAB;
+export declare const LABToXYZ: ([L, a, b]: LAB) => XYZ;
+export declare const LABToLCH: ([L, a, b]: LAB) => LCH;
+export declare const LCHToLAB: ([l, c, h]: LCH) => LAB;
+export declare const OklabToOklch: ([L, a, b]: Oklab) => Oklch;
+export declare const OklchToOklab: ([L, C, h]: Oklch) => Oklab;
+export declare const RGBToOklab: (rgb: RGB) => Oklab;
+/**
+ * Oklab → sRGB bytes with CSS Color 4 gamut mapping.
+ *
+ * If the color is already displayable it is converted directly. Otherwise we
+ * hold L and h and binary-search a reduced chroma, using clip + Oklab ΔE
+ * (JND ≈ 0.02) as the acceptance test — never a naive per-channel clip of the
+ * full-chroma color.
+ * @see https://www.w3.org/TR/css-color-4/#css-gamut-mapping
+ */
+export declare const OklabToRGB: (oklab: Oklab) => RGB;
+export declare const RGBToHex: (rgb: RGB, preferShort?: boolean) => string;
+export type HexResult = {
+    rgb: RGB;
+    alpha: number;
+};
+export declare const hexToRGBWithAlpha: (c: string) => HexResult;
+/** Backward-compatible wrapper — ignores alpha channel */
+export declare const hexToRGB: (c: string) => RGB;
+export declare const HSLToHex: (hsl: HSL) => string;
+export declare const XYZToLCH: (xyz: XYZ) => LCH;
+export declare const LCHToXYZ: (lch: LCH) => XYZ;
+
+// src/TokenTypes/Color/flip.d.ts
+export type Flip<T extends Record<string, string>> = {
+    [V in T[keyof T]]: {
+        [K in keyof T]: V extends T[K] ? K : never;
+    }[keyof T];
+};
+/**
+ * Flips the keys and values of an object
+ *
+ * \`\`\`javascript
+ * flip({ a: 'b', c: 'd' }) // { b: 'a', d: 'c' }
+ * \`\`\`
+ *
+ * Note: keys are always strings (because they are object keys)
+ *
+ * So,
+ * \`\`\`javascript
+ * flip({ a: 1, b: 2 }) // { 1: 'a', 2: 'b' }
+ * \`\`\`
+ * There, we'd also note that the key '1' would be coerced to a string, etc...
+ *
+ * If you want to preserve the keys exactly, then we can implement this with a Map instead
+ */
+export declare const flip: <T extends Record<string, string>>(obj: T) => Flip<T>;
+
+// src/TokenTypes/Color/index.d.ts
+export * from './Color.js';
+export * from './conversions.js';
+export * from './namedColors.js';
+export type { Space as ColorSpace, SpaceData as ColorSpaceData } from './ColorSpace.js';
+
+// src/TokenTypes/Color/namedColors.d.ts
+import { type Flip } from './flip.js';
+/**
+ * @see https://www.w3schools.com/colors/colors_hex.asp
+ */
+export declare const namedColors: {
+    readonly black: '#000000';
+    readonly navy: '#000080';
+    readonly darkblue: '#00008b';
+    readonly mediumblue: '#0000cd';
+    readonly blue: '#0000ff';
+    readonly darkgreen: '#006400';
+    readonly green: '#008000';
+    readonly teal: '#008080';
+    readonly darkcyan: '#008b8b';
+    readonly deepskyblue: '#00bfff';
+    readonly darkturquoise: '#00ced1';
+    readonly mediumspringgreen: '#00fa9a';
+    readonly lime: '#00ff00';
+    readonly springgreen: '#00ff7f';
+    readonly aqua: '#00ffff';
+    readonly cyan: '#00ffff';
+    readonly midnightblue: '#191970';
+    readonly dodgerblue: '#1e90ff';
+    readonly lightseagreen: '#20b2aa';
+    readonly forestgreen: '#228b22';
+    readonly seagreen: '#2e8b57';
+    readonly darkslategray: '#2f4f4f';
+    readonly darkslategrey: '#2f4f4f';
+    readonly limegreen: '#32cd32';
+    readonly mediumseagreen: '#3cb371';
+    readonly turquoise: '#40e0d0';
+    readonly royalblue: '#4169e1';
+    readonly steelblue: '#4682b4';
+    readonly darkslateblue: '#483d8b';
+    readonly mediumturquoise: '#48d1cc';
+    readonly indigo: '#4b0082';
+    readonly darkolivegreen: '#556b2f';
+    readonly cadetblue: '#5f9ea0';
+    readonly cornflowerblue: '#6495ed';
+    readonly rebeccapurple: '#663399';
+    readonly mediumaquamarine: '#66cdaa';
+    readonly dimgray: '#696969';
+    readonly dimgrey: '#696969';
+    readonly slateblue: '#6a5acd';
+    readonly olivedrab: '#6b8e23';
+    readonly slategray: '#708090';
+    readonly slategrey: '#708090';
+    readonly lightslategray: '#778899';
+    readonly lightslategrey: '#778899';
+    readonly mediumslateblue: '#7b68ee';
+    readonly lawngreen: '#7cfc00';
+    readonly chartreuse: '#7fff00';
+    readonly aquamarine: '#7fffd4';
+    readonly maroon: '#800000';
+    readonly purple: '#800080';
+    readonly olive: '#808000';
+    readonly gray: '#808080';
+    readonly grey: '#808080';
+    readonly skyblue: '#87ceeb';
+    readonly lightskyblue: '#87cefa';
+    readonly blueviolet: '#8a2be2';
+    readonly darkred: '#8b0000';
+    readonly darkmagenta: '#8b008b';
+    readonly saddlebrown: '#8b4513';
+    readonly darkseagreen: '#8fbc8f';
+    readonly lightgreen: '#90ee90';
+    readonly mediumpurple: '#9370db';
+    readonly darkviolet: '#9400d3';
+    readonly palegreen: '#98fb98';
+    readonly darkorchid: '#9932cc';
+    readonly yellowgreen: '#9acd32';
+    readonly sienna: '#a0522d';
+    readonly brown: '#a52a2a';
+    readonly darkgray: '#a9a9a9';
+    readonly darkgrey: '#a9a9a9';
+    readonly lightblue: '#add8e6';
+    readonly greenyellow: '#adff2f';
+    readonly paleturquoise: '#afeeee';
+    readonly lightsteelblue: '#b0c4de';
+    readonly powderblue: '#b0e0e6';
+    readonly firebrick: '#b22222';
+    readonly darkgoldenrod: '#b8860b';
+    readonly mediumorchid: '#ba55d3';
+    readonly rosybrown: '#bc8f8f';
+    readonly darkkhaki: '#bdb76b';
+    readonly silver: '#c0c0c0';
+    readonly mediumvioletred: '#c71585';
+    readonly indianred: '#cd5c5c';
+    readonly peru: '#cd853f';
+    readonly chocolate: '#d2691e';
+    readonly tan: '#d2b48c';
+    readonly lightgray: '#d3d3d3';
+    readonly lightgrey: '#d3d3d3';
+    readonly thistle: '#d8bfd8';
+    readonly orchid: '#da70d6';
+    readonly goldenrod: '#daa520';
+    readonly palevioletred: '#db7093';
+    readonly crimson: '#dc143c';
+    readonly gainsboro: '#dcdcdc';
+    readonly plum: '#dda0dd';
+    readonly burlywood: '#deb887';
+    readonly lightcyan: '#e0ffff';
+    readonly lavender: '#e6e6fa';
+    readonly darksalmon: '#e9967a';
+    readonly violet: '#ee82ee';
+    readonly palegoldenrod: '#eee8aa';
+    readonly lightcoral: '#f08080';
+    readonly khaki: '#f0e68c';
+    readonly aliceblue: '#f0f8ff';
+    readonly honeydew: '#f0fff0';
+    readonly azure: '#f0ffff';
+    readonly sandybrown: '#f4a460';
+    readonly wheat: '#f5deb3';
+    readonly beige: '#f5f5dc';
+    readonly whitesmoke: '#f5f5f5';
+    readonly mintcream: '#f5fffa';
+    readonly ghostwhite: '#f8f8ff';
+    readonly salmon: '#fa8072';
+    readonly antiquewhite: '#faebd7';
+    readonly linen: '#faf0e6';
+    readonly lightgoldenrodyellow: '#fafad2';
+    readonly oldlace: '#fdf5e6';
+    readonly red: '#ff0000';
+    readonly fuchsia: '#ff00ff';
+    readonly magenta: '#ff00ff';
+    readonly deeppink: '#ff1493';
+    readonly orangered: '#ff4500';
+    readonly tomato: '#ff6347';
+    readonly hotpink: '#ff69b4';
+    readonly coral: '#ff7f50';
+    readonly darkorange: '#ff8c00';
+    readonly lightsalmon: '#ffa07a';
+    readonly orange: '#ffa500';
+    readonly lightpink: '#ffb6c1';
+    readonly pink: '#ffc0cb';
+    readonly gold: '#ffd700';
+    readonly peachpuff: '#ffdab9';
+    readonly navajowhite: '#ffdead';
+    readonly moccasin: '#ffe4b5';
+    readonly bisque: '#ffe4c4';
+    readonly mistyrose: '#ffe4e1';
+    readonly blanchedalmond: '#ffebcd';
+    readonly papayawhip: '#ffefd5';
+    readonly lavenderblush: '#fff0f5';
+    readonly seashell: '#fff5ee';
+    readonly cornsilk: '#fff8dc';
+    readonly lemonchiffon: '#fffacd';
+    readonly floralwhite: '#fffaf0';
+    readonly snow: '#fffafa';
+    readonly yellow: '#ffff00';
+    readonly lightyellow: '#ffffe0';
+    readonly ivory: '#fffff0';
+    readonly white: '#ffffff';
+    /**
+     * Not in the inlcuded link, but should work
+     */
+    readonly transparent: 'rgba(0,0,0,0)';
+};
+export declare const namedColorsByValue: Flip<typeof namedColors>;
+export type NamedColor = keyof typeof namedColors;
+export type NamedColorValue = keyof typeof namedColorsByValue;
+
+// src/TokenTypes/Color/operations/HSLOperations.d.ts
+import type { Color, InternalCreate } from '../Color.js';
+export declare class HSLOperations {
+    #private;
+    constructor(color: Color, createInternal: InternalCreate);
+    hue(): number;
+    hue(value: number): Color;
+    saturation(): number;
+    saturation(value: number): Color;
+    lightness(): number;
+    lightness(value: number): Color;
+    rotateHue(degrees: number): Color;
+    complement(): Color;
+    lighten(amount: number): Color;
+    darken(amount: number): Color;
+    toString(): string;
+}
+
+// src/TokenTypes/Color/operations/LABOperations.d.ts
+import type { Color, InternalCreate } from '../Color.js';
+export declare class LABOperations {
+    #private;
+    constructor(color: Color, createInternal: InternalCreate);
+    lightness(): number;
+    lightness(value: number): Color;
+    a(): number;
+    a(value: number): Color;
+    b(): number;
+    b(value: number): Color;
+    mix(other: Color, amount?: number): Color;
+    lighten(amount: number): Color;
+    darken(amount: number): Color;
+    toString(): string;
+}
+
+// src/TokenTypes/Color/operations/LCHOperations.d.ts
+import type { Color, InternalCreate } from '../Color.js';
+export declare class LCHOperations {
+    #private;
+    constructor(color: Color, createInternal: InternalCreate);
+    lightness(): number;
+    lightness(value: number): Color;
+    chroma(): number;
+    chroma(value: number): Color;
+    hue(): number;
+    hue(value: number): Color;
+    rotateHue(degrees: number): Color;
+    complement(): Color;
+    toString(): string;
+}
+
+// src/TokenTypes/Color/operations/OklabOperations.d.ts
+import type { Color, InternalCreate } from '../Color.js';
+export declare class OklabOperations {
+    #private;
+    constructor(color: Color, createInternal: InternalCreate);
+    lightness(): number;
+    lightness(value: number): Color;
+    a(): number;
+    a(value: number): Color;
+    b(): number;
+    b(value: number): Color;
+    /**
+     * Interpolate L, a, b linearly — the CSS-accurate Oklab lerp, and the most
+     * perceptually uniform mix available on a \`Color\`.
+     */
+    mix(other: Color, amount?: number): Color;
+    lighten(amount: number): Color;
+    darken(amount: number): Color;
+    toString(): string;
+}
+
+// src/TokenTypes/Color/operations/OklchOperations.d.ts
+import type { Color, InternalCreate } from '../Color.js';
+/**
+ * Oklch-space operations. Oklch is the authoring-friendly polar form of Oklab:
+ * holding L constant while rotating hue keeps perceived lightness even, which is
+ * exactly what makes it pleasant for generating balanced color palettes.
+ */
+export declare class OklchOperations {
+    #private;
+    constructor(color: Color, createInternal: InternalCreate);
+    lightness(): number;
+    lightness(value: number): Color;
+    chroma(): number;
+    chroma(value: number): Color;
+    hue(): number;
+    hue(value: number): Color;
+    rotateHue(degrees: number): Color;
+    complement(): Color;
+    /** Lighten by adjusting L proportionally (holding chroma and hue) */
+    lighten(amount: number): Color;
+    darken(amount: number): Color;
+    /** Increase chroma by an absolute amount (holding L and hue) */
+    saturate(amount: number): Color;
+    desaturate(amount: number): Color;
+    toString(): string;
+}
+
+// src/TokenTypes/Color/operations/RGBOperations.d.ts
+import type { Color, InternalCreate } from '../Color.js';
+export declare class RGBOperations {
+    #private;
+    constructor(color: Color, createInternal: InternalCreate);
+    red(): number;
+    red(value: number): Color;
+    green(): number;
+    green(value: number): Color;
+    blue(): number;
+    blue(value: number): Color;
+    mix(color: Color | string, amount?: number): Color;
+    invert(): Color;
+    toString(): string;
+}
+
+// src/TokenTypes/Color/operations/XYZOperations.d.ts
+import type { Color, InternalCreate } from '../Color.js';
+export declare class XYZOperations {
+    #private;
+    constructor(color: Color, createInternal: InternalCreate);
+    x(): number;
+    x(value: number): Color;
+    y(): number;
+    y(value: number): Color;
+    z(): number;
+    z(value: number): Color;
+    toString(): string;
+}
+
+// src/TokenTypes/Color/types.d.ts
+type WithAlpha<T extends readonly number[]> = readonly [...T, alpha: number];
+export type RGB = readonly [red: number, green: number, blue: number];
+export type HSL = readonly [hue: number, saturation: number, lightness: number];
+export type XYZ = readonly [x: number, y: number, z: number];
+export type LAB = readonly [lightness: number, a: number, b: number];
+export type LCH = readonly [lightness: number, chroma: number, hue: number];
+export type Oklab = readonly [lightness: number, a: number, b: number];
+export type Oklch = readonly [lightness: number, chroma: number, hue: number];
+export type RGBA = WithAlpha<RGB>;
+export type HSLA = WithAlpha<HSL>;
+export type XYZA = WithAlpha<XYZ>;
+export type LABA = WithAlpha<LAB>;
+export type LCHA = WithAlpha<LCH>;
+export type OklabA = WithAlpha<Oklab>;
+export type OklchA = WithAlpha<Oklch>;
+export type ColorBlindnessType = 'protanopia' | 'deuteranopia' | 'tritanopia' | 'protanomaly' | 'deuteranomaly' | 'tritanomaly';
+export type ColorFormat = 'rgb' | 'rgba' | 'hex3' | 'hex' | 'hsl' | 'hsla' | 'xyz' | 'xyza' | 'lab' | 'laba' | 'lch' | 'lcha' | 'oklab' | 'oklaba' | 'oklch' | 'oklcha' | 'named' | 'xkcd' | 'native';
+export {};
+
+// src/TokenTypes/CubicBezier.d.ts
+type ControlPoints = readonly [x1: number, y1: number, x2: number, y2: number];
+export declare class CubicBezier {
+    #private;
+    /** @internal brand — do not use directly; see \`isFirstClassValue()\` */
+    readonly __teikn_fcv__: true;
+    constructor(x1: number, y1: number, x2: number, y2: number);
+    constructor(input: {
+        x1: number;
+        y1: number;
+        x2: number;
+        y2: number;
+    } | CubicBezier | string);
+    static from(value: CubicBezier | {
+        x1: number;
+        y1: number;
+        x2: number;
+        y2: number;
+    } | string): CubicBezier;
+    get x1(): number;
+    get y1(): number;
+    get x2(): number;
+    get y2(): number;
+    get controlPoints(): ControlPoints;
+    /** Evaluate the easing curve at a given time (0–1), returning progress (0–1) */
+    at(t: number): number;
+    /** Create the time-reversed curve (plays the animation backwards) */
+    reverse(): CubicBezier;
+    /** Scale the progress-axis intensity of the curve */
+    scaleY(factor: number): CubicBezier;
+    /** The CSS keyword for this curve, or null if it doesn't match a named timing */
+    get keyword(): string | null;
+    toJSON(): string;
+    toString(): string;
+    static readonly ease: CubicBezier;
+    static readonly easeIn: CubicBezier;
+    static readonly easeOut: CubicBezier;
+    static readonly easeInOut: CubicBezier;
+    static readonly linear: CubicBezier;
+    static readonly standard: CubicBezier;
+    static readonly accelerate: CubicBezier;
+    static readonly decelerate: CubicBezier;
+}
+export {};
+
+// src/TokenTypes/Dimension.d.ts
+export type AbsoluteUnit = 'px' | 'cm' | 'mm' | 'in' | 'pt' | 'pc' | 'Q';
+export type ViewportUnit = 'vw' | 'vh' | 'vmin' | 'vmax' | 'svw' | 'svh' | 'lvw' | 'lvh' | 'dvw' | 'dvh';
+export type FontRelativeUnit = 'em' | 'rem' | 'ch' | 'ex' | 'lh' | 'rlh';
+export type ContainerUnit = 'cqi' | 'cqb';
+export type FlexUnit = 'fr';
+export type PercentageUnit = '%';
+export type DimensionUnit = AbsoluteUnit | ViewportUnit | FontRelativeUnit | ContainerUnit | FlexUnit | PercentageUnit;
+export declare const absoluteUnits: ReadonlySet<string>;
+export declare const viewportUnits: ReadonlySet<string>;
+export declare const fontRelativeUnits: ReadonlySet<string>;
+export declare const containerUnits: ReadonlySet<string>;
+export declare const allUnits: ReadonlySet<string>;
+export declare const absoluteConversions: Readonly<Record<AbsoluteUnit, number>>;
+export declare const isAbsoluteUnit: (unit: string) => unit is AbsoluteUnit;
+export declare const isViewportUnit: (unit: string) => unit is ViewportUnit;
+export declare const isFontRelativeUnit: (unit: string) => unit is FontRelativeUnit;
+export declare const isContainerUnit: (unit: string) => unit is ContainerUnit;
+export declare const isDimensionUnit: (unit: string) => unit is DimensionUnit;
+export declare const isConvertible: (from: string, to: string) => boolean;
+export declare const convertDimension: (value: number, from: string, to: string, { remBase }?: {
+    remBase?: number;
+}) => number;
+export type DimensionInput = {
+    value: number;
+    unit: DimensionUnit;
+};
+export declare class Dimension {
+    #private;
+    /** @internal brand — do not use directly; see \`isFirstClassValue()\` */
+    readonly __teikn_fcv__: true;
+    constructor(value: number, unit: DimensionUnit);
+    constructor(input: DimensionInput | Dimension | string);
+    get value(): number;
+    get unit(): DimensionUnit;
+    get isAbsolute(): boolean;
+    get isRelative(): boolean;
+    get isViewport(): boolean;
+    get isFontRelative(): boolean;
+    get isContainer(): boolean;
+    isConvertibleTo(target: DimensionUnit): boolean;
+    to(targetUnit: DimensionUnit, { remBase }?: {
+        remBase?: number;
+    }): Dimension;
+    toRem(base?: number): Dimension;
+    toPx(base?: number): Dimension;
+    scale(factor: number): Dimension;
+    add(other: Dimension): Dimension;
+    subtract(other: Dimension): Dimension;
+    negate(): Dimension;
+    equals(other: Dimension): boolean;
+    toJSON(): string;
+    toString(): string;
+    static zero(unit?: DimensionUnit): Dimension;
+    static from(value: Dimension | DimensionInput | string): Dimension;
+    static parse(css: string): Dimension;
+    static convert(value: number, from: DimensionUnit, to: DimensionUnit, opts?: {
+        remBase?: number;
+    }): number;
+}
+
+// src/TokenTypes/Duration.d.ts
+export type DurationUnit = 'ms' | 's';
+export declare const durationUnits: ReadonlySet<DurationUnit>;
+export declare const isDurationUnit: (unit: string) => unit is DurationUnit;
+export declare const convertDuration: (value: number, from: DurationUnit, to: DurationUnit) => number;
+export type DurationInput = {
+    value: number;
+    unit: DurationUnit;
+};
+export declare class Duration {
+    #private;
+    /** @internal brand — do not use directly; see \`isFirstClassValue()\` */
+    readonly __teikn_fcv__: true;
+    constructor(value: number, unit: DurationUnit);
+    constructor(input: DurationInput | Duration | string);
+    get value(): number;
+    get unit(): DurationUnit;
+    to(targetUnit: DurationUnit): Duration;
+    toMs(): Duration;
+    toS(): Duration;
+    ms(): number;
+    scale(factor: number): Duration;
+    add(other: Duration): Duration;
+    subtract(other: Duration): Duration;
+    equals(other: Duration): boolean;
+    toJSON(): string;
+    toString(): string;
+    static zero(unit?: DurationUnit): Duration;
+    static from(value: Duration | DurationInput | string): Duration;
+    static parse(css: string): Duration;
+    static convert(value: number, from: DurationUnit, to: DurationUnit): number;
+}
+
+// src/TokenTypes/Gradient.d.ts
+import { Color } from './Color/index.js';
+import type { RefFields } from './ref-guard.js';
+export type GradientStop = {
+    color: Color | string;
+    position?: string;
+};
+export type StopInput = GradientStop | Color | string | [color: Color | string, position: string];
+export type LinearGradientInput = {
+    angle: number;
+    stops: StopInput[];
+};
+export declare class LinearGradient implements RefFields {
+    #private;
+    /** @internal brand — do not use directly; see \`isFirstClassValue()\` */
+    readonly __teikn_fcv__: true;
+    constructor(angle: number, stops: StopInput[]);
+    constructor(input: LinearGradientInput | LinearGradient | string);
+    get angle(): number;
+    get stops(): readonly GradientStop[];
+    rotate(degrees: number): LinearGradient;
+    reverse(): LinearGradient;
+    addStop(color: Color | string, position?: string): LinearGradient;
+    /** @internal */
+    __teikn_fields__(): Record<string, unknown>;
+    /** @internal */
+    __teikn_fromFields__(fields: Record<string, unknown>): LinearGradient;
+    toJSON(): string;
+    toString(): string;
+    /**
+     * Serialize with a custom color renderer, so ref-aware generators can emit
+     * \`var(--…)\` for stop colors that reference a token. \`toString()\` passes
+     * \`String\`, which renders concrete colors and inlines any \`{ref}\` verbatim.
+     */
+    toCSSWith(renderColor: (color: Color | string) => string): string;
+    static from(value: LinearGradient | LinearGradientInput | string): LinearGradient;
+}
+type RadialShape = 'circle' | 'ellipse';
+type RadialSize = 'closest-side' | 'closest-corner' | 'farthest-side' | 'farthest-corner' | string;
+export type RadialGradientOptions = {
+    shape?: RadialShape;
+    size?: RadialSize;
+    position?: string;
+};
+export declare class RadialGradient implements RefFields {
+    #private;
+    /** @internal brand — do not use directly; see \`isFirstClassValue()\` */
+    readonly __teikn_fcv__: true;
+    constructor(options: RadialGradientOptions, stops: StopInput[]);
+    constructor(value: RadialGradient | string);
+    get shape(): RadialShape;
+    get size(): RadialSize;
+    get position(): string;
+    get stops(): readonly GradientStop[];
+    setShape(shape: RadialShape): RadialGradient;
+    setPosition(position: string): RadialGradient;
+    addStop(color: Color | string, position?: string): RadialGradient;
+    reverse(): RadialGradient;
+    /** @internal */
+    __teikn_fields__(): Record<string, unknown>;
+    /** @internal */
+    __teikn_fromFields__(fields: Record<string, unknown>): RadialGradient;
+    toJSON(): string;
+    toString(): string;
+    /** See {@link LinearGradient.toCSSWith}. */
+    toCSSWith(renderColor: (color: Color | string) => string): string;
+    static from(value: RadialGradient | string): RadialGradient;
+}
+type AnyGradient = LinearGradient | RadialGradient;
+export declare class GradientList implements RefFields {
+    #private;
+    /** @internal brand — do not use directly; see \`isFirstClassValue()\` */
+    readonly __teikn_fcv__: true;
+    constructor(value: GradientList | string | AnyGradient[]);
+    get layers(): readonly AnyGradient[];
+    get length(): number;
+    at(index: number): AnyGradient | undefined;
+    map(fn: (gradient: AnyGradient, index: number) => AnyGradient): GradientList;
+    /** @internal */
+    __teikn_fields__(): Record<string, unknown>;
+    /** @internal */
+    __teikn_fromFields__(fields: Record<string, unknown>): GradientList;
+    toJSON(): string;
+    toString(): string;
+    /** See {@link LinearGradient.toCSSWith}. */
+    toCSSWith(renderColor: (color: Color | string) => string): string;
+    static from(value: GradientList | string | (LinearGradient | RadialGradient)[]): GradientList;
+}
+export {};
+
+// src/TokenTypes/Transition.d.ts
+import { CubicBezier } from './CubicBezier.js';
+import { Duration } from './Duration.js';
+import type { RefFields } from './ref-guard.js';
+export type TransitionInput = {
+    duration: Duration | string;
+    timingFunction: CubicBezier | string;
+    delay?: Duration | string;
+    property?: string;
+};
+export declare class Transition implements RefFields {
+    #private;
+    /** @internal brand — do not use directly; see \`isFirstClassValue()\` */
+    readonly __teikn_fcv__: true;
+    constructor(duration: Duration | string, timingFunction: CubicBezier | string, delay?: Duration | string, property?: string);
+    constructor(input: TransitionInput | Transition | string);
+    get duration(): Duration | string;
+    get timingFunction(): CubicBezier | string;
+    get delay(): Duration | string;
+    get property(): string;
+    setDuration(duration: Duration | string): Transition;
+    setTimingFunction(tf: CubicBezier | string): Transition;
+    setDelay(delay: Duration | string): Transition;
+    setProperty(property: string): Transition;
+    /** @internal */
+    __teikn_fields__(): Record<string, unknown>;
+    /** @internal */
+    __teikn_fromFields__(fields: Record<string, unknown>): Transition;
+    /** T.scale(k) → (d·k, f, δ·k, p) — uniform time dilation */
+    scale(factor: number): Transition;
+    /** T.shift(Δ) → (d, f, δ+Δ, p) — delay offset */
+    shift(delta: Duration | string): Transition;
+    /** T.reverse() → (d, f.reverse(), δ, p) — reverse the easing curve */
+    reverse(): Transition;
+    /** d + δ — total time before the transition completes */
+    get totalTime(): Duration;
+    toJSON(): string;
+    toString(): string;
+    static from(value: Transition | TransitionInput | string): Transition;
+    static readonly fade: Transition;
+    static readonly slide: Transition;
+    static readonly quick: Transition;
+}
+export declare class TransitionList implements RefFields {
+    #private;
+    /** @internal brand — do not use directly; see \`isFirstClassValue()\` */
+    readonly __teikn_fcv__: true;
+    constructor(value: TransitionList | string | Transition[]);
+    get layers(): readonly Transition[];
+    get length(): number;
+    at(index: number): Transition | undefined;
+    map(fn: (transition: Transition, index: number) => Transition): TransitionList;
+    /** @internal */
+    __teikn_fields__(): Record<string, unknown>;
+    /** @internal */
+    __teikn_fromFields__(fields: Record<string, unknown>): TransitionList;
+    toJSON(): string;
+    toString(): string;
+    static from(value: TransitionList | string | Transition[]): TransitionList;
+}
+
+// src/TokenTypes/Typography.d.ts
+import { Dimension } from './Dimension.js';
+import type { RefFields } from './ref-guard.js';
+export type TypographyInput = {
+    fontFamily: string | readonly string[];
+    fontSize: Dimension | string;
+    fontWeight?: number | string;
+    lineHeight?: number | string;
+    /** \`"normal"\`, a \`Dimension\`, or any CSS length string. */
+    letterSpacing?: Dimension | string;
+};
+/**
+ * A composite typography value (DTCG \`typography\`): font family, size, weight,
+ * line-height, and optional letter-spacing in one named token.
+ *
+ * Any field may be a \`{tokenName}\` reference string, resolved per-field before
+ * generation (the wrapper implements the {@link RefFields} protocol). A
+ * whole-value reference, by contrast, should be the token value itself, not a
+ * \`Typography\` — see {@link assertNotRef}.
+ *
+ * \`toString()\` emits the CSS \`font\` shorthand. Note that \`letterSpacing\` is not
+ * representable in that shorthand and is therefore omitted from it; the getter
+ * still exposes it for generators (e.g. Html docs) that read fields directly.
+ *
+ * @example
+ * \`\`\`ts
+ * new Typography({
+ *   fontFamily: ["Inter", "system-ui", "sans-serif"],
+ *   fontSize: dp(16),
+ *   fontWeight: 400,
+ *   lineHeight: 1.5,
+ * }).toString(); // "400 1rem/1.5 Inter, system-ui, sans-serif"
+ *
+ * // Per-field references:
+ * new Typography({ fontFamily: "{font.body}", fontSize: "{fontSize.md}" });
+ * \`\`\`
+ */
+export declare class Typography implements RefFields {
+    #private;
+    /** @internal brand — do not use directly; see \`isFirstClassValue()\` */
+    readonly __teikn_fcv__: true;
+    constructor(input: TypographyInput | Typography);
+    get fontFamily(): string;
+    get fontSize(): Dimension | string;
+    get fontWeight(): number | string | null;
+    get lineHeight(): number | string | null;
+    get letterSpacing(): Dimension | string | null;
+    with(updates: Partial<TypographyInput>): Typography;
+    /** @internal */
+    __teikn_fields__(): Record<string, unknown>;
+    /** @internal */
+    __teikn_fromFields__(fields: Record<string, unknown>): Typography;
+    toJSON(): string;
+    /**
+     * CSS \`font\` shorthand: \`[weight] size[/line-height] family\`. \`letterSpacing\`
+     * is intentionally excluded — it has no place in the \`font\` shorthand.
+     */
+    toString(): string;
+    static from(value: Typography | TypographyInput): Typography;
+}
+
+// src/TokenTypes/ref-guard.d.ts
+/** True when \`input\` is a single \`{tokenName}\` reference string. */
+export declare const isRefString: (input: unknown) => input is string;
+export declare const assertNotRef: (input: unknown, typeName: string) => void;
+export type RefFields = {
+    /**
+     * The wrapper's current field values, some of which may be \`{ref}\` strings.
+     * Only present (non-null) fields are returned.
+     * @internal
+     */
+    __teikn_fields__(): Record<string, unknown>;
+    /**
+     * Rebuild this wrapper from a (resolved) field record. Coerces each field to
+     * its concrete type, so callers may pass resolved values back in.
+     * @internal
+     */
+    __teikn_fromFields__(fields: Record<string, unknown>): unknown;
+};
+export declare const hasRefFields: (value: unknown) => value is RefFields;
+
+// src/build-platforms.d.ts
+import type { Generator } from './Generators/Generator.js';
+import type { Plugin } from './Plugins/index.js';
+import type { TransformResult } from './Teikn.js';
+import type { ThemeLayer } from './Token.js';
+import type { TokenSet } from './TokenSet.js';
+export type PlatformBuild = {
+    /** The base token set every platform starts from. */
+    base: TokenSet;
+    /**
+     * Platform name → its delta token set. \`null\` means "use base unchanged"
+     * (e.g. the canonical web build). A delta overrides the base by qualified
+     * key (\`group.name\`) via {@link composeTokenSets} — a build-time collapse,
+     * not a runtime mode: the platform's artifact carries flat values with no
+     * \`modes\` block or \`[data-theme]\` selector.
+     */
+    platforms: Record<string, TokenSet | null>;
+    /**
+     * Fresh generator instances per platform. A factory rather than an array
+     * because each {@link Teikn} build binds its generators to itself (via
+     * \`siblings\`), so sharing instances across builds would cross-wire them.
+     * Receives the platform name so a platform can emit a different set
+     * (e.g. a Swift generator for iOS, CSS for web).
+     */
+    generators: (platform: string) => Generator[];
+    /** Optional per-platform plugins, built fresh per platform for the same reason. */
+    plugins?: (platform: string) => Plugin[];
+    /** Optional per-platform theme layers, if you mix modes into a platform build. */
+    themes?: (platform: string) => ThemeLayer[];
+    /** Output root. Each platform writes to \`\${outDir}/\${platform}\`. */
+    outDir: string;
+};
+/**
+ * Build one flat artifact set per platform from a shared base plus per-platform
+ * deltas — the "base tokens, change some for another platform" workflow.
+ *
+ * Runs platforms sequentially (builds are fast; concurrency can be added later
+ * without changing the signature). Returns each platform's {@link TransformResult}
+ * keyed by platform name.
+ *
+ * @example
+ * \`\`\`ts
+ * await buildPlatforms({
+ *   base,
+ *   platforms: { web: null, mobile },
+ *   generators: () => [new JavaScript({ filename: "tokens" }), new CssVars({ filename: "tokens" })],
+ *   outDir: "generated",
+ * });
+ * \`\`\`
+ */
+export declare const buildPlatforms: ({ base, platforms, generators, plugins, themes, outDir, }: PlatformBuild) => Promise<Map<string, TransformResult>>;
+
+// src/builders.d.ts
+import type { CompositeTokenInput, ThemeLayer, Token, TokenInput, TokenInputObject, TypeSpec, TokenValue } from './Token.js';
+import { Color } from './TokenTypes/Color/index.js';
+import { Dimension } from './TokenTypes/Dimension.js';
+import type { DimensionUnit } from './TokenTypes/Dimension.js';
+import { Duration } from './TokenTypes/Duration.js';
+import type { DurationUnit } from './TokenTypes/Duration.js';
+/**
+ * A builder's first argument: a bare type string, or a {@link TypeSpec}
+ * object carrying a documentation-only \`preview\` hint alongside the type.
+ */
+export type TypeArg = string | TypeSpec;
+/**
+ * Create a group of tokens sharing a type.
+ *
+ * Values can be:
+ * - A plain value: \`'#0066cc'\` or \`16\` or \`new Color(...)\`\`
+ * - A tuple: \`['#0066cc', 'Primary brand color']\`
+ * - An object: \`{ value: '#0066cc', usage: 'Primary brand color', modes: { dark: '#3399ff' } }\`
+ *
+ * The first argument is normally the type string, but can be an object to
+ * attach a documentation-only \`preview\` hint — useful when a semantic type
+ * name wouldn't be recognized by the doc generators' inference:
+ *
+ * @example
+ * \`\`\`ts
+ * const colors = group('color', {
+ *   primary: '#0066cc',
+ *   secondary: ['#cc6600', 'Secondary brand color'],
+ *   surface: { value: '#ffffff', modes: { dark: '#1a1a1a' } },
+ * });
+ *
+ * // Name the group whatever you like; tell the docs how to picture it:
+ * const elevation = group({ type: 'elevation', preview: 'shadow' }, {
+ *   card: new BoxShadow(0, 1, 2, 0, '#0003'),
+ * });
+ * \`\`\`
+ */
+type ExtractFromObject<T> = T extends {
+    value: infer V;
+} ? V : T;
+type ExtractTokenValue<T> = T extends [infer V, string] ? V : ExtractFromObject<T>;
+export type TokenGroup<E extends Record<string, TokenInput>> = Token[] & {
+    [K in keyof E]: ExtractTokenValue<E[K]>;
+};
+export declare const group: <E extends Record<string, TokenInput>>(typeArg: TypeArg, entries: E) => TokenGroup<E>;
+/**
+ * Create a scale of tokens — useful for spacing, font sizes, z-indices, etc.
+ *
+ * @example
+ * \`\`\`ts
+ * const spacing = scale('spacing', {
+ *   xs: '0.25rem',
+ *   sm: '0.5rem',
+ *   md: '1rem',
+ *   lg: '1.5rem',
+ * });
+ *
+ * // Or with a numeric array + transform:
+ * const fontSizes = scale('fontSize', [10, 12, 14, 16, 18, 20, 24, 36], {
+ *   transform: n => \`\${n * 0.0625}rem\`,
+ *   names: ['100', '200', '300', '400', '500', '600', '700', '800'],
+ * });
+ * \`\`\`
+ */
+export declare const scale: (typeArg: TypeArg, values: Record<string, TokenInput> | number[], options?: {
+    names?: string[];
+    transform?: (n: number) => TokenValue;
+    usage?: string;
+}) => Token[];
+/**
+ * Create a composite token (typography, border, shadow, etc.)
+ *
+ * @example
+ * \`\`\`ts
+ * const heading = composite('typography', {
+ *   h1: { fontFamily: 'Rubik', fontSize: '2.5rem', fontWeight: 700, lineHeight: 1.2 },
+ *   h2: { fontFamily: 'Rubik', fontSize: '2rem', fontWeight: 700, lineHeight: 1.3 },
+ * });
+ * \`\`\`
+ */
+export declare const composite: (typeArg: TypeArg, entries: Record<string, CompositeTokenInput>) => Token[];
+/**
+ * Determine the best contrasting text color (black or white) for a given background.
+ *
+ * Uses WCAG contrast ratio to pick the candidate with higher contrast.
+ *
+ * @example
+ * \`\`\`ts
+ * onColor(new Color('#0066cc'))                // => white (dark bg)
+ * onColor(new Color('#ffe335'))                // => dark (light bg)
+ * onColor('#0066cc', { dark: '#222', light: '#fff' })
+ * \`\`\`
+ */
+export declare const onColor: (color: Color | string, { dark, light, }?: {
+    dark?: Color | string;
+    light?: Color | string;
+}) => Color;
+/**
+ * Generate "on" color tokens for a set of named colors.
+ *
+ * For each entry in the input map, creates a token named \`on{Name}\` with
+ * the best contrasting text color.
+ *
+ * @example
+ * \`\`\`ts
+ * const onColors = onColors('color', {
+ *   primary: new Color('#0066cc'),
+ *   secondary: new Color('#cc6600'),
+ * });
+ * // => [{ name: 'onPrimary', type: 'color', value: Color(white) }, ...]
+ * \`\`\`
+ */
+export declare const onColors: (type: string, colors: Record<string, Color | string>, options?: {
+    dark?: Color | string;
+    light?: Color | string;
+}) => Token[];
+/**
+ * Convert a pixel value to a rem-based Dimension (assuming 16px base).
+ * The name \`dp\` stands for "density-independent pixel" — a concept borrowed
+ * from Android's display system. In web terms: converts a px design spec
+ * value to its rem equivalent.
+ *
+ * @example
+ * \`\`\`ts
+ * dp(16)  // => Dimension(1, 'rem')
+ * dp(8)   // => Dimension(0.5, 'rem')
+ * \`\`\`
+ */
+export declare const dp: (px: number) => Dimension;
+/**
+ * Create a Dimension value.
+ *
+ * @example
+ * \`\`\`ts
+ * dim(16, 'px')  // => Dimension(16, 'px')
+ * dim(1, 'rem')  // => Dimension(1, 'rem')
+ * \`\`\`
+ */
+export declare const dim: (value: number, unit: DimensionUnit) => Dimension;
+/**
+ * Create a Duration value.
+ *
+ * @example
+ * \`\`\`ts
+ * dur(200, 'ms')  // => Duration(200, 'ms')
+ * dur(0.3, 's')   // => Duration(0.3, 's')
+ * \`\`\`
+ */
+export declare const dur: (value: number, unit: DurationUnit) => Duration;
+/**
+ * Merge multiple token arrays into one.
+ *
+ * @example
+ * \`\`\`ts
+ * const all = tokens(colors, spacing, fontSizes, typography);
+ * \`\`\`
+ */
+export declare const tokens: (...groups: Token[][]) => Token[];
+/**
+ * Create a theme layer — a named partial override of a token set.
+ *
+ * @example
+ * \`\`\`ts
+ * const dark = theme('dark', colors, { background: '#1a1a1a', text: '#eee' });
+ * const highContrast = theme('high-contrast', dark, { text: '#fff' });
+ * \`\`\`
+ */
+export declare const theme: (name: string, source: Token[] | ThemeLayer, overrides: Record<string, TokenValue>) => ThemeLayer;
+/** Options for {@link ref}. */
+export type RefOptions = {
+    /** Documentation string, same as passing a bare string as the second arg. */
+    usage?: string;
+    /**
+     * Emit this reference as a live *alias* to the target rather than baking in
+     * its resolved value. Reference-aware generators (CssVars, ScssVars, Dtcg)
+     * emit \`var(--target)\` / \`$target\` / \`{target}\`; every other generator, and
+     * \`resolveReferences()\`, still see the flattened concrete value. Default:
+     * \`false\` (flatten).
+     *
+     * Use this for the "styling hooks" pattern — a consumer that overrides the
+     * target token at runtime gets the aliasing token updated live — and for
+     * small theme layers that move a shared ramp tier and let every semantic
+     * token referencing it follow.
+     */
+    link?: boolean;
+};
+/**
+ * Create a token that references another token by name.
+ * References are resolved before plugins run.
+ *
+ * The second argument may be a bare usage string, or an options object. Pass
+ * \`{ link: true }\` to emit the reference as a live alias in reference-aware
+ * formats instead of flattening it (see {@link RefOptions.link}).
+ *
+ * @example
+ * \`\`\`ts
+ * const colors = group('color', {
+ *   primary: '#0066cc',
+ *   link: ref('primary'),
+ *   linkHover: ref('primary', 'Hover state for links'),
+ *   // Emits \`var(--color-primary)\` in CSS, resolved by the browser at runtime:
+ *   surface: ref('primary', { link: true }),
+ * });
+ * \`\`\`
+ */
+export declare const ref: (tokenName: string, usageOrOptions?: string | RefOptions) => TokenInputObject;
+export {};
+
+// src/dtcg/index.d.ts
+export * from './types.js';
+export * from './parse.js';
+export * from './serialize.js';
+export * from './values.js';
+
+// src/dtcg/parse.d.ts
+import type { Token } from '../Token.js';
+import type { DtcgDocument } from './types.js';
+export type ParseOptions = {
+    /** Separator for flattening group paths into token names. Default: '.' */
+    separator?: string;
+    /** When true, map Dtcg type names to teikn equivalents. Default: true */
+    mapTypes?: boolean;
+};
+export declare const parseDtcg: (document: DtcgDocument, options?: ParseOptions) => Token[];
+
+// src/dtcg/serialize.d.ts
+import type { Token } from '../Token.js';
+import type { DtcgDocument } from './types.js';
+export type SerializeOptions = {
+    /** Separator used in token names to reconstruct groups. Default: '.' */
+    separator?: string;
+    /** When true, reconstruct group hierarchy from token names. Default: true */
+    hierarchical?: boolean;
+};
+export declare const serializeDtcg: (tokens: Token[], options?: SerializeOptions) => DtcgDocument;
+
+// src/dtcg/types.d.ts
+import type { DimensionUnit } from '../TokenTypes/Dimension.js';
+export type DtcgColorValue = {
+    colorSpace: string;
+    components: [number, number, number];
+    alpha?: number;
+};
+export type DtcgDimensionValue = {
+    value: number;
+    unit: DimensionUnit;
+};
+export type DtcgDurationValue = {
+    value: number;
+    unit: 'ms' | 's';
+};
+export type DtcgStrokeStyleValue = string | {
+    dashArray: number[];
+    lineCap: 'butt' | 'round' | 'square';
+};
+export type DtcgCubicBezierValue = [number, number, number, number];
+export type DtcgGradientStop = {
+    color: DtcgColorValue;
+    position: number;
+};
+export type DtcgBorderValue = {
+    color: DtcgColorValue | string;
+    width: DtcgDimensionValue | string;
+    style: DtcgStrokeStyleValue | string;
+};
+export type DtcgTransitionValue = {
+    duration: DtcgDurationValue | string;
+    timingFunction: DtcgCubicBezierValue | string;
+    delay?: DtcgDurationValue | string;
+};
+export type DtcgShadowValue = {
+    color: DtcgColorValue | string;
+    offsetX: DtcgDimensionValue | string;
+    offsetY: DtcgDimensionValue | string;
+    blur: DtcgDimensionValue | string;
+    spread: DtcgDimensionValue | string;
+};
+export type DtcgTypographyValue = {
+    fontFamily: string | string[];
+    fontSize: DtcgDimensionValue | string;
+    fontWeight: number | string;
+    lineHeight?: number | string;
+    letterSpacing?: DtcgDimensionValue | string;
+    [key: string]: unknown;
+};
+export type DtcgGradientValue = DtcgGradientStop[];
+export type DtcgValue = DtcgColorValue | DtcgDimensionValue | DtcgDurationValue | DtcgStrokeStyleValue | DtcgCubicBezierValue | DtcgBorderValue | DtcgTransitionValue | DtcgShadowValue | DtcgTypographyValue | DtcgGradientValue | number | string | string[];
+export type DtcgToken = {
+    $value: DtcgValue | string;
+    $type?: string;
+    $description?: string;
+    $deprecated?: boolean | string;
+    $extensions?: Record<string, unknown>;
+};
+export type DtcgGroup = {
+    $type?: string;
+    $description?: string;
+    $extensions?: Record<string, unknown>;
+    [key: string]: DtcgGroup | DtcgToken | string | boolean | Record<string, unknown> | undefined;
+};
+export type DtcgDocument = Record<string, DtcgGroup | DtcgToken | string | boolean | Record<string, unknown> | undefined>;
+export declare const DtcgTypes: {
+    readonly color: 'color';
+    readonly dimension: 'dimension';
+    readonly fontFamily: 'fontFamily';
+    readonly fontWeight: 'fontWeight';
+    readonly duration: 'duration';
+    readonly cubicBezier: 'cubicBezier';
+    readonly number: 'number';
+    readonly strokeStyle: 'strokeStyle';
+    readonly border: 'border';
+    readonly transition: 'transition';
+    readonly shadow: 'shadow';
+    readonly gradient: 'gradient';
+    readonly typography: 'typography';
+    readonly fontStyle: 'fontStyle';
+};
+export type DtcgTypeName = (typeof DtcgTypes)[keyof typeof DtcgTypes];
+
+// src/dtcg/values.d.ts
+import type { DtcgValue } from './types.js';
+export declare const dtcgTypeToTeikn: (type: string) => string;
+export declare const teiknTypeToDtcg: (type: string) => string;
+export declare const dtcgValueToTeikn: (value: DtcgValue, type: string) => any;
+export type DtcgRefMap = Map<unknown, string>;
+export declare const teiknValueToDtcg: (value: any, type: string, refMap?: DtcgRefMap) => DtcgValue;
+
+// src/resolve.d.ts
+import type { Token } from './Token.js';
+/**
+ * Resolve all \`{tokenName}\` references in a token set.
+ * References are looked up by token name (case-sensitive).
+ * Circular references throw an error.
+ */
+export declare const resolveReferences: (tokens: Token[]) => Token[];
+
+// src/storybook/components.d.ts
+/**
+ * Storybook visualization components for teikn design tokens.
+ *
+ * These components are imported by generated .stories.tsx files.
+ * They use CSS custom properties for theming and respond to
+ * Storybook's dark mode automatically.
+ */
+import * as React from 'react';
+type El = React.JSX.Element;
+type ElOrNull = React.JSX.Element | null;
+type ColorScheme = 'auto' | 'light' | 'dark';
+export declare const TokenStory: ({ children, colorScheme, }: {
+    children: React.ReactNode;
+    colorScheme?: ColorScheme;
+}) => El;
+export declare const TokenGrid: ({ children }: {
+    children: React.ReactNode;
+}) => El;
+export declare const TokenList: ({ children }: {
+    children: React.ReactNode;
+}) => El;
+export declare const Swatch: ({ name, value }: {
+    name: string;
+    value: string;
+}) => El;
+export declare const SpacingBar: ({ name, value }: {
+    name: string;
+    value: string;
+}) => El;
+export declare const ShadowBox: ({ name, value }: {
+    name: string;
+    value: string;
+}) => El;
+export declare const FontSample: ({ name, value, styleProp, }: {
+    name: string;
+    value: string;
+    styleProp: string;
+}) => El;
+export declare const TypographyBlock: ({ name, value, }: {
+    name: string;
+    value: Record<string, unknown> | string;
+}) => El;
+export declare const BorderDemo: ({ name, value, }: {
+    name: string;
+    value: Record<string, unknown> | string;
+}) => El;
+export declare const BorderWidthDemo: ({ name, value }: {
+    name: string;
+    value: string;
+}) => El;
+export declare const BorderStyleDemo: ({ name, value }: {
+    name: string;
+    value: string;
+}) => El;
+export declare const RadiusBox: ({ name, value }: {
+    name: string;
+    value: string;
+}) => El;
+export declare const GradientSwatch: ({ name, value }: {
+    name: string;
+    value: string;
+}) => El;
+export declare const OpacityDemo: ({ name, value }: {
+    name: string;
+    value: string;
+}) => El;
+export declare const LineHeightSample: ({ name, value }: {
+    name: string;
+    value: string;
+}) => El;
+export declare const LetterSpacingSample: ({ name, value }: {
+    name: string;
+    value: string;
+}) => El;
+export declare const DurationBar: ({ name, value }: {
+    name: string;
+    value: string;
+}) => El;
+export declare const TimingDemo: ({ name, value }: {
+    name: string;
+    value: string;
+}) => El;
+export declare const TransitionDemo: ({ name, value }: {
+    name: string;
+    value: string;
+}) => El;
+export declare const BreakpointBar: ({ name, value }: {
+    name: string;
+    value: string;
+}) => El;
+export declare const SizeBox: ({ name, value }: {
+    name: string;
+    value: string;
+}) => El;
+export declare const RatioBox: ({ name, value }: {
+    name: string;
+    value: string;
+}) => El;
+export declare const ZLayerStack: ({ items }: {
+    items: Array<{
+        name: string;
+        value: string;
+    }>;
+}) => El;
+export declare const ModeTable: ({ tokenKeys, modesData, }: {
+    tokenKeys: readonly string[];
+    modesData: Record<string, Record<string, string>>;
+}) => ElOrNull;
+export declare const TokenTable: ({ items }: {
+    items: Array<{
+        name: string;
+        value: string;
+    }>;
+}) => El;
+export {};
+
+// src/storybook/index.d.ts
+export { BreakpointBar, BorderDemo, BorderStyleDemo, BorderWidthDemo, DurationBar, FontSample, GradientSwatch, LetterSpacingSample, LineHeightSample, ModeTable, OpacityDemo, RadiusBox, RatioBox, ShadowBox, SizeBox, SpacingBar, Swatch, TimingDemo, TokenGrid, TokenList, TokenStory, TokenTable, TransitionDemo, TypographyBlock, ZLayerStack, } from './components.js';
+
+// src/type-classifiers.d.ts
+import type { PreviewKind, Token } from './Token.js';
+export declare const isFirstClassValue: (value: unknown) => boolean;
+export declare const isColorType: (type: string) => boolean;
+/**
+ * Infer a {@link PreviewKind} from a token's \`type\` string. Falls back to
+ * \`"table"\` (a generic name/value table) when nothing matches.
+ */
+export declare const classifyTokenType: (type: string) => PreviewKind;
+/**
+ * Resolve how a token should be pictured: an explicit \`preview\` hint wins,
+ * otherwise infer from \`type\`. This is the entry point the doc generators use.
+ */
+export declare const resolvePreviewKind: (token: Pick<Token, 'type' | 'preview'>) => PreviewKind;
+export declare const groupTokens: (tokens: Token[]) => Map<string, Token[]>;
+
+// src/validate.d.ts
+import type { Token } from './Token.js';
+export type ValidationSeverity = 'error' | 'warning';
+export type ValidationIssue = {
+    severity: ValidationSeverity;
+    token: string;
+    message: string;
+};
+export type ValidationResult = {
+    valid: boolean;
+    issues: ValidationIssue[];
+};
+/**
+ * Validate a set of tokens for common issues.
+ *
+ * Checks:
+ * - Required fields (name, value, type)
+ * - Duplicate token names
+ * - Color values are parseable
+ * - References point to existing tokens
+ * - No circular references
+ * - Composite token shapes match expected fields
+ * - Mode values pass the same checks as the main value
+ *
+ * @example
+ * \`\`\`ts
+ * const result = validate(myTokens);
+ * if (!result.valid) {
+ *   result.issues.forEach(i => console.error(\`[\${i.severity}] \${i.token}: \${i.message}\`));
+ * }
+ * \`\`\`
+ */
+export declare const validate: (tokens: Token[]) => ValidationResult;"
+`;

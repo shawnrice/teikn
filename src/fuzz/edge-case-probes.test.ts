@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { composite, group, tokens as combineTokens } from '../builders.js';
 import {
   CssVars,
-  DtcgGenerator,
+  Dtcg,
   Html,
   JavaScript,
   Json,
@@ -24,7 +24,7 @@ const gens = () => [
   new ScssVars({ filename: 'b', dateFn }),
   new Html({ dateFn }),
   new Json(),
-  new DtcgGenerator(),
+  new Dtcg(),
   new JavaScript({ filename: 'c', dateFn }),
   new TypeScript({ filename: 'd', dateFn }),
   new TypeScriptDeclarations({ filename: 'e', dateFn }),

@@ -1,0 +1,10 @@
+[test]
+# Coverage is opt-in via `bun run test:coverage` (the default `bun test` stays
+# fast and ungated). Emits a terminal summary plus coverage/lcov.info for CI
+# artifacts and editor gutters.
+coverageReporter = ["text", "lcov"]
+coverageSkipTestFiles = true
+# Visual React components are verified in Storybook, not unit tests, so they'd
+# otherwise skew the aggregate. Their story-generating code (Storybook.ts) IS
+# covered.
+coveragePathIgnorePatterns = ["src/storybook/components.tsx"]

@@ -1,11 +1,17 @@
 // Dtcg value types per the W3C spec
+import type { DimensionUnit } from '../TokenTypes/Dimension.js';
+
 export type DtcgColorValue = {
   colorSpace: string;
   components: [number, number, number];
   alpha?: number;
 };
 
-export type DtcgDimensionValue = { value: number; unit: 'px' | 'rem' };
+// The DTCG spec's dimension type is px/rem only, but teikn authors legitimately
+// use font-relative and percentage units (em, %, …) for letter-spacing, radii,
+// etc. We emit them as structured `{value, unit}` so they survive a round-trip
+// rather than degrading to an unparseable raw string.
+export type DtcgDimensionValue = { value: number; unit: DimensionUnit };
 
 export type DtcgDurationValue = { value: number; unit: 'ms' | 's' };
 

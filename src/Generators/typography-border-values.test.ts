@@ -11,7 +11,7 @@ import { LinearGradient } from '../TokenTypes/Gradient.js';
 import { Typography } from '../TokenTypes/Typography.js';
 import { validate } from '../validate.js';
 import { CssVars } from './CssVars.js';
-import { DtcgGenerator } from './Dtcg.js';
+import { Dtcg } from './Dtcg.js';
 import { Html } from './Html.js';
 import { JavaScript } from './JavaScript.js';
 import { Scss } from './Scss.js';
@@ -72,7 +72,7 @@ describe('first-class Typography serializes correctly', () => {
   });
 
   test('Dtcg emits a structured typography $value', () => {
-    const output = new DtcgGenerator({ hierarchical: false }).generate(typographyToken);
+    const output = new Dtcg({ hierarchical: false }).generate(typographyToken);
     const parsed = JSON.parse(output);
     expect(parsed.bodyText.$type).toBe('typography');
     expect(parsed.bodyText.$value).toEqual({
@@ -127,7 +127,7 @@ describe('first-class Border serializes correctly', () => {
   });
 
   test('Dtcg emits a structured border $value', () => {
-    const output = new DtcgGenerator({ hierarchical: false }).generate(borderToken);
+    const output = new Dtcg({ hierarchical: false }).generate(borderToken);
     const parsed = JSON.parse(output);
     expect(parsed.borderFocus.$type).toBe('border');
     expect(parsed.borderFocus.$value).toEqual({
@@ -194,7 +194,7 @@ describe('LIMITATION 1: letterSpacing is not in the CSS font shorthand', () => {
   });
 
   test('and IS retained in the structured DTCG $value', () => {
-    const dtcg = JSON.parse(new DtcgGenerator({ hierarchical: false }).generate(token));
+    const dtcg = JSON.parse(new Dtcg({ hierarchical: false }).generate(token));
     expect(dtcg.caption.$value.letterSpacing).toEqual({ value: 0.02, unit: 'em' });
   });
 });
@@ -238,7 +238,7 @@ describe('per-field references inside a wrapper resolve (RefFields protocol)', (
         value: new BoxShadow({ offsetY: 2, blur: 8, color: '{ink}' }),
       },
     ];
-    const dtcg = JSON.parse(new DtcgGenerator({ hierarchical: false }).generate(tokens));
+    const dtcg = JSON.parse(new Dtcg({ hierarchical: false }).generate(tokens));
     expect(dtcg.shadowMd.$value.color).toBe('{ink}');
   });
 
@@ -304,7 +304,7 @@ describe('per-field references inside a wrapper resolve (RefFields protocol)', (
         ]),
       },
     ];
-    const dtcg = JSON.parse(new DtcgGenerator({ hierarchical: false }).generate(tokens));
+    const dtcg = JSON.parse(new Dtcg({ hierarchical: false }).generate(tokens));
     expect(dtcg.hero.$value[0].color).toBe('{brand}');
   });
 
@@ -348,7 +348,7 @@ describe('per-field references inside a wrapper resolve (RefFields protocol)', (
         value: new Border({ width: '2px', style: 'solid', color: '{line}' }),
       },
     ];
-    const dtcg = JSON.parse(new DtcgGenerator({ hierarchical: false }).generate(tokens));
+    const dtcg = JSON.parse(new Dtcg({ hierarchical: false }).generate(tokens));
     expect(dtcg.borderFocus.$value.color).toBe('{line}');
   });
 

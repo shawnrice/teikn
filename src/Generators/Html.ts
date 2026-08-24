@@ -6,6 +6,7 @@ import { Border } from '../TokenTypes/Border.js';
 import { Color } from '../TokenTypes/Color/index.js';
 import { CubicBezier } from '../TokenTypes/CubicBezier.js';
 import { GradientList, LinearGradient, RadialGradient } from '../TokenTypes/Gradient.js';
+import { isRefString } from '../TokenTypes/ref-guard.js';
 import { Transition } from '../TokenTypes/Transition.js';
 import { Typography } from '../TokenTypes/Typography.js';
 import {
@@ -212,7 +213,12 @@ const transitionProps = (
     return [
       ['property', v.property],
       ['duration', v.duration.toString()],
-      ['timing', v.timingFunction.keyword ?? v.timingFunction.toString()],
+      [
+        'timing',
+        isRefString(v.timingFunction)
+          ? v.timingFunction
+          : (v.timingFunction.keyword ?? v.timingFunction.toString()),
+      ],
       ['delay', v.delay.toString()],
     ];
   }

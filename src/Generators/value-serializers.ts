@@ -3,7 +3,8 @@ import type { TokenValue } from '../Token.js';
 import { Border } from '../TokenTypes/Border.js';
 import { BoxShadow, BoxShadowList } from '../TokenTypes/BoxShadow.js';
 import { GradientList, LinearGradient, RadialGradient } from '../TokenTypes/Gradient.js';
-import { Transition } from '../TokenTypes/Transition.js';
+import { isRefString } from '../TokenTypes/ref-guard.js';
+import { Transition, TransitionList } from '../TokenTypes/Transition.js';
 import { Typography } from '../TokenTypes/Typography.js';
 import { isFirstClassValue } from '../type-classifiers.js';
 
@@ -160,12 +161,16 @@ export const stringifyTransitionWithRefs = (t: Transition, ref: RefResolver): st
 
   if (timing) {
     parts.push(timing);
+  } else if (isRefString(t.timingFunction)) {
+    parts.push(t.timingFunction);
   } else {
     const { keyword } = t.timingFunction;
     parts.push(keyword ?? t.timingFunction.toString());
   }
 
-  if (t.delay.value !== 0) {
+  const delayHasValue = isRefString(t.delay) ? true : t.delay.value !== 0;
+
+  if (delayHasValue) {
     parts.push(ref(t.delay) ?? t.delay.toString());
   }
 
@@ -212,6 +217,11 @@ export const stringifyTypographyWithRefs = (t: Typography, ref: RefResolver): st
 export const stringifyBorderWithRefs = (b: Border, ref: RefResolver): string =>
   [ref(b.width) ?? b.width.toString(), b.style, ref(b.color) ?? b.color.toString()].join(' ');
 
+// Comma-join the layers, keeping each layer reference-aware so a shared token
+// used inside a layer still emits var(--x) / $x rather than being inlined.
+export const stringifyTransitionListWithRefs = (list: TransitionList, ref: RefResolver): string =>
+  list.layers.map(t => stringifyTransitionWithRefs(t, ref)).join(', ');
+
 // Render each stop color through the ref resolver so a stop that references a
 // color token emits `var(--…)` instead of the inlined color.
 export const stringifyGradientWithRefs = (
@@ -222,6 +232,10 @@ export const stringifyGradientWithRefs = (
 export const stringifyWithRefs = (value: TokenValue, ref: RefResolver): string => {
   if (value instanceof Transition) {
     return stringifyTransitionWithRefs(value, ref);
+  }
+
+  if (value instanceof TransitionList) {
+    return stringifyTransitionListWithRefs(value, ref);
   }
 
   if (value instanceof BoxShadow) {
@@ -261,13 +275,15 @@ export const visitComponents = (value: unknown, fn: (v: unknown) => void): void 
     fn(value.duration);
     fn(value.timingFunction);
 
-    if (value.delay.value !== 0) {
+    if (isRefString(value.delay) ? true : value.delay.value !== 0) {
       fn(value.delay);
     }
+  } else if (value instanceof BoxShadowList) {
+    value.layers.forEach(s => visitComponents(s, fn));
+  } else if (value instanceof TransitionList) {
+    value.layers.forEach(t => visitComponents(t, fn));
   } else if (value instanceof BoxShadow) {
     fn(value.color);
-  } else if (value instanceof BoxShadowList) {
-    value.layers.forEach(layer => fn(layer.color));
   } else if (value instanceof Typography) {
     fn(value.fontSize);
   } else if (value instanceof Border) {

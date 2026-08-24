@@ -16,29 +16,6 @@ export const isFirstClassValue = (value: unknown): boolean =>
 // those generators (and future ones) can import from one place.
 
 export const isColorType = (type: string): boolean => type === 'color';
-export const isFontSizeType = (type: string): boolean => /font[-_]?size/i.test(type);
-export const isFontFamilyType = (type: string): boolean => /font[-_]?family/i.test(type);
-export const isFontWeightType = (type: string): boolean => /font[-_]?weight/i.test(type);
-export const isTypographyType = (type: string): boolean => /^typography$/i.test(type);
-// Matches both the prefixed `border-radius` and the bare `radius` type
-// that many token sets use (e.g. `radiusSm`, `radiusPill`).
-export const isBorderRadiusType = (type: string): boolean => /(?:border[-_]?)?radius/i.test(type);
-export const isBorderWidthType = (type: string): boolean => /border[-_]?width/i.test(type);
-export const isBorderStyleType = (type: string): boolean => /border[-_]?style/i.test(type);
-export const isBorderType = (type: string): boolean => /^border$/i.test(type);
-export const isShadowType = (type: string): boolean => /shadow/i.test(type);
-export const isDurationType = (type: string): boolean => /duration/i.test(type);
-export const isTimingType = (type: string): boolean => /timing|easing/i.test(type);
-export const isSpacingType = (type: string): boolean => /spacing|gap/i.test(type);
-export const isGradientType = (type: string): boolean => /gradient/i.test(type);
-export const isOpacityType = (type: string): boolean => /^opacity$/i.test(type);
-export const isLineHeightType = (type: string): boolean => /line[-_]?height/i.test(type);
-export const isLetterSpacingType = (type: string): boolean => /letter[-_]?spacing/i.test(type);
-export const isBreakpointType = (type: string): boolean => /breakpoint/i.test(type);
-export const isSizeType = (type: string): boolean => /^size$/i.test(type);
-export const isAspectRatioType = (type: string): boolean => /aspect[-_]?ratio/i.test(type);
-export const isZLayerType = (type: string): boolean => /z[-_]?(layer|index)/i.test(type);
-export const isTransitionType = (type: string): boolean => /^transition$/i.test(type);
 
 // ─── Type → preview-kind classification ──────────────────────
 // The single, ordered source of truth for turning a token's `type` string

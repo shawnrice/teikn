@@ -6,7 +6,7 @@ import { BoxShadow } from '../TokenTypes/BoxShadow.js';
 import { Color } from '../TokenTypes/Color/index.js';
 import { Dimension } from '../TokenTypes/Dimension.js';
 import { Duration } from '../TokenTypes/Duration.js';
-import { DtcgGenerator } from './Dtcg.js';
+import { Dtcg } from './Dtcg.js';
 import { Html } from './Html.js';
 import { Storybook } from './Storybook.js';
 
@@ -36,7 +36,7 @@ describe('Dimension values serialize correctly', () => {
   });
 
   test('Dtcg outputs Dimension as {value, unit} object', () => {
-    const gen = new DtcgGenerator({ hierarchical: false });
+    const gen = new Dtcg({ hierarchical: false });
     const output = gen.generate(dimensionToken);
     const parsed = JSON.parse(output);
     expect(parsed.spacingMd.$value).toEqual({ value: 1, unit: 'rem' });
@@ -64,7 +64,7 @@ describe('Duration values serialize correctly', () => {
   });
 
   test('Dtcg outputs Duration as {value, unit} object', () => {
-    const gen = new DtcgGenerator({ hierarchical: false });
+    const gen = new Dtcg({ hierarchical: false });
     const output = gen.generate(durationToken);
     const parsed = JSON.parse(output);
     expect(parsed.transitionFast.$value).toEqual({ value: 200, unit: 'ms' });
@@ -99,7 +99,7 @@ describe('Dimension in mode values', () => {
   });
 
   test('Dtcg outputs Dimension in mode values via $extensions', () => {
-    const gen = new DtcgGenerator({ hierarchical: false });
+    const gen = new Dtcg({ hierarchical: false });
     const output = gen.generate(dimensionWithModes);
     const parsed = JSON.parse(output);
     expect(parsed.spacingMd.$value).toEqual({ value: 1, unit: 'rem' });
@@ -137,7 +137,7 @@ describe('composite tokens with nested Dimension values', () => {
   });
 
   test('Dtcg serializes nested Dimension in composite', () => {
-    const gen = new DtcgGenerator({ hierarchical: false });
+    const gen = new Dtcg({ hierarchical: false });
     const output = gen.generate(typographyToken);
     const parsed = JSON.parse(output);
     expect(parsed.headingLg.$value.fontSize).toEqual({ value: 1.5, unit: 'rem' });
@@ -175,7 +175,7 @@ describe('mixed first-class value types in a single generation', () => {
   });
 
   test('Dtcg contains correct $value fields for all types', () => {
-    const gen = new DtcgGenerator({ hierarchical: false });
+    const gen = new Dtcg({ hierarchical: false });
     const output = gen.generate(mixedTokens);
     const parsed = JSON.parse(output);
     expect(parsed.primary.$value.colorSpace).toBe('srgb');
@@ -211,7 +211,7 @@ describe('border composite with Dimension width', () => {
   });
 
   test('Dtcg serializes border width as dimension object', () => {
-    const gen = new DtcgGenerator({ hierarchical: false });
+    const gen = new Dtcg({ hierarchical: false });
     const output = gen.generate(borderToken);
     const parsed = JSON.parse(output);
     expect(parsed.borderPrimary.$value.width).toEqual({ value: 1, unit: 'px' });
