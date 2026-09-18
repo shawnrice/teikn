@@ -4,11 +4,11 @@ import { Plugin } from './Plugin.js';
 
 type ClampPair = { min: string; max: string; output: string };
 
-type ClampPluginOptions = {
+export type ClampPluginOptions = {
   viewportMin?: number;
   viewportMax?: number;
   pairs?: ClampPair[];
-} & Record<string, unknown>;
+};
 
 const DEFAULT_VIEWPORT_MIN = 320;
 const DEFAULT_VIEWPORT_MAX = 1280;

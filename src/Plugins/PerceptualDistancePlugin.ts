@@ -17,7 +17,7 @@ import { Plugin } from './Plugin.js';
  * and it measures within each. Measurement itself is always fair game, so a
  * non-gating `report` mode is available too. Nothing is compared by default.
  */
-type PerceptualDistancePluginOptions = {
+export type PerceptualDistancePluginOptions = {
   /** Minimum acceptable ΔE00 between two tokens in a peer set. Default: 5.0 */
   minDeltaE?: number;
   /**
@@ -46,7 +46,7 @@ type PerceptualDistancePluginOptions = {
    * gating — use it to inspect the data and decide intent yourself.
    */
   report?: boolean;
-} & Record<string, unknown>;
+};
 
 const toColor = (t: Token): Color | null => {
   try {

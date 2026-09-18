@@ -4,10 +4,7 @@ import { Plugin } from './Plugin.js';
 
 type ColorBlindnessType = 'protanopia' | 'deuteranopia' | 'tritanopia';
 
-type ColorBlindnessPluginOptions = { types?: ColorBlindnessType[]; suffix?: string } & Record<
-  string,
-  unknown
->;
+export type ColorBlindnessPluginOptions = { types?: ColorBlindnessType[]; suffix?: string };
 
 const DEFAULT_TYPES: ColorBlindnessType[] = ['protanopia', 'deuteranopia', 'tritanopia'];
 const DEFAULT_SUFFIX = '-{type}';

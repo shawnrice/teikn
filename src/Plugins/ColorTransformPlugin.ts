@@ -10,7 +10,7 @@ import { isRefString } from '../TokenTypes/ref-guard.js';
 import type { AuditIssue } from './Plugin.js';
 import { Plugin } from './Plugin.js';
 
-type ColorTransformPluginOptions = { type?: ColorFormat } & Record<string, unknown>;
+export type ColorTransformPluginOptions = { type?: ColorFormat };
 
 /**
  * Normalizes colors to a single format — including colors nested inside

@@ -4,7 +4,7 @@ import { Plugin } from './Plugin.js';
 
 type NameConvention = 'camelCase' | 'kebab-case' | 'snake_case' | 'PascalCase' | 'SCREAMING_SNAKE';
 
-type NameConventionPluginOptions = { convention: NameConvention } & Record<string, unknown>;
+export type NameConventionPluginOptions = { convention: NameConvention };
 
 // Split a name into word segments, handling camel, kebab, snake, and mixed
 const toWords = (str: string): string[] =>

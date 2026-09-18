@@ -2,7 +2,7 @@ import type { Token } from '../Token.js';
 
 export type AuditIssue = { severity: 'error' | 'warning' | 'info'; token: string; message: string };
 
-export abstract class Plugin<Options extends Record<string, unknown> = Record<string, unknown>> {
+export abstract class Plugin<Options extends object = object> {
   abstract tokenType: string | RegExp;
   abstract outputType: string | RegExp;
 

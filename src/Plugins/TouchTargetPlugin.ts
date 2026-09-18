@@ -3,10 +3,7 @@ import { Dimension } from '../TokenTypes/Dimension.js';
 import type { AuditIssue } from './Plugin.js';
 import { Plugin } from './Plugin.js';
 
-type TouchTargetPluginOptions = { minPx?: number; basePx?: number; types?: string[] } & Record<
-  string,
-  unknown
->;
+export type TouchTargetPluginOptions = { minPx?: number; basePx?: number; types?: string[] };
 
 const DIMENSION_RE = /^(-?\d+(?:\.\d+)?)(px|rem|em|pt)$/;
 

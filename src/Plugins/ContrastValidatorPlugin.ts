@@ -3,10 +3,10 @@ import { Color } from '../TokenTypes/Color/index.js';
 import type { AuditIssue } from './Plugin.js';
 import { Plugin } from './Plugin.js';
 
-type ContrastValidatorPluginOptions = {
+export type ContrastValidatorPluginOptions = {
   pairs: { foreground: string; background: string; level?: 'AA' | 'AAA' }[];
   minRatio?: number;
-} & Record<string, unknown>;
+};
 
 const WCAG_THRESHOLDS: Record<'AA' | 'AAA', number> = { AA: 4.5, AAA: 7 };
 

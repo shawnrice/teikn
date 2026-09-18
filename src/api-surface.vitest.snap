@@ -472,16 +472,15 @@ export declare const composeSymbol: (name: string, transform: (s: string) => str
 // src/Plugins/AlphaMultiplyPlugin.d.ts
 import type { Token } from '../Token.js';
 import { Plugin } from './Plugin.js';
-type AlphaMultiplyPluginOptions = {
+export type AlphaMultiplyPluginOptions = {
     background?: string;
-} & Record<string, unknown>;
+};
 export declare class AlphaMultiplyPlugin extends Plugin<AlphaMultiplyPluginOptions> {
     tokenType: string;
     outputType: RegExp;
     constructor(options?: AlphaMultiplyPluginOptions);
     transform(token: Token): Token;
 }
-export {};
 
 // src/Plugins/ClampPlugin.d.ts
 import type { Token } from '../Token.js';
@@ -491,11 +490,11 @@ type ClampPair = {
     max: string;
     output: string;
 };
-type ClampPluginOptions = {
+export type ClampPluginOptions = {
     viewportMin?: number;
     viewportMax?: number;
     pairs?: ClampPair[];
-} & Record<string, unknown>;
+};
 export declare class ClampPlugin extends Plugin<ClampPluginOptions> {
     tokenType: RegExp;
     outputType: RegExp;
@@ -508,10 +507,10 @@ export {};
 import type { Token } from '../Token.js';
 import { Plugin } from './Plugin.js';
 type ColorBlindnessType = 'protanopia' | 'deuteranopia' | 'tritanopia';
-type ColorBlindnessPluginOptions = {
+export type ColorBlindnessPluginOptions = {
     types?: ColorBlindnessType[];
     suffix?: string;
-} & Record<string, unknown>;
+};
 export declare class ColorBlindnessPlugin extends Plugin<ColorBlindnessPluginOptions> {
     tokenType: string;
     outputType: RegExp;
@@ -525,9 +524,9 @@ import type { Token } from '../Token.js';
 import type { ColorFormat } from '../TokenTypes/Color/types.js';
 import type { AuditIssue } from './Plugin.js';
 import { Plugin } from './Plugin.js';
-type ColorTransformPluginOptions = {
+export type ColorTransformPluginOptions = {
     type?: ColorFormat;
-} & Record<string, unknown>;
+};
 /**
  * Normalizes colors to a single format — including colors nested inside
  * composite tokens (box shadows, borders, gradients), not just standalone
@@ -543,62 +542,58 @@ export declare class ColorTransformPlugin extends Plugin<ColorTransformPluginOpt
     transform(token: Token): Token;
     audit(tokens: Token[]): AuditIssue[];
 }
-export {};
 
 // src/Plugins/ContrastValidatorPlugin.d.ts
 import type { Token } from '../Token.js';
 import type { AuditIssue } from './Plugin.js';
 import { Plugin } from './Plugin.js';
-type ContrastValidatorPluginOptions = {
+export type ContrastValidatorPluginOptions = {
     pairs: {
         foreground: string;
         background: string;
         level?: 'AA' | 'AAA';
     }[];
     minRatio?: number;
-} & Record<string, unknown>;
+};
 export declare class ContrastValidatorPlugin extends Plugin<ContrastValidatorPluginOptions> {
     tokenType: string;
     outputType: RegExp;
     audit(tokens: Token[]): AuditIssue[];
 }
-export {};
 
 // src/Plugins/DeprecationPlugin.d.ts
 import type { Token } from '../Token.js';
 import { Plugin } from './Plugin.js';
-type DeprecationPluginOptions = {
+export type DeprecationPluginOptions = {
     tokens: Record<string, string | true>;
-} & Record<string, unknown>;
+};
 export declare class DeprecationPlugin extends Plugin<DeprecationPluginOptions> {
     tokenType: RegExp;
     outputType: RegExp;
     transform(token: Token): Token;
 }
-export {};
 
 // src/Plugins/MinFontSizePlugin.d.ts
 import type { Token } from '../Token.js';
 import type { AuditIssue } from './Plugin.js';
 import { Plugin } from './Plugin.js';
-type MinFontSizePluginOptions = {
+export type MinFontSizePluginOptions = {
     minPx?: number;
     basePx?: number;
-} & Record<string, unknown>;
+};
 export declare class MinFontSizePlugin extends Plugin<MinFontSizePluginOptions> {
     tokenType: RegExp;
     outputType: RegExp;
     audit(tokens: Token[]): AuditIssue[];
 }
-export {};
 
 // src/Plugins/NameConventionPlugin.d.ts
 import type { Token } from '../Token.js';
 import { Plugin } from './Plugin.js';
 type NameConvention = 'camelCase' | 'kebab-case' | 'snake_case' | 'PascalCase' | 'SCREAMING_SNAKE';
-type NameConventionPluginOptions = {
+export type NameConventionPluginOptions = {
     convention: NameConvention;
-} & Record<string, unknown>;
+};
 export declare class NameConventionPlugin extends Plugin<NameConventionPluginOptions> {
     tokenType: RegExp;
     outputType: RegExp;
@@ -618,20 +613,19 @@ import { Plugin } from './Plugin.js';
  * Any concrete {@link ColorFormat} forces that space.
  */
 export type PaletteSpace = ColorFormat | 'auto';
-type PalettePluginOptions = {
+export type PalettePluginOptions = {
     steps?: number[];
     lightEnd?: number;
     darkEnd?: number;
     /** See {@link PaletteSpace}. Default \`'auto'\`. */
     space?: PaletteSpace;
-} & Record<string, unknown>;
+};
 export declare class PalettePlugin extends Plugin<PalettePluginOptions> {
     tokenType: string;
     outputType: RegExp;
     constructor(options?: PalettePluginOptions);
     expand(tokens: Token[]): Token[];
 }
-export {};
 
 // src/Plugins/PerceptualDistancePlugin.d.ts
 import type { Token } from '../Token.js';
@@ -651,7 +645,7 @@ import { Plugin } from './Plugin.js';
  * and it measures within each. Measurement itself is always fair game, so a
  * non-gating \`report\` mode is available too. Nothing is compared by default.
  */
-type PerceptualDistancePluginOptions = {
+export type PerceptualDistancePluginOptions = {
     /** Minimum acceptable ΔE00 between two tokens in a peer set. Default: 5.0 */
     minDeltaE?: number;
     /**
@@ -680,13 +674,12 @@ type PerceptualDistancePluginOptions = {
      * gating — use it to inspect the data and decide intent yourself.
      */
     report?: boolean;
-} & Record<string, unknown>;
+};
 export declare class PerceptualDistancePlugin extends Plugin<PerceptualDistancePluginOptions> {
     tokenType: string;
     outputType: RegExp;
     audit(tokens: Token[]): AuditIssue[];
 }
-export {};
 
 // src/Plugins/Plugin.d.ts
 import type { Token } from '../Token.js';
@@ -695,7 +688,7 @@ export type AuditIssue = {
     token: string;
     message: string;
 };
-export declare abstract class Plugin<Options extends Record<string, unknown> = Record<string, unknown>> {
+export declare abstract class Plugin<Options extends object = object> {
     abstract tokenType: string | RegExp;
     abstract outputType: string | RegExp;
     /**
@@ -748,32 +741,30 @@ export declare class PrefixTypePlugin extends Plugin {
 // src/Plugins/ReducedMotionPlugin.d.ts
 import type { Token } from '../Token.js';
 import { Plugin } from './Plugin.js';
-type ReducedMotionPluginOptions = {
+export type ReducedMotionPluginOptions = {
     prefix?: string;
     zeroDuration?: boolean;
-} & Record<string, unknown>;
+};
 export declare class ReducedMotionPlugin extends Plugin<ReducedMotionPluginOptions> {
     tokenType: RegExp;
     outputType: RegExp;
     constructor(options?: ReducedMotionPluginOptions);
     expand(tokens: Token[]): Token[];
 }
-export {};
 
 // src/Plugins/RemUnitPlugin.d.ts
 import type { Token } from '../Token.js';
 import { Plugin } from './Plugin.js';
-type RemUnitPluginOptions = {
+export type RemUnitPluginOptions = {
     base?: number;
     targetUnit?: string;
-} & Record<string, unknown>;
+};
 export declare class RemUnitPlugin extends Plugin<RemUnitPluginOptions> {
     tokenType: RegExp;
     outputType: RegExp;
     constructor(options?: RemUnitPluginOptions);
     transform(token: Token): Token;
 }
-export {};
 
 // src/Plugins/ScssQuoteValuePlugin.d.ts
 import type { Token } from '../Token.js';
@@ -826,37 +817,49 @@ export declare class StripTypePrefixPlugin extends Plugin {
 import type { Token } from '../Token.js';
 import type { AuditIssue } from './Plugin.js';
 import { Plugin } from './Plugin.js';
-type TouchTargetPluginOptions = {
+export type TouchTargetPluginOptions = {
     minPx?: number;
     basePx?: number;
     types?: string[];
-} & Record<string, unknown>;
+};
 export declare class TouchTargetPlugin extends Plugin<TouchTargetPluginOptions> {
     tokenType: RegExp;
     outputType: RegExp;
     audit(tokens: Token[]): AuditIssue[];
 }
-export {};
 
 // src/Plugins/index.d.ts
 export { Plugin, sortPlugins } from './Plugin.js';
 export type { AuditIssue } from './Plugin.js';
 export { ColorTransformPlugin } from './ColorTransformPlugin.js';
+export type { ColorTransformPluginOptions } from './ColorTransformPlugin.js';
 export { PrefixTypePlugin } from './PrefixTypePlugin.js';
 export { ScssQuoteValuePlugin } from './ScssQuoteValuePlugin.js';
 export { StripTypePrefixPlugin } from './StripTypePrefixPlugin.js';
 export { RemUnitPlugin } from './RemUnitPlugin.js';
+export type { RemUnitPluginOptions } from './RemUnitPlugin.js';
 export { AlphaMultiplyPlugin } from './AlphaMultiplyPlugin.js';
+export type { AlphaMultiplyPluginOptions } from './AlphaMultiplyPlugin.js';
 export { NameConventionPlugin } from './NameConventionPlugin.js';
+export type { NameConventionPluginOptions } from './NameConventionPlugin.js';
 export { DeprecationPlugin } from './DeprecationPlugin.js';
+export type { DeprecationPluginOptions } from './DeprecationPlugin.js';
 export { PalettePlugin } from './PalettePlugin.js';
+export type { PalettePluginOptions } from './PalettePlugin.js';
 export { ReducedMotionPlugin } from './ReducedMotionPlugin.js';
+export type { ReducedMotionPluginOptions } from './ReducedMotionPlugin.js';
 export { ClampPlugin } from './ClampPlugin.js';
+export type { ClampPluginOptions } from './ClampPlugin.js';
 export { ContrastValidatorPlugin } from './ContrastValidatorPlugin.js';
+export type { ContrastValidatorPluginOptions } from './ContrastValidatorPlugin.js';
 export { MinFontSizePlugin } from './MinFontSizePlugin.js';
+export type { MinFontSizePluginOptions } from './MinFontSizePlugin.js';
 export { TouchTargetPlugin } from './TouchTargetPlugin.js';
+export type { TouchTargetPluginOptions } from './TouchTargetPlugin.js';
 export { PerceptualDistancePlugin } from './PerceptualDistancePlugin.js';
+export type { PerceptualDistancePluginOptions } from './PerceptualDistancePlugin.js';
 export { ColorBlindnessPlugin } from './ColorBlindnessPlugin.js';
+export type { ColorBlindnessPluginOptions } from './ColorBlindnessPlugin.js';
 
 // src/Teikn.d.ts
 import { CssVars, Dtcg, Generator, Html, JavaScript, Json, Scss, ScssVars, Storybook, TypeScript, TypeScriptDeclarations } from './Generators/index.js';

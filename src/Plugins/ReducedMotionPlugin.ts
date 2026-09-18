@@ -4,10 +4,7 @@ import { Duration } from '../TokenTypes/Duration.js';
 import { Transition } from '../TokenTypes/Transition.js';
 import { Plugin } from './Plugin.js';
 
-type ReducedMotionPluginOptions = { prefix?: string; zeroDuration?: boolean } & Record<
-  string,
-  unknown
->;
+export type ReducedMotionPluginOptions = { prefix?: string; zeroDuration?: boolean };
 
 const DEFAULT_PREFIX = 'reduced-';
 

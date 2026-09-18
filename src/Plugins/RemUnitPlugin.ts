@@ -3,7 +3,7 @@ import { Dimension } from '../TokenTypes/Dimension.js';
 import { isFirstClassValue } from '../type-classifiers.js';
 import { Plugin } from './Plugin.js';
 
-type RemUnitPluginOptions = { base?: number; targetUnit?: string } & Record<string, unknown>;
+export type RemUnitPluginOptions = { base?: number; targetUnit?: string };
 
 const PX_RE = /^(-?\d+(?:\.\d+)?)px$/;
 

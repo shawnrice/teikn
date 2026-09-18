@@ -2,7 +2,7 @@ import type { Token } from '../Token.js';
 import { Color } from '../TokenTypes/Color/index.js';
 import { Plugin } from './Plugin.js';
 
-type AlphaMultiplyPluginOptions = { background?: string } & Record<string, unknown>;
+export type AlphaMultiplyPluginOptions = { background?: string };
 
 export class AlphaMultiplyPlugin extends Plugin<AlphaMultiplyPluginOptions> {
   tokenType: string = 'color';

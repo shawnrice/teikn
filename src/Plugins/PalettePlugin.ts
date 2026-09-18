@@ -11,13 +11,13 @@ import { Plugin } from './Plugin.js';
  */
 export type PaletteSpace = ColorFormat | 'auto';
 
-type PalettePluginOptions = {
+export type PalettePluginOptions = {
   steps?: number[];
   lightEnd?: number;
   darkEnd?: number;
   /** See {@link PaletteSpace}. Default `'auto'`. */
   space?: PaletteSpace;
-} & Record<string, unknown>;
+};
 
 const DEFAULT_STEPS = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
 const DEFAULT_LIGHT_END = 95;
