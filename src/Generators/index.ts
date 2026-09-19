@@ -1,6 +1,12 @@
 export * from './CssVars.js';
 export * from './Dtcg.js';
-export * from './Generator.js';
+export { Generator } from './Generator.js';
+export type {
+  GeneratorOptions,
+  RequiredGeneratorOptions,
+  RequiredGeneratorOptionNames,
+  GeneratorInfo,
+} from './Generator.js';
 export * from './Html.js';
 export * from './JavaScript.js';
 export * from './Json.js';

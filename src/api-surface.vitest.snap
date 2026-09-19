@@ -3,7 +3,8 @@
 exports[`public .d.ts type surface > is unchanged > declarations 1`] = `
 "// index.d.ts
 export * from './src/Teikn.js';
-export * from './src/TokenTypes/Border.js';
+export { Border, borderStyles } from './src/TokenTypes/Border.js';
+export type { BorderInput } from './src/TokenTypes/Border.js';
 export * from './src/TokenTypes/Color/index.js';
 export * from './src/TokenTypes/CubicBezier.js';
 export * from './src/TokenTypes/BoxShadow.js';
@@ -19,7 +20,7 @@ export * from './src/Plugins/index.js';
 export * from './src/Token.js';
 export * from './src/builders.js';
 export * from './src/build-platforms.js';
-export * from './src/type-classifiers.js';
+export { classifyTokenType, groupTokens, isFirstClassValue, resolvePreviewKind, } from './src/type-classifiers.js';
 export { resolveReferences } from './src/resolve.js';
 export { validate } from './src/validate.js';
 export type { ValidationIssue, ValidationResult, ValidationSeverity } from './src/validate.js';
@@ -440,7 +441,8 @@ export declare class TypeScriptDeclarations extends Generator<TypeScriptDeclarat
 // src/Generators/index.d.ts
 export * from './CssVars.js';
 export * from './Dtcg.js';
-export * from './Generator.js';
+export { Generator } from './Generator.js';
+export type { GeneratorOptions, RequiredGeneratorOptions, RequiredGeneratorOptionNames, GeneratorInfo, } from './Generator.js';
 export * from './Html.js';
 export * from './JavaScript.js';
 export * from './Json.js';
@@ -829,7 +831,7 @@ export declare class TouchTargetPlugin extends Plugin<TouchTargetPluginOptions> 
 }
 
 // src/Plugins/index.d.ts
-export { Plugin, sortPlugins } from './Plugin.js';
+export { Plugin } from './Plugin.js';
 export type { AuditIssue } from './Plugin.js';
 export { ColorTransformPlugin } from './ColorTransformPlugin.js';
 export type { ColorTransformPluginOptions } from './ColorTransformPlugin.js';
@@ -1396,51 +1398,6 @@ export declare const convert: <To extends Space>(from: Space, to: To, data: Spac
 export declare const convertWithIntermediates: (from: Space, to: Space, data: SpaceData[Space]) => IntermediateResults;
 export {};
 
-// src/TokenTypes/Color/conversions.d.ts
-import type { HSL, LAB, LCH, Oklab, Oklch, RGB, XYZ } from './types.js';
-export declare const RGBToHSL: (rgb: RGB) => HSL;
-export declare const HSLToRGB: ([hue, saturation, lightness]: HSL) => RGB;
-/**
- * sRGB to CIE-XYZ
- * @see https://www.image-engineering.de/library/technotes/958-how-to-convert-between-srgb-and-ciexyz
- * @see https://peteroupc.github.io/colorgen.html#Transformations_of_RGB_Colors
- * @see https://mina86.com/2021/srgb-lab-lchab-conversions/
- */
-export declare const RGBToXYZ: (rgb: RGB) => XYZ;
-/**
- * CIE-XYZ to sRGB
- * @see https://www.image-engineering.de/library/technotes/958-how-to-convert-between-srgb-and-ciexyz
- */
-export declare const XYZToRGB: (xyz: XYZ) => RGB;
-export declare const XYZToLAB: ([x, y, z]: XYZ) => LAB;
-export declare const LABToXYZ: ([L, a, b]: LAB) => XYZ;
-export declare const LABToLCH: ([L, a, b]: LAB) => LCH;
-export declare const LCHToLAB: ([l, c, h]: LCH) => LAB;
-export declare const OklabToOklch: ([L, a, b]: Oklab) => Oklch;
-export declare const OklchToOklab: ([L, C, h]: Oklch) => Oklab;
-export declare const RGBToOklab: (rgb: RGB) => Oklab;
-/**
- * Oklab → sRGB bytes with CSS Color 4 gamut mapping.
- *
- * If the color is already displayable it is converted directly. Otherwise we
- * hold L and h and binary-search a reduced chroma, using clip + Oklab ΔE
- * (JND ≈ 0.02) as the acceptance test — never a naive per-channel clip of the
- * full-chroma color.
- * @see https://www.w3.org/TR/css-color-4/#css-gamut-mapping
- */
-export declare const OklabToRGB: (oklab: Oklab) => RGB;
-export declare const RGBToHex: (rgb: RGB, preferShort?: boolean) => string;
-export type HexResult = {
-    rgb: RGB;
-    alpha: number;
-};
-export declare const hexToRGBWithAlpha: (c: string) => HexResult;
-/** Backward-compatible wrapper — ignores alpha channel */
-export declare const hexToRGB: (c: string) => RGB;
-export declare const HSLToHex: (hsl: HSL) => string;
-export declare const XYZToLCH: (xyz: XYZ) => LCH;
-export declare const LCHToXYZ: (lch: LCH) => XYZ;
-
 // src/TokenTypes/Color/flip.d.ts
 export type Flip<T extends Record<string, string>> = {
     [V in T[keyof T]]: {
@@ -1468,8 +1425,7 @@ export declare const flip: <T extends Record<string, string>>(obj: T) => Flip<T>
 
 // src/TokenTypes/Color/index.d.ts
 export * from './Color.js';
-export * from './conversions.js';
-export * from './namedColors.js';
+export type { NamedColor, NamedColorValue } from './namedColors.js';
 export type { Space as ColorSpace, SpaceData as ColorSpaceData } from './ColorSpace.js';
 
 // src/TokenTypes/Color/namedColors.d.ts
@@ -2417,10 +2373,9 @@ export declare const ref: (tokenName: string, usageOrOptions?: string | RefOptio
 export {};
 
 // src/dtcg/index.d.ts
-export * from './types.js';
+export type { DtcgColorValue, DtcgDimensionValue, DtcgDurationValue, DtcgStrokeStyleValue, DtcgCubicBezierValue, DtcgGradientStop, DtcgBorderValue, DtcgTransitionValue, DtcgShadowValue, DtcgTypographyValue, DtcgGradientValue, DtcgValue, DtcgToken, DtcgGroup, DtcgDocument, DtcgTypeName, } from './types.js';
 export * from './parse.js';
 export * from './serialize.js';
-export * from './values.js';
 
 // src/dtcg/parse.d.ts
 import type { Token } from '../Token.js';
@@ -2526,14 +2481,6 @@ export declare const DtcgTypes: {
     readonly fontStyle: 'fontStyle';
 };
 export type DtcgTypeName = (typeof DtcgTypes)[keyof typeof DtcgTypes];
-
-// src/dtcg/values.d.ts
-import type { DtcgValue } from './types.js';
-export declare const dtcgTypeToTeikn: (type: string) => string;
-export declare const teiknTypeToDtcg: (type: string) => string;
-export declare const dtcgValueToTeikn: (value: DtcgValue, type: string) => any;
-export type DtcgRefMap = Map<unknown, string>;
-export declare const teiknValueToDtcg: (value: any, type: string, refMap?: DtcgRefMap) => DtcgValue;
 
 // src/resolve.d.ts
 import type { Token } from './Token.js';
@@ -2755,7 +2702,6 @@ src/TokenTypes/Border.d.ts
 src/TokenTypes/BoxShadow.d.ts
 src/TokenTypes/Color/Color.d.ts
 src/TokenTypes/Color/ColorSpace.d.ts
-src/TokenTypes/Color/conversions.d.ts
 src/TokenTypes/Color/flip.d.ts
 src/TokenTypes/Color/index.d.ts
 src/TokenTypes/Color/namedColors.d.ts
@@ -2780,7 +2726,6 @@ src/dtcg/index.d.ts
 src/dtcg/parse.d.ts
 src/dtcg/serialize.d.ts
 src/dtcg/types.d.ts
-src/dtcg/values.d.ts
 src/resolve.d.ts
 src/storybook/components.d.ts
 src/storybook/index.d.ts
@@ -2804,33 +2749,19 @@ exports[`runtime export names > "." exports a stable set of names 1`] = `
   "DeprecationPlugin",
   "Dimension",
   "Dtcg",
-  "DtcgTypes",
   "Duration",
   "Generator",
   "GradientList",
-  "HSLToHex",
-  "HSLToRGB",
   "Html",
   "JavaScript",
   "Json",
-  "LABToLCH",
-  "LABToXYZ",
-  "LCHToLAB",
-  "LCHToXYZ",
   "LinearGradient",
   "MinFontSizePlugin",
   "NameConventionPlugin",
-  "OklabToOklch",
-  "OklabToRGB",
-  "OklchToOklab",
   "PalettePlugin",
   "PerceptualDistancePlugin",
   "Plugin",
   "PrefixTypePlugin",
-  "RGBToHSL",
-  "RGBToHex",
-  "RGBToOklab",
-  "RGBToXYZ",
   "RadialGradient",
   "ReducedMotionPlugin",
   "RemUnitPlugin",
@@ -2846,13 +2777,9 @@ exports[`runtime export names > "." exports a stable set of names 1`] = `
   "TypeScript",
   "TypeScriptDeclarations",
   "Typography",
-  "XYZToLAB",
-  "XYZToLCH",
-  "XYZToRGB",
   "absoluteConversions",
   "absoluteUnits",
   "allUnits",
-  "applyPlugin",
   "borderStyles",
   "buildPlatforms",
   "classifyTokenType",
@@ -2864,18 +2791,12 @@ exports[`runtime export names > "." exports a stable set of names 1`] = `
   "convertDuration",
   "dim",
   "dp",
-  "dtcgTypeToTeikn",
-  "dtcgValueToTeikn",
   "dur",
   "durationUnits",
   "fontRelativeUnits",
   "group",
   "groupTokens",
-  "hexToRGB",
-  "hexToRGBWithAlpha",
   "isAbsoluteUnit",
-  "isBorderStyle",
-  "isColorType",
   "isContainerUnit",
   "isConvertible",
   "isDimensionUnit",
@@ -2883,8 +2804,6 @@ exports[`runtime export names > "." exports a stable set of names 1`] = `
   "isFirstClassValue",
   "isFontRelativeUnit",
   "isViewportUnit",
-  "namedColors",
-  "namedColorsByValue",
   "onColor",
   "onColors",
   "parseDtcg",
@@ -2893,9 +2812,6 @@ exports[`runtime export names > "." exports a stable set of names 1`] = `
   "resolveReferences",
   "scale",
   "serializeDtcg",
-  "sortPlugins",
-  "teiknTypeToDtcg",
-  "teiknValueToDtcg",
   "theme",
   "tokenSet",
   "tokens",
@@ -2923,26 +2839,6 @@ exports[`runtime export names > "./builders" exports a stable set of names 1`] =
 exports[`runtime export names > "./color" exports a stable set of names 1`] = `
 [
   "Color",
-  "HSLToHex",
-  "HSLToRGB",
-  "LABToLCH",
-  "LABToXYZ",
-  "LCHToLAB",
-  "LCHToXYZ",
-  "OklabToOklch",
-  "OklabToRGB",
-  "OklchToOklab",
-  "RGBToHSL",
-  "RGBToHex",
-  "RGBToOklab",
-  "RGBToXYZ",
-  "XYZToLAB",
-  "XYZToLCH",
-  "XYZToRGB",
-  "hexToRGB",
-  "hexToRGBWithAlpha",
-  "namedColors",
-  "namedColorsByValue",
 ]
 `;
 
@@ -2959,7 +2855,6 @@ exports[`runtime export names > "./generators" exports a stable set of names 1`]
   "Storybook",
   "TypeScript",
   "TypeScriptDeclarations",
-  "applyPlugin",
 ]
 `;
 
