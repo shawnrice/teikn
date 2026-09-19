@@ -1,7 +1,7 @@
 import type { Token } from '../Token.js';
 import { Plugin } from './Plugin.js';
 
-type DeprecationPluginOptions = { tokens: Record<string, string | true> } & Record<string, unknown>;
+export type DeprecationPluginOptions = { tokens: Record<string, string | true> };
 
 export class DeprecationPlugin extends Plugin<DeprecationPluginOptions> {
   tokenType: RegExp = /.*/;

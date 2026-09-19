@@ -3,7 +3,7 @@ import { Dimension } from '../TokenTypes/Dimension.js';
 import type { AuditIssue } from './Plugin.js';
 import { Plugin } from './Plugin.js';
 
-type MinFontSizePluginOptions = { minPx?: number; basePx?: number } & Record<string, unknown>;
+export type MinFontSizePluginOptions = { minPx?: number; basePx?: number };
 
 const DIMENSION_RE = /^(-?\d+(?:\.\d+)?)(px|rem|em|pt)$/;
 
