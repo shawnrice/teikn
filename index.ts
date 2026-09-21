@@ -1,5 +1,6 @@
 export * from './src/Teikn.js';
-export * from './src/TokenTypes/Border.js';
+export { Border, borderStyles } from './src/TokenTypes/Border.js';
+export type { BorderInput } from './src/TokenTypes/Border.js';
 export * from './src/TokenTypes/Color/index.js';
 export * from './src/TokenTypes/CubicBezier.js';
 export * from './src/TokenTypes/BoxShadow.js';
@@ -15,7 +16,15 @@ export * from './src/Plugins/index.js';
 export * from './src/Token.js';
 export * from './src/builders.js';
 export * from './src/build-platforms.js';
-export * from './src/type-classifiers.js';
+// Toolkit for authoring a custom generator: detect first-class token values and
+// classify a token's visualization kind (doc generators). `isColorType` stays
+// internal — it's a trivial `type === 'color'` check, not part of this surface.
+export {
+  classifyTokenType,
+  groupTokens,
+  isFirstClassValue,
+  resolvePreviewKind,
+} from './src/type-classifiers.js';
 export { resolveReferences } from './src/resolve.js';
 export { validate } from './src/validate.js';
 export type { ValidationIssue, ValidationResult, ValidationSeverity } from './src/validate.js';
