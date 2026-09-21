@@ -27,12 +27,6 @@ export type PerceptualDistancePluginOptions = {
    */
   sets?: string[][];
   /**
-   * @deprecated Renamed to {@link PerceptualDistancePluginOptions.sets}.
-   * Still honored (as an alias) for backward compatibility; `sets` wins when
-   * both are given.
-   */
-  groups?: string[][];
-  /**
    * Opt in to comparing *every* pair of color tokens and gating below
    * `minDeltaE`. This asserts that all color tokens are mutually-distinguishable
    * peers — usually false once ramps and aliases exist — so it is off by default
@@ -41,7 +35,7 @@ export type PerceptualDistancePluginOptions = {
   all?: boolean;
   /**
    * Report mode: emit the pairwise ΔE00 as non-gating `info` findings
-   * (worst/most-similar first) with no pass/fail. Measures within `sets`/`groups`
+   * (worst/most-similar first) with no pass/fail. Measures within `sets`
    * when provided, otherwise across all color pairs. Takes precedence over
    * gating — use it to inspect the data and decide intent yourself.
    */
@@ -92,8 +86,8 @@ export class PerceptualDistancePlugin extends Plugin<PerceptualDistancePluginOpt
   outputType: RegExp = /.*/;
 
   override audit(tokens: Token[]): AuditIssue[] {
-    const { minDeltaE = 5.0, sets, groups, all, report } = this.options;
-    const peerSets = sets ?? groups;
+    const { minDeltaE = 5.0, sets, all, report } = this.options;
+    const peerSets = sets;
 
     const colorTokens = tokens.filter(t => t.type === 'color');
     const tokenMap = new Map(colorTokens.map(t => [t.name, t]));

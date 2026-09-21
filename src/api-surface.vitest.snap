@@ -657,12 +657,6 @@ export type PerceptualDistancePluginOptions = {
      */
     sets?: string[][];
     /**
-     * @deprecated Renamed to {@link PerceptualDistancePluginOptions.sets}.
-     * Still honored (as an alias) for backward compatibility; \`sets\` wins when
-     * both are given.
-     */
-    groups?: string[][];
-    /**
      * Opt in to comparing *every* pair of color tokens and gating below
      * \`minDeltaE\`. This asserts that all color tokens are mutually-distinguishable
      * peers — usually false once ramps and aliases exist — so it is off by default
@@ -671,7 +665,7 @@ export type PerceptualDistancePluginOptions = {
     all?: boolean;
     /**
      * Report mode: emit the pairwise ΔE00 as non-gating \`info\` findings
-     * (worst/most-similar first) with no pass/fail. Measures within \`sets\`/\`groups\`
+     * (worst/most-similar first) with no pass/fail. Measures within \`sets\`
      * when provided, otherwise across all color pairs. Takes precedence over
      * gating — use it to inspect the data and decide intent yourself.
      */

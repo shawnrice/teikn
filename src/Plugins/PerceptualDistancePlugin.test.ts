@@ -102,24 +102,6 @@ describe('PerceptualDistancePlugin', () => {
     expect(plugin.audit!(tokens)).toHaveLength(1);
   });
 
-  test('groups is honored as a deprecated alias for sets', () => {
-    const plugin = new PerceptualDistancePlugin({ groups: [['a', 'b']] });
-    const issues = plugin.audit!([makeToken('a', '#808080'), makeToken('b', '#828282')]);
-    expect(issues).toHaveLength(1);
-    expect(issues[0]!.severity).toBe('warning');
-  });
-
-  test('sets wins over groups when both are given', () => {
-    const plugin = new PerceptualDistancePlugin({ sets: [['a', 'b']], groups: [['a', 'b', 'c']] });
-    const tokens = [
-      makeToken('a', '#808080'),
-      makeToken('b', '#828282'),
-      makeToken('c', '#838383'),
-    ];
-    // Uses `sets` (one pair), not `groups` (three pairs).
-    expect(plugin.audit!(tokens)).toHaveLength(1);
-  });
-
   // ─── all: explicit opt-in to all-pairs gating ──────────────────
 
   test('all: true compares every color pair', () => {
