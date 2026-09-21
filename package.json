@@ -25,7 +25,8 @@
     "!lib/**/*.map",
     "!lib/tsconfig.tsbuildinfo",
     "!lib/src/**/*.type-test.js",
-    "!lib/src/**/*.type-test.d.ts"
+    "!lib/src/**/*.type-test.d.ts",
+    "!lib/src/fixtures"
   ],
   "type": "module",
   "main": "lib/index.js",
