@@ -1,11 +1,16 @@
 # Changelog
 
-## Unreleased
+## 2.0.0-rc.1
 
 ### Removed
 
 - **`PerceptualDistancePlugin` `groups` option.** Use `sets` instead. `groups` was a deprecated
   alias since beta.8 and never shipped in a stable release.
+
+### Fixed
+
+- Published packages no longer include test artifacts — the API-surface snapshots (JSR) and compiled
+  test fixtures (npm) are excluded.
 
 ## 2.0.0-beta.10
 
