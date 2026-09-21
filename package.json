@@ -15,10 +15,10 @@
   "author": "Shawn Patrick Rice <rice@shawnrice.org>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/shawnrice/teikn.git"
+    "url": "git+https://github.com/shawnrice/teikn.git"
   },
   "bin": {
-    "teikn": "./lib/src/cli.js"
+    "teikn": "lib/src/cli.js"
   },
   "files": [
     "lib",
