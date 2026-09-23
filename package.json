@@ -29,29 +29,29 @@
     "!lib/src/fixtures"
   ],
   "type": "module",
+  "sideEffects": false,
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "exports": {
     ".": {
       "types": "./lib/index.d.ts",
-      "import": "./lib/index.js",
-      "require": "./lib/index.js"
+      "import": "./lib/index.js"
     },
     "./color": {
       "types": "./lib/src/TokenTypes/Color/index.d.ts",
       "import": "./lib/src/TokenTypes/Color/index.js"
     },
     "./builders": {
-      "import": "./lib/src/builders.js",
-      "types": "./lib/src/builders.d.ts"
+      "types": "./lib/src/builders.d.ts",
+      "import": "./lib/src/builders.js"
     },
     "./generators": {
-      "import": "./lib/src/Generators/index.js",
-      "types": "./lib/src/Generators/index.d.ts"
+      "types": "./lib/src/Generators/index.d.ts",
+      "import": "./lib/src/Generators/index.js"
     },
     "./storybook": {
-      "import": "./lib/src/storybook/index.js",
-      "types": "./lib/src/storybook/index.d.ts"
+      "types": "./lib/src/storybook/index.d.ts",
+      "import": "./lib/src/storybook/index.js"
     }
   },
   "scripts": {
