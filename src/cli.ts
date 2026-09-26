@@ -463,6 +463,11 @@ const runFromConfig = async (configPath: string) => {
 };
 
 const main = async () => {
+  if (hasFlag('help', 'h')) {
+    help();
+    process.exit(0);
+  }
+
   if (Object.hasOwn(commands, command)) {
     commands[command as keyof typeof commands](...args);
   } else if (command && fs.existsSync(command) && isSupportedFile(command)) {

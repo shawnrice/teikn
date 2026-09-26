@@ -33,6 +33,15 @@ describe('cli: help', () => {
     expect(stdout).toContain('Commands:');
     expect(stdout).toContain('Flags:');
   });
+
+  test('--help and -h print the full help and exit 0', () => {
+    for (const flag of ['--help', '-h']) {
+      const { stdout, code } = run(flag);
+      expect(code).toBe(0);
+      expect(stdout).toContain('Commands:');
+      expect(stdout).toContain('Flags:');
+    }
+  });
 });
 
 describe('cli: version', () => {
