@@ -38,502 +38,31 @@ await new Teikn({
 }).transform(allTokens);
 ```
 
-For a full walkthrough that builds a production token set step by step -- colors, spacing,
-typography, shadows, motion, themes, and accessibility audits -- see the
-[Quick Start guide](docs/quick-start.md).
-
-## Defining Tokens
-
-Tokens are created with builder functions that produce `Token[]` arrays. Each token has a `name`,
-`value`, `type`, and optional `usage` description.
-
-### `group(type, entries)`
-
-Create tokens sharing a type. Values can be bare values, `[value, usage]` tuples, or references.
-
-```typescript
-import { Color, group, ref } from 'teikn';
-
-const colors = group('color', {
-  primary: [new Color('steelblue'), 'Primary branding color'],
-  secondary: new Color('crimson'),
-  link: ref('primary'), // references another token by name
-  textPrimary: new Color(0, 0, 0, 0.95),
-});
-```
-
-### `scale(type, values, options?)`
-
-Create a set of scaled tokens from an array or object.
-
-```typescript
-import { scale, dp } from 'teikn';
-
-// From an array with custom names
-const fontSizes = scale('font-size', [10, 12, 14, 16, 20, 24, 36], {
-  names: ['100', '200', '300', '400', '500', '600', '700'],
-  transform: n => dp(n),
-});
-
-// From an object
-const spacing = scale('spacing', {
-  xs: dp(4),
-  sm: dp(8),
-  md: [dp(16), 'Standard spacing'],
-  lg: dp(24),
-});
-```
-
-### `composite(type, entries)`
-
-Create tokens with structured values (typography, borders, etc.).
-
-```typescript
-import { composite, dp } from 'teikn';
-
-const typography = composite('typography', {
-  body: {
-    fontFamily: '"Roboto Condensed", sans-serif',
-    fontSize: dp(16),
-    fontWeight: 400,
-    lineHeight: 1.5,
-    letterSpacing: 'normal',
-  },
-  heading: {
-    fontFamily: 'Arial, Helvetica, sans-serif',
-    fontSize: dp(36),
-    fontWeight: 700,
-    lineHeight: 1.2,
-  },
-});
-```
-
-### `tokens(...groups)`
-
-Merge multiple token arrays into one.
-
-```typescript
-import { tokens } from 'teikn';
-
-export const allTokens = tokens(colors, fontSizes, spacing, typography, shadows);
-```
-
-### `theme(name, source, overrides)`
-
-Create a named theme layer — a partial override of a token set. Themes are applied as a stack: base
-tokens → layer A → layer B. Each layer only overrides the tokens it cares about, and keys are
-validated against the source.
-
-```typescript
-import { theme, group } from 'teikn';
-
-const colors = group('color', {
-  surface: '#ffffff',
-  background: '#fafafa',
-  onSurface: 'rgba(0, 0, 0, .87)',
-  primary: '#0066cc',
-});
-
-// Override only what changes — primary stays the same
-const dark = theme('dark', colors, {
-  surface: '#1a1a1a',
-  background: '#121212',
-  onSurface: 'rgba(255, 255, 255, .87)',
-});
-
-// Derive from another theme — inherits dark's overrides + adds more
-const colorblindDark = theme('colorblind-dark', dark, { primary: '#0077bb' });
-```
-
-`theme()` accepts any `Token[]`, including the merged output of `tokens()`. This lets you theme
-across groups in a single call:
-
-```typescript
-const allTokens = tokens(colors, spacing, typography);
-
-// Override tokens from any group — no need for separate theme() calls per group
-const dark = theme('dark', allTokens, {
-  surface: '#1a1a1a',
-  background: '#121212',
-  onSurface: 'rgba(255, 255, 255, .87)',
-});
-```
-
-Multiple theme dimensions (color scheme, density, brand) are independent layers:
-
-```typescript
-const spacing = group('spacing', { gap: '8px', padding: '16px' });
-
-const dense = theme('dense', spacing, { gap: '4px', padding: '8px' });
-
-// Pass all layers to Teikn — generators output them as scoped overrides
-const writer = new Teikn({ themes: [dark, dense, colorblindDark], generators: [new CssVars()] });
-await writer.transform(tokens(colors, spacing));
-```
-
-### `ref(tokenName, usageOrOptions?)`
-
-Reference another token by name. References are resolved before generation.
-
-```typescript
-const colors = group('color', {
-  primary: new Color('steelblue'),
-  link: ref('primary'), // flattened → resolved to steelblue
-  linkHover: ref('primary', 'Hover state'), // with usage description
-  surface: ref('primary', { link: true }), // aliased → var(--color-primary) in CSS
-});
-```
-
-By default a reference is flattened into its resolved value. Pass `{ link: true }` to emit a live
-alias instead (`var(--…)` in CSS, `$…` in SCSS, a DTCG alias in Dtcg) so a runtime override of the
-target flows through — the "styling hooks" pattern. `resolveReferences()` still yields the concrete
-value, so audits are unaffected. See [`ref()` in the builders API](docs/api/builders.md#ref) for
-details.
-
-### `onColors(type, colors)`
-
-Auto-generate contrasting text colors (dark or light) for a set of background colors. Pair this with
-your color group so every branded surface has a readable text color from the start.
-
-```typescript
-import { group, onColors, tokens } from 'teikn';
-
-const palette = {
-  primary: new Color('steelblue'),
-  secondary: new Color('crimson'),
-  error: new Color('red'),
-};
-
-const colors = group('color', {
-  primary: palette.primary,
-  secondary: palette.secondary,
-  error: palette.error,
-});
-
-// Generates: onPrimary, onSecondary, onError
-const contrast = onColors('color', palette);
-
-const allColors = tokens(colors, contrast);
-```
-
-### Helpers
-
-```typescript
-import { dp, dim, dur } from 'teikn';
-
-dp(16); // Dimension: 1rem (16px base)
-dim(2, 'em'); // Dimension: 2em
-dur(200, 'ms'); // Duration: 200ms
-```
-
-> **Note:** `dp` stands for _density-independent pixel_, a term from Android's display system. In
-> web terms, it converts a pixel value from your design spec to its `rem` equivalent (assuming a
-> 16px base). `dp(16)` returns `1rem`, `dp(8)` returns `0.5rem`.
-
-## Value Types
-
-Teikn provides first-class value types that carry semantic meaning and enable rich output
-generation.
-
-### Color
-
-Supports RGB, HSL, LAB, LCH, and XYZ color spaces with lazy conversion and caching.
-
-```typescript
-import { Color } from 'teikn';
-
-// Construction
-const c1 = new Color('steelblue');
-const c2 = new Color('#ff6b35');
-const c3 = new Color('rgb(70, 130, 180)');
-const c4 = new Color('hsl(207, 44%, 49%)');
-const c5 = new Color('lab(54.3, -5.6, -32.1)');
-const c6 = new Color(70, 130, 180); // r, g, b
-const c7 = new Color(70, 130, 180, 0.5); // r, g, b, a
-
-// Color operations
-c1.lighten(0.2); // lighten by 20% (relative, 0-1)
-c1.darken(0.1); // darken by 10% (relative, 0-1)
-c1.saturate(15); // increase saturation by 15 percentage points (0-100)
-c1.desaturate(15); // decrease saturation by 15 percentage points (0-100)
-c1.grayscale(); // fully desaturate
-c1.rotateHue(180); // rotate hue
-c1.complement(); // complementary color
-
-// Mixing (premultiplied alpha, CSS color-mix spec)
-c1.mix(c2, 0.5); // 50/50 mix
-c1.tint(0.3); // mix with white
-c1.shade(0.3); // mix with black
-
-// Analysis
-c1.luminance(); // relative luminance (0-1)
-c1.contrastRatio(c2); // WCAG contrast ratio
-c1.deltaE(c2); // CIEDE2000 perceptual difference (0 = identical, ~100 = max)
-c1.isLight(); // luminance > 0.5
-c1.isDark();
-
-// Color blindness simulation
-c1.simulateColorBlindness('protanopia'); // red-blind
-c1.simulateColorBlindness('deuteranopia'); // green-blind
-c1.simulateColorBlindness('tritanopia'); // blue-blind
-c1.simulateColorBlindness('protanomaly'); // partial red-blind
-c1.simulateColorBlindness('deuteranomaly'); // partial green-blind
-c1.simulateColorBlindness('tritanomaly'); // partial blue-blind
-
-// Output formats
-c1.toString('hex'); // '#4682b4'
-c1.toString('rgb'); // 'rgb(70, 130, 180)'
-c1.toString('rgba'); // 'rgba(70, 130, 180, 1)'
-c1.toString('hsl'); // 'hsl(207, 44%, 49%)'
-c1.toString('lab'); // 'lab(54.3, -5.6, -32.1)'
-c1.toString('lch'); // 'lch(54.3, 32.6, 260)'
-c1.toString('oklch'); // 'oklch(0.588 0.09934 245.739)'
-c1.toString('xkcd'); // nearest XKCD color name
-
-// No format? Serializes in the color's *authored* space (lossless — no gamut
-// clip, no 8-bit round trip). So oklch stays oklch and only rounds decimals.
-new Color('oklch(0.7 0.15 200)').toString(); // 'oklch(0.7 0.15 200)'
-new Color('#4682b4').toString(); // 'rgb(70, 130, 180)'  (hex parses to rgb)
-c1.toString('native'); // same as toString() — names the default explicitly
-// This is what box-shadow (and other) serializers use, so an oklch shadow color
-// emits oklch. Want a fixed space everywhere? Pass a format, or use
-// ColorTransformPlugin({ type: 'rgb' }) to normalize a whole token set.
-
-// Access raw values
-c1.asRGB(); // [70, 130, 180]
-c1.asHSL(); // [207, 44, 49]
-c1.asLAB(); // [54.3, -5.6, -32.1]
-c1.asLCH(); // [54.3, 32.6, 260]
-c1.asXYZ(); // [0.189, 0.200, 0.448]
-```
-
-Hex strings support 3, 4, 6, and 8-character formats (CSS4 hex-with-alpha):
-
-```typescript
-new Color('#F00'); // #FF0000
-new Color('#F00A'); // #FF0000 with alpha ~0.67
-new Color('#FF0000AA'); // #FF0000 with alpha ~0.67
-```
-
-#### Deriving Colors
-
-Define a base color once and derive related colors with `.shade()`, `.tint()`, and `.mix()`. This
-keeps your palette internally consistent -- when the base changes, everything updates.
-
-```typescript
-const brand = new Color('#0066cc');
-
-brand.tint(0.3); // lighten by mixing 30% white
-brand.shade(0.3); // darken by mixing 30% black
-brand.mix(other, 0.5); // 50/50 blend with another color
-```
-
-Use `.mix()` for text colors and `.setAlpha()` for overlays. Text at reduced alpha looks washed out
-on colored backgrounds; `.mix()` produces a solid color that stays readable everywhere.
-
-```typescript
-// Opaque text: .mix() against white or black
-const textSecondary = dark.mix(new Color('#ffffff'), 0.4);
-
-// Transparent overlay: .setAlpha()
-const overlay = dark.setAlpha(0.5);
-```
-
-> **Tip:** `AlphaMultiplyPlugin` flattens semi-transparent colors to opaque at generation time by
-> alpha-compositing against a background color. Useful for email or contexts where transparency is
-> unreliable.
-
-### BoxShadow
-
-```typescript
-import { BoxShadow } from 'teikn';
-
-const shadow = new BoxShadow(0, 2, 8, 0, 'rgba(0,0,0,.12)');
-const inset = new BoxShadow(0, 1, 4, 0, 'rgba(0,0,0,.1)', true);
-
-// From CSS string
-const parsed = new BoxShadow('0 4px 16px rgba(0,0,0,.15)');
-
-// The color may be a per-field {ref} — resolved later (→ var(--…) in CSS,
-// a DTCG alias in Dtcg), rather than throwing like a bare Color would.
-const linked = new BoxShadow({ offsetY: 2, blur: 8, color: '{color.ink}' });
-
-// Immutable updates
-shadow.with({ blur: 16, spread: 4 });
-shadow.with({ color: new Color('steelblue'), inset: true });
-
-// Properties
-shadow.offsetX; // 0
-shadow.offsetY; // 2
-shadow.blur; // 8
-shadow.spread; // 0
-shadow.color; // Color | string  (a string when it holds an unresolved {ref})
-shadow.inset; // false
-
-shadow.scale(2); // scale all numeric values
-shadow.toString(); // '0 2px 8px rgba(0,0,0,0.12)'
-```
-
-### CubicBezier
-
-```typescript
-import { CubicBezier } from 'teikn';
-
-const ease = new CubicBezier(0.25, 0.1, 0.25, 1);
-
-// From CSS string
-const parsed = new CubicBezier('cubic-bezier(0.4, 0, 0.2, 1)');
-
-// Built-in presets
-CubicBezier.ease;
-CubicBezier.easeIn;
-CubicBezier.easeOut;
-CubicBezier.easeInOut;
-CubicBezier.linear;
-CubicBezier.standard; // Material Design standard
-CubicBezier.accelerate; // Material Design accelerate
-CubicBezier.decelerate; // Material Design decelerate
-
-ease.at(0.5); // y-value at x=0.5
-ease.reverse(); // time-reversed curve
-ease.toString(); // 'cubic-bezier(0.25, 0.1, 0.25, 1)'
-```
-
-### Dimension
-
-```typescript
-import { Dimension, dp, dim } from 'teikn';
-
-const d = new Dimension(16, 'px');
-const fromString = new Dimension('2.5rem');
-
-// Helpers
-dp(16); // 1rem (converts px to rem, 16px base)
-dim(2, 'em'); // 2em
-
-// Conversion
-d.to('rem'); // Dimension(1, 'rem')
-d.toRem(); // Dimension(1, 'rem')
-d.toPx(); // Dimension(16, 'px')
-
-// Arithmetic
-d.scale(2); // 32px
-d.add(new Dimension(8, 'px')); // 24px
-d.subtract(new Dimension(4, 'px'));
-d.negate(); // -16px
-
-// Properties
-d.value; // 16
-d.unit; // 'px'
-d.isAbsolute; // true
-d.isRelative; // false
-```
-
-Supported units: `px`, `rem`, `em`, `ch`, `ex`, `vw`, `vh`, `vmin`, `vmax`, `cm`, `mm`, `in`, `pt`,
-`pc`, `%`, `cqi`, `cqb`, `svw`, `svh`, `lvw`, `lvh`, `dvw`, `dvh`, `fr`, `lh`, `rlh`
-
-### Duration
-
-```typescript
-import { Duration, dur } from 'teikn';
-
-const d = new Duration(200, 'ms');
-const fromString = new Duration('0.3s');
-
-dur(200, 'ms'); // helper
-
-d.to('s'); // Duration(0.2, 's')
-d.toMs(); // Duration(200, 'ms')
-d.toS(); // Duration(0.2, 's')
-d.ms(); // 200 (raw number)
-d.toString(); // '200ms'
-```
-
-### Gradient
-
-```typescript
-import { LinearGradient, RadialGradient } from 'teikn';
-
-const linear = new LinearGradient(135, [
-  [new Color('steelblue'), '0%'],
-  [new Color('crimson'), '100%'],
-]);
-
-const radial = new RadialGradient({ shape: 'circle' }, [
-  ['#0077b6', '0%'],
-  ['#00b4d8', '50%'],
-  ['#90e0ef', '100%'],
-]);
-
-linear.toString(); // 'linear-gradient(135deg, #4682b4 0%, #dc143c 100%)'
-
-// A stop color may be a per-field {ref} to a color token — resolved later
-// (→ var(--…) in CSS, a DTCG alias in Dtcg), rather than throwing.
-const branded = new LinearGradient(180, [
-  ['{color.brand}', '0%'],
-  ['#000', '100%'],
-]);
-```
-
-### Transition
-
-```typescript
-import { Transition, CubicBezier } from 'teikn';
-
-// From values
-const t = new Transition('0.4s', CubicBezier.standard, '0s', 'opacity');
-
-// Built-in presets
-Transition.fade; // 0.2s ease (all properties)
-Transition.slide; // 0.3s standard curve
-Transition.quick; // 0.1s ease
-
-// Immutable updates
-Transition.fade.setDuration('0.5s');
-Transition.fade.setProperty('color');
-Transition.fade.setTimingFunction(CubicBezier.decelerate);
-
-t.toString(); // 'opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
-```
-
-Use presets directly as token values:
-
-```typescript
-import { group } from 'teikn';
-
-const easings = group('timing', {
-  standard: CubicBezier.standard,
-  accelerate: CubicBezier.accelerate,
-  decelerate: CubicBezier.decelerate,
-});
-
-const transitions = group('transition', {
-  fade: [Transition.fade, 'Fade in/out'],
-  slide: [Transition.slide, 'Slide animations'],
-  quick: Transition.quick,
-});
-```
+For a step-by-step walkthrough that builds a production token set — colors, spacing, typography,
+themes, and TypeScript output — see [Getting Started](docs/getting-started.md).
+
+## How it works
+
+Define your tokens once, then generate them into as many output formats as you need — CSS, SCSS,
+JSON, TypeScript, DTCG, and more — from a single source of truth. That source can carry its own
+variants: **themes** (override layers like dark, dense, or a brand skin) and per-token **modes**,
+which generators emit as scoped overrides (`[data-theme="dark"]`, `@media`, DTCG `$extensions`) in
+whatever form each format expects.
+
+A token's value can be a plain string (`'#0066cc'`, `'16px'`, `'0.2s ease'`) or one of Teikn's
+**typed value objects** (`Color`, `Dimension`, `Duration`, `BoxShadow`, `Transition`, …). Reach for
+a value object when you want to lighten a color, convert px to rem, or scale a duration with a
+method call. **Builder functions** (`group`, `scale`, `composite`, `theme`) assemble values into a
+`Token[]`. **Generators** turn that array into output files, and **plugins** transform, expand, or
+audit the tokens along the way.
+
+When one token's value is composed from another (a `Transition` built from a shared `Duration`),
+reference-aware generators emit `var()` / `$variable` / `{alias}` automatically — no special syntax.
+See [Concepts](docs/concepts.md) for the full model.
 
 ## Generators
 
-Generators produce output files from your tokens. Each targets a different format.
-
-```typescript
-const writer = new Teikn({
-  outDir: './dist',
-  generators: [
-    new Teikn.generators.CssVars(),
-    new Teikn.generators.Scss({ groups: true }),
-    new Teikn.generators.ScssVars(),
-    new Teikn.generators.Json(),
-    new Teikn.generators.JavaScript({ groups: true }),
-    new Teikn.generators.TypeScript({ groups: true }),
-    new Teikn.generators.Html(),
-    new Teikn.generators.Storybook(),
-    new Teikn.generators.Dtcg(),
-  ],
-});
-```
+Each generator targets a different output format:
 
 | Generator                  | Extension        | Description                                                                                   |
 | -------------------------- | ---------------- | --------------------------------------------------------------------------------------------- |
@@ -548,215 +77,72 @@ const writer = new Teikn({
 | **Storybook**              | `.stories.tsx`   | React Storybook stories with interactive visual components                                    |
 | **Dtcg**                   | `.tokens.json`   | W3C Design Token Community Group format for tool interoperability                             |
 
-### Common Options
-
-All generators accept:
-
-| Option     | Default    | Description                             |
-| ---------- | ---------- | --------------------------------------- |
-| `ext`      | varies     | Output file extension                   |
-| `filename` | `'tokens'` | Output filename (without extension)     |
-| `groups`   | `false`    | Generate typed group accessor functions |
-
-### Generator-Specific Options
-
-**CssVars**: `useMediaQuery?: boolean`, `modeSelectors?: Record<string, string>` **Storybook**:
-`importPath?: string`, `storyTitle?: string` **Dtcg**: `hierarchical?: boolean` (default: true),
-`separator?: string` (default: '.')
+Options and the reference-emission rules are in the [Generators reference](docs/api/generators.md).
 
 ## Plugins
 
-Plugins transform, expand, and validate tokens before generation. All plugins implement
-`toJSON(token)` for per-token transforms. Some also provide `expand(tokens)` for generating new
-tokens or `audit(tokens)` for validation.
+Plugins transform, expand, and validate tokens before generation.
 
-### Transform Plugins
+**Transform** (run in the pipeline):
 
-```typescript
-const writer = new Teikn({
-  plugins: [
-    new Teikn.plugins.ColorTransformPlugin({ type: 'hsl' }),
-    new Teikn.plugins.ScssQuoteValuePlugin(),
-    new Teikn.plugins.RemUnitPlugin({ base: 16, targetUnit: 'rem' }),
-    new Teikn.plugins.AlphaMultiplyPlugin({ background: '#ffffff' }),
-    new Teikn.plugins.NameConventionPlugin({ convention: 'camelCase' }),
-    new Teikn.plugins.DeprecationPlugin({ tokens: { oldPrimary: 'primary', legacySpacing: true } }),
-  ],
-});
-```
+| Plugin                    | Description                                                                                           |
+| ------------------------- | ----------------------------------------------------------------------------------------------------- |
+| **ColorTransformPlugin**  | Normalizes colors to a specific format (`hex`, `rgb`, `hsl`, `lab`, `lch`, `oklab`, `oklch`, `xyz`)   |
+| **StripTypePrefixPlugin** | Opt out of the built-in type prefixing (keep `primary` instead of `color-primary`)                    |
+| **ScssQuoteValuePlugin**  | Wraps font and font-family values in `unquote()` for SCSS compatibility                               |
+| **RemUnitPlugin**         | Converts px Dimensions to rem (or a configurable unit)                                                |
+| **AlphaMultiplyPlugin**   | Flattens semi-transparent colors against a background via alpha blending                              |
+| **NameConventionPlugin**  | Transforms token names to `camelCase`, `kebab-case`, `snake_case`, `PascalCase`, or `SCREAMING_SNAKE` |
+| **DeprecationPlugin**     | Marks tokens as deprecated with optional replacement references                                       |
 
-| Plugin                    | Description                                                                                                                                               |
-| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **ColorTransformPlugin**  | Normalizes colors to a specific format (`hex`, `rgb`, `hsl`, `lab`, `lch`, `oklab`, `oklch`, `xyz`), including colors nested in shadows/borders/gradients |
-| **StripTypePrefixPlugin** | Opt out of the built-in type prefixing (e.g., keep `primary` as `primary` instead of `color-primary`)                                                     |
-| **ScssQuoteValuePlugin**  | Wraps font and font-family values in `unquote()` for SCSS compatibility                                                                                   |
-| **RemUnitPlugin**         | Converts px Dimensions to rem (or configurable unit). Options: `base` (default 16), `targetUnit` (default `'rem'`)                                        |
-| **AlphaMultiplyPlugin**   | Flattens semi-transparent colors against a background via alpha blending. Options: `background` (default `'#ffffff'`)                                     |
-| **NameConventionPlugin**  | Transforms token names to `camelCase`, `kebab-case`, `snake_case`, `PascalCase`, or `SCREAMING_SNAKE`                                                     |
-| **DeprecationPlugin**     | Marks tokens as deprecated with optional replacement references                                                                                           |
+**Expand** (generate new tokens via `expand(tokens)`):
 
-### Expand Plugins
+| Plugin                   | Description                                                                              |
+| ------------------------ | ---------------------------------------------------------------------------------------- |
+| **PalettePlugin**        | Generates shade scales (50–950) from base color tokens, optionally in a perceptual space |
+| **ReducedMotionPlugin**  | Generates `prefers-reduced-motion` companion tokens: zeroed durations, linear easing     |
+| **ClampPlugin**          | Generates CSS `clamp()` fluid values from min/max token pairs                            |
+| **ColorBlindnessPlugin** | Generates companion tokens simulating color vision deficiencies                          |
 
-These generate additional tokens from existing ones. Call `expand(tokens)` before passing tokens to
-`Teikn.transform()`.
+**Audit** (report accessibility issues via `audit(tokens)`, without modifying tokens):
 
-```typescript
-const palette = new PalettePlugin({ steps: [100, 300, 500, 700, 900] });
-// Keep the ramp in a perceptual space. `space` defaults to 'auto' (the base
-// color's authored space — an oklch base yields an oklch ramp; a hex/rgb base
-// stays RGB). Pass a space to force it: 'oklch' | 'lch' | 'hsl' | 'rgb' | …
-const perceptualPalette = new PalettePlugin({ space: 'oklch' });
-const motion = new ReducedMotionPlugin({ prefix: 'reduced-' });
-const clamp = new ClampPlugin({
-  pairs: [{ min: 'fontSize-100', max: 'fontSize-700', output: 'fontSize-fluid' }],
-});
-const cbSim = new ColorBlindnessPlugin({ types: ['protanopia', 'deuteranopia'] });
+| Plugin                       | Description                                                                              |
+| ---------------------------- | ---------------------------------------------------------------------------------------- |
+| **ContrastValidatorPlugin**  | Validates WCAG contrast ratios (AA: 4.5:1, AAA: 7:1) between foreground/background pairs |
+| **MinFontSizePlugin**        | Warns when font-size tokens fall below an accessibility minimum (default 12px)           |
+| **TouchTargetPlugin**        | Warns when size/icon tokens are below minimum touch target size (default 44px)           |
+| **PerceptualDistancePlugin** | Warns when colors meant to be told apart are too perceptually similar (CIEDE2000 ΔE)     |
 
-let allTokens = tokens(colors, spacing, fontSizes);
-allTokens = palette.expand(allTokens);
-allTokens = motion.expand(allTokens);
-allTokens = clamp.expand(allTokens);
-allTokens = cbSim.expand(allTokens);
-```
-
-| Plugin                   | Description                                                                                                                                                                                                                                                                          |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **PalettePlugin**        | Generates shade scales (50–950) from base color tokens. In a lightness space (`oklch`/`lch`/`hsl`) it holds hue+chroma and interpolates lightness; otherwise it tints/shades in RGB. Options: `space` (default `'auto'` — the base's authored space), `steps`, `lightEnd`, `darkEnd` |
-| **ReducedMotionPlugin**  | Generates `prefers-reduced-motion` companion tokens: zeroed durations, linear easing. Options: `prefix`                                                                                                                                                                              |
-| **ClampPlugin**          | Generates CSS `clamp()` fluid values from min/max token pairs. Options: `viewportMin`, `viewportMax`, `pairs`                                                                                                                                                                        |
-| **ColorBlindnessPlugin** | Generates companion tokens simulating color vision deficiencies (protanopia, deuteranopia, tritanopia)                                                                                                                                                                               |
-
-### Audit Plugins (Accessibility)
-
-These validate tokens and report issues without modifying them. Call `audit(tokens)` to get a list
-of issues.
-
-```typescript
-const contrastCheck = new ContrastValidatorPlugin({
-  pairs: [
-    { foreground: 'textPrimary', background: 'surface', level: 'AA' },
-    { foreground: 'onPrimary', background: 'primary', level: 'AAA' },
-  ],
-});
-
-const fontCheck = new MinFontSizePlugin({ minPx: 12 });
-const touchCheck = new TouchTargetPlugin({ minPx: 44 });
-// Declare which colors are meant to be told apart; the plugin measures within
-// each set (ramps, aliases, and unrelated families are never compared).
-const distanceCheck = new PerceptualDistancePlugin({
-  sets: [['danger', 'success', 'warning', 'accent']],
-  minDeltaE: 5.0,
-});
-
-const issues = [
-  ...contrastCheck.audit(allTokens),
-  ...fontCheck.audit(allTokens),
-  ...touchCheck.audit(allTokens),
-  ...distanceCheck.audit(allTokens),
-];
-
-issues.forEach(i => console.warn(`[${i.severity}] ${i.token}: ${i.message}`));
-```
-
-| Plugin                       | Description                                                                                                                                                                                                                                                                                                                                                          |
-| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **ContrastValidatorPlugin**  | Validates WCAG contrast ratios (AA: 4.5:1, AAA: 7:1) between foreground/background color pairs                                                                                                                                                                                                                                                                       |
-| **MinFontSizePlugin**        | Warns when font-size tokens fall below an accessibility minimum (default 12px)                                                                                                                                                                                                                                                                                       |
-| **TouchTargetPlugin**        | Warns when size/icon tokens are below minimum touch target size (default 44px per WCAG/Apple HIG)                                                                                                                                                                                                                                                                    |
-| **PerceptualDistancePlugin** | Warns when colors in a declared peer `set` are too perceptually similar, using [CIEDE2000](https://en.wikipedia.org/wiki/Color_difference#CIEDE2000) (Delta E 2000). Takes intent explicitly (like `ContrastValidator`'s `pairs`): pass `sets` to gate, `all: true` to compare every pair, or `report: true` for a non-gating ΔE report. Default threshold: ΔE < 5.0 |
-
-#### Delta E 2000 Thresholds
-
-| ΔE₀₀      | Meaning                                        |
-| --------- | ---------------------------------------------- |
-| < 1.0     | Imperceptible — no human can tell them apart   |
-| 1.0 – 2.0 | Barely perceptible — trained eye only          |
-| 2.0 – 3.5 | Noticeable — commercial acceptability limit    |
-| 3.5 – 5.0 | Clearly different — but confusable from memory |
-| > 5.0     | Safely distinct in any context                 |
-
-## Dtcg Interoperability
-
-Import and export tokens in the W3C Design Token Community Group format for use with tools like
-Style Dictionary and Tokens Studio.
-
-```typescript
-import { parseDtcg, serializeDtcg } from 'teikn';
-
-// Import from Dtcg
-const tokens = parseDtcg(dtcgDocument, { separator: '.' });
-
-// Export to Dtcg
-const dtcg = serializeDtcg(tokens, { hierarchical: true });
-```
-
-## Validation
-
-Validate tokens before generation to catch common issues.
-
-```typescript
-import { validate } from 'teikn';
-
-const result = validate(allTokens);
-// result.valid: boolean
-// result.issues: { severity: 'error' | 'warning', token: string, message: string }[]
-```
-
-Checks for: missing required fields, duplicate names, unparseable colors, invalid references,
-circular references, and composite token shape validation.
+Usage, options, and the ΔE threshold table are in the [Plugins reference](docs/api/plugins.md).
 
 ## CLI
 
 ```bash
-# Run with a config file (teikn.config.ts, teikn.config.js, or .teiknrc.js)
-teikn
-
-# Run with a token file and flags
-teikn path/to/tokens.ts \
-  --outDir=./dist \
-  --generators="Scss,Json,JavaScript,CssVars,Html" \
-  --plugins="ColorTransformPlugin,ScssQuoteValuePlugin"
-
-# Watch mode
-teikn --watch
-
-# Dry run (show output without writing)
-teikn --dry-run
-
-# Validate tokens
-teikn validate path/to/tokens.ts
-
-# List available generators or plugins
-teikn list generators
-teikn list plugins
+teikn                              # run with a config file (teikn.config.ts / .teiknrc.js)
+teikn path/to/tokens.ts --outDir=./dist --generators="Scss,Json,CssVars"
+teikn --watch                      # rebuild on change
+teikn validate path/to/tokens.ts   # validate without generating
 ```
 
-## Color Space References
+Full flags in the [CLI guide](docs/guides/cli.md).
 
-- [W3C CSS Color 4 spec conversions](https://github.com/w3c/csswg-drafts/blob/main/css-color-4/conversions.js)
-- [Bruce Lindbloom's color math reference](http://www.brucelindbloom.com/index.html?Math.html)
-- [CSS Color spec on LAB colors](https://drafts.csswg.org/css-color/#lab-colors)
-- [sRGB / LAB / LCH conversion article](https://mina86.com/2021/srgb-lab-lchab-conversions/)
-- [CIE XYZ color space](https://www.image-engineering.de/library/technotes/958-how-to-convert-between-srgb-and-ciexyz)
-- [Illuminant D65](https://en.wikipedia.org/wiki/Illuminant_D65)
+## Documentation
+
+- [Getting Started](docs/getting-started.md) — install and generate your first token set
+- [Concepts](docs/concepts.md) — how values, tokens, groups, generators, and plugins fit together
+- **Reference**
+  - [Builders](docs/api/builders.md) — `group`, `scale`, `composite`, `theme`, `ref`, helpers
+  - [Value Types](docs/api/values.md) — `Color`, `Dimension`, `Duration`, `BoxShadow`, `Transition`,
+    gradients
+  - [Generators](docs/api/generators.md) — output formats and options
+  - [Plugins](docs/api/plugins.md) — transform, expand, and audit plugins
+- **Guides**
+  - [DTCG interoperability](docs/guides/dtcg.md) — import/export the W3C token format
+  - [Validation](docs/guides/validation.md) — catch issues before generation
+  - [CLI](docs/guides/cli.md) — command-line usage
+- **Recipes**
+  - [Composing tokens](docs/recipes/composition.md) — references, elevation scales, stagger patterns
 
 ## License
 
-MIT
-
-Copyright 2019 Shawn Patrick Rice
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
-associated documentation files (the "Software"), to deal in the Software without restriction,
-including without limitation the rights to use, copy, modify, merge, publish, distribute,
-sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial
-portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
-NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES
-OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
-CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+MIT © Shawn Patrick Rice. See [LICENSE](LICENSE).

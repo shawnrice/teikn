@@ -149,6 +149,10 @@ primitive types.
 
 ## Next steps
 
-- [Concepts](./concepts.md) --- how values, tokens, groups, and generators fit together
+- [Concepts](./concepts.md) --- how values, tokens, groups, generators, and plugins fit together
+- [Builders API](./api/builders.md) --- `group`, `scale`, `composite`, `theme`, `ref`, and helpers
 - [Values API](./api/values.md) --- Color, Duration, Dimension, BoxShadow, Transition, and more
+- [Generators](./api/generators.md) and [Plugins](./api/plugins.md) --- output formats and token
+  transforms
+- [Guides](./guides/dtcg.md) --- DTCG interop, validation, and the CLI
 - [Recipes](./recipes/composition.md) --- compose tokens, stagger animations, build elevation scales
