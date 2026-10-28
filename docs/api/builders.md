@@ -163,6 +163,16 @@ const dark = theme('dark', allTokens, {
 });
 ```
 
+Multiple theme dimensions (color scheme, density, brand) are independent layers. Pass them all to
+`Teikn` and generators output each as a scoped override:
+
+```typescript
+const dense = theme('dense', spacing, { gap: '4px', padding: '8px' });
+
+const writer = new Teikn({ themes: [dark, dense], generators: [new CssVars()] });
+await writer.transform(tokens(colors, spacing));
+```
+
 ## ref()
 
 Creates a token reference that resolves before generation:

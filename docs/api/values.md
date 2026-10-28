@@ -15,17 +15,20 @@ T.from(any of the above)     // static factory
 
 ## Color
 
-Parse any CSS color format. Manipulate in any color space.
+Supports RGB, HSL, LAB, LCH, and XYZ color spaces with lazy conversion and caching. Parse any CSS
+color format; manipulate in any space.
 
 ```typescript
 import { Color } from 'teikn';
 
 // Construction
-new Color('#0066cc');
-new Color('rgb(0, 102, 204)');
-new Color('hsl(210, 100%, 40%)');
-new Color(0, 102, 204); // r, g, b
-new Color(0, 102, 204, 0.5); // r, g, b, a
+new Color('steelblue');
+new Color('#ff6b35');
+new Color('rgb(70, 130, 180)');
+new Color('hsl(207, 44%, 49%)');
+new Color('lab(54.3, -5.6, -32.1)');
+new Color(70, 130, 180); // r, g, b
+new Color(70, 130, 180, 0.5); // r, g, b, a
 
 // Color-space factories
 Color.fromHSL(210, 100, 40);
@@ -33,43 +36,129 @@ Color.fromLAB(44, -5, -45);
 Color.fromLCH(44, 45, 265);
 ```
 
+Hex strings support 3, 4, 6, and 8-character formats (CSS4 hex-with-alpha):
+
+```typescript
+new Color('#F00'); // #FF0000
+new Color('#F00A'); // #FF0000 with alpha ~0.67
+new Color('#FF0000AA'); // #FF0000 with alpha ~0.67
+```
+
 ### Manipulation
 
 ```typescript
-const blue = new Color('#0066cc');
+const c = new Color('steelblue');
 
-blue.tint(0.3); // mix with white
-blue.shade(0.3); // mix with black
-blue.mix(otherColor, 0.5); // blend two colors
-blue.setAlpha(0.5); // transparency
-blue.lighten(0.2); // adjust lightness
-blue.darken(0.2);
-blue.saturate(20); // adjust saturation
-blue.desaturate(20);
-blue.complement(); // opposite hue
+// Lightness / saturation / hue
+c.lighten(0.2); // lighten by 20% (relative, 0-1)
+c.darken(0.1); // darken by 10% (relative, 0-1)
+c.saturate(15); // increase saturation by 15 percentage points (0-100)
+c.desaturate(15); // decrease saturation by 15 percentage points (0-100)
+c.grayscale(); // fully desaturate
+c.rotateHue(180); // rotate hue
+c.complement(); // complementary color
+
+// Mixing (premultiplied alpha, CSS color-mix spec)
+c.mix(other, 0.5); // 50/50 mix
+c.tint(0.3); // mix with white
+c.shade(0.3); // mix with black
+c.setAlpha(0.5); // transparent variant
+```
+
+### Analysis
+
+```typescript
+c.luminance(); // relative luminance (0-1)
+c.contrastRatio(other); // WCAG contrast ratio
+c.deltaE(other); // CIEDE2000 perceptual difference (0 = identical, ~100 = max)
+c.isLight(); // luminance > 0.5
+c.isDark();
+```
+
+### Color blindness simulation
+
+```typescript
+c.simulateColorBlindness('protanopia'); // red-blind
+c.simulateColorBlindness('deuteranopia'); // green-blind
+c.simulateColorBlindness('tritanopia'); // blue-blind
+c.simulateColorBlindness('protanomaly'); // partial red-blind
+c.simulateColorBlindness('deuteranomaly'); // partial green-blind
+c.simulateColorBlindness('tritanomaly'); // partial blue-blind
 ```
 
 ### Inspection
 
 ```typescript
-blue.red; // 0
-blue.green; // 102
-blue.blue; // 204
-blue.alpha; // 1
-blue.hue; // 210
-blue.saturation; // 100
-blue.lightness; // 40
-blue.luminance(); // WCAG relative luminance
+c.red; // 70
+c.green; // 130
+c.blue; // 180
+c.alpha; // 1
+c.hue; // 207
+c.saturation; // 44
+c.lightness; // 49
+
+// Raw values per space
+c.asRGB(); // [70, 130, 180]
+c.asHSL(); // [207, 44, 49]
+c.asLAB(); // [54.3, -5.6, -32.1]
+c.asLCH(); // [54.3, 32.6, 260]
+c.asXYZ(); // [0.189, 0.200, 0.448]
 ```
 
 ### Output
 
 ```typescript
-blue.toString(); // 'rgb(0, 102, 204)'
-blue.toString('hex'); // '#0066cc'
-blue.toString('hsl'); // 'hsl(210, 100%, 40%)'
-blue.toString('named'); // CSS named color if one matches
+c.toString('hex'); // '#4682b4'
+c.toString('rgb'); // 'rgb(70, 130, 180)'
+c.toString('rgba'); // 'rgba(70, 130, 180, 1)'
+c.toString('hsl'); // 'hsl(207, 44%, 49%)'
+c.toString('lab'); // 'lab(54.3, -5.6, -32.1)'
+c.toString('lch'); // 'lch(54.3, 32.6, 260)'
+c.toString('oklch'); // 'oklch(0.588 0.09934 245.739)'
+c.toString('named'); // CSS named color if one matches
+c.toString('xkcd'); // nearest XKCD color name
 ```
+
+With no format, `toString()` serializes in the color's _authored_ space — lossless, no gamut clip,
+no 8-bit round trip. An oklch color stays oklch (only rounding decimals); a hex color parses to rgb:
+
+```typescript
+new Color('oklch(0.7 0.15 200)').toString(); // 'oklch(0.7 0.15 200)'
+new Color('#4682b4').toString(); // 'rgb(70, 130, 180)'  (hex parses to rgb)
+c.toString('native'); // same as toString() — names the default explicitly
+```
+
+This is what `BoxShadow` (and other) serializers use, so an oklch shadow color emits oklch. To pin a
+fixed space across a whole token set, pass a format or use `ColorTransformPlugin({ type: 'rgb' })`
+(see [Plugins](plugins.md)).
+
+### Deriving colors
+
+Define a base color once and derive related colors with `.shade()`, `.tint()`, and `.mix()`. When
+the base changes, everything updates:
+
+```typescript
+const brand = new Color('#0066cc');
+
+brand.tint(0.3); // lighten by mixing 30% white
+brand.shade(0.3); // darken by mixing 30% black
+brand.mix(other, 0.5); // 50/50 blend with another color
+```
+
+Use `.mix()` for text colors and `.setAlpha()` for overlays. Text at reduced alpha looks washed out
+on colored backgrounds; `.mix()` produces a solid color that stays readable everywhere:
+
+```typescript
+// Opaque text: .mix() against white or black
+const textSecondary = dark.mix(new Color('#ffffff'), 0.4);
+
+// Transparent overlay: .setAlpha()
+const overlay = dark.setAlpha(0.5);
+```
+
+> **Tip:** `AlphaMultiplyPlugin` flattens semi-transparent colors to opaque at generation time by
+> alpha-compositing against a background color. Useful for email or contexts where transparency is
+> unreliable.
 
 ## Duration
 
@@ -178,6 +267,11 @@ d.isFontRelative; // false
 d.isConvertibleTo('rem'); // true
 d.isConvertibleTo('vw'); // false
 ```
+
+### Supported units
+
+`px`, `rem`, `em`, `ch`, `ex`, `vw`, `vh`, `vmin`, `vmax`, `cm`, `mm`, `in`, `pt`, `pc`, `%`, `cqi`,
+`cqb`, `svw`, `svh`, `lvw`, `lvh`, `dvw`, `dvh`, `fr`, `lh`, `rlh`
 
 ## CubicBezier
 
@@ -302,6 +396,10 @@ new BoxShadow({ offsetY: 2, blur: 8, color: shadowColor });
 // CSS string
 new BoxShadow('0 2px 8px rgba(0,0,0,.12)');
 new BoxShadow('inset 0 1px 2px #000');
+
+// The color may be a per-field {ref} — resolved later (→ var(--…) in CSS,
+// a DTCG alias in Dtcg), rather than throwing like a bare Color would.
+new BoxShadow({ offsetY: 2, blur: 8, color: '{color.ink}' });
 ```
 
 ### Manipulation
@@ -378,3 +476,24 @@ import { GradientList } from 'teikn';
 new GradientList([linearGradient, radialGradient]);
 new GradientList('linear-gradient(...), radial-gradient(...)');
 ```
+
+A gradient stop color may be a per-field `{ref}` to a color token — resolved later (→ `var(--…)` in
+CSS, a DTCG alias in Dtcg), rather than throwing:
+
+```typescript
+new LinearGradient(180, [
+  ['{color.brand}', '0%'],
+  ['#000', '100%'],
+]);
+```
+
+## Color space references
+
+The color math is derived from these references:
+
+- [W3C CSS Color 4 spec conversions](https://github.com/w3c/csswg-drafts/blob/main/css-color-4/conversions.js)
+- [Bruce Lindbloom's color math reference](http://www.brucelindbloom.com/index.html?Math.html)
+- [CSS Color spec on LAB colors](https://drafts.csswg.org/css-color/#lab-colors)
+- [sRGB / LAB / LCH conversion article](https://mina86.com/2021/srgb-lab-lchab-conversions/)
+- [CIE XYZ color space](https://www.image-engineering.de/library/technotes/958-how-to-convert-between-srgb-and-ciexyz)
+- [Illuminant D65](https://en.wikipedia.org/wiki/Illuminant_D65)
