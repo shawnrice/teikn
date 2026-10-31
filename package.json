@@ -69,19 +69,19 @@
     "test:update": "bun test --update-snapshots && vitest run --update"
   },
   "devDependencies": {
-    "@storybook/react": "^10.5.10",
-    "@storybook/react-vite": "^10.5.10",
-    "@types/bun": "^1.4.0",
-    "@types/node": "^26.2.0",
-    "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.5",
-    "oxfmt": "^0.64.0",
-    "oxlint": "^1.79.0",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8",
-    "storybook": "^10.5.10",
+    "@storybook/react": "^10.6.5",
+    "@storybook/react-vite": "^10.6.5",
+    "@types/bun": "^1.4.4",
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "oxfmt": "^0.75.0",
+    "oxlint": "^1.90.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "storybook": "^10.6.5",
     "typescript": "^7.0.2",
-    "vitest": "^4.1.11"
+    "vitest": "^5.0.5"
   },
   "engines": {
     "node": ">=20.0.0"
