@@ -131,11 +131,12 @@ const [wpX, wpY, wpZ] = D65;
 const labEpsilon = (6 / 29) ** 3; // 0.008856
 const labKappa = (1 / 3) * (29 / 6) ** 2; // 7.787
 
+const labF = (t: number): number => (t > labEpsilon ? t ** (1 / 3) : labKappa * t + 16 / 116);
+
 export const XYZToLAB = ([x, y, z]: XYZ): LAB => {
-  const f = (t: number): number => (t > labEpsilon ? t ** (1 / 3) : labKappa * t + 16 / 116);
-  const fx = f(x / D65[0]);
-  const fy = f(y / D65[1]);
-  const fz = f(z / D65[2]);
+  const fx = labF(x / D65[0]);
+  const fy = labF(y / D65[1]);
+  const fz = labF(z / D65[2]);
 
   const L = 116 * fy - 16;
   const a = 500 * (fx - fy);

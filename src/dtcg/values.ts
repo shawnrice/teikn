@@ -112,23 +112,23 @@ const cubicBezierToTeikn = (value: DtcgCubicBezierValue): CubicBezier =>
 const resolveDim = (d: DtcgDimensionValue | string): number =>
   typeof d === 'string' ? parseFloat(d) : d.value;
 
+// An aliased color (a shared color token) comes back as a `{ref}` string and
+// is kept as-is — BoxShadow holds it via the RefFields protocol.
+const resolveShadowColor = (c: DtcgColorValue | string): Color | string => {
+  if (isAlias(c)) {
+    return c;
+  }
+
+  return typeof c === 'string' ? new Color(c) : colorToTeikn(c);
+};
+
 const shadowToTeikn = (value: DtcgShadowValue): BoxShadow => {
-  // An aliased color (a shared color token) comes back as a `{ref}` string and
-  // is kept as-is — BoxShadow holds it via the RefFields protocol.
-  const resolveColor = (c: DtcgColorValue | string): Color | string => {
-    if (isAlias(c)) {
-      return c;
-    }
-
-    return typeof c === 'string' ? new Color(c) : colorToTeikn(c);
-  };
-
   return new BoxShadow(
     resolveDim(value.offsetX),
     resolveDim(value.offsetY),
     resolveDim(value.blur),
     resolveDim(value.spread),
-    resolveColor(value.color),
+    resolveShadowColor(value.color),
   );
 };
 
