@@ -33,6 +33,7 @@ export const themes = [darkColors];
 
 ```js
 import { Teikn } from 'teikn';
+
 import { allTokens, themes } from './raw-tokens.js';
 
 const writer = new Teikn({
