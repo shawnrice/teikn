@@ -3,6 +3,7 @@ import { describe, expect, test } from 'bun:test';
 import { group, scale, composite, tokens, theme, dp, dur } from './builders.js';
 import { testOpts } from './fixtures/testOpts.js';
 import { Teikn } from './Teikn.js';
+import type { Token } from './Token.js';
 import { BoxShadow } from './TokenTypes/BoxShadow.js';
 import { Color } from './TokenTypes/Color/index.js';
 import { validate } from './validate.js';
@@ -337,5 +338,104 @@ describe('integration: multi-generator output', () => {
     for (const [, content] of output) {
       expect(content).toContain('150ms');
     }
+  });
+});
+
+// ─── Themed ramps ───────────────────────────────────────────
+
+describe('integration: a theme drives a palette ramp', () => {
+  const brand = group('color', { brand: '#3b82f6' });
+  const darkBrand = theme('dark', brand, { brand: '#1e3a8a' });
+
+  const writer = new Teikn({
+    generators: [new Teikn.generators.CssVars(testOpts)],
+    themes: [darkBrand],
+    plugins: [new Teikn.plugins.PalettePlugin({ steps: [50, 500, 950] })],
+  });
+
+  const css = writer.generateToStrings(tokens(brand)).get('tokens.css')!;
+  const [, root = '', darkTheme = ''] = css.split(/:root \{|\[data-theme="dark"\] \{/);
+
+  test('the dark block carries the whole ramp, not just the seed', () => {
+    // Step 500 is the seed itself: light vs dark base.
+    expect(root).toContain('--color-brand-500: rgb(59, 130, 246)');
+    expect(darkTheme).toContain('--color-brand-500: rgb(30, 58, 138)');
+    // The derived steps are themed too, and differ between the two ramps.
+    const stepValue = (block: string, step: string): string | undefined =>
+      block.match(new RegExp(`--color-brand-${step}: (rgb\\([^)]+\\))`))?.[1];
+
+    for (const step of ['50', '950']) {
+      expect(darkTheme).toContain(`--color-brand-${step}:`);
+      expect(stepValue(darkTheme, step)).not.toBe(stepValue(root, step));
+    }
+  });
+});
+
+describe('integration: a theme points a color at a generated ramp step', () => {
+  const palette = group('color', { brand: '#3b82f6', surface: '#ffffff' });
+  const darkSurface = theme('dark', palette, { surface: '{brand-950}' });
+
+  const writer = new Teikn({
+    generators: [new Teikn.generators.CssVars(testOpts)],
+    themes: [darkSurface],
+    plugins: [new Teikn.plugins.PalettePlugin({ steps: [50, 500, 950] })],
+  });
+
+  test('the override resolves after expansion', () => {
+    const css = writer.generateToStrings(tokens(palette)).get('tokens.css')!;
+    const [, , darkTheme = ''] = css.split(/:root \{|\[data-theme="dark"\] \{/);
+
+    expect(darkTheme).toMatch(/--color-surface: (?!\{)\S/);
+    expect(darkTheme).not.toContain('{brand-950}');
+  });
+});
+
+describe('integration: aliases, layered themes and untouched tokens alongside a ramp', () => {
+  const palette = group('color', { brand: '#3b82f6', text: '{brand-950}', accent: '{brand}' });
+  const darkBrand = theme('dark', palette, { brand: '#1e3a8a' });
+  const dimBrand = theme('dim', darkBrand, { text: '{brand-50}' });
+  const plugins = [new Teikn.plugins.PalettePlugin({ steps: [50, 500, 950] })];
+  const cssFor = (options: ConstructorParameters<typeof Teikn>[0], set: Token[]): string =>
+    new Teikn({ generators: [new Teikn.generators.CssVars(testOpts)], ...options })
+      .generateToStrings(set)
+      .get('tokens.css')!;
+  const block = (out: string, selector: string): string =>
+    out.split(selector)[1]?.split('}')[0] ?? '';
+  const valueOf = (out: string, name: string): string | undefined =>
+    out.match(new RegExp(`--color-${name}: ([^;]+);`))?.[1];
+
+  const css = cssFor({ plugins, themes: [darkBrand, dimBrand] }, tokens(palette, spacing));
+  const root = block(css, ':root {');
+  const darkBlock = block(css, '[data-theme="dark"] {');
+  const dimBlock = block(css, '[data-theme="dim"] {');
+
+  test('a color aliasing a generated step resolves, and follows the themed ramp', () => {
+    expect(valueOf(root, 'text')).toBe(valueOf(root, 'brand-950'));
+    expect(valueOf(darkBlock, 'text')).toBe(valueOf(darkBlock, 'brand-950'));
+    expect(valueOf(darkBlock, 'text')).not.toBe(valueOf(root, 'text'));
+  });
+
+  test("an alias of the seed inherits the seed's themed value", () => {
+    expect(valueOf(darkBlock, 'accent')).toBe(valueOf(darkBlock, 'brand'));
+    expect(valueOf(darkBlock, 'accent-500')).toBe(valueOf(darkBlock, 'brand-500'));
+  });
+
+  test("a layered theme carries its parent's ramp and its own override", () => {
+    expect(valueOf(dimBlock, 'brand-500')).toBe(valueOf(darkBlock, 'brand-500'));
+    expect(valueOf(dimBlock, 'text')).toBe(valueOf(dimBlock, 'brand-50'));
+  });
+
+  test('a dangling alias is still reported', () => {
+    const broken = group('color', { brand: '#3b82f6', text: '{nope}' });
+
+    expect(() => cssFor({ plugins }, broken)).toThrow(/nope/);
+  });
+
+  test('non-expanded tokens are byte-identical with and without the themed ramp', () => {
+    const spacingLines = (out: string): string[] =>
+      out.split('\n').filter(line => line.includes('--spacing-'));
+
+    expect(spacingLines(css)).toEqual(spacingLines(cssFor({}, tokens(spacing))));
+    expect(spacingLines(css).length).toBeGreaterThan(0);
   });
 });

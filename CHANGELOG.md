@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+### Added
+
+- **`PalettePlugin` ramps follow theme overrides and token modes.** A theme that overrides a palette
+  seed (or a seed authored with modes) now regenerates the whole ramp per mode instead of freezing
+  it at the default value, and a seed may be a `{reference}` that resolves to a color (its ramp
+  follows the referenced token's modes). Themes apply before expansion, so
+  `theme('dark', colors, { brand })` themes `brand-50 … -950`, not just `brand`.
+
+### Changed
+
+- **References are resolved per mode.** A token whose value references a token with modes now
+  inherits those modes (`brand = {primary}` gets primary's `dark` value), and a mode value that is a
+  reference resolves to its target's value for that mode rather than the target's default.
+- **`PalettePlugin` passes through a color that aliases a generated step** (`text = {brand-950}`)
+  instead of throwing; it gets no ramp of its own and resolves in the normal reference pass.
+
 ### Fixed
 
 - **Out-of-gamut `lab()`/`lch()`/`xyz()` colors are now gamut-mapped into sRGB** via CSS Color 4

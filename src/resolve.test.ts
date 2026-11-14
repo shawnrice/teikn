@@ -412,3 +412,39 @@ describe('resolveReferences', () => {
     expect(result[2]!.modes!['dark']).toBe('#111');
   });
 });
+
+describe('resolveReferences: modes follow references', () => {
+  const byName = (tokens: Token[], name: string): Token => tokens.find(t => t.name === name)!;
+
+  test('an alias inherits the modes of the token it references', () => {
+    const result = resolveReferences([
+      { name: 'primary', type: 'color', value: '#3b82f6', modes: { dark: '#1e3a8a' } },
+      { name: 'brand', type: 'color', value: '{primary}' },
+      { name: 'plain', type: 'color', value: '#00cc88' },
+    ]);
+
+    expect(byName(result, 'brand').value).toBe('#3b82f6');
+    expect(byName(result, 'brand').modes).toEqual({ dark: '#1e3a8a' });
+    expect(byName(result, 'plain').modes).toBeUndefined();
+  });
+
+  test('a mode reference resolves to the target as that mode sees it', () => {
+    const result = resolveReferences([
+      { name: 'primary', type: 'color', value: '#3b82f6', modes: { dark: '#1e3a8a' } },
+      { name: 'surface', type: 'color', value: '#ffffff', modes: { dark: '{primary}' } },
+    ]);
+
+    expect(byName(result, 'surface').modes).toEqual({ dark: '#1e3a8a' });
+  });
+
+  test('a composite inherits a mode only when a referenced field has it', () => {
+    const result = resolveReferences([
+      { name: 'line', type: 'color', value: '#cccccc', modes: { dark: '#333333' } },
+      { name: 'card', type: 'border', value: { width: '1px', color: '{line}' } },
+      { name: 'flat', type: 'border', value: { width: '1px', color: '#000000' } },
+    ]);
+
+    expect(byName(result, 'card').modes).toEqual({ dark: { width: '1px', color: '#333333' } });
+    expect(byName(result, 'flat').modes).toBeUndefined();
+  });
+});
