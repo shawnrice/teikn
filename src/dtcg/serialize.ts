@@ -1,7 +1,9 @@
 import type { Token } from '../Token.js';
+import type { TokenWithExtensions, WithGroupMeta } from './meta.js';
+import { groupMetaKey, teiknExtension } from './meta.js';
 import type { DtcgDocument, DtcgToken } from './types.js';
 import type { DtcgRefMap } from './values.js';
-import { teiknTypeToDtcg, teiknValueToDtcg } from './values.js';
+import { mapAliases, teiknToDtcg, teiknTypeToDtcg } from './values.js';
 
 export type SerializeOptions = {
   /** Separator used in token names to reconstruct groups. Default: '.' */
@@ -9,6 +11,16 @@ export type SerializeOptions = {
   /** When true, reconstruct group hierarchy from token names. Default: true */
   hierarchical?: boolean;
 };
+
+type Node = Record<string, any>;
+
+// Group and document nodes have no prototype, so a `__proto__` (or
+// `constructor`) path segment is just another key instead of a way to reach
+// `Object.prototype`. They still JSON-serialize like any object.
+const emptyNode = (): Node => Object.create(null) as Node;
+
+const isObject = (value: unknown): value is Node =>
+  value !== null && typeof value === 'object' && !Array.isArray(value);
 
 const collisionError = (path: string[]): Error =>
   new Error(
@@ -18,7 +30,13 @@ const collisionError = (path: string[]): Error =>
       `separator that doesn't split these names.`,
   );
 
-const setNestedValue = (obj: Record<string, any>, path: string[], token: DtcgToken): void => {
+const duplicateError = (path: string[]): Error =>
+  new Error(
+    `DTCG serialization: two tokens share the path "${path.join('.')}". Each DTCG token needs a ` +
+      `unique path; rename one, or give the tokens different groups.`,
+  );
+
+const setNestedValue = (obj: Node, path: string[], token: DtcgToken): void => {
   let current = obj;
 
   for (let i = 0; i < path.length - 1; i++) {
@@ -33,7 +51,7 @@ const setNestedValue = (obj: Record<string, any>, path: string[], token: DtcgTok
     }
 
     if (!(segment in current) || typeof current[segment] !== 'object') {
-      current[segment] = {};
+      current[segment] = emptyNode();
     }
 
     current = current[segment];
@@ -48,28 +66,47 @@ const setNestedValue = (obj: Record<string, any>, path: string[], token: DtcgTok
     throw collisionError(path);
   }
 
+  // A second token at the same path would silently replace the first.
+  if (existing) {
+    throw duplicateError(path);
+  }
+
   current[leaf] = token;
 };
 
-const hoistGroupTypes = (obj: Record<string, any>): void => {
+// `$root` is a token like any other child; other `$` keys are metadata.
+const isMetaKey = (key: string): boolean => key.startsWith('$') && key !== '$root';
+
+// Returns whether every token under `obj` carries (or inherits) a `$type`. A
+// group type is only hoisted when that holds, since an untyped token (an
+// inexpressible value, an alias) would otherwise inherit a type it lacks.
+const hoistGroupTypes = (obj: Node): boolean => {
+  let allTyped = true;
+
   for (const [key, value] of Object.entries(obj)) {
-    if (key.startsWith('$') || !value || typeof value !== 'object') {
+    if (isMetaKey(key) || !value || typeof value !== 'object') {
       continue;
     }
 
     // If this node has $value, it's a token leaf — skip
     if ('$value' in value) {
+      allTyped &&= Boolean(value.$type);
       continue;
     }
 
     // Recurse into sub-groups first
-    hoistGroupTypes(value);
+    const groupTyped = hoistGroupTypes(value);
+    allTyped &&= groupTyped;
+
+    if (!groupTyped) {
+      continue;
+    }
 
     // Collect $type from all direct children
     const childTypes = new Set<string>();
 
     for (const [childKey, childVal] of Object.entries(value)) {
-      if (childKey.startsWith('$') || !childVal || typeof childVal !== 'object') {
+      if (isMetaKey(childKey) || !childVal || typeof childVal !== 'object') {
         continue;
       }
 
@@ -87,7 +124,7 @@ const hoistGroupTypes = (obj: Record<string, any>): void => {
 
       // Remove $type from children
       for (const [childKey, childVal] of Object.entries(value)) {
-        if (childKey.startsWith('$') || !childVal || typeof childVal !== 'object') {
+        if (isMetaKey(childKey) || !childVal || typeof childVal !== 'object') {
           continue;
         }
 
@@ -97,81 +134,137 @@ const hoistGroupTypes = (obj: Record<string, any>): void => {
       }
     }
   }
+
+  return allTyped;
 };
 
 const tokenToDtcg = (
-  token: Token,
+  token: TokenWithExtensions,
   refMap: DtcgRefMap,
   toAliasPath: (name: string) => string,
 ): DtcgToken => {
-  const dtcgType = teiknTypeToDtcg(token.type);
+  const relink = (value: unknown): unknown =>
+    mapAliases(value, alias => `{${toAliasPath(alias.slice(1, -1))}}`);
+
   // A linked ref (`ref(name, { link: true })`) serializes as a DTCG alias to
   // the target token, mirroring CSS `var(--…)`. The alias must use the token's
   // *hierarchical* path (`{group.token}`), not the flat emitted name, or it
   // dangles when groups are reconstructed.
-  const dtcgValue = token.link
-    ? `{${toAliasPath(token.link)}}`
-    : teiknValueToDtcg(token.value, token.type, refMap);
+  const { value, type } = teiknToDtcg(
+    token.link ? `{${token.link}}` : token.value,
+    token.type,
+    refMap,
+  );
 
-  const result: DtcgToken = { $value: dtcgValue as any, $type: dtcgType };
+  // `$type` is only ever a real DTCG type; a teikn-only type name is omitted
+  // (never invented) and recorded under `$extensions` so it round-trips.
+  const result: DtcgToken = { $value: relink(value) as any, ...(type ? { $type: type } : {}) };
 
   if (token.usage) {
     result.$description = token.usage;
   }
 
-  if (token.modes && Object.keys(token.modes).length > 0) {
-    const modeEntries: Record<string, unknown> = {};
+  const ownType =
+    token.type !== 'unknown' && teiknTypeToDtcg(token.type) !== type ? token.type : undefined;
+  const previous = token.extensions?.[teiknExtension];
+  const modes = Object.entries(token.modes ?? {});
 
-    for (const [mode, val] of Object.entries(token.modes)) {
-      modeEntries[mode] = teiknValueToDtcg(val, token.type);
-    }
+  const extensions = {
+    ...token.extensions,
+    ...(ownType
+      ? { [teiknExtension]: { ...(isObject(previous) ? previous : {}), type: ownType } }
+      : {}),
+    ...(modes.length > 0
+      ? {
+          mode: Object.fromEntries(
+            modes.map(([mode, val]) => [mode, relink(teiknToDtcg(val, token.type).value)]),
+          ),
+        }
+      : {}),
+  };
 
-    result.$extensions = { mode: modeEntries };
+  if (Object.keys(extensions).length > 0) {
+    result.$extensions = extensions;
   }
 
   return result;
 };
 
-const buildRefMap = (tokens: Token[], toAliasPath: (name: string) => string): DtcgRefMap => {
+const buildRefMap = (tokens: Token[], aliasOf: (token: Token) => string): DtcgRefMap => {
   const map: DtcgRefMap = new Map();
 
   for (const token of tokens) {
     if (typeof token.value === 'object' && token.value !== null && !map.has(token.value)) {
       // Store the hierarchical alias path so identity/composite refs also emit
       // `{group.token}` rather than the flat emitted name.
-      map.set(token.value, toAliasPath(token.name));
+      map.set(token.value, aliasOf(token));
     }
   }
 
   return map;
 };
 
+const groupMetaKeys = ['$description', '$extensions', '$deprecated'];
+
+// Put back the group-level metadata `parseDtcg` set aside, wherever the group
+// still exists.
+const restoreGroupMeta = (doc: Node, tokens: Token[], hierarchical: boolean): void => {
+  for (const [key, meta] of (tokens as WithGroupMeta)[groupMetaKey] ?? []) {
+    const path = key === '' ? [] : key.split('.');
+    const group =
+      hierarchical || path.length === 0
+        ? path.reduce<Node | undefined>(
+            (node, segment) => (node && Object.hasOwn(node, segment) ? node[segment] : undefined),
+            doc,
+          )
+        : undefined;
+
+    if (!isObject(group) || '$value' in group) {
+      continue;
+    }
+
+    for (const metaKey of groupMetaKeys.filter(k => meta[k] !== undefined)) {
+      group[metaKey] = meta[metaKey];
+    }
+  }
+};
+
 export const serializeDtcg = (tokens: Token[], options?: SerializeOptions): DtcgDocument => {
   const separator = options?.separator ?? '.';
   const hierarchical = options?.hierarchical ?? true;
+
+  // A token's group is part of its path, so same-named tokens in different
+  // groups (`line-height.tight`, `letter-spacing.tight`) do not collide.
+  const keyOf = (token: Token): string =>
+    token.group ? `${token.group}${separator}${token.name}` : token.name;
+  const pathOf = (token: Token): string[] =>
+    hierarchical ? keyOf(token).split(separator) : [keyOf(token)];
+  const aliasOf = (token: Token): string => pathOf(token).join('.');
+
+  // Bare names first, so a qualified key always wins over a bare one.
+  const aliasPaths = new Map<string, string>([
+    ...tokens.toReversed().map(token => [token.name, aliasOf(token)] as const),
+    ...tokens.map(token => [keyOf(token), aliasOf(token)] as const),
+  ]);
+
   // DTCG aliases always use `.` as the path separator. When groups are
   // reconstructed from names, rewrite the emitted name's separator to `.`;
   // otherwise (flat output) the name is the key verbatim.
   const toAliasPath = (name: string): string =>
-    hierarchical ? name.split(separator).join('.') : name;
-  const refMap = buildRefMap(tokens, toAliasPath);
+    aliasPaths.get(name) ?? (hierarchical ? name.split(separator).join('.') : name);
+  const refMap = buildRefMap(tokens, aliasOf);
 
-  const doc: DtcgDocument = {};
+  const doc = emptyNode();
 
   for (const token of tokens) {
-    const dtcgToken = tokenToDtcg(token, refMap, toAliasPath);
-
-    if (hierarchical) {
-      const segments = token.name.split(separator);
-      setNestedValue(doc as Record<string, any>, segments, dtcgToken);
-    } else {
-      (doc as Record<string, any>)[token.name] = dtcgToken;
-    }
+    setNestedValue(doc, pathOf(token), tokenToDtcg(token, refMap, toAliasPath));
   }
 
   if (hierarchical) {
-    hoistGroupTypes(doc as Record<string, any>);
+    hoistGroupTypes(doc);
   }
 
-  return doc;
+  restoreGroupMeta(doc, tokens, hierarchical);
+
+  return doc as DtcgDocument;
 };

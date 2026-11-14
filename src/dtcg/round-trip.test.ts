@@ -120,11 +120,25 @@ const fixedPoint = (tokens: Token[]) => {
 };
 
 // Serialize a single token and reach into its (only) leaf `$value` / `$type`.
+// The token sits under its group, so the `$type` may have been hoisted there.
 const leaf = (token: Token): { $value: unknown; $type?: string } => {
-  const walk = (node: any): any =>
-    node && typeof node === 'object' && '$value' in node ? node : walk(Object.values(node)[0]);
+  const walk = (node: any, inherited?: string): any =>
+    '$value' in node
+      ? { $type: inherited, ...node }
+      : walk(Object.values(node)[0], node.$type ?? inherited);
 
   return walk(serializeDtcg([token]));
+};
+
+// Every `$value`-bearing node in a document.
+const countTokens = (node: any): number => {
+  if (!node || typeof node !== 'object' || Array.isArray(node)) {
+    return 0;
+  }
+
+  return '$value' in node
+    ? 1
+    : Object.values(node).reduce((sum: number, child) => sum + countTokens(child), 0);
 };
 
 // Tokens carry a leaf `name` plus a `group`; the full key is `group.name`.
@@ -151,6 +165,15 @@ describe('DTCG round-trip (producer: teikn → DTCG → teikn)', () => {
   test('the full token set round-trips (grouping, hierarchy, aliases preserved)', () => {
     const { once, twice } = fixedPoint(corpus);
     expect(twice).toEqual(once);
+  });
+
+  // Same-named tokens in different groups (`tight`, `sm`, `fast`) used to
+  // overwrite one another before the comparison ever ran.
+  test('no token is lost: every corpus token survives both directions', () => {
+    const { once, twice } = fixedPoint(corpus);
+    expect(countTokens(once)).toBe(corpus.length);
+    expect(countTokens(twice)).toBe(corpus.length);
+    expect(parseDtcg(once)).toHaveLength(corpus.length);
   });
 });
 
@@ -195,7 +218,7 @@ describe('DTCG round-trip: regression shape pins', () => {
     const { once, twice } = fixedPoint(tokens);
     // The shadow's color is emitted as an alias to the shared token (a string),
     // not an inline color object — and the alias survives the round-trip.
-    const shadowColor = (once as Record<string, any>).card.$value.color;
+    const shadowColor = (once as Record<string, any>).shadow.card.$value.color;
     expect(typeof shadowColor).toBe('string');
     expect(shadowColor).toMatch(/^\{.+\}$/);
     expect(twice).toEqual(once);
