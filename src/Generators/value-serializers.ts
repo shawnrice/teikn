@@ -54,7 +54,7 @@ export const cssValue = (value: unknown): string => {
 
   if ('width' in obj && 'style' in obj && 'color' in obj) {
     // border shorthand: width style color
-    return [obj.width, obj.style, obj.color].filter(Boolean).join(' ');
+    return [obj.width, obj.style, obj.color].filter(v => v != null && v !== '').join(' ');
   }
 
   // Unknown composite shape: space-join the values. This matches CSS
