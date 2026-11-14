@@ -1,6 +1,6 @@
 import type { Color, InternalCreate } from '../Color.js';
 import type { LAB } from '../types.js';
-import { percentRange } from '../util.js';
+import { mixPremultiplied } from '../util.js';
 
 export class LABOperations {
   #color: Color;
@@ -52,17 +52,13 @@ export class LABOperations {
   }
 
   mix(other: Color, amount = 0.5): Color {
-    const amt = percentRange(amount);
-    const thisLab = this.#lab();
-    const otherLab = other.asLAB();
-    const mixed: LAB = [
-      thisLab[0] * (1 - amt) + otherLab[0] * amt,
-      thisLab[1] * (1 - amt) + otherLab[1] * amt,
-      thisLab[2] * (1 - amt) + otherLab[2] * amt,
-    ];
-    const alpha = this.#color.alpha * (1 - amt) + other.alpha * amt;
+    const { data, alpha } = mixPremultiplied({
+      from: { data: this.#lab(), alpha: this.#color.alpha },
+      to: { data: other.asLAB(), alpha: other.alpha },
+      amount,
+    });
 
-    return this.#new('lab', mixed, alpha);
+    return this.#new('lab', data, alpha);
   }
 
   lighten(amount: number): Color {

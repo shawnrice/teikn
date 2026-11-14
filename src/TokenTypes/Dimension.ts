@@ -1,3 +1,4 @@
+import { CSS_NUMBER, formatNumber, tidy } from './parse-utils.js';
 import { assertNotRef } from './ref-guard.js';
 
 // ─── Unit Types ─────────────────────────────────────────────
@@ -153,17 +154,35 @@ export const convertDimension = (
 
 // ─── Parsing ────────────────────────────────────────────────
 
-const PARSE_RE =
-  /^(-?\d+(?:\.\d+)?)(px|rem|em|%|cm|mm|in|pt|pc|Q|vw|vh|vmin|vmax|ch|ex|fr|svw|svh|lvw|lvh|dvw|dvh|lh|rlh|cqi|cqb)$/;
+// CSS units are case-insensitive; map each back to its canonical spelling.
+const canonicalUnits: ReadonlyMap<string, DimensionUnit> = new Map(
+  [...allUnits].map(unit => [unit.toLowerCase(), unit as DimensionUnit]),
+);
+
+const PARSE_RE = new RegExp(`^(${CSS_NUMBER})([a-z%]*)$`, 'i');
 
 const parseCss = (css: string): { value: number; unit: DimensionUnit } => {
   const m = css.trim().match(PARSE_RE);
+  const value = m ? Number(m[1]) : NaN;
+  // A unitless zero is a valid CSS length; it is stored as `0px`.
+  const unit =
+    m?.[2] === '' && value === 0 ? 'px' : canonicalUnits.get(m?.[2]?.toLowerCase() ?? '');
 
-  if (!m) {
+  if (!unit || !Number.isFinite(value)) {
     throw new Error(`Invalid dimension: "${css}"`);
   }
 
-  return { value: parseFloat(m[1]!), unit: m[2]! as DimensionUnit };
+  return { value, unit };
+};
+
+const assertValid = (value: number, unit: string): void => {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    throw new Error(`Invalid dimension value: ${value} — expected a finite number`);
+  }
+
+  if (!allUnits.has(unit)) {
+    throw new Error(`Invalid dimension unit: "${unit}". Valid units: ${[...allUnits].join(', ')}`);
+  }
 };
 
 // ─── Dimension ──────────────────────────────────────────────
@@ -196,6 +215,7 @@ export class Dimension {
     }
 
     if (typeof first === 'object') {
+      assertValid(first.value, first.unit);
       this.#value = first.value;
       this.#unit = first.unit;
 
@@ -206,6 +226,7 @@ export class Dimension {
       throw new Error('Dimension(number) requires a unit');
     }
 
+    assertValid(first, unit);
     this.#value = first;
     this.#unit = unit;
   }
@@ -243,7 +264,7 @@ export class Dimension {
 
   to(targetUnit: DimensionUnit, { remBase = 16 }: { remBase?: number } = {}): Dimension {
     return new Dimension(
-      convertDimension(this.#value, this.#unit, targetUnit, { remBase }),
+      tidy(convertDimension(this.#value, this.#unit, targetUnit, { remBase })),
       targetUnit,
     );
   }
@@ -259,7 +280,7 @@ export class Dimension {
   // ─── Math ───────────────────────────────────────────────────
 
   scale(factor: number): Dimension {
-    return new Dimension(this.#value * factor, this.#unit);
+    return new Dimension(tidy(this.#value * factor), this.#unit);
   }
 
   add(other: Dimension): Dimension {
@@ -267,7 +288,7 @@ export class Dimension {
       throw new Error(`Cannot add ${this.#unit} and ${other.#unit} — convert first`);
     }
 
-    return new Dimension(this.#value + other.#value, this.#unit);
+    return new Dimension(tidy(this.#value + other.#value), this.#unit);
   }
 
   subtract(other: Dimension): Dimension {
@@ -275,7 +296,7 @@ export class Dimension {
       throw new Error(`Cannot subtract ${this.#unit} and ${other.#unit} — convert first`);
     }
 
-    return new Dimension(this.#value - other.#value, this.#unit);
+    return new Dimension(tidy(this.#value - other.#value), this.#unit);
   }
 
   negate(): Dimension {
@@ -295,7 +316,7 @@ export class Dimension {
   }
 
   toString(): string {
-    return `${this.#value}${this.#unit}`;
+    return `${formatNumber(this.#value)}${this.#unit}`;
   }
 
   // ─── Static helpers ──────────────────────────────────────────

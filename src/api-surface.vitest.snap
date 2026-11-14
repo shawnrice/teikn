@@ -419,7 +419,8 @@ export type TypeScriptDeclarationsOpts = {
      * Pair the declarations file with a specific runtime module format. When
      * set to \`"cjs"\`, emit \`.d.cts\` instead of \`.d.ts\` so Node's strict
      * ESM/CJS resolvers (\`moduleResolution: "node16" | "bundler"\`) pick up
-     * the declarations alongside the \`.cjs\` runtime file.
+     * the declarations alongside the \`.cjs\` runtime file. Likewise \`"esm"\`
+     * emits \`.d.mts\` to pair with the \`.mjs\` runtime. Unset: plain \`.d.ts\`.
      */
     module?: JavaScriptModule;
 } & GeneratorOptions;
@@ -1897,9 +1898,20 @@ export declare class LinearGradient implements RefFields {
     readonly __teikn_fcv__: true;
     constructor(angle: number, stops: StopInput[]);
     constructor(input: LinearGradientInput | LinearGradient | string);
+    /**
+     * The gradient angle in degrees, \`[0, 360)\`. A gradient parsed from a corner
+     * keyword (\`to top right\`) reports the nominal diagonal (45, 135, 225, 315),
+     * which CSS only renders at that angle on a square box; it still serializes
+     * as the corner keyword.
+     */
     get angle(): number;
     get stops(): readonly GradientStop[];
+    /** Rotates by \`degrees\`. The result is a plain angle, so a corner keyword is dropped. */
     rotate(degrees: number): LinearGradient;
+    /**
+     * Flips the direction by 180deg and mirrors the stops. Throws when a stop
+     * position is not a percentage, since it cannot be mirrored.
+     */
     reverse(): LinearGradient;
     addStop(color: Color | string, position?: string): LinearGradient;
     /** @internal */
@@ -1936,6 +1948,10 @@ export declare class RadialGradient implements RefFields {
     setShape(shape: RadialShape): RadialGradient;
     setPosition(position: string): RadialGradient;
     addStop(color: Color | string, position?: string): RadialGradient;
+    /**
+     * Reverses the stop order and mirrors their positions. Throws when a stop
+     * position is not a percentage, since it cannot be mirrored.
+     */
     reverse(): RadialGradient;
     /** @internal */
     __teikn_fields__(): Record<string, unknown>;

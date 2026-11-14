@@ -7,6 +7,7 @@ import type { GeneratorInfo, GeneratorOptions } from './Generator.js';
 import { Generator } from './Generator.js';
 import { JavaScript } from './JavaScript.js';
 import { TypeScript } from './TypeScript.js';
+import { quoteString } from './value-serializers.js';
 
 // ─── Options ─────────────────────────────────────────────────
 
@@ -175,14 +176,14 @@ export class Storybook extends Generator<StorybookOpts> {
       const runtime = meta.filenames().find(f => /\.(mjs|cjs)$/.test(f));
 
       if (runtime) {
-        return `./${runtime.replace(/\.[^.]+$/, '')}`;
+        return `./${runtime}`;
       }
     }
 
     const js = this.siblings.find((g): g is JavaScript => g instanceof JavaScript);
 
     if (js) {
-      return `./${js.file.replace(/\.[^.]+$/, '')}`;
+      return `./${js.file}`;
     }
 
     throw new Error(
@@ -239,7 +240,7 @@ export class Storybook extends Generator<StorybookOpts> {
     // Key arrays per type
     for (const [type, typeTokens] of groups) {
       const varName = `${camelCase(type)}Keys`;
-      const keys = typeTokens.map(t => `'${nameTransformer!(t.name)}'`).join(', ');
+      const keys = typeTokens.map(t => quoteString(nameTransformer!(t.name))).join(', ');
       lines.push(`const ${varName} = [${keys}]${ts ? ' as const' : ''};`);
     }
 
@@ -259,9 +260,9 @@ export class Storybook extends Generator<StorybookOpts> {
         // would collapse them to "[object Object]". Scalars round-trip
         // through JSON.stringify unchanged (strings get quoted).
         const modeEntries = Object.entries(token.modes)
-          .map(([mode, val]) => `    '${mode}': ${JSON.stringify(val)}`)
+          .map(([mode, val]) => `    ${quoteString(mode)}: ${JSON.stringify(val)}`)
           .join(`,${EOL}`);
-        lines.push(`  '${key}': {`);
+        lines.push(`  ${quoteString(key)}: {`);
         lines.push(modeEntries);
         lines.push(`  },`);
       }

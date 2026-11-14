@@ -140,9 +140,20 @@ describe('cli: --plugins flag', () => {
     const hasPrefixed = defaultKeys.some(k => k.startsWith('color'));
     expect(hasPrefixed).toBe(true);
 
-    // Generate with StripTypePrefixPlugin
+    // Generate with StripTypePrefixPlugin. The example set reuses short names
+    // across types (`font-family.body`, `typography.body`), which collide once
+    // the prefix is stripped, so use a set whose bare names are unique.
+    const uniqueTokens = path.join(tmpDir, 'unique-tokens.json');
+    fs.mkdirSync(tmpDir, { recursive: true });
+    fs.writeFileSync(
+      uniqueTokens,
+      JSON.stringify([
+        { name: 'primary', type: 'color', value: '#0066cc' },
+        { name: 'small', type: 'spacing', value: '4px' },
+      ]),
+    );
     const { stdout, code } = run(
-      'example/raw-tokens.ts',
+      uniqueTokens,
       `--outDir=${pluginOutDir}`,
       '--generators="Json"',
       '--plugins="StripTypePrefixPlugin"',

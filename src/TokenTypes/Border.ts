@@ -27,9 +27,16 @@ export const isBorderStyle = (value: string): boolean => borderStyles.has(value)
 
 // ─── Parsing ─────────────────────────────────────────────────
 
-const dimensionRe = /^-?\d+(?:\.\d+)?[a-z%]+$/i;
+const numericRe = /^[+-]?\.?\d/;
 
 const parse = (css: string): { width: Dimension; style: string; color: Color } => {
+  const fail = (): never => {
+    throw new Error(
+      `Invalid border: "${css}". Expected the CSS shorthand \`<width> <style> <color>\` ` +
+        `(e.g. "1px solid #e0e0e0").`,
+    );
+  };
+
   // Paren-aware split so a space-separated color function (`rgb(255 0 0)`) isn't
   // shredded into `rgb(255`, `0`, `0)`.
   const parts = splitTopLevelWhitespace(css.trim());
@@ -37,28 +44,34 @@ const parse = (css: string): { width: Dimension; style: string; color: Color } =
   let style: string | null = null;
   let color: Color | null = null;
 
+  // A repeated or unparseable part fails the whole shorthand.
+  const attempt = <T>(seen: T | null, make: () => T): T => {
+    if (seen !== null) {
+      return fail();
+    }
+
+    try {
+      return make();
+    } catch {
+      return fail();
+    }
+  };
+
   for (const part of parts) {
     if (isBorderStyle(part)) {
-      style = part;
-    } else if (dimensionRe.test(part)) {
-      width = new Dimension(part);
+      style = attempt(style, () => part);
+    } else if (numericRe.test(part)) {
+      width = attempt(width, () => new Dimension(part));
     } else {
       // Anything left is the color (named, hex, or function form). Tolerate a
       // parse failure here so the unified "Invalid border" error below reports
       // the whole shorthand rather than Color's per-token message.
-      try {
-        color = new Color(part);
-      } catch {
-        color = null;
-      }
+      color = attempt(color, () => new Color(part));
     }
   }
 
   if (!width || !style || !color) {
-    throw new Error(
-      `Invalid border: "${css}". Expected the CSS shorthand \`<width> <style> <color>\` ` +
-        `(e.g. "1px solid #e0e0e0").`,
-    );
+    return fail();
   }
 
   return { width, style, color };
