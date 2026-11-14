@@ -171,7 +171,7 @@ const generatePaletteTokens = (
   // A seed without its own value for a mode still gets one when its reference
   // chain does (`brand = {primary}` follows primary's modes).
   const modeColors = modeNames.flatMap(mode => {
-    const own = token.modes?.[mode];
+    const own = token.modes && Object.hasOwn(token.modes, mode) ? token.modes[mode] : undefined;
 
     try {
       const resolved = resolveSeed(own ?? token.value, seedName, mode);
@@ -189,8 +189,9 @@ const generatePaletteTokens = (
   });
 
   // Strip the seed's own modes from the spread; each step gets its own rampified
-  // modes (or none), never the seed's raw mode values.
-  const { modes: _seedModes, ...rest } = token;
+  // modes (or none), never the seed's raw mode values. A step is a concrete
+  // color, so it does not carry the seed's `link` either.
+  const { modes: _seedModes, link: _seedLink, ...rest } = token;
 
   return steps.map(step => {
     const modes = modeColors.length

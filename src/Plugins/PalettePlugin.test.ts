@@ -300,3 +300,16 @@ describe('PalettePlugin: edge values', () => {
     expect(() => new PalettePlugin({ darkEnd: Number.NaN })).toThrow(/darkEnd/);
   });
 });
+
+describe('PalettePlugin: linked seeds', () => {
+  test('steps of a linked seed are concrete colors, not aliases', () => {
+    const result = new PalettePlugin({ steps: [100, 500, 900] }).expand([
+      { name: 'primary', type: 'color', value: '#0066cc' },
+      { name: 'surface', type: 'color', value: '{primary}', link: 'color-primary' },
+    ]);
+    const steps = result.filter(t => t.name.startsWith('surface-'));
+
+    expect(steps.map(t => t.link)).toEqual([undefined, undefined, undefined]);
+    expect(String(steps[0]!.value)).toBe(String(result.find(t => t.name === 'primary-100')!.value));
+  });
+});

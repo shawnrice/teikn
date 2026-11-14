@@ -13,39 +13,49 @@ const TOKEN_TYPE_RE = /^(duration|timing|transition)$/;
 const getDurationValue = (value: unknown): Duration | string =>
   value instanceof Duration ? new Duration(0.01, 's') : '0.01s';
 
-const makeReducedToken = (token: Token, prefix: string, zeroDuration: boolean): Token | null => {
-  const { type, value } = token;
-
+const reduceValue = (
+  type: string,
+  value: unknown,
+  zeroDuration: boolean,
+): Token['value'] | null => {
   if (type === 'duration') {
-    return {
-      ...token,
-      name: `${prefix}${token.name}`,
-      value: zeroDuration ? new Duration(0, 's') : getDurationValue(value),
-    };
+    return zeroDuration ? new Duration(0, 's') : getDurationValue(value);
   }
 
   if (type === 'timing') {
-    return { ...token, name: `${prefix}${token.name}`, value: CubicBezier.linear };
+    return CubicBezier.linear;
   }
 
   if (type === 'transition') {
-    if (value instanceof Transition) {
-      return {
-        ...token,
-        name: `${prefix}${token.name}`,
-        value: value.setDuration('0s').setTimingFunction(CubicBezier.linear),
-      };
-    }
-
-    // String-based transition fallback
-    return {
-      ...token,
-      name: `${prefix}${token.name}`,
-      value: new Transition('0s', CubicBezier.linear),
-    };
+    // String-based transitions fall back to a bare zero-duration transition.
+    return value instanceof Transition
+      ? value.setDuration('0s').setTimingFunction(CubicBezier.linear)
+      : new Transition('0s', CubicBezier.linear);
   }
 
   return null;
+};
+
+const makeReducedToken = (token: Token, prefix: string, zeroDuration: boolean): Token | null => {
+  // The reduced token is derived, so it carries reduced mode values (a theme or
+  // mode on the source must not put the unreduced value back) and no `link`.
+  const { modes, link: _link, ...rest } = token;
+  const value = reduceValue(token.type, token.value, zeroDuration);
+
+  if (value === null) {
+    return null;
+  }
+
+  const reducedModes = Object.entries(modes ?? {}).map(
+    ([mode, modeValue]) => [mode, reduceValue(token.type, modeValue, zeroDuration)!] as const,
+  );
+
+  return {
+    ...rest,
+    name: `${prefix}${token.name}`,
+    value,
+    ...(reducedModes.length ? { modes: Object.fromEntries(reducedModes) } : {}),
+  };
 };
 
 export class ReducedMotionPlugin extends Plugin<ReducedMotionPluginOptions> {

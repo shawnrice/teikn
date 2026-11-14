@@ -17,6 +17,8 @@ export class ScssQuoteValuePlugin extends Plugin {
   override transform(token: Token): Token {
     const { value } = token;
 
-    return { ...token, value: `unquote('#{${value}}')` };
+    // Bare interpolation yields the same unquoted string as the deprecated
+    // global `unquote('#{...}')`, with no `@use 'sass:string'` needed.
+    return { ...token, value: `#{${value}}` };
   }
 }

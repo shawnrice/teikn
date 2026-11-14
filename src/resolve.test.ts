@@ -448,3 +448,37 @@ describe('resolveReferences: modes follow references', () => {
     expect(byName(result, 'flat').modes).toBeUndefined();
   });
 });
+
+describe('resolveReferences: mode edge cases', () => {
+  const byName = (tokens: Token[], name: string): Token => tokens.find(t => t.name === name)!;
+
+  test('a linked ref takes no inherited modes, so it stays a live alias', () => {
+    const result = resolveReferences([
+      { name: 'primary', type: 'color', value: '#0066cc', modes: { dark: '#3399ff' } },
+      { name: 'surface', type: 'color', value: '{primary}', link: 'primary' },
+    ]);
+
+    expect(byName(result, 'surface').modes).toBeUndefined();
+  });
+
+  test('a mode named like an Object.prototype key is read as an own property', () => {
+    const result = resolveReferences([
+      { name: 'a', type: 'color', value: '#000', modes: { constructor: '{b}' } },
+      { name: 'b', type: 'color', value: '#fff', modes: { toString: '#222' } },
+      { name: 'c', type: 'color', value: '{b}' },
+    ]);
+
+    expect(byName(result, 'a').modes).toEqual({ constructor: '#fff' });
+    expect(Object.entries(byName(result, 'c').modes ?? {})).toEqual([['toString', '#222']]);
+  });
+
+  test('references that cross only between different modes are not a cycle', () => {
+    const result = resolveReferences([
+      { name: 'a', type: 'color', value: '{b}', modes: { dark: '#111' } },
+      { name: 'b', type: 'color', value: '#fff', modes: { dark: '{a}' } },
+    ]);
+
+    expect(byName(result, 'a').value).toBe('#fff');
+    expect(byName(result, 'b').modes).toEqual({ dark: '#111' });
+  });
+});

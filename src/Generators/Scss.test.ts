@@ -51,9 +51,9 @@ describe('Scss Generator tests', () => {
     const output = new Generator(testOpts).generate(tokens);
 
     expect(output).toContain('$modes: (');
-    expect(output).toContain('dark: (');
-    expect(output).toContain('color-surface: #1a1a1a,');
-    expect(output).toContain('color-text: #e0e0e0,');
+    expect(output).toContain("'dark': (");
+    expect(output).toContain("'color-surface': #1a1a1a,");
+    expect(output).toContain("'color-text': #e0e0e0,");
     expect(output).toContain(') !default;');
   });
 
@@ -70,8 +70,8 @@ describe('Scss Generator tests', () => {
     ];
     const output = new Generator(testOpts).generate(tokens);
 
-    expect(output).toContain('dark: (');
-    expect(output).toContain('dim: (');
+    expect(output).toContain("'dark': (");
+    expect(output).toContain("'dim': (");
   });
 
   test('composite values with internal commas produce valid SCSS map output', () => {
@@ -122,6 +122,6 @@ describe('Scss Generator tests', () => {
     // The composite mode override needs the same paren-wrap as the
     // top-level composite — $modes has the same map-entry-comma
     // parsing hazard as $token-values.
-    expect(output).toContain('typography-body: ("Quicksand", sans-serif 1rem)');
+    expect(output).toContain(`'typography-body': ("Quicksand", sans-serif 1rem)`);
   });
 });

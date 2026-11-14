@@ -102,3 +102,38 @@ describe('ColorBlindnessPlugin', () => {
     expect(plugin.transform(token)).toBe(token);
   });
 });
+
+describe('ColorBlindnessPlugin: modes and references', () => {
+  const plugin = new ColorBlindnessPlugin({ types: ['protanopia'] });
+  const simulated = (tokens: Token[]): Token =>
+    plugin.expand(tokens).find(t => t.name === 'a-protanopia')!;
+
+  test('each mode value is simulated', () => {
+    const token = simulated([{ name: 'a', type: 'color', value: '#f00', modes: { dark: '#0f0' } }]);
+
+    expect(String(token.modes!.dark)).toBe(
+      String(new Color('#0f0').simulateColorBlindness('protanopia')),
+    );
+    expect(String(token.modes!.dark)).not.toBe(String(token.value));
+  });
+
+  test('a reference is resolved before simulating, and the result is not a linked alias', () => {
+    const token = simulated([
+      { name: 'base', type: 'color', value: '#f00' },
+      { name: 'a', type: 'color', value: '{base}', link: 'color-base' },
+    ]);
+
+    expect(String(token.value)).toBe(
+      String(new Color('#f00').simulateColorBlindness('protanopia')),
+    );
+    expect(token.link).toBeUndefined();
+  });
+
+  test('a mode that does not resolve before expansion is left off', () => {
+    const token = simulated([
+      { name: 'a', type: 'color', value: '#f00', modes: { dark: '{later}' } },
+    ]);
+
+    expect(token.modes).toBeUndefined();
+  });
+});

@@ -26,7 +26,7 @@ describe('ScssQuoteValuePlugin preserves first-class values', () => {
     const output = new Scss(opts).generate(tokens, [quotePlugin]);
     expect(output).toContain('1rem');
     expect(output).not.toContain('"1rem"');
-    expect(output).not.toContain('unquote');
+    expect(output).not.toMatch(/: \(?#\{/);
   });
 
   test('Duration values are not quoted in SCSS', () => {
@@ -36,7 +36,7 @@ describe('ScssQuoteValuePlugin preserves first-class values', () => {
     const output = new Scss(opts).generate(tokens, [quotePlugin]);
     expect(output).toContain('200ms');
     expect(output).not.toContain('"200ms"');
-    expect(output).not.toContain('unquote');
+    expect(output).not.toMatch(/: \(?#\{/);
   });
 
   test('only font/font-family string values get quoted, not Dimension or Duration', () => {
@@ -49,7 +49,7 @@ describe('ScssQuoteValuePlugin preserves first-class values', () => {
     const output = new Scss(opts).generate(tokens, [quotePlugin]);
 
     // Font value should be wrapped with unquote
-    expect(output).toContain('unquote');
+    expect(output).toContain('(#{');
 
     // Dimension should appear as plain value
     expect(output).toContain('1rem');
@@ -136,7 +136,7 @@ describe('NameConventionPlugin with Dimension tokens in modes', () => {
     ];
     const output = new Scss(opts).generate(tokens, [namePlugin]);
 
-    expect(output).toContain('content-gap:');
+    expect(output).toContain("'content-gap':");
     expect(output).toContain('1rem');
     expect(output).toContain('0.5rem');
   });
@@ -175,7 +175,7 @@ describe('multiple plugins with first-class values', () => {
     expect(scssOutput).toContain('200ms');
 
     // Font value should be quoted in SCSS
-    expect(scssOutput).toContain('unquote');
+    expect(scssOutput).toContain('(#{');
   });
 });
 
