@@ -31,14 +31,6 @@
 - **`PerceptualDistancePlugin` `groups` option.** Use `sets` instead. `groups` was a deprecated
   alias since beta.8 and never shipped in a stable release.
 
-### Changed
-
-- **References are resolved per mode.** A token whose value references a token with modes now
-  inherits those modes (`brand = {primary}` gets primary's `dark` value), and a mode value that is a
-  reference resolves to its target's value for that mode rather than the target's default.
-- **`PalettePlugin` passes through a color that aliases a generated step** (`text = {brand-950}`)
-  instead of throwing; it gets no ramp of its own and resolves in the normal reference pass.
-
 ### Fixed
 
 - Published packages no longer include test artifacts — the API-surface snapshots (JSR) and compiled
@@ -54,14 +46,6 @@
   easing token used inside a transition emits `var(--…)`/`$…` and round-trips as a DTCG alias. The
   `duration`/`timingFunction`/`delay` getters may return the `{ref}` string until it is resolved; a
   whole-value reference passed to the constructor is still rejected.
-
-### Changed
-
-- **References are resolved per mode.** A token whose value references a token with modes now
-  inherits those modes (`brand = {primary}` gets primary's `dark` value), and a mode value that is a
-  reference resolves to its target's value for that mode rather than the target's default.
-- **`PalettePlugin` passes through a color that aliases a generated step** (`text = {brand-950}`)
-  instead of throwing; it gets no ramp of its own and resolves in the normal reference pass.
 
 ### Fixed
 
@@ -87,14 +71,6 @@
   always RGB. Default `'auto'` preserves the base color's authored space (an `oklch` base yields an
   `oklch` ramp with even lightness; hex/rgb bases are unchanged); pass `'oklch'`/`'lch'`/`'hsl'`/…
   to force one. Adds a `Color#space` getter for the native (authored) space.
-
-### Changed
-
-- **References are resolved per mode.** A token whose value references a token with modes now
-  inherits those modes (`brand = {primary}` gets primary's `dark` value), and a mode value that is a
-  reference resolves to its target's value for that mode rather than the target's default.
-- **`PalettePlugin` passes through a color that aliases a generated step** (`text = {brand-950}`)
-  instead of throwing; it gets no ramp of its own and resolves in the normal reference pass.
 
 ### Fixed
 
@@ -262,14 +238,6 @@
 
 ## 2.0.0-beta.4
 
-### Changed
-
-- **References are resolved per mode.** A token whose value references a token with modes now
-  inherits those modes (`brand = {primary}` gets primary's `dark` value), and a mode value that is a
-  reference resolves to its target's value for that mode rather than the target's default.
-- **`PalettePlugin` passes through a color that aliases a generated step** (`text = {brand-950}`)
-  instead of throwing; it gets no ramp of its own and resolves in the normal reference pass.
-
 ### Fixed
 
 - **Group accessor guard.** The generated `groups: true` accessors checked `name in _group`, which
@@ -295,14 +263,6 @@
   `{ type: "elevation", preview: "shadow" }`. It's presentational only and never affects
   CSS/SCSS/JS/DTCG output; when omitted, the kind is inferred from `type` as before.
 
-### Changed
-
-- **References are resolved per mode.** A token whose value references a token with modes now
-  inherits those modes (`brand = {primary}` gets primary's `dark` value), and a mode value that is a
-  reference resolves to its target's value for that mode rather than the target's default.
-- **`PalettePlugin` passes through a color that aliases a generated step** (`text = {brand-950}`)
-  instead of throwing; it gets no ramp of its own and resolves in the normal reference pass.
-
 ### Fixed
 
 - **Storybook dark mode.** The theme wrapper now paints its own background/color, so cards no longer
@@ -321,14 +281,6 @@
 
 ## 2.0.0-beta.2
 
-### Changed
-
-- **References are resolved per mode.** A token whose value references a token with modes now
-  inherits those modes (`brand = {primary}` gets primary's `dark` value), and a mode value that is a
-  reference resolves to its target's value for that mode rather than the target's default.
-- **`PalettePlugin` passes through a color that aliases a generated step** (`text = {brand-950}`)
-  instead of throwing; it gets no ramp of its own and resolves in the normal reference pass.
-
 ### Fixed
 
 - **Color alpha precision.** Alpha channel now rounds to 4 decimal places in all color format
@@ -337,14 +289,6 @@
   hints, not requirements.
 
 ## 2.0.0-beta.1
-
-### Changed
-
-- **References are resolved per mode.** A token whose value references a token with modes now
-  inherits those modes (`brand = {primary}` gets primary's `dark` value), and a mode value that is a
-  reference resolves to its target's value for that mode rather than the target's default.
-- **`PalettePlugin` passes through a color that aliases a generated step** (`text = {brand-950}`)
-  instead of throwing; it gets no ramp of its own and resolves in the normal reference pass.
 
 ### Fixed
 
@@ -363,14 +307,6 @@
 - **Reject `{ref}` strings inside first-class value wrappers.**
 - **Plugin errors include plugin name + token name.**
 - **`sortPlugins` warns on unknown `runAfter` targets.**
-
-### Changed
-
-- **References are resolved per mode.** A token whose value references a token with modes now
-  inherits those modes (`brand = {primary}` gets primary's `dark` value), and a mode value that is a
-  reference resolves to its target's value for that mode rather than the target's default.
-- **`PalettePlugin` passes through a color that aliases a generated step** (`text = {brand-950}`)
-  instead of throwing; it gets no ramp of its own and resolves in the normal reference pass.
 
 ### Fixed
 
@@ -417,14 +353,6 @@
   disambiguation borrowed from CSS custom-property syntax, but it had no semantic value in SCSS and
   produced inconsistency once the `separator` option arrived.
 
-### Changed
-
-- **References are resolved per mode.** A token whose value references a token with modes now
-  inherits those modes (`brand = {primary}` gets primary's `dark` value), and a mode value that is a
-  reference resolves to its target's value for that mode rather than the target's default.
-- **`PalettePlugin` passes through a color that aliases a generated step** (`text = {brand-950}`)
-  instead of throwing; it gets no ramp of its own and resolves in the normal reference pass.
-
 ### Fixed
 
 - **Node ESM resolution.** The published `lib/` is `"type": "module"` but TypeScript was emitting
@@ -450,14 +378,6 @@
 
 ## 2.0.0-alpha.13
 
-### Changed
-
-- **References are resolved per mode.** A token whose value references a token with modes now
-  inherits those modes (`brand = {primary}` gets primary's `dark` value), and a mode value that is a
-  reference resolves to its target's value for that mode rather than the target's default.
-- **`PalettePlugin` passes through a color that aliases a generated step** (`text = {brand-950}`)
-  instead of throwing; it gets no ramp of its own and resolves in the normal reference pass.
-
 ### Fixed
 
 - **SCSS output no longer emits deprecated global map functions.** `Scss` and `ScssVars` previously
@@ -473,14 +393,6 @@
   since Oct 2020) will not parse `@use "sass:map"` — they need to migrate to Dart Sass.
 
 ## 2.0.0-alpha.12
-
-### Changed
-
-- **References are resolved per mode.** A token whose value references a token with modes now
-  inherits those modes (`brand = {primary}` gets primary's `dark` value), and a mode value that is a
-  reference resolves to its target's value for that mode rather than the target's default.
-- **`PalettePlugin` passes through a color that aliases a generated step** (`text = {brand-950}`)
-  instead of throwing; it gets no ramp of its own and resolves in the normal reference pass.
 
 ### Fixed
 
@@ -572,14 +484,6 @@
   and converts each entry into a Teikn mode value, preserving aliases verbatim. Lets DTCG documents
   with theme-mode variants round-trip into Teikn without manual mode reconstruction.
 
-### Changed
-
-- **References are resolved per mode.** A token whose value references a token with modes now
-  inherits those modes (`brand = {primary}` gets primary's `dark` value), and a mode value that is a
-  reference resolves to its target's value for that mode rather than the target's default.
-- **`PalettePlugin` passes through a color that aliases a generated step** (`text = {brand-950}`)
-  instead of throwing; it gets no ramp of its own and resolves in the normal reference pass.
-
 ### Fixed
 
 - **`JavaScript` and `TypeScriptDeclarations` quote transformed token keys that are not valid
@@ -653,14 +557,6 @@
   reduced-motion recipes). The old `docs/quick-start.md` is removed — superseded by the new
   structure.
 
-### Changed
-
-- **References are resolved per mode.** A token whose value references a token with modes now
-  inherits those modes (`brand = {primary}` gets primary's `dark` value), and a mode value that is a
-  reference resolves to its target's value for that mode rather than the target's default.
-- **`PalettePlugin` passes through a color that aliases a generated step** (`text = {brand-950}`)
-  instead of throwing; it gets no ramp of its own and resolves in the normal reference pass.
-
 ### Fixed
 
 - **`group()` rejects `Array.prototype`-colliding names.** Naming a token `length`, `push`, `map`,
@@ -673,14 +569,6 @@
   before deciding whether to emit an alias.
 
 ## 2.0.0-alpha.9
-
-### Changed
-
-- **References are resolved per mode.** A token whose value references a token with modes now
-  inherits those modes (`brand = {primary}` gets primary's `dark` value), and a mode value that is a
-  reference resolves to its target's value for that mode rather than the target's default.
-- **`PalettePlugin` passes through a color that aliases a generated step** (`text = {brand-950}`)
-  instead of throwing; it gets no ramp of its own and resolves in the normal reference pass.
 
 ### Fixed
 
@@ -742,14 +630,6 @@
   backgrounds (teal, yellow, orange).
 - **`ColorTransformPlugin` skips ref() strings** instead of crashing with
   `"Invalid color constructor arguments"`.
-
-### Changed
-
-- **References are resolved per mode.** A token whose value references a token with modes now
-  inherits those modes (`brand = {primary}` gets primary's `dark` value), and a mode value that is a
-  reference resolves to its target's value for that mode rather than the target's default.
-- **`PalettePlugin` passes through a color that aliases a generated step** (`text = {brand-950}`)
-  instead of throwing; it gets no ramp of its own and resolves in the normal reference pass.
 
 ### Fixed
 
@@ -823,14 +703,6 @@
   Dynamic values (max, calc, clamp) show a live "(Npx at current viewport)" annotation that updates
   on resize.
 
-### Changed
-
-- **References are resolved per mode.** A token whose value references a token with modes now
-  inherits those modes (`brand = {primary}` gets primary's `dark` value), and a mode value that is a
-  reference resolves to its target's value for that mode rather than the target's default.
-- **`PalettePlugin` passes through a color that aliases a generated step** (`text = {brand-950}`)
-  instead of throwing; it gets no ramp of its own and resolves in the normal reference pass.
-
 ### Fixed
 
 - **Empty gradient stops** now throw instead of producing invalid CSS.
@@ -856,14 +728,6 @@
   longer matters. Official plugins declare their ordering constraints automatically.
 - **Injectable `version` on generators.** Pass `version: "test"` to any generator to stabilize
   snapshot output across version bumps.
-
-### Changed
-
-- **References are resolved per mode.** A token whose value references a token with modes now
-  inherits those modes (`brand = {primary}` gets primary's `dark` value), and a mode value that is a
-  reference resolves to its target's value for that mode rather than the target's default.
-- **`PalettePlugin` passes through a color that aliases a generated step** (`text = {brand-950}`)
-  instead of throwing; it gets no ramp of its own and resolves in the normal reference pass.
 
 ### Fixed
 
@@ -905,28 +769,12 @@
 - `StripTypePrefixPlugin` — opt-out plugin that removes the type prefix from token names for users
   whose names are already globally unique.
 
-### Changed
-
-- **References are resolved per mode.** A token whose value references a token with modes now
-  inherits those modes (`brand = {primary}` gets primary's `dark` value), and a mode value that is a
-  reference resolves to its target's value for that mode rather than the target's default.
-- **`PalettePlugin` passes through a color that aliases a generated step** (`text = {brand-950}`)
-  instead of throwing; it gets no ramp of its own and resolves in the normal reference pass.
-
 ### Fixed
 
 - `deriveShortName` no longer false-positives on names that happen to extend the type string (e.g. a
   token named `colors` with type `color` was incorrectly shortened to `s`).
 
 ## 2.0.0-alpha.3
-
-### Changed
-
-- **References are resolved per mode.** A token whose value references a token with modes now
-  inherits those modes (`brand = {primary}` gets primary's `dark` value), and a mode value that is a
-  reference resolves to its target's value for that mode rather than the target's default.
-- **`PalettePlugin` passes through a color that aliases a generated step** (`text = {brand-950}`)
-  instead of throwing; it gets no ramp of its own and resolves in the normal reference pass.
 
 ### Fixed
 
@@ -935,14 +783,6 @@
 - Add `import type` for generator option types to satisfy JSR's slow-type checker.
 
 ## 2.0.0-alpha.2
-
-### Changed
-
-- **References are resolved per mode.** A token whose value references a token with modes now
-  inherits those modes (`brand = {primary}` gets primary's `dark` value), and a mode value that is a
-  reference resolves to its target's value for that mode rather than the target's default.
-- **`PalettePlugin` passes through a color that aliases a generated step** (`text = {brand-950}`)
-  instead of throwing; it gets no ramp of its own and resolves in the normal reference pass.
 
 ### Fixed
 
@@ -985,14 +825,6 @@ This is a ground-up rewrite of teikn for v2.
 - **CLI** for generating tokens from the command line.
 - **Tooling**: replaced eslint + prettier with oxlint (153 rules) + oxfmt. CI tests on Bun + Node
   20/22/24. Vitest aliases `bun:test` for Node compat.
-
-### Changed
-
-- **References are resolved per mode.** A token whose value references a token with modes now
-  inherits those modes (`brand = {primary}` gets primary's `dark` value), and a mode value that is a
-  reference resolves to its target's value for that mode rather than the target's default.
-- **`PalettePlugin` passes through a color that aliases a generated step** (`text = {brand-950}`)
-  instead of throwing; it gets no ramp of its own and resolves in the normal reference pass.
 
 ### Fixed
 
