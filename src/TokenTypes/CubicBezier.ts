@@ -1,4 +1,5 @@
 import { clamp } from '../utils.js';
+import { CSS_NUMBER, formatNumber, tidy } from './parse-utils.js';
 import { assertNotRef } from './ref-guard.js';
 
 const EPSILON = 1e-6;
@@ -7,24 +8,30 @@ const MAX_ITERATIONS = 8;
 type ControlPoints = readonly [x1: number, y1: number, x2: number, y2: number];
 
 // prettier-ignore
-const cssTimings: Record<string, ControlPoints> = {
-  ease:          [0.25, 0.1,   0.25, 1],
-  'ease-in':     [0.42,   0,      1, 1],
-  'ease-out':    [0,      0,   0.58, 1],
-  'ease-in-out': [0.42,   0,   0.58, 1],
-  linear:        [0,      0,      1, 1],
-};
+const cssTimings: ReadonlyMap<string, ControlPoints> = new Map<string, ControlPoints>([
+  ['ease',        [0.25, 0.1,   0.25, 1]],
+  ['ease-in',     [0.42,   0,      1, 1]],
+  ['ease-out',    [0,      0,   0.58, 1]],
+  ['ease-in-out', [0.42,   0,   0.58, 1]],
+  ['linear',      [0,      0,      1, 1]],
+]);
 
 // prettier-ignore
-const presets: Record<string, ControlPoints> = {
+const presets: ReadonlyMap<string, ControlPoints> = new Map<string, ControlPoints>([
   ...cssTimings,
-  standard:      [0.4,    0,    0.2, 1],
-  accelerate:    [0.4,    0,      1, 1],
-  decelerate:    [0,      0,    0.2, 1],
-};
+  ['standard',    [0.4,    0,    0.2, 1]],
+  ['accelerate',  [0.4,    0,      1, 1]],
+  ['decelerate',  [0,      0,    0.2, 1]],
+]);
 
-const RE =
-  /cubic-bezier\(\s*([\d.e+-]+)\s*,\s*([\d.e+-]+)\s*,\s*([\d.e+-]+)\s*,\s*([\d.e+-]+)\s*\)/i;
+const POINT = String.raw`\s*(${CSS_NUMBER})\s*`;
+const RE = new RegExp(String.raw`^cubic-bezier\(${[POINT, POINT, POINT, POINT].join(',')}\)$`, 'i');
+
+const assertFinite = (points: readonly number[]): void => {
+  if (!points.every(p => typeof p === 'number' && Number.isFinite(p))) {
+    throw new Error(`Invalid cubic-bezier: control points must be finite numbers, got ${points}`);
+  }
+};
 
 const clampX = (v: number): number => clamp(0, 1, v);
 
@@ -113,7 +120,7 @@ export class CubicBezier {
 
     if (typeof first === 'string') {
       assertNotRef(first, 'CubicBezier');
-      const named = presets[first.trim().toLowerCase()];
+      const named = presets.get(first.trim().toLowerCase());
 
       if (named) {
         [this.#x1, this.#y1, this.#x2, this.#y2] = named;
@@ -121,21 +128,26 @@ export class CubicBezier {
         return;
       }
 
-      const m = first.match(RE);
+      const m = first.trim().match(RE);
 
       if (!m) {
         throw new Error(`Invalid cubic-bezier: "${first}"`);
       }
 
-      this.#x1 = clampX(parseFloat(m[1]!));
-      this.#y1 = parseFloat(m[2]!);
-      this.#x2 = clampX(parseFloat(m[3]!));
-      this.#y2 = parseFloat(m[4]!);
+      const points = m.slice(1).map(Number) as [number, number, number, number];
+      assertFinite(points);
+
+      if (points[0] < 0 || points[0] > 1 || points[2] < 0 || points[2] > 1) {
+        throw new Error(`Invalid cubic-bezier: "${first}" — x values must be within [0, 1]`);
+      }
+
+      [this.#x1, this.#y1, this.#x2, this.#y2] = points;
 
       return;
     }
 
     if (typeof first === 'object') {
+      assertFinite([first.x1, first.y1, first.x2, first.y2]);
       this.#x1 = clampX(first.x1);
       this.#y1 = first.y1;
       this.#x2 = clampX(first.x2);
@@ -144,6 +156,7 @@ export class CubicBezier {
       return;
     }
 
+    assertFinite([first, y1!, x2!, y2!]);
     this.#x1 = clampX(first);
     this.#y1 = y1!;
     this.#x2 = clampX(x2!);
@@ -195,17 +208,22 @@ export class CubicBezier {
 
   /** Create the time-reversed curve (plays the animation backwards) */
   reverse(): CubicBezier {
-    return new CubicBezier(1 - this.#x2, 1 - this.#y2, 1 - this.#x1, 1 - this.#y1);
+    return new CubicBezier(
+      tidy(1 - this.#x2),
+      tidy(1 - this.#y2),
+      tidy(1 - this.#x1),
+      tidy(1 - this.#y1),
+    );
   }
 
   /** Scale the progress-axis intensity of the curve */
   scaleY(factor: number): CubicBezier {
-    return new CubicBezier(this.#x1, this.#y1 * factor, this.#x2, this.#y2 * factor);
+    return new CubicBezier(this.#x1, tidy(this.#y1 * factor), this.#x2, tidy(this.#y2 * factor));
   }
 
   /** The CSS keyword for this curve, or null if it doesn't match a named timing */
   get keyword(): string | null {
-    for (const [name, pts] of Object.entries(cssTimings)) {
+    for (const [name, pts] of cssTimings) {
       if (
         this.#x1 === pts[0] &&
         this.#y1 === pts[1] &&
@@ -224,19 +242,19 @@ export class CubicBezier {
   }
 
   toString(): string {
-    return `cubic-bezier(${this.#x1}, ${this.#y1}, ${this.#x2}, ${this.#y2})`;
+    return `cubic-bezier(${this.controlPoints.map(formatNumber).join(', ')})`;
   }
 
   // ─── Named presets ──────────────────────────────────────────
 
-  static readonly ease: CubicBezier = new CubicBezier(...presets['ease']!);
-  static readonly easeIn: CubicBezier = new CubicBezier(...presets['ease-in']!);
-  static readonly easeOut: CubicBezier = new CubicBezier(...presets['ease-out']!);
-  static readonly easeInOut: CubicBezier = new CubicBezier(...presets['ease-in-out']!);
-  static readonly linear: CubicBezier = new CubicBezier(...presets['linear']!);
+  static readonly ease: CubicBezier = new CubicBezier(...presets.get('ease')!);
+  static readonly easeIn: CubicBezier = new CubicBezier(...presets.get('ease-in')!);
+  static readonly easeOut: CubicBezier = new CubicBezier(...presets.get('ease-out')!);
+  static readonly easeInOut: CubicBezier = new CubicBezier(...presets.get('ease-in-out')!);
+  static readonly linear: CubicBezier = new CubicBezier(...presets.get('linear')!);
 
   // Material Design standard curves
-  static readonly standard: CubicBezier = new CubicBezier(...presets['standard']!);
-  static readonly accelerate: CubicBezier = new CubicBezier(...presets['accelerate']!);
-  static readonly decelerate: CubicBezier = new CubicBezier(...presets['decelerate']!);
+  static readonly standard: CubicBezier = new CubicBezier(...presets.get('standard')!);
+  static readonly accelerate: CubicBezier = new CubicBezier(...presets.get('accelerate')!);
+  static readonly decelerate: CubicBezier = new CubicBezier(...presets.get('decelerate')!);
 }

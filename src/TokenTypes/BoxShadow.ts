@@ -1,5 +1,7 @@
-import { splitTopLevel } from '../string-utils.js';
+import { splitTopLevel, splitTopLevelWhitespace } from '../string-utils.js';
 import { Color } from './Color/index.js';
+import { Dimension } from './Dimension.js';
+import { CSS_NUMBER, formatNumber, tidy } from './parse-utils.js';
 import type { RefFields } from './ref-guard.js';
 import { assertNotRef, isRefString } from './ref-guard.js';
 
@@ -18,30 +20,51 @@ const toColor = (value: Color | string | undefined): Color | string => {
   return new Color(value);
 };
 
-const lengthRe = /^(-?\d+(?:\.\d+)?)(px|rem|em)?/;
+const numberRe = new RegExp(`^${CSS_NUMBER}$`, 'i');
+const numericRe = /^[+-]?\.?\d/;
 
-const fmtLength = (v: number, unit: string): string => (v === 0 ? '0' : `${v}${unit}`);
+const fmtLength = (v: number, unit: string): string =>
+  v === 0 ? '0' : `${formatNumber(v)}${unit}`;
 
-// The leftover token after the numeric lengths is the color: a `{ref}` string
-// (kept for per-field resolution), a parsed Color, or black when absent.
-const parseShorthandColor = (s: string): Color | string => {
-  if (s.length === 0) {
+const invalid = (str: string, reason: string): Error =>
+  new Error(`Invalid box-shadow: "${str}" — ${reason}`);
+
+// A bare number carries no unit (`0`, or a legacy unitless length read as the
+// shared unit); anything else must be a length in a unit `Dimension` knows.
+const parseLength = (token: string, str: string): { value: number; unit: string } => {
+  if (numberRe.test(token)) {
+    return { value: Number(token), unit: '' };
+  }
+
+  try {
+    const { value, unit } = new Dimension(token);
+
+    if (unit !== '%' && unit !== 'fr') {
+      return { value, unit };
+    }
+  } catch {
+    // fall through to the unified error
+  }
+
+  throw invalid(str, `unsupported length "${token}"`);
+};
+
+// The one non-length token is the color: a `{ref}` string (kept for per-field
+// resolution), a parsed Color, or black when absent.
+const parseShorthandColor = (token: string | undefined, str: string): Color | string => {
+  if (token === undefined) {
     return new Color(0, 0, 0);
   }
 
-  return isRefString(s) ? s : new Color(s);
-};
-
-const stripKeyword = (str: string, keyword: string): string => {
-  if (str.startsWith(`${keyword} `)) {
-    return str.slice(keyword.length + 1).trim();
+  if (isRefString(token)) {
+    return token;
   }
 
-  if (str.endsWith(` ${keyword}`)) {
-    return str.slice(0, -keyword.length - 1).trim();
+  try {
+    return new Color(token);
+  } catch {
+    throw invalid(str, `unsupported color "${token}"`);
   }
-
-  return str;
 };
 
 const parse = (
@@ -55,37 +78,51 @@ const parse = (
   inset: boolean;
   unit: string;
 } => {
-  const trimmed = str.trim();
+  const lengths: { value: number; unit: string; index: number }[] = [];
+  const colors: string[] = [];
+  let inset = false;
 
-  const withoutInset = stripKeyword(trimmed, 'inset');
-  const inset = withoutInset !== trimmed;
+  splitTopLevelWhitespace(str.trim()).forEach((token, index) => {
+    if (token.toLowerCase() === 'inset') {
+      if (inset) {
+        throw invalid(str, 'duplicate `inset`');
+      }
 
-  const nums: number[] = [];
-  // The lengths share one unit (px unless the shorthand says otherwise). The
-  // first explicit unit wins; `0` is unitless and contributes none.
-  let unit = '';
-  let s = withoutInset;
-
-  while (s.length > 0) {
-    const m = s.match(lengthRe);
-
-    if (!m) {
-      break;
+      inset = true;
+    } else if (numericRe.test(token)) {
+      lengths.push({ ...parseLength(token, str), index });
+    } else {
+      colors.push(token);
     }
+  });
 
-    const [, magnitude, matchedUnit] = m;
-    nums.push(parseFloat(magnitude!));
+  if (lengths.length > 4) {
+    throw invalid(str, `expected at most 4 lengths, got ${lengths.length}`);
+  }
 
-    if (matchedUnit && !unit) {
-      unit = matchedUnit;
-    }
+  if (lengths.length > 0 && lengths.at(-1)!.index - lengths[0]!.index + 1 !== lengths.length) {
+    throw invalid(str, 'the lengths must be adjacent');
+  }
 
-    s = s.slice(m[0].length).trim();
+  if (colors.length > 1) {
+    throw invalid(str, `unexpected "${colors[1]}"`);
+  }
+
+  // The lengths share one unit (px unless the shorthand says otherwise);
+  // `0` is unitless and contributes none.
+  const units = [...new Set(lengths.map(l => l.unit).filter(Boolean))];
+
+  if (units.length > 1) {
+    throw invalid(
+      str,
+      `mixed length units (${units.join(', ')}) — a BoxShadow stores one shared unit`,
+    );
   }
 
   // A `{ref}` color in the shorthand (e.g. "0 2px 8px {color.ink}") is kept as a
   // reference string rather than erroring; it resolves per-field later.
-  const color = parseShorthandColor(s);
+  const color = parseShorthandColor(colors[0], str);
+  const nums = lengths.map(l => l.value);
 
   return {
     offsetX: nums[0] ?? 0,
@@ -94,7 +131,7 @@ const parse = (
     spread: nums[3] ?? 0,
     color,
     inset,
-    unit: unit || 'px',
+    unit: units[0] ?? 'px',
   };
 };
 
@@ -247,10 +284,10 @@ export class BoxShadow implements RefFields {
   /** Scale all numeric values (offsets, blur, spread) by a factor */
   scale(factor: number): BoxShadow {
     return new BoxShadow({
-      offsetX: this.#offsetX * factor,
-      offsetY: this.#offsetY * factor,
-      blur: this.#blur * factor,
-      spread: this.#spread * factor,
+      offsetX: tidy(this.#offsetX * factor),
+      offsetY: tidy(this.#offsetY * factor),
+      blur: tidy(this.#blur * factor),
+      spread: tidy(this.#spread * factor),
       color: this.#color,
       inset: this.#inset,
       unit: this.#unit,
@@ -313,12 +350,12 @@ export class BoxShadowList implements RefFields {
 
     if (typeof first === 'string') {
       assertNotRef(first, 'BoxShadowList');
-      this.#layers = splitTopLevel(first).map(s => new BoxShadow(s));
+      this.#layers = Object.freeze(splitTopLevel(first).map(s => new BoxShadow(s)));
 
       return;
     }
 
-    this.#layers = [...first];
+    this.#layers = Object.freeze([...first]);
   }
 
   get layers(): readonly BoxShadow[] {
