@@ -184,13 +184,10 @@ const parseCssString = (str: string, dtcgType: string | undefined): unknown => {
 // transformed color is a new instance and falls back to its computed form.
 const colorSources = new WeakMap<Color, DtcgColorValue>();
 
-// sRGB channels are 0–255 floats in Color; snap values that came from 8-bit.
-const toChannel = (unit: number): number => {
-  const channel = unit * 255;
-  const nearest = Math.round(channel);
-
-  return Math.abs(channel - nearest) < 1e-9 ? nearest : channel;
-};
+// Color's sRGB channels are 8-bit, so a float component is rounded to the
+// nearest byte. An untransformed parsed color still re-emits its exact floats
+// through `colorSources`.
+const toChannel = (unit: number): number => Math.round(unit * 255);
 
 type ColorFactory = (a: number, b: number, c: number, alpha: number) => Color;
 

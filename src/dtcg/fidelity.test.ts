@@ -77,9 +77,9 @@ describe('1. colour spaces', () => {
     expect(rt(doc)).toEqual(doc);
   });
 
-  test('float sRGB components are not quantised to 8-bit', () => {
+  test('float sRGB components survive the round trip', () => {
     const doc = colorDoc(srgb(0.1234, 0.2, 1));
-    expect(first(doc).value.asRGB()).toEqual([31.467, 51, 255]);
+    expect(first(doc).value.asRGB()).toEqual([31, 51, 255]);
     expect(rt(doc)).toEqual(doc);
   });
 
