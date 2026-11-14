@@ -11,6 +11,13 @@ import { cssMapValue } from './value-serializers.js';
 
 const defaultOptions = { ext: 'scss', nameTransformer: kebabCase };
 
+// Quoted so Sass reads a key as a string, never as a color (`red`) or number (`100`).
+const quote = (str: string): string =>
+  `'${str.replace(/[\\']/g, '\\$&').replace(/#\{/g, '#\\{').replace(/\r?\n/g, '\\a ')}'`;
+
+// An empty string serializes to nothing, which is not a valid map value.
+const mapValue = (value: unknown): string => cssMapValue(value) || '""';
+
 export type ScssOpts = {
   nameTransformer?: (name: string) => string;
   dateFn?: () => string | null;
@@ -54,22 +61,20 @@ export class Scss extends Generator<ScssOpts> {
 
   generateToken(token: Token): string {
     const { usage, value } = token;
-    const key = this.#emit(token.name);
+    const key = quote(this.#emit(token.name));
+    const docs = usage ? usage.split(/\r?\n/).map(line => `  /// ${line}`) : [];
 
-    // prettier-ignore
-    return [
-      usage && `  /// ${usage}`,
-      `  ${key}: ${cssMapValue(value)},`,
-    ]
-      .filter(Boolean)
-      .join(EOL);
+    return [...docs, `  ${key}: ${mapValue(value)},`].join(EOL);
   }
 
   combinator(tokens: Token[]): string {
     const values = tokens.map(token => this.generateToken(token));
     const lines = [`// prettier-ignore`, `$token-values: (`, values.join(EOL), `);`];
 
-    const modeMap = this.buildModeMap(tokens, (key, val) => `    ${key}: ${cssMapValue(val)},`);
+    const modeMap = this.buildModeMap(
+      tokens,
+      (_key, val, _mode, token) => `    ${quote(this.#emit(token.name))}: ${mapValue(val)},`,
+    );
 
     if (modeMap.size > 0) {
       lines.push('');
@@ -77,7 +82,7 @@ export class Scss extends Generator<ScssOpts> {
       lines.push('$modes: (');
 
       for (const [mode, entries] of modeMap) {
-        lines.push(`  ${mode}: (`);
+        lines.push(`  ${quote(mode)}: (`);
         lines.push(...entries);
         lines.push(`  ),`);
       }
@@ -120,7 +125,7 @@ export class Scss extends Generator<ScssOpts> {
         const mapEntries = entries
           .map(
             ({ shortName, token }) =>
-              `  ${kebabCase(shortName)}: map.get($token-values, ${this.#emit(token.name)}),`,
+              `  ${quote(kebabCase(shortName))}: map.get($token-values, ${quote(this.#emit(token.name))}),`,
           )
           .join(EOL);
 

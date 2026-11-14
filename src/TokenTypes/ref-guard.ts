@@ -2,7 +2,7 @@ const REF_RE = /^\{[^}]+\}$/;
 
 /** True when `input` is a single `{tokenName}` reference string. */
 export const isRefString = (input: unknown): input is string =>
-  typeof input === 'string' && REF_RE.test(input.trim());
+  typeof input === 'string' && REF_RE.test(input);
 
 export const assertNotRef = (input: unknown, typeName: string): void => {
   if (!isRefString(input)) {

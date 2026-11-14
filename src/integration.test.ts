@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import { group, scale, composite, tokens, theme, dp, dur } from './builders.js';
+import { group, scale, composite, tokens, theme, ref, dp, dur } from './builders.js';
 import { testOpts } from './fixtures/testOpts.js';
 import { Teikn } from './Teikn.js';
 import type { Token } from './Token.js';
@@ -240,7 +240,7 @@ describe('integration: TypeScript meta generator', () => {
 
   test('emits both runtime and declaration files from a single construction', () => {
     expect(output.has('tokens.mjs')).toBe(true);
-    expect(output.has('tokens.d.ts')).toBe(true);
+    expect(output.has('tokens.d.mts')).toBe(true);
   });
 
   test('runtime output is a valid ES module with tokens export', () => {
@@ -251,7 +251,7 @@ describe('integration: TypeScript meta generator', () => {
   });
 
   test('declaration output is ambient and narrow-typed', () => {
-    const dts = output.get('tokens.d.ts')!;
+    const dts = output.get('tokens.d.mts')!;
     expect(dts).toContain('export declare const tokens: {');
     expect(dts).toContain('readonly');
   });
@@ -262,7 +262,7 @@ describe('integration: TypeScript meta generator', () => {
         new Teikn({
           generators: [
             new Teikn.generators.TypeScript({ filename: 'tokens' }),
-            new Teikn.generators.TypeScriptDeclarations({ filename: 'tokens' }),
+            new Teikn.generators.TypeScriptDeclarations({ filename: 'tokens', module: 'esm' }),
           ],
         }),
     ).toThrow('Duplicate generator output filenames');
@@ -437,5 +437,36 @@ describe('integration: aliases, layered themes and untouched tokens alongside a 
 
     expect(spacingLines(css)).toEqual(spacingLines(cssFor({}, tokens(spacing))));
     expect(spacingLines(css).length).toBeGreaterThan(0);
+  });
+});
+
+describe('integration: derived and linked tokens under a theme', () => {
+  const blockOf = (out: string, selector: string): string =>
+    out.split(selector)[1]?.split('}')[0] ?? '';
+  const cssFor = (options: ConstructorParameters<typeof Teikn>[0], set: Token[]): string =>
+    new Teikn({ generators: [new Teikn.generators.CssVars(testOpts)], ...options })
+      .generateToStrings(set)
+      .get('tokens.css')!;
+
+  test('a theme does not undo ReducedMotionPlugin', () => {
+    const motion = group('duration', { m: '200ms' });
+    const css = cssFor(
+      {
+        themes: [theme('slow', motion, { m: '400ms' })],
+        plugins: [new Teikn.plugins.ReducedMotionPlugin()],
+      },
+      motion,
+    );
+
+    expect(blockOf(css, '[data-theme="slow"] {')).toContain('--duration-m: 400ms');
+    expect(blockOf(css, '[data-theme="slow"] {')).not.toContain('--duration-reduced-m: 400ms');
+  });
+
+  test('a linked ref keeps following its target in a themed mode', () => {
+    const palette = group('color', { primary: '#0066cc', surface: ref('primary', { link: true }) });
+    const css = cssFor({ themes: [theme('dark', palette, { primary: '#3399ff' })] }, palette);
+
+    expect(blockOf(css, ':root {')).toContain('--color-surface: var(--color-primary)');
+    expect(blockOf(css, '[data-theme="dark"] {')).not.toContain('--color-surface');
   });
 });

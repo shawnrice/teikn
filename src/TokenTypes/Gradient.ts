@@ -18,49 +18,64 @@ const toStopColor = (value: Color | string): Color | string =>
 
 // ─── Helpers ──────────────────────────────────────────────────
 
-const normalizeStop = (input: StopInput): GradientStop => {
-  if (typeof input === 'string') {
-    return { color: toStopColor(input) };
-  }
+// Stops are frozen so a gradient instance can't be mutated through `stops`.
+const makeStop = (color: Color | string, position?: string): GradientStop =>
+  Object.freeze(
+    position === undefined || position === ''
+      ? { color: toStopColor(color) }
+      : { color: toStopColor(color), position },
+  );
 
-  if (input instanceof Color) {
-    return { color: input };
+const normalizeStop = (input: StopInput): GradientStop => {
+  if (typeof input === 'string' || input instanceof Color) {
+    return makeStop(input);
   }
 
   if (Array.isArray(input)) {
-    return { color: toStopColor(input[0]), position: input[1] };
+    return makeStop(input[0], input[1]);
   }
 
-  return input;
+  return makeStop(input.color, input.position);
 };
 
-// Parse "red 50%" or "rgba(0,0,0,0.5) 25%" from a CSS gradient stop string
+const freezeStops = (inputs: readonly StopInput[]): readonly GradientStop[] =>
+  Object.freeze(inputs.map(normalizeStop));
+
+// Split on top-level whitespace (any run of it), respecting parentheses.
+const splitWords = (str: string): string[] =>
+  splitTopLevel(str.trim().replace(/\s+/g, ' '), ' ').filter(Boolean);
+
+const numberSrc = '[+-]?(?:\\d+\\.?\\d*|\\.\\d+)';
+
+// A stop position: a length/percentage, or a unitless zero.
+const positionRe = new RegExp(`^(?:${numberSrc}(?:[a-z]+|%)|[+-]?0*\\.?0+)$`, 'i');
+const percentRe = new RegExp(`^(${numberSrc})%$`);
+const mathFnRe = /^(calc|min|max|clamp)\(/i;
+
+// Drop float noise such as `100 - 66.6 = 33.400000000000006`.
+const round = (n: number): number => Number(n.toFixed(10));
+
+// Parse "red 50%", "rgba(0,0,0,0.5) 25%" or "red 10% 30%" from a CSS gradient stop string
 const parseStop = (str: string): GradientStop => {
-  const s = str.trim();
+  const words = splitWords(str);
 
-  // Find the last top-level space
-  let depth = 0;
-  let lastSpace = -1;
-
-  for (let i = 0; i < s.length; i++) {
-    if (s[i] === '(') {
-      depth++;
-    } else if (s[i] === ')') {
-      depth--;
-    } else if (s[i] === ' ' && depth === 0) {
-      lastSpace = i;
-    }
+  if (words.some(w => mathFnRe.test(w))) {
+    throw new Error(
+      `Unsupported gradient stop "${str.trim()}": calc() positions are not supported`,
+    );
   }
 
-  if (lastSpace > 0) {
-    const after = s.slice(lastSpace + 1).trim();
-
-    if (/^\d+(\.\d+)?(%|px|rem|em|vw|vh)$/.test(after)) {
-      return { color: toStopColor(s.slice(0, lastSpace).trim()), position: after };
-    }
+  if (words.length > 0 && words.every(w => positionRe.test(w))) {
+    throw new Error(`Unsupported gradient stop "${str.trim()}": color hints are not supported`);
   }
 
-  return { color: toStopColor(s) };
+  // Up to two trailing positions; at least one word is left for the color.
+  const isPos = (i: number): boolean => i > 0 && positionRe.test(words[i]!);
+  const last = words.length - 1;
+  const count = isPos(last) ? 1 + Number(isPos(last - 1)) : 0;
+  const cut = words.length - count;
+
+  return makeStop(words.slice(0, cut).join(' '), words.slice(cut).join(' '));
 };
 
 // Render one stop, delegating color rendering so ref-aware serializers can
@@ -71,34 +86,58 @@ const renderStop = (stop: GradientStop, renderColor: (color: Color | string) => 
   return stop.position ? `${c} ${stop.position}` : c;
 };
 
-const flipPosition = (pos: string): string => {
-  if (pos.endsWith('%')) {
-    const val = parseFloat(pos);
+// Mirror a position around 50%. Only percentages (and a unitless zero) can be
+// mirrored; a two-position stop swaps its ends.
+const flipPosition = (pos: string): string =>
+  pos
+    .trim()
+    .split(/\s+/)
+    .map(p => {
+      const val = parseFloat(p) === 0 ? 0 : Number(p.match(percentRe)?.[1] ?? NaN);
 
-    return isNaN(val) ? pos : `${100 - val}%`;
-  }
+      if (isNaN(val)) {
+        throw new Error(
+          `Cannot reverse a gradient with the non-percentage stop position "${pos}": ` +
+            `only percentage positions can be mirrored`,
+        );
+      }
 
-  return pos;
-};
+      return `${round(100 - val)}%`;
+    })
+    .toReversed()
+    .join(' ');
+
+const reverseStops = (stops: readonly GradientStop[]): GradientStop[] =>
+  stops
+    .toReversed()
+    .map(stop => (stop.position ? { ...stop, position: flipPosition(stop.position) } : stop));
 
 // ─── Direction mapping ────────────────────────────────────────
 
-const directionAngles: Record<string, number> = {
+// Side keywords are exact angles on any box.
+const sideAngles: Record<string, number> = {
   'to top': 0,
-  'to top right': 45,
   'to right': 90,
-  'to bottom right': 135,
   'to bottom': 180,
-  'to bottom left': 225,
   'to left': 270,
+};
+
+// Corner keywords only equal these angles on a square box, so a corner is
+// stored as a corner and a diagonal angle is emitted as `Ndeg`.
+const cornerAngles: Record<string, number> = {
+  'to top right': 45,
+  'to bottom right': 135,
+  'to bottom left': 225,
   'to top left': 315,
 };
 
-const angleKeywords: Record<number, string> = Object.fromEntries(
-  Object.entries(directionAngles).map(([k, v]) => [v, k]),
-);
+const invert = (map: Record<string, number>): Record<number, string> =>
+  Object.fromEntries(Object.entries(map).map(([k, v]) => [v, k]));
 
-const degRe = /^(-?\d+(?:\.\d+)?)(deg|turn|rad|grad)?$/;
+const sideKeywords = invert(sideAngles);
+const cornerKeywords = invert(cornerAngles);
+
+const degRe = new RegExp(`^(${numberSrc})(deg|turn|rad|grad)?$`, 'i');
 
 const parseDegrees = (str: string): number | null => {
   const m = str.match(degRe);
@@ -108,15 +147,15 @@ const parseDegrees = (str: string): number | null => {
   }
 
   const val = parseFloat(m[1]!);
-  const unit = m[2] || 'deg';
+  const unit = (m[2] || 'deg').toLowerCase();
 
   switch (unit) {
     case 'turn':
-      return val * 360;
+      return round(val * 360);
     case 'rad':
-      return val * (180 / Math.PI);
+      return round(val * (180 / Math.PI));
     case 'grad':
-      return val * 0.9;
+      return round(val * 0.9);
     default:
       return val;
   }
@@ -124,9 +163,35 @@ const parseDegrees = (str: string): number | null => {
 
 const normalizeAngle = (deg: number): number => ((deg % 360) + 360) % 360;
 
+type Direction = { angle: number; corner?: string };
+
+// Parse the leading direction of a linear-gradient; null when `part` is a stop.
+const parseDirection = (part: string): Direction | null => {
+  const words = part.toLowerCase().split(/\s+/);
+
+  if (words[0] !== 'to') {
+    const deg = parseDegrees(part);
+
+    return deg === null ? null : { angle: normalizeAngle(deg) };
+  }
+
+  const sides = words.slice(1);
+  const vertical = sides.find(s => s === 'top' || s === 'bottom');
+  const horizontal = sides.find(s => s === 'left' || s === 'right');
+  const key = ['to', vertical, horizontal].filter(Boolean).join(' ');
+  const side = sideAngles[key];
+  const corner = cornerAngles[key];
+
+  if (sides.length !== key.split(' ').length - 1 || (side === undefined && corner === undefined)) {
+    throw new Error(`Invalid linear-gradient direction: "${part}"`);
+  }
+
+  return side === undefined ? { angle: corner!, corner: key } : { angle: side };
+};
+
 // ─── LinearGradient ───────────────────────────────────────────
 
-const linearRe = /^linear-gradient\(([\s\S]+)\)$/i;
+const linearRe = /^\s*linear-gradient\(([\s\S]+)\)\s*$/i;
 
 export type LinearGradientInput = { angle: number; stops: StopInput[] };
 
@@ -134,6 +199,8 @@ export class LinearGradient implements RefFields {
   /** @internal brand — do not use directly; see `isFirstClassValue()` */
   readonly __teikn_fcv__: true = true;
   readonly #angle: number;
+  // Set only at construction (string parse, copy, or `#build`).
+  #corner: string | undefined;
   readonly #stops: readonly GradientStop[];
 
   constructor(angle: number, stops: StopInput[]);
@@ -141,6 +208,7 @@ export class LinearGradient implements RefFields {
   constructor(first: number | string | LinearGradient | LinearGradientInput, stops?: StopInput[]) {
     if (first instanceof LinearGradient) {
       this.#angle = first.#angle;
+      this.#corner = first.#corner;
       this.#stops = first.#stops;
 
       return;
@@ -155,31 +223,21 @@ export class LinearGradient implements RefFields {
       }
 
       const parts = splitTopLevel(m[1]!);
-      const firstPart = parts[0]!.trim();
 
-      // Check for keyword direction
-      const kwAngle = directionAngles[firstPart.toLowerCase()];
+      // Check for a keyword direction or an angle value
+      const direction = parseDirection(parts[0]!.trim());
 
-      if (kwAngle !== undefined) {
-        this.#angle = kwAngle;
-        this.#stops = parts.slice(1).map(parseStop);
-
-        return;
-      }
-
-      // Check for angle value
-      const deg = parseDegrees(firstPart);
-
-      if (deg !== null) {
-        this.#angle = normalizeAngle(deg);
-        this.#stops = parts.slice(1).map(parseStop);
+      if (direction) {
+        this.#angle = direction.angle;
+        this.#corner = direction.corner;
+        this.#stops = Object.freeze(parts.slice(1).map(parseStop));
 
         return;
       }
 
       // No direction specified — default to bottom (180deg), all parts are stops
       this.#angle = 180;
-      this.#stops = parts.map(parseStop);
+      this.#stops = Object.freeze(parts.map(parseStop));
 
       return;
     }
@@ -187,15 +245,28 @@ export class LinearGradient implements RefFields {
     if (typeof first === 'object') {
       const opts = first as LinearGradientInput;
       this.#angle = normalizeAngle(opts.angle);
-      this.#stops = opts.stops.map(normalizeStop);
+      this.#stops = freezeStops(opts.stops);
 
       return;
     }
 
     this.#angle = normalizeAngle(first as number);
-    this.#stops = (stops ?? []).map(normalizeStop);
+    this.#stops = freezeStops(stops ?? []);
   }
 
+  static #build(angle: number, stops: readonly StopInput[], corner?: string): LinearGradient {
+    const g = new LinearGradient(angle, [...stops]);
+    g.#corner = corner;
+
+    return g;
+  }
+
+  /**
+   * The gradient angle in degrees, `[0, 360)`. A gradient parsed from a corner
+   * keyword (`to top right`) reports the nominal diagonal (45, 135, 225, 315),
+   * which CSS only renders at that angle on a square box; it still serializes
+   * as the corner keyword.
+   */
   get angle(): number {
     return this.#angle;
   }
@@ -203,23 +274,31 @@ export class LinearGradient implements RefFields {
     return this.#stops;
   }
 
+  /** Rotates by `degrees`. The result is a plain angle, so a corner keyword is dropped. */
   rotate(degrees: number): LinearGradient {
     return new LinearGradient(this.#angle + degrees, [...this.#stops]);
   }
 
+  /**
+   * Flips the direction by 180deg and mirrors the stops. Throws when a stop
+   * position is not a percentage, since it cannot be mirrored.
+   */
   reverse(): LinearGradient {
-    const reversed = [...this.#stops]
-      .toReversed()
-      .map(stop => (stop.position ? { ...stop, position: flipPosition(stop.position) } : stop));
+    const angle = normalizeAngle(this.#angle + 180);
 
-    return new LinearGradient(normalizeAngle(this.#angle + 180), reversed);
+    return LinearGradient.#build(
+      angle,
+      reverseStops(this.#stops),
+      this.#corner ? cornerKeywords[angle] : undefined,
+    );
   }
 
   addStop(color: Color | string, position?: string): LinearGradient {
-    const c = toStopColor(color);
-    const stop: GradientStop = position ? { color: c, position } : { color: c };
-
-    return new LinearGradient(this.#angle, [...this.#stops, stop]);
+    return LinearGradient.#build(
+      this.#angle,
+      [...this.#stops, makeStop(color, position)],
+      this.#corner,
+    );
   }
 
   // ─── Per-field reference protocol ────────────────────────────
@@ -228,13 +307,17 @@ export class LinearGradient implements RefFields {
 
   /** @internal */
   __teikn_fields__(): Record<string, unknown> {
-    return { angle: this.#angle, stops: [...this.#stops] };
+    const fields = { angle: this.#angle, stops: [...this.#stops] };
+
+    return this.#corner ? { ...fields, corner: this.#corner } : fields;
   }
 
   /** @internal */
   // oxlint-disable-next-line class-methods-use-this -- protocol method, detected per-instance
   __teikn_fromFields__(fields: Record<string, unknown>): LinearGradient {
-    return new LinearGradient(fields.angle as number, fields.stops as StopInput[]);
+    const corner = typeof fields.corner === 'string' ? fields.corner : undefined;
+
+    return LinearGradient.#build(fields.angle as number, fields.stops as StopInput[], corner);
   }
 
   toJSON(): string {
@@ -256,8 +339,7 @@ export class LinearGradient implements RefFields {
     }
 
     const stopsStr = this.#stops.map(s => renderStop(s, renderColor)).join(', ');
-    const kw = angleKeywords[this.#angle];
-    const dir = kw ?? `${this.#angle}deg`;
+    const dir = this.#corner ?? sideKeywords[this.#angle] ?? `${this.#angle}deg`;
 
     return `linear-gradient(${dir}, ${stopsStr})`;
   }
@@ -278,10 +360,41 @@ type RadialSize = 'closest-side' | 'closest-corner' | 'farthest-side' | 'farthes
 
 export type RadialGradientOptions = { shape?: RadialShape; size?: RadialSize; position?: string };
 
-const radialRe = /^radial-gradient\(([\s\S]+)\)$/i;
+const radialRe = /^\s*radial-gradient\(([\s\S]+)\)\s*$/i;
 
-const isShapeSpec = (str: string): boolean =>
-  /^(circle|ellipse|closest|farthest)/i.test(str) || /\bat\s/i.test(str);
+const extentRe = /^(closest|farthest)-(side|corner)$/;
+
+type RadialPrelude = { shape: RadialShape; size: RadialSize; position: string };
+
+// A single explicit length is a circle radius; anything else is an ellipse.
+const impliedShape = (size: RadialSize): RadialShape =>
+  !extentRe.test(size) && !/\s/.test(size.trim()) ? 'circle' : 'ellipse';
+
+// Parse `[shape] [size] [at position]`; null when `part` is a color stop.
+const parseRadialPrelude = (part: string): RadialPrelude | null => {
+  const words = splitWords(part);
+  const lower = words.map(w => w.toLowerCase());
+  const atIdx = lower.indexOf('at');
+  const spec = atIdx >= 0 ? lower.slice(0, atIdx) : lower;
+  const shapes = spec.filter(w => w === 'circle' || w === 'ellipse');
+  const sizes = spec.filter(w => extentRe.test(w) || positionRe.test(w));
+
+  if (shapes.length + sizes.length !== spec.length || (atIdx < 0 && spec.length === 0)) {
+    return null;
+  }
+
+  if (shapes.length > 1 || (atIdx >= 0 && atIdx === words.length - 1)) {
+    throw new Error(`Invalid radial-gradient shape: "${part}"`);
+  }
+
+  const size = sizes.join(' ') || 'farthest-corner';
+
+  return {
+    shape: (shapes[0] as RadialShape | undefined) ?? impliedShape(size),
+    size,
+    position: atIdx >= 0 ? words.slice(atIdx + 1).join(' ') : 'center',
+  };
+};
 
 export class RadialGradient implements RefFields {
   /** @internal brand — do not use directly; see `isFirstClassValue()` */
@@ -312,37 +425,13 @@ export class RadialGradient implements RefFields {
       }
 
       const parts = splitTopLevel(m[1]!);
-      const firstPart = parts[0]!.trim();
+      const prelude = parseRadialPrelude(parts[0]!);
 
-      if (isShapeSpec(firstPart)) {
-        let shape: RadialShape = 'ellipse';
-        let size: RadialSize = 'farthest-corner';
-        let position = 'center';
-
-        const atIdx = firstPart.toLowerCase().indexOf(' at ');
-        const shapePart = atIdx >= 0 ? firstPart.slice(0, atIdx).trim() : firstPart;
-
-        if (atIdx >= 0) {
-          position = firstPart.slice(atIdx + 4).trim();
-        }
-
-        if (/\bcircle\b/i.test(shapePart)) {
-          shape = 'circle';
-        }
-
-        const sizeKeywords = ['closest-side', 'closest-corner', 'farthest-side', 'farthest-corner'];
-
-        for (const kw of sizeKeywords) {
-          if (shapePart.toLowerCase().includes(kw)) {
-            size = kw;
-            break;
-          }
-        }
-
-        this.#shape = shape;
-        this.#size = size;
-        this.#position = position;
-        this.#stops = parts.slice(1).map(parseStop);
+      if (prelude) {
+        this.#shape = prelude.shape;
+        this.#size = prelude.size;
+        this.#position = prelude.position;
+        this.#stops = Object.freeze(parts.slice(1).map(parseStop));
 
         return;
       }
@@ -351,7 +440,7 @@ export class RadialGradient implements RefFields {
       this.#shape = 'ellipse';
       this.#size = 'farthest-corner';
       this.#position = 'center';
-      this.#stops = parts.map(parseStop);
+      this.#stops = Object.freeze(parts.map(parseStop));
 
       return;
     }
@@ -359,7 +448,7 @@ export class RadialGradient implements RefFields {
     this.#shape = first.shape ?? 'ellipse';
     this.#size = first.size ?? 'farthest-corner';
     this.#position = first.position ?? 'center';
-    this.#stops = (stops ?? []).map(normalizeStop);
+    this.#stops = freezeStops(stops ?? []);
   }
 
   get shape(): RadialShape {
@@ -386,23 +475,20 @@ export class RadialGradient implements RefFields {
   }
 
   addStop(color: Color | string, position?: string): RadialGradient {
-    const c = toStopColor(color);
-    const stop: GradientStop = position ? { color: c, position } : { color: c };
-
     return new RadialGradient({ shape: this.#shape, size: this.#size, position: this.#position }, [
       ...this.#stops,
-      stop,
+      makeStop(color, position),
     ]);
   }
 
+  /**
+   * Reverses the stop order and mirrors their positions. Throws when a stop
+   * position is not a percentage, since it cannot be mirrored.
+   */
   reverse(): RadialGradient {
-    const reversed = [...this.#stops]
-      .toReversed()
-      .map(stop => (stop.position ? { ...stop, position: flipPosition(stop.position) } : stop));
-
     return new RadialGradient(
       { shape: this.#shape, size: this.#size, position: this.#position },
-      reversed,
+      reverseStops(this.#stops),
     );
   }
 
@@ -444,17 +530,14 @@ export class RadialGradient implements RefFields {
     const stopsStr = this.#stops.map(s => renderStop(s, renderColor)).join(', ');
     const shapeParts: string[] = [];
 
-    if (this.#shape !== 'ellipse' || this.#size !== 'farthest-corner') {
-      const spec = [
-        this.#shape !== 'ellipse' ? this.#shape : '',
-        this.#size !== 'farthest-corner' ? this.#size : '',
-      ]
-        .filter(Boolean)
-        .join(' ');
+    // `ellipse` is only spelled out when the size alone would imply a circle.
+    const showShape = this.#shape !== 'ellipse' || impliedShape(this.#size) !== 'ellipse';
+    const spec = [showShape ? this.#shape : '', this.#size !== 'farthest-corner' ? this.#size : '']
+      .filter(Boolean)
+      .join(' ');
 
-      if (spec) {
-        shapeParts.push(spec);
-      }
+    if (spec) {
+      shapeParts.push(spec);
     }
 
     if (this.#position !== 'center') {
@@ -511,12 +594,12 @@ export class GradientList implements RefFields {
 
     if (typeof first === 'string') {
       assertNotRef(first, 'GradientList');
-      this.#layers = splitTopLevel(first).map(parseGradient);
+      this.#layers = Object.freeze(splitTopLevel(first).map(parseGradient));
 
       return;
     }
 
-    this.#layers = [...first];
+    this.#layers = Object.freeze([...first]);
   }
 
   get layers(): readonly AnyGradient[] {

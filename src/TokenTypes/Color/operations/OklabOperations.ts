@@ -1,6 +1,6 @@
 import type { Color, InternalCreate } from '../Color.js';
 import type { Oklab } from '../types.js';
-import { percentRange } from '../util.js';
+import { mixPremultiplied } from '../util.js';
 
 export class OklabOperations {
   #color: Color;
@@ -56,17 +56,13 @@ export class OklabOperations {
    * perceptually uniform mix available on a `Color`.
    */
   mix(other: Color, amount = 0.5): Color {
-    const amt = percentRange(amount);
-    const thisOklab = this.#oklab();
-    const otherOklab = other.asOklab();
-    const mixed: Oklab = [
-      thisOklab[0] * (1 - amt) + otherOklab[0] * amt,
-      thisOklab[1] * (1 - amt) + otherOklab[1] * amt,
-      thisOklab[2] * (1 - amt) + otherOklab[2] * amt,
-    ];
-    const alpha = this.#color.alpha * (1 - amt) + other.alpha * amt;
+    const { data, alpha } = mixPremultiplied({
+      from: { data: this.#oklab(), alpha: this.#color.alpha },
+      to: { data: other.asOklab(), alpha: other.alpha },
+      amount,
+    });
 
-    return this.#new('oklab', mixed, alpha);
+    return this.#new('oklab', data, alpha);
   }
 
   lighten(amount: number): Color {

@@ -276,7 +276,7 @@ describe('output-validation: Scss', () => {
 
   test('mode maps are present and properly structured', () => {
     expect(scss).toContain('$modes: (');
-    expect(scss).toContain('dark: (');
+    expect(scss).toContain("'dark': (");
   });
 });
 
@@ -590,9 +590,10 @@ describe('output-validation: TypeScriptDeclarations (narrow default)', () => {
     expect(ts).toContain("'1rem'");
   });
 
-  test('mode type should be Partial<...>', () => {
+  test("mode type lists optional keys with the mode's own value types", () => {
     expect(ts).toContain('export declare const modes: {');
-    expect(ts).toContain('Partial<typeof tokens>');
+    expect(ts).not.toContain('Partial<typeof tokens>');
+    expect(ts).toMatch(/readonly \w+: \{\n\s+readonly \w+\?: /);
   });
 
   test('export default tokens', () => {

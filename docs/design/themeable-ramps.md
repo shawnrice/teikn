@@ -111,6 +111,14 @@ dark value in CSS/SCSS/JS/DTCG for free.
   sees it and gives a token the modes its references carry, so the seed alias (`brand`) and its
   steps (`brand-500`) agree in every mode, and `surface.modes.dark = {brand-950}` lands on the dark
   ramp's 950.
+- **Derived tokens are derived per mode, and never linked.** With themes applied before `expand`,
+  every expand plugin sees theme values as modes. `ReducedMotionPlugin` and `ColorBlindnessPlugin`
+  reduce/simulate each mode value instead of copying the source's, and a ramp step or derived token
+  drops the seed's `link`: it is a concrete value, not an alias.
+- **A linked ref inherits no modes.** It emits `var(--target)`, which already follows the target in
+  every mode; a flattened inherited value would break that live alias.
+- **`validate` follows the same per-mode chains as the resolver**, so the two agree on what is a
+  cycle. Mode names are read as own properties (`constructor` is a legal mode name).
 - **One output space per ramp.** A mode value authored in a different space is converted into the
   seed's resolved `format` via the existing `toOutputValue`. The ramp's space is a property of the
   ramp.

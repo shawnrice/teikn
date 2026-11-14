@@ -4,6 +4,7 @@ import type { Plugin } from '../Plugins/index.js';
 import { sortPlugins } from '../Plugins/Plugin.js';
 import { resolveReferences } from '../resolve.js';
 import { camelCase, deriveShortName } from '../string-utils.js';
+import { tokenKey } from '../token-keys.js';
 import type { ModeValues, Token, TokenValue } from '../Token.js';
 import { isFirstClassValue } from '../type-classifiers.js';
 import { matches } from '../utils.js';
@@ -20,6 +21,14 @@ const runTransform = (plugin: Plugin, input: Token, contextTokenName: string): T
       { cause: e },
     );
   }
+};
+
+// Teikn prefixes names with `type-`; strip it to recover the authored `group.name`.
+const sourceKey = (token: Token): string => {
+  const prefix = `${token.type}-`;
+  const name = token.name.startsWith(prefix) ? token.name.slice(prefix.length) : token.name;
+
+  return tokenKey({ ...token, name });
 };
 
 export const applyPlugin = (plugin: Plugin, token: Token): Token => {
@@ -314,7 +323,7 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
   protected applyPluginPipeline(tokens: Token[], plugins: Plugin[]): Token[] {
     const sorted = sortPlugins(plugins);
 
-    return tokens.map(token =>
+    const transformed = tokens.map(token =>
       sorted.reduce((acc, plugin) => {
         if (!matches(plugin.tokenType, token.type)) {
           return acc;
@@ -327,13 +336,43 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
         return applyPlugin(plugin, acc);
       }, token),
     );
+
+    this.#assertUniqueNames(tokens, transformed);
+
+    return transformed;
+  }
+
+  // Two tokens that emit the same name silently overwrite each other (or
+  // produce invalid output), so fail loudly once plugins have settled names.
+  #assertUniqueNames(input: Token[], transformed: Token[]): void {
+    const { nameTransformer, groups } = this.options as GeneratorOptions & {
+      nameTransformer?: (name: string) => string;
+    };
+    const seen = new Map<string, string>();
+
+    transformed.forEach((token, i) => {
+      // Without `groups`, tokenUsage() is the generator's exact emitted symbol
+      // (prefix included); otherwise fall back to the transformed flat name.
+      const emitted =
+        (!groups && this.tokenUsage(token)) || (nameTransformer?.(token.name) ?? token.name);
+      const source = sourceKey(input[i] ?? token);
+      const prior = seen.get(emitted);
+
+      if (prior !== undefined) {
+        throw new Error(
+          `Generator \`${this.constructor.name}\` emits the name \`${emitted}\` for two different tokens: ` +
+            `\`${prior}\` and \`${source}\`. Rename one of them so their emitted names differ.`,
+        );
+      }
+
+      seen.set(emitted, source);
+    });
   }
 
   prepareTokens(tokens: Token[], plugins: Plugin[]): Token[] {
-    return this.applyPluginPipeline(
-      tokens.map(t => this.stringifyValues(t)),
-      plugins,
-    );
+    // Plugins run on live instances (as in CssVars/ScssVars) so value
+    // transforms reach colors nested in shadows, borders and gradients.
+    return this.applyPluginPipeline(tokens, plugins).map(t => this.stringifyValues(t));
   }
 
   protected tokenGroups(

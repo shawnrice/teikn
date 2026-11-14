@@ -6,6 +6,7 @@ import { isFirstClassValue } from '../type-classifiers.js';
 import type { GeneratorInfo, GeneratorOptions } from './Generator.js';
 import { Generator } from './Generator.js';
 import type { JavaScriptModule } from './JavaScript.js';
+import { assertGroupExportName, jsDocLines } from './js-emit.js';
 import { quoteKey, quoteString } from './value-serializers.js';
 
 /**
@@ -64,7 +65,8 @@ export type TypeScriptDeclarationsOpts = {
    * Pair the declarations file with a specific runtime module format. When
    * set to `"cjs"`, emit `.d.cts` instead of `.d.ts` so Node's strict
    * ESM/CJS resolvers (`moduleResolution: "node16" | "bundler"`) pick up
-   * the declarations alongside the `.cjs` runtime file.
+   * the declarations alongside the `.cjs` runtime file. Likewise `"esm"`
+   * emits `.d.mts` to pair with the `.mjs` runtime. Unset: plain `.d.ts`.
    */
   module?: JavaScriptModule;
 } & GeneratorOptions;
@@ -76,7 +78,7 @@ export type TypeScriptDeclarationsOpts = {
  */
 export class TypeScriptDeclarations extends Generator<TypeScriptDeclarationsOpts> {
   constructor(options: Partial<TypeScriptDeclarationsOpts> = {}) {
-    const ext = options.module === 'cjs' ? 'd.cts' : 'd.ts';
+    const ext = { cjs: 'd.cts', esm: 'd.mts', none: 'd.ts' }[options.module ?? 'none'];
     super({ ...defaultOptions, ...options, ext });
   }
 
@@ -119,7 +121,7 @@ export class TypeScriptDeclarations extends Generator<TypeScriptDeclarationsOpts
 
     return [
       `  /**`,
-      token.usage && `   *  ${token.usage}`,
+      ...(token.usage ? jsDocLines(token.usage) : []),
       `   *  Type: ${token.type}`,
       deprecationTag,
       `   */`,
@@ -138,15 +140,17 @@ export class TypeScriptDeclarations extends Generator<TypeScriptDeclarationsOpts
     if (groups.length > 0) {
       const { nameTransformer } = this.options;
       const fields = groups.map(({ groupName, entries }) => {
-        const names = entries.map(({ token }) => `'${nameTransformer!(token.name)}'`).join(' | ');
+        const names = entries
+          .map(({ token }) => quoteString(nameTransformer!(token.name)))
+          .join(' | ');
         const typeName = groupName.charAt(0).toUpperCase() + groupName.slice(1);
 
-        return `  ${typeName}: ${names};`;
+        return `  ${quoteKey(typeName)}: ${names};`;
       });
       const allUnion = groups
         .map(
           ({ groupName }) =>
-            `TokenNames['${groupName.charAt(0).toUpperCase() + groupName.slice(1)}']`,
+            `TokenNames[${quoteString(groupName.charAt(0).toUpperCase() + groupName.slice(1))}]`,
         )
         .join(' | ');
       fields.push(`  All: ${allUnion};`);
@@ -155,7 +159,12 @@ export class TypeScriptDeclarations extends Generator<TypeScriptDeclarationsOpts
 
     if (this.options.groups) {
       const groupDecls = groups.map(({ groupName, entries }) => {
-        const union = entries.map(({ shortName }) => `'${shortName}'`).join(' | ');
+        assertGroupExportName({
+          generator: 'TypeScriptDeclarations',
+          groupName,
+          type: entries[0]!.token.type,
+        });
+        const union = entries.map(({ shortName }) => quoteString(shortName)).join(' | ');
         // The accessor does a runtime lookup, so the return can't be narrowed
         // to a specific value per name — widen to the primitive type(s)
         // (`string`, `number`, or a union for a mixed group) rather than emit a
@@ -171,20 +180,20 @@ export class TypeScriptDeclarations extends Generator<TypeScriptDeclarationsOpts
       parts.push('', ...groupDecls);
     }
 
-    const modeNames = new Set<string>();
+    // Mode overrides are partial, so every key is optional; the value types are
+    // the mode's own (not the base token's).
+    const modeMap = this.buildModeMap(
+      tokens,
+      (key, val) =>
+        `    readonly ${quoteKey(key)}?: ${toTypeAnnotation(val, this.options.loose || false)};`,
+    );
 
-    for (const token of tokens) {
-      if (token.modes) {
-        for (const mode of Object.keys(token.modes)) {
-          modeNames.add(mode);
-        }
-      }
-    }
-
-    if (modeNames.size > 0) {
-      const modeEntries = [...modeNames].map(
-        mode => `  readonly ${quoteKey(mode)}: Partial<typeof tokens>;`,
-      );
+    if (modeMap.size > 0) {
+      const modeEntries = [...modeMap.entries()].flatMap(([mode, entries]) => [
+        `  readonly ${quoteKey(mode)}: {`,
+        ...entries,
+        `  };`,
+      ]);
       parts.push('', `export declare const modes: {`, ...modeEntries, `};`);
     }
 

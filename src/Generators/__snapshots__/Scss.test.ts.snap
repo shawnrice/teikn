@@ -14,11 +14,11 @@ exports[`Scss Generator tests It generates the token set 1`] = `
 // prettier-ignore
 $token-values: (
   /// Use for body fonts
-  font-family-body: unquote('#{"Roboto Condensed", Arial, sans}'),
+  'font-family-body': (#{"Roboto Condensed", Arial, sans}),
   /// the primary branding color
-  color-primary: rgba(240, 248, 255, 1),
+  'color-primary': rgba(240, 248, 255, 1),
   /// the secondary branding color
-  color-secondary: rgba(102, 205, 170, 1),
+  'color-secondary': rgba(102, 205, 170, 1),
 );
 
 /// Use "get-token" to access tokens by name
@@ -45,9 +45,9 @@ exports[`Scss Generator tests it generates group maps and functions when groups:
 
 // prettier-ignore
 $token-values: (
-  color-primary: aliceblue,
-  color-secondary: rgb(102, 205, 170),
-  spacing-sm: 4px,
+  'color-primary': aliceblue,
+  'color-secondary': rgb(102, 205, 170),
+  'spacing-sm': 4px,
 );
 
 /// Use "get-token" to access tokens by name
@@ -60,8 +60,8 @@ $token-values: (
 }
 
 $color-values: (
-  primary: map.get($token-values, color-primary),
-  secondary: map.get($token-values, color-secondary),
+  'primary': map.get($token-values, 'color-primary'),
+  'secondary': map.get($token-values, 'color-secondary'),
 );
 
 @function color($name) {
@@ -73,7 +73,7 @@ $color-values: (
 }
 
 $spacing-values: (
-  sm: map.get($token-values, spacing-sm),
+  'sm': map.get($token-values, 'spacing-sm'),
 );
 
 @function spacing($name) {
@@ -100,11 +100,11 @@ exports[`Scss Generator tests it generates groups with PrefixTypePlugin 1`] = `
 // prettier-ignore
 $token-values: (
   /// Use for body fonts
-  font-family-body: unquote('#{"Roboto Condensed", Arial, sans}'),
+  'font-family-body': (#{"Roboto Condensed", Arial, sans}),
   /// the primary branding color
-  color-primary: rgba(240, 248, 255, 1),
+  'color-primary': rgba(240, 248, 255, 1),
   /// the secondary branding color
-  color-secondary: rgba(102, 205, 170, 1),
+  'color-secondary': rgba(102, 205, 170, 1),
 );
 
 /// Use "get-token" to access tokens by name
@@ -117,7 +117,7 @@ $token-values: (
 }
 
 $font-family-values: (
-  body: map.get($token-values, font-family-body),
+  'body': map.get($token-values, 'font-family-body'),
 );
 
 @function font-family($name) {
@@ -129,8 +129,8 @@ $font-family-values: (
 }
 
 $color-values: (
-  primary: map.get($token-values, color-primary),
-  secondary: map.get($token-values, color-secondary),
+  'primary': map.get($token-values, 'color-primary'),
+  'secondary': map.get($token-values, 'color-secondary'),
 );
 
 @function color($name) {
@@ -156,7 +156,7 @@ exports[`Scss Generator tests composite values with internal commas produce vali
 
 // prettier-ignore
 $token-values: (
-  typography-display-lg: ("Quicksand", sans-serif 2.25rem 700 1.2),
+  'typography-display-lg': ("Quicksand", sans-serif 2.25rem 700 1.2),
 );
 
 /// Use "get-token" to access tokens by name

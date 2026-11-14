@@ -262,7 +262,7 @@ describe('SCSS Vars Generator tests', () => {
       const output = new Generator({ ...testOpts, groups: true, prefix: 'company' }).generate(t);
       expect(output).toContain('$company-color-primary: aliceblue;');
       // The accessor maps the authored short-name onto the prefixed variable.
-      expect(output).toContain('primary: $company-color-primary');
+      expect(output).toContain("'primary': $company-color-primary");
       expect(output).toContain('@function color($name)');
     });
 
