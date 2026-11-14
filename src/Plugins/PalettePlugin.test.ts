@@ -257,8 +257,13 @@ describe('PalettePlugin: modes and references', () => {
     expect(step(result, 'surface-500').modes).toBeUndefined();
   });
 
-  test('a dangling seed reference throws', () => {
-    const token: Token = { name: 'brand', type: 'color', value: '{nope}' };
-    expect(() => plugin.expand([token])).toThrow(/Unresolved reference/);
+  test('an alias of a generated step passes through without a ramp', () => {
+    const tokens: Token[] = [
+      { name: 'brand', type: 'color', value: '#3b82f6' },
+      { name: 'text', type: 'color', value: '{brand-950}' },
+    ];
+    const result = plugin.expand(tokens);
+
+    expect(result.filter(t => t.name.startsWith('text'))).toEqual([tokens[1]!]);
   });
 });

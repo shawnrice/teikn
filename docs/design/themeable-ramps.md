@@ -103,6 +103,14 @@ dark value in CSS/SCSS/JS/DTCG for free.
   dark-theme shape; that step does not exist pre-expand, so `surface`'s own steps keep their default
   in that mode and the seed's mode resolves in the full pass, which also still reports a genuinely
   dangling or circular reference.
+- **A color that does not resolve before expansion is not a seed.** `text = {brand-950}` passes
+  through `expand` with no ramp of its own and resolves in the full pass, so semantic colors can
+  alias ramp steps under `PalettePlugin`. A dangling reference is still reported by
+  validate/resolve.
+- **The full resolver is mode-aware too.** `resolveReferences` follows each reference as the mode
+  sees it and gives a token the modes its references carry, so the seed alias (`brand`) and its
+  steps (`brand-500`) agree in every mode, and `surface.modes.dark = {brand-950}` lands on the dark
+  ramp's 950.
 - **One output space per ramp.** A mode value authored in a different space is converted into the
   seed's resolved `format` via the existing `toOutputValue`. The ramp's space is a property of the
   ramp.

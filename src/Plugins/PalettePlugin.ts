@@ -96,6 +96,19 @@ const resolveFormat = (base: Color, space: PaletteSpace | undefined): ColorForma
   return space;
 };
 
+// A value that does not resolve before expansion is not a seed (typically an
+// alias of another ramp's generated step); the full validate/resolve pass
+// reports it if the reference is actually broken.
+const resolvesBeforeExpand = (resolve: () => unknown): boolean => {
+  try {
+    resolve();
+
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 const generatePaletteTokens = (
   token: Token,
   steps: number[],
@@ -105,6 +118,11 @@ const generatePaletteTokens = (
   { resolveSeed, modeNames }: { resolveSeed: SeedResolver; modeNames: string[] },
 ): Token[] => {
   const seedName = tokenKey(token);
+
+  if (!resolvesBeforeExpand(() => resolveSeed(token.value, seedName))) {
+    return [];
+  }
+
   const baseValue = resolveSeed(token.value, seedName);
   const baseColor = new Color(baseValue as string | Color);
   const format = resolveFormat(baseColor, space);

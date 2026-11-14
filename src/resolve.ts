@@ -19,7 +19,12 @@ type ResolveArgs = {
   mode?: string | undefined;
 };
 
-type ResolveModesArgs = { modes: ModeValues; tokenName: string };
+type ResolveModesArgs = {
+  modes: ModeValues | undefined;
+  value: unknown;
+  tokenName: string;
+  modeNames: string[];
+};
 
 /**
  * Build a resolver closure bound to a specific token universe. The
@@ -27,6 +32,10 @@ type ResolveModesArgs = { modes: ModeValues; tokenName: string };
  * `tokenKeys`, leaving callers with single-argument entry points.
  */
 const createResolver = (tokenMap: Map<string, Token>, tokenKeys: KeyAliasIndex) => {
+  // Counts references that took a token's mode value, so `resolveModes` can
+  // tell whether a mode actually changed what a default value resolves to.
+  let modeHits = 0;
+
   const resolveValue = ({ value, seen, currentName, mode }: ResolveArgs): unknown => {
     // Arrays (e.g. gradient stops exposed via RefFields) are resolved
     // element-wise. Identity is preserved when nothing inside changed so the
@@ -102,8 +111,14 @@ const createResolver = (tokenMap: Map<string, Token>, tokenKeys: KeyAliasIndex) 
 
         // With a `mode`, a referenced token contributes its value for that mode
         // (when it has one), so the chain is followed as that mode sees it.
+        const modeValue = mode === undefined ? undefined : referenced.modes?.[mode];
+
+        if (modeValue !== undefined) {
+          modeHits += 1;
+        }
+
         return resolveValue({
-          value: (mode === undefined ? undefined : referenced.modes?.[mode]) ?? referenced.value,
+          value: modeValue ?? referenced.value,
           seen: next,
           currentName: tokenKey(referenced),
           mode,
@@ -113,17 +128,46 @@ const createResolver = (tokenMap: Map<string, Token>, tokenKeys: KeyAliasIndex) 
   };
 
   const resolveModes = ({
-    modes,
+    modes = {},
+    value,
     tokenName,
+    modeNames,
   }: ResolveModesArgs): Record<string, unknown> | undefined => {
     const resolved: Record<string, unknown> = {};
     let changed = false;
 
-    for (const [mode, value] of Object.entries(modes)) {
-      const next = resolveValue({ value, seen: new Set([tokenName]), currentName: tokenName });
+    for (const [mode, own] of Object.entries(modes)) {
+      const next = resolveValue({
+        value: own,
+        seen: new Set([tokenName]),
+        currentName: tokenName,
+        mode,
+      });
       resolved[mode] = next;
 
-      if (next !== value) {
+      if (next !== own) {
+        changed = true;
+      }
+    }
+
+    // A token with no value of its own for a mode inherits one when its default
+    // value references a token that has it (`brand = {primary}` follows
+    // primary's dark value).
+    for (const mode of modeNames) {
+      if (mode in modes) {
+        continue;
+      }
+
+      const before = modeHits;
+      const next = resolveValue({
+        value,
+        seen: new Set([tokenName]),
+        currentName: tokenName,
+        mode,
+      });
+
+      if (modeHits !== before) {
+        resolved[mode] = next;
         changed = true;
       }
     }
@@ -187,6 +231,7 @@ export const resolveReferences = (tokens: Token[]): Token[] => {
 
   const tokenKeys = buildKeyAliasIndex([...tokenMap.keys()]);
   const { resolveValue, resolveModes } = createResolver(tokenMap, tokenKeys);
+  const modeNames = [...new Set(tokens.flatMap(t => Object.keys(t.modes ?? {})))];
 
   return tokens.map(token => {
     const resolvedValue = resolveValue({
@@ -194,9 +239,12 @@ export const resolveReferences = (tokens: Token[]): Token[] => {
       seen: new Set([tokenKey(token)]),
       currentName: tokenKey(token),
     });
-    const resolvedModes = token.modes
-      ? resolveModes({ modes: token.modes, tokenName: tokenKey(token) })
-      : undefined;
+    const resolvedModes = resolveModes({
+      modes: token.modes,
+      value: token.value,
+      tokenName: tokenKey(token),
+      modeNames,
+    });
 
     if (resolvedValue === token.value && resolvedModes === undefined) {
       return token;
