@@ -276,7 +276,7 @@ describe('output-validation: Scss', () => {
 
   test('mode maps are present and properly structured', () => {
     expect(scss).toContain('$modes: (');
-    expect(scss).toContain('dark: (');
+    expect(scss).toContain("'dark': (");
   });
 });
 

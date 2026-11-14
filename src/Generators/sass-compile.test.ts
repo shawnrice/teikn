@@ -64,7 +64,7 @@ describe('Scss output compiles with Sass', () => {
     expect(() => compiles(scss)).not.toThrow();
   });
 
-  knownBug('quoted values compile without Sass deprecation warnings', () => {
+  test('quoted values compile without Sass deprecation warnings', () => {
     const scss = new Scss(testOpts).generate(tokenSet1, [new ScssQuoteValuePlugin()]);
 
     expect(compile(scss).warnings).toEqual([]);
@@ -106,14 +106,14 @@ describe('Scss output compiles with Sass', () => {
     expect(evaluate(scss, 'map.get($modes, dark, color-primary)')).toBe('#000');
   });
 
-  knownBug('the modes map uses the same prefixed keys as the token map', () => {
+  test('the modes map uses the same prefixed keys as the token map', () => {
     const scss = generate(new Scss({ ...testOpts, prefix: 'acme' }), moded);
 
     expect(evaluate(scss, "get-token('acme-color-primary')")).toBe('#fff');
     expect(evaluate(scss, 'map.get($modes, dark, acme-color-primary)')).toBe('#000');
   });
 
-  knownBug('group functions find a short name Sass reads as a color', () => {
+  test('group functions find a short name Sass reads as a color', () => {
     const scss = generate(
       new Scss({ ...testOpts, groups: true }),
       group('color', { red: '#ff0000' }),
@@ -122,16 +122,16 @@ describe('Scss output compiles with Sass', () => {
     expect(evaluate(scss, "color('red')")).toBe('red');
   });
 
-  knownBug('group functions find a short name Sass reads as a number', () => {
+  test('group functions find a short name Sass reads as a number', () => {
     const scss = generate(
       new Scss({ ...testOpts, groups: true }),
       scale('fontSize', { '100': dp(12) }),
     );
 
-    expect(evaluate(scss, "font-size('100')")).toBe('0.75rem');
+    expect(evaluate(scss, "font-size('100')")).toBe('.75rem');
   });
 
-  knownBug('a mode name with a quote compiles', () => {
+  test('a mode name with a quote compiles', () => {
     const scss = generate(
       new Scss(testOpts),
       group('color', { primary: { value: '#fff', modes: { "it's dark": '#111' } } }),
@@ -140,12 +140,23 @@ describe('Scss output compiles with Sass', () => {
     expect(() => compiles(scss)).not.toThrow();
   });
 
-  knownBug('an empty string value compiles', () => {
+  test('an empty string value compiles', () => {
     expect(() =>
       compiles(generate(new Scss(testOpts), group('content', { empty: '' }))),
     ).not.toThrow();
   });
 
+  test('a multi-line usage note stays inside its comment', () => {
+    const scss = generate(
+      new Scss(testOpts),
+      group('color', { primary: ['#fff', 'line one\nsecond line'] }),
+    );
+
+    expect(() => compiles(scss)).not.toThrow();
+  });
+
+  // Still a known bug: needs the generic name-collision check in the Generator
+  // base class, not a Scss-only fix.
   knownBug('names that transform to the same key are rejected before Sass sees them', () => {
     const scss = generate(new Scss(testOpts), scale('spacing', { '1-5': dp(6), '15': dp(60) }));
 
@@ -162,6 +173,12 @@ describe('ScssVars output compiles with Sass', () => {
     ]);
 
     expect(() => compiles(scss)).not.toThrow();
+  });
+
+  test('quoted values compile without Sass deprecation warnings', () => {
+    const scss = new ScssVars(testOpts).generate(tokenSet1, [new ScssQuoteValuePlugin()]);
+
+    expect(compile(scss).warnings).toEqual([]);
   });
 
   test('each token is a variable', () => {
@@ -194,19 +211,30 @@ describe('ScssVars output compiles with Sass', () => {
     expect(evaluate(scss, "spacing('sm')")).toBe('.5rem');
   });
 
-  knownBug('a mode variable does not overwrite a token of the same name', () => {
-    const scss = generate(
-      new ScssVars(testOpts),
-      group('color', {
-        primary: { value: '#ffffff', modes: { dark: '#000000' } },
-        'primary-dark': '#123456',
-      }),
-    );
+  test('a mode variable that would overwrite a token of the same name is rejected', () => {
+    const set = group('color', {
+      primary: { value: '#ffffff', modes: { dark: '#000000' } },
+      'primary-dark': '#123456',
+    });
 
-    expect(evaluate(scss, '$color-primary-dark')).toBe('#123456');
+    expect(() => generate(new ScssVars(testOpts), set)).toThrow(
+      /mode "dark" of token "color-primary" and token "color-primary-dark" both emit \$color-primary-dark/,
+    );
   });
 
-  knownBug('group functions find a short name Sass reads as a color', () => {
+  test('an empty string value compiles', () => {
+    expect(() =>
+      compiles(generate(new ScssVars(testOpts), group('content', { empty: '' }))),
+    ).not.toThrow();
+  });
+
+  test('a token name with a slash is a sanitised variable', () => {
+    const scss = generate(new ScssVars(testOpts), scale('spacing', { 'icon/sm': dp(4) }));
+
+    expect(evaluate(scss, '$spacing-icon-sm')).toBe('.25rem');
+  });
+
+  test('group functions find a short name Sass reads as a color', () => {
     const scss = generate(
       new ScssVars({ ...testOpts, groups: true }),
       group('color', { red: '#ff0000' }),
@@ -215,7 +243,7 @@ describe('ScssVars output compiles with Sass', () => {
     expect(evaluate(scss, "color('red')")).toBe('red');
   });
 
-  knownBug('a mode name with a space compiles', () => {
+  test('a mode name with a space compiles', () => {
     const scss = generate(
       new ScssVars(testOpts),
       group('color', { primary: { value: '#fff', modes: { 'high contrast': '#111' } } }),
@@ -224,13 +252,13 @@ describe('ScssVars output compiles with Sass', () => {
     expect(() => compiles(scss)).not.toThrow();
   });
 
-  knownBug('a token name with a space compiles', () => {
+  test('a token name with a space compiles', () => {
     expect(() =>
       compiles(generate(new ScssVars(testOpts), scale('spacing', { 'icon sm': dp(4) }))),
     ).not.toThrow();
   });
 
-  knownBug('a multi-line usage note stays inside its comment', () => {
+  test('a multi-line usage note stays inside its comment', () => {
     const scss = generate(
       new ScssVars(testOpts),
       group('color', { primary: ['#fff', 'line one\nsecond line'] }),

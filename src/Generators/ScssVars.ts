@@ -67,7 +67,8 @@ export class ScssVars extends Scss {
   // identity transform here so the prefix composes with the name as-is and
   // existing snapshots remain stable.
   #emit(name: string): string {
-    return composeSymbol(name, s => s, this.options);
+    // Anything Sass cannot read in a variable name (space, slash, quote) becomes `-`.
+    return composeSymbol(name, s => s, this.options).replace(/[^\w\u0080-\u{10ffff}-]+/gu, '-');
   }
 
   override prepareTokens(...args: Parameters<Generator['prepareTokens']>): Token[] {
@@ -113,23 +114,44 @@ export class ScssVars extends Scss {
     const { usage, value, link } = token;
     // A linked ref (`ref(name, { link: true })`) emits a `$target` alias so the
     // variable tracks the target instead of baking in its resolved value.
-    const rhs = link ? `$${this.#emit(link)}` : cssValue(value);
+    const rhs = link ? `$${this.#emit(link)}` : cssValue(value) || '""';
+    const docs = usage ? usage.split(/\r?\n/).map(line => `/// ${line}`) : [];
 
-    return [usage && `/// ${usage}`, `$${this.#emit(token.name)}: ${rhs};`]
-      .filter(Boolean)
-      .join(EOL);
+    return [...docs, `$${this.#emit(token.name)}: ${rhs};`].join(EOL);
   }
 
   override combinator(tokens: Token[]): string {
     const values = tokens.map(token => this.generateToken(token));
     const lines = [values.join(EOL)];
 
+    // A later `$name:` silently overwrites an earlier one, so two sources
+    // emitting the same variable is an error rather than a lost value.
+    const declared = new Map<string, string>();
+    const declare = (variable: string, source: string): string => {
+      const existing = declared.get(variable);
+
+      if (existing) {
+        throw new Error(
+          `ScssVars: ${source} and ${existing} both emit $${variable}. Rename one of them.`,
+        );
+      }
+
+      declared.set(variable, source);
+
+      return variable;
+    };
+
+    tokens.forEach(token => declare(this.#emit(token.name), `token "${token.name}"`));
+
     const { separator = '-' } = this.options;
-    const modeMap = this.buildModeMap(
-      tokens,
-      (_key, val, mode, token) =>
-        `$${this.#emit(token.name)}${separator}${mode}: ${cssValue(val)};`,
-    );
+    const modeMap = this.buildModeMap(tokens, (_key, val, mode, token) => {
+      const variable = declare(
+        this.#emit(`${token.name}${separator}${mode}`),
+        `mode "${mode}" of token "${token.name}"`,
+      );
+
+      return `$${variable}: ${cssValue(val) || '""'};`;
+    });
 
     for (const [mode, entries] of modeMap) {
       lines.push('');
@@ -165,7 +187,7 @@ export class ScssVars extends Scss {
       .map(({ groupName, entries }) => {
         const groupKebab = kebabCase(groupName);
         const mapEntries = entries
-          .map(({ shortName, token }) => `  ${kebabCase(shortName)}: $${this.#emit(token.name)},`)
+          .map(({ shortName, token }) => `  '${kebabCase(shortName)}': $${this.#emit(token.name)},`)
           .join(EOL);
 
         return [
