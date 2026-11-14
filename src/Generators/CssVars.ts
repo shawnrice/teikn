@@ -45,12 +45,15 @@ const parseLayer = (
   return { name: layer.name, statement: layer.statement ?? false };
 };
 
+// Escape for use inside a double-quoted CSS string.
+const cssString = (val: string): string => val.replace(/["\\]/g, '\\$&').replace(/\r?\n/g, '\\a ');
+
 const parseModeSelector = (
   raw: ModeSelector | undefined,
   mode: string,
 ): { atRule: string | null; selector: string } => {
   if (raw == null) {
-    return { atRule: null, selector: `[data-theme="${mode}"]` };
+    return { atRule: null, selector: `[data-theme="${cssString(mode)}"]` };
   }
 
   if (typeof raw === 'object') {
@@ -66,6 +69,9 @@ const parseModeSelector = (
 
 export class CssVars extends Generator<CssVarsOpts> {
   #refMap: Map<unknown, string> = new Map();
+
+  // Emitted (post-plugin) mode key → authored mode key.
+  #modeOrigin: Map<string, string> = new Map();
 
   constructor(options = {}) {
     const opts = Object.assign({}, defaultOptions, options);
@@ -104,6 +110,16 @@ export class CssVars extends Generator<CssVarsOpts> {
     // (Transition, BoxShadow) point at the pre-rename names.
     const transformed = this.remapLinks(args[0], this.applyPluginPipeline(args[0], args[1]));
     this.#refMap = this.buildReferenceMap(transformed);
+    this.#modeOrigin = new Map(
+      transformed.flatMap((token, i) => {
+        const before = Object.keys(args[0][i]?.modes ?? {});
+        const after = Object.keys(token.modes ?? {});
+
+        return before.length === after.length
+          ? after.map((key, j): [string, string] => [key, before[j]!])
+          : [];
+      }),
+    );
 
     return transformed.map(t => this.stringifyValues(t));
   }
@@ -131,7 +147,9 @@ export class CssVars extends Generator<CssVarsOpts> {
     // baked-in resolved value.
     const rhs = link ? `var(--${this.#emit(link)})` : cssValue(value);
 
-    return [usage && `  /* ${usage} */`, `  ${key}: ${rhs};`].filter(Boolean).join(EOL);
+    return [usage && `  /* ${usage.replace(/\*\//g, '* /')} */`, `  ${key}: ${rhs};`]
+      .filter(Boolean)
+      .join(EOL);
   }
 
   combinator(tokens: Token[]): string {
@@ -145,7 +163,9 @@ export class CssVars extends Generator<CssVarsOpts> {
 
     for (const [mode, vars] of modeMap) {
       const { useMediaQuery, modeSelectors } = this.options;
-      const raw = modeSelectors?.[mode];
+      // Plugins (NameConventionPlugin) may rename mode keys; `modeSelectors` is
+      // keyed by the authored name, so fall back to it.
+      const raw = modeSelectors?.[mode] ?? modeSelectors?.[this.#modeOrigin.get(mode) ?? mode];
       const { atRule, selector } = parseModeSelector(raw, mode);
 
       if (atRule) {

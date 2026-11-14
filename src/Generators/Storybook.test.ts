@@ -33,7 +33,7 @@ describe('Storybook generator', () => {
     const tokens: Token[] = [{ name: 'primary', type: 'color', value: '#ff0000' }];
     const output = sb.generate(tokens);
 
-    expect(output).toContain('from "./tokens"');
+    expect(output).toContain('from "./tokens.mjs"');
   });
 
   test('It detects JavaScript (CJS) sibling import path', () => {
@@ -44,10 +44,10 @@ describe('Storybook generator', () => {
     const tokens: Token[] = [{ name: 'primary', type: 'color', value: '#ff0000' }];
     const output = sb.generate(tokens);
 
-    expect(output).toContain('from "./tokens"');
+    expect(output).toContain('from "./tokens.cjs"');
   });
 
-  test('It detects TypeScript meta sibling and imports from the runtime base', () => {
+  test('It detects TypeScript meta sibling and imports the runtime file', () => {
     const sb = new Storybook({ dateFn: fixedDate, version: 'test' });
     const ts = new TypeScript({ filename: 'design' });
     sb.siblings = [sb, ts];
@@ -55,7 +55,7 @@ describe('Storybook generator', () => {
     const tokens: Token[] = [{ name: 'primary', type: 'color', value: '#ff0000' }];
     const output = sb.generate(tokens);
 
-    expect(output).toContain('from "./design"');
+    expect(output).toContain('from "./design.mjs"');
   });
 
   test("composite mode values are preserved as objects, not stringified to '[object Object]'", () => {
@@ -84,7 +84,7 @@ describe('Storybook generator', () => {
     const tokens: Token[] = [{ name: 'primary', type: 'color', value: '#ff0000' }];
     const output = sb.generate(tokens);
 
-    expect(output).toContain('from "./meta"');
+    expect(output).toContain('from "./meta.mjs"');
   });
 
   test('It uses custom importPath when provided', () => {

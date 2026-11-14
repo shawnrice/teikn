@@ -14,7 +14,7 @@ const sampleTokens: Token[] = [
 describe('TypeScript meta generator', () => {
   test('emits both runtime and declaration files by default', () => {
     const files = new TypeScript({ dateFn: fixedDate }).generateFiles(sampleTokens);
-    expect([...files.keys()].toSorted()).toEqual(['tokens.d.ts', 'tokens.mjs']);
+    expect([...files.keys()].toSorted()).toEqual(['tokens.d.mts', 'tokens.mjs']);
   });
 
   test('combined output matches snapshot (catches structural drift)', () => {
@@ -37,7 +37,7 @@ describe('TypeScript meta generator', () => {
   });
 
   test('filenames() reports both files without running a generation pass', () => {
-    expect(new TypeScript().filenames().toSorted()).toEqual(['tokens.d.ts', 'tokens.mjs']);
+    expect(new TypeScript().filenames().toSorted()).toEqual(['tokens.d.mts', 'tokens.mjs']);
   });
 
   test('runtime file defaults to ESM (.mjs) with `export const tokens`', () => {
@@ -49,7 +49,7 @@ describe('TypeScript meta generator', () => {
 
   test('declaration file uses narrow literal types by default', () => {
     const files = new TypeScript({ dateFn: fixedDate }).generateFiles(sampleTokens);
-    const dts = files.get('tokens.d.ts')!;
+    const dts = files.get('tokens.d.mts')!;
     expect(dts).toContain('export declare const tokens: {');
     expect(dts).toContain("readonly colorPrimary: '#0066cc';");
     expect(dts).toContain("readonly colorSecondary: '#999999';");
@@ -65,7 +65,7 @@ describe('TypeScript meta generator', () => {
 
   test('loose: true widens the declaration file to primitive types', () => {
     const files = new TypeScript({ dateFn: fixedDate, loose: true }).generateFiles(sampleTokens);
-    const dts = files.get('tokens.d.ts')!;
+    const dts = files.get('tokens.d.mts')!;
     expect(dts).toContain('readonly colorPrimary: string;');
     expect(dts).not.toContain('"#0066cc"');
   });
@@ -74,7 +74,7 @@ describe('TypeScript meta generator', () => {
     const files = new TypeScript({ dateFn: fixedDate, filename: 'design' }).generateFiles(
       sampleTokens,
     );
-    expect([...files.keys()].toSorted()).toEqual(['design.d.ts', 'design.mjs']);
+    expect([...files.keys()].toSorted()).toEqual(['design.d.mts', 'design.mjs']);
   });
 
   test('shared nameTransformer propagates to both sub-generators', () => {
@@ -83,7 +83,7 @@ describe('TypeScript meta generator', () => {
       nameTransformer: n => n.toUpperCase(),
     }).generateFiles([{ name: 'primary', type: 'color', value: '#0066cc' }]);
     expect(files.get('tokens.mjs')).toContain('PRIMARY:');
-    expect(files.get('tokens.d.ts')).toContain('PRIMARY:');
+    expect(files.get('tokens.d.mts')).toContain('PRIMARY:');
   });
 
   test('describe reports format and import-style usage', () => {
@@ -97,7 +97,7 @@ describe('TypeScript meta generator', () => {
       { name: 'primary', type: 'color', value: '#ff0000', group: 'color' },
     ]);
     expect(files.get('tokens.mjs')).toContain('export const color = (name)');
-    expect(files.get('tokens.d.ts')).toContain('export declare const color:');
+    expect(files.get('tokens.d.mts')).toContain('export declare const color:');
   });
 
   test('throws at construction if given an ext option', () => {
@@ -106,10 +106,10 @@ describe('TypeScript meta generator', () => {
     );
   });
 
-  test('plugin targeting .d.ts applies to the declarations file in meta', () => {
+  test('plugin targeting .d.mts applies to the declarations file in meta', () => {
     const dtsOnlyPlugin = {
       tokenType: 'color',
-      outputType: 'd.ts',
+      outputType: 'd.mts',
       runAfter: [],
       transform(token: Token): Token {
         return { ...token, usage: 'DTS-ANNOTATED' };
@@ -120,7 +120,7 @@ describe('TypeScript meta generator', () => {
       [{ name: 'primary', type: 'color', value: '#ff0000' }],
       [dtsOnlyPlugin],
     );
-    const dts = files.get('tokens.d.ts')!;
+    const dts = files.get('tokens.d.mts')!;
 
     // `usage` flows to the JSDoc comment in declarations. If d.ts-targeted
     // plugins are dropped (Phase 1 regression), the annotation is missing.
@@ -147,7 +147,7 @@ describe('TypeScript meta generator', () => {
       [uppercasePlugin],
     );
     const mjs = files.get('tokens.mjs')!;
-    const dts = files.get('tokens.d.ts')!;
+    const dts = files.get('tokens.d.mts')!;
 
     expect(mjs).toContain('#FF0000');
     // Declarations see the pre-plugin literal.

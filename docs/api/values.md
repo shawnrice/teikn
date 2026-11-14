@@ -26,7 +26,7 @@ new Color('steelblue');
 new Color('#ff6b35');
 new Color('rgb(70, 130, 180)');
 new Color('hsl(207, 44%, 49%)');
-new Color('lab(54.3, -5.6, -32.1)');
+new Color('lab(52, -8.4, -32.8)');
 new Color(70, 130, 180); // r, g, b
 new Color(70, 130, 180, 0.5); // r, g, b, a
 
@@ -100,8 +100,8 @@ c.lightness; // 49
 // Raw values per space
 c.asRGB(); // [70, 130, 180]
 c.asHSL(); // [207, 44, 49]
-c.asLAB(); // [54.3, -5.6, -32.1]
-c.asLCH(); // [54.3, 32.6, 260]
+c.asLAB(); // [52.0, -8.4, -32.8]
+c.asLCH(); // [52.0, 33.9, 255.7]
 c.asXYZ(); // [0.189, 0.200, 0.448]
 ```
 
@@ -112,8 +112,8 @@ c.toString('hex'); // '#4682b4'
 c.toString('rgb'); // 'rgb(70, 130, 180)'
 c.toString('rgba'); // 'rgba(70, 130, 180, 1)'
 c.toString('hsl'); // 'hsl(207, 44%, 49%)'
-c.toString('lab'); // 'lab(54.3, -5.6, -32.1)'
-c.toString('lch'); // 'lch(54.3, 32.6, 260)'
+c.toString('lab'); // 'lab(51.99, -8.36, -32.83)'
+c.toString('lch'); // 'lch(51.99, 33.88, 255.71)'
 c.toString('oklch'); // 'oklch(0.588 0.09934 245.739)'
 c.toString('named'); // CSS named color if one matches
 c.toString('xkcd'); // nearest XKCD color name

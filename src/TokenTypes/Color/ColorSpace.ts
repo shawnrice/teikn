@@ -5,11 +5,13 @@ import {
   LCHToLAB,
   OklabToOklch,
   OklabToRGB,
+  OklabToXYZ,
   OklchToOklab,
   RGBToHSL,
   RGBToOklab,
   RGBToXYZ,
   XYZToLAB,
+  XYZToOklab,
   XYZToRGB,
 } from './conversions.js';
 import type { HSL, LAB, LCH, Oklab, Oklch, RGB, XYZ } from './types.js';
@@ -36,16 +38,17 @@ const direct: DirectConversion = {
   hsl: { rgb: HSLToRGB },
   lab: { xyz: LABToXYZ, lch: LABToLCH },
   lch: { lab: LCHToLAB },
-  oklab: { rgb: OklabToRGB, oklch: OklabToOklch },
+  oklab: { rgb: OklabToRGB, oklch: OklabToOklch, xyz: OklabToXYZ },
   oklch: { oklab: OklchToOklab },
   rgb: { hsl: RGBToHSL, xyz: RGBToXYZ, oklab: RGBToOklab },
-  xyz: { rgb: XYZToRGB, lab: XYZToLAB },
+  xyz: { rgb: XYZToRGB, lab: XYZToLAB, oklab: XYZToOklab },
 };
 
 // Hardcoded shortest paths through the conversion graph:
 //   HSL ↔ RGB ↔ XYZ ↔ LAB ↔ LCH
-//             ↕
+//             ↕  ╲  ↕
 //           Oklab ↔ Oklch
+// XYZ ↔ Oklab is direct, so only paths ending at rgb/hsl gamut-map and quantise.
 const paths: Record<Space, Record<Space, Space[]>> = {
   hsl: {
     hsl: [],
@@ -60,8 +63,8 @@ const paths: Record<Space, Record<Space, Space[]>> = {
     hsl: ['xyz', 'rgb', 'hsl'],
     lab: [],
     lch: ['lch'],
-    oklab: ['xyz', 'rgb', 'oklab'],
-    oklch: ['xyz', 'rgb', 'oklab', 'oklch'],
+    oklab: ['xyz', 'oklab'],
+    oklch: ['xyz', 'oklab', 'oklch'],
     rgb: ['xyz', 'rgb'],
     xyz: ['xyz'],
   },
@@ -69,28 +72,28 @@ const paths: Record<Space, Record<Space, Space[]>> = {
     hsl: ['lab', 'xyz', 'rgb', 'hsl'],
     lab: ['lab'],
     lch: [],
-    oklab: ['lab', 'xyz', 'rgb', 'oklab'],
-    oklch: ['lab', 'xyz', 'rgb', 'oklab', 'oklch'],
+    oklab: ['lab', 'xyz', 'oklab'],
+    oklch: ['lab', 'xyz', 'oklab', 'oklch'],
     rgb: ['lab', 'xyz', 'rgb'],
     xyz: ['lab', 'xyz'],
   },
   oklab: {
     hsl: ['rgb', 'hsl'],
-    lab: ['rgb', 'xyz', 'lab'],
-    lch: ['rgb', 'xyz', 'lab', 'lch'],
+    lab: ['xyz', 'lab'],
+    lch: ['xyz', 'lab', 'lch'],
     oklab: [],
     oklch: ['oklch'],
     rgb: ['rgb'],
-    xyz: ['rgb', 'xyz'],
+    xyz: ['xyz'],
   },
   oklch: {
     hsl: ['oklab', 'rgb', 'hsl'],
-    lab: ['oklab', 'rgb', 'xyz', 'lab'],
-    lch: ['oklab', 'rgb', 'xyz', 'lab', 'lch'],
+    lab: ['oklab', 'xyz', 'lab'],
+    lch: ['oklab', 'xyz', 'lab', 'lch'],
     oklab: ['oklab'],
     oklch: [],
     rgb: ['oklab', 'rgb'],
-    xyz: ['oklab', 'rgb', 'xyz'],
+    xyz: ['oklab', 'xyz'],
   },
   rgb: {
     hsl: ['hsl'],
@@ -105,8 +108,8 @@ const paths: Record<Space, Record<Space, Space[]>> = {
     hsl: ['rgb', 'hsl'],
     lab: ['lab'],
     lch: ['lab', 'lch'],
-    oklab: ['rgb', 'oklab'],
-    oklch: ['rgb', 'oklab', 'oklch'],
+    oklab: ['oklab'],
+    oklch: ['oklab', 'oklch'],
     rgb: ['rgb'],
     xyz: [],
   },

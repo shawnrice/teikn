@@ -1,3 +1,4 @@
+import { CSS_NUMBER, formatNumber, tidy } from './parse-utils.js';
 import { assertNotRef } from './ref-guard.js';
 
 // ─── Unit Type ──────────────────────────────────────────────
@@ -16,21 +17,32 @@ export const convertDuration = (value: number, from: DurationUnit, to: DurationU
     return value;
   }
 
-  return from === 'ms' ? value / 1000 : value * 1000;
+  return tidy(from === 'ms' ? value / 1000 : value * 1000);
 };
 
 // ─── Parsing ────────────────────────────────────────────────
 
-const PARSE_RE = /^(-?\d+(?:\.\d+)?)(ms|s)$/;
+const PARSE_RE = new RegExp(`^(${CSS_NUMBER})(ms|s)$`, 'i');
 
 const parseCss = (css: string): { value: number; unit: DurationUnit } => {
   const m = css.trim().match(PARSE_RE);
+  const value = m ? Number(m[1]) : NaN;
 
-  if (!m) {
+  if (!m || !Number.isFinite(value)) {
     throw new Error(`Invalid duration: "${css}"`);
   }
 
-  return { value: parseFloat(m[1]!), unit: m[2]! as DurationUnit };
+  return { value, unit: m[2]!.toLowerCase() as DurationUnit };
+};
+
+const assertValid = (value: number, unit: string): void => {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    throw new Error(`Invalid duration value: ${value} — expected a finite number`);
+  }
+
+  if (!isDurationUnit(unit)) {
+    throw new Error(`Invalid duration unit: "${unit}". Valid units: ms, s`);
+  }
 };
 
 // ─── Duration ───────────────────────────────────────────────
@@ -63,6 +75,7 @@ export class Duration {
     }
 
     if (typeof first === 'object') {
+      assertValid(first.value, first.unit);
       this.#value = first.value;
       this.#unit = first.unit;
 
@@ -73,6 +86,7 @@ export class Duration {
       throw new Error('Duration(number) requires a unit: "ms" or "s"');
     }
 
+    assertValid(first, unit);
     this.#value = first;
     this.#unit = unit;
   }
@@ -99,33 +113,33 @@ export class Duration {
   }
 
   ms(): number {
-    return this.#unit === 'ms' ? this.#value : this.#value * 1000;
+    return convertDuration(this.#value, this.#unit, 'ms');
   }
 
   // ─── Math ───────────────────────────────────────────────────
 
   scale(factor: number): Duration {
-    return new Duration(this.#value * factor, this.#unit);
+    return new Duration(tidy(this.#value * factor), this.#unit);
   }
 
   add(other: Duration): Duration {
     if (this.#unit === other.#unit) {
-      return new Duration(this.#value + other.#value, this.#unit);
+      return new Duration(tidy(this.#value + other.#value), this.#unit);
     }
 
     const converted = other.to(this.#unit);
 
-    return new Duration(this.#value + converted.value, this.#unit);
+    return new Duration(tidy(this.#value + converted.value), this.#unit);
   }
 
   subtract(other: Duration): Duration {
     if (this.#unit === other.#unit) {
-      return new Duration(this.#value - other.#value, this.#unit);
+      return new Duration(tidy(this.#value - other.#value), this.#unit);
     }
 
     const converted = other.to(this.#unit);
 
-    return new Duration(this.#value - converted.value, this.#unit);
+    return new Duration(tidy(this.#value - converted.value), this.#unit);
   }
 
   // ─── Comparison ─────────────────────────────────────────────
@@ -141,7 +155,7 @@ export class Duration {
   }
 
   toString(): string {
-    return `${this.#value}${this.#unit}`;
+    return `${formatNumber(this.#value)}${this.#unit}`;
   }
 
   // ─── Static helpers ──────────────────────────────────────────

@@ -23,9 +23,10 @@ describe('Color tests', () => {
 
   test('RGBToXYZ correctly converts', () => {
     const result = RGBToXYZ([55, 192, 122]);
-    expect(result[0]).toBeCloseTo(0.23935776325367514, 12);
-    expect(result[1]).toBeCloseTo(0.3991391182137695, 12);
-    expect(result[2]).toBeCloseTo(0.24851266776484887, 12);
+    // CSS Color 4 sample-code matrix (xyz-d65)
+    expect(result[0]).toBeCloseTo(0.239368, 6);
+    expect(result[1]).toBeCloseTo(0.39915, 6);
+    expect(result[2]).toBeCloseTo(0.248558, 6);
   });
 
   test('Symmetrical conversion from RGB -> XYZ -> RGB', () => {
@@ -196,7 +197,7 @@ describe('Color tests', () => {
   // ─── Format conversion tests ─────────────────────────────
 
   test('Color("aliceblue") can convert to HSLA', () => {
-    expect(new Color('aliceblue').toString('hsla')).toBe('hsla(208, 100%, 97%, 1)');
+    expect(new Color('aliceblue').toString('hsla')).toBe('hsla(208, 100%, 97.06%, 1)');
   });
 
   test('HSL colors white works', () => {

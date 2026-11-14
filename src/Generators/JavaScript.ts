@@ -4,7 +4,8 @@ import { camelCase, deriveShortName } from '../string-utils.js';
 import type { Token } from '../Token.js';
 import type { GeneratorInfo, GeneratorOptions } from './Generator.js';
 import { Generator } from './Generator.js';
-import { maybeQuote, quoteKey } from './value-serializers.js';
+import { assertGroupExportName, jsDocLines, objectKey, propertyAccess } from './js-emit.js';
+import { maybeQuote } from './value-serializers.js';
 
 export type JavaScriptModule = 'esm' | 'cjs';
 
@@ -81,14 +82,14 @@ export class JavaScript extends Generator<JavaScriptOpts> {
 
   generateToken(token: Token): string {
     const { nameTransformer } = this.options;
-    const key = quoteKey(nameTransformer!(token.name));
+    const key = objectKey(nameTransformer!(token.name));
     const deprecationTag = token.deprecated
       ? `   *  @deprecated${token.replacement ? ` use \`${nameTransformer!(token.replacement)}\` instead` : ''}`
       : null;
 
     return [
       `  /**`,
-      token.usage && `   *  ${token.usage}`,
+      ...(token.usage ? jsDocLines(token.usage) : []),
       `   *  Type: ${token.type}`,
       deprecationTag,
       `   */`,
@@ -110,11 +111,12 @@ export class JavaScript extends Generator<JavaScriptOpts> {
 
     if (groups) {
       const groupBlocks = this.tokenGroups(tokens).map(({ groupName, entries }) => {
+        assertGroupExportName({ generator: 'JavaScript', groupName, type: entries[0]!.token.type });
         exportNames.push(groupName);
         const mapEntries = entries
           .map(
             ({ shortName, token }) =>
-              `  ${quoteKey(shortName)}: tokens.${nameTransformer!(token.name)},`,
+              `  ${objectKey(shortName)}: tokens${propertyAccess(nameTransformer!(token.name))},`,
           )
           .join(EOL);
 
@@ -138,11 +140,14 @@ export class JavaScript extends Generator<JavaScriptOpts> {
       parts.push('', ...groupBlocks);
     }
 
-    const modeMap = this.buildModeMap(tokens, (key, val) => `    ${key}: ${maybeQuote(val)},`);
+    const modeMap = this.buildModeMap(
+      tokens,
+      (key, val) => `    ${objectKey(key)}: ${maybeQuote(val)},`,
+    );
 
     if (modeMap.size > 0) {
       const modeEntries = [...modeMap.entries()].map(([mode, entries]) =>
-        [`  ${quoteKey(mode)}: {`, ...entries, `  },`].join(EOL),
+        [`  ${objectKey(mode)}: {`, ...entries, `  },`].join(EOL),
       );
       parts.push('', `${decl} modes = {`, ...modeEntries, `};`);
       exportNames.push('modes');

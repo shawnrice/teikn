@@ -339,12 +339,8 @@ describe('Transition', () => {
     const t = new Transition('200ms', CubicBezier.easeIn);
     const reversed = t.reverse();
     // easeIn reversed should be easeOut's control points
-    const original = t.timingFunction;
-    const rev = reversed.timingFunction;
-    expect(rev.x1).toBe(1 - original.x2);
-    expect(rev.y1).toBe(1 - original.y2);
-    expect(rev.x2).toBe(1 - original.x1);
-    expect(rev.y2).toBe(1 - original.y1);
+    expect(reversed.timingFunction.controlPoints).toEqual(CubicBezier.easeOut.controlPoints);
+    expect(reversed.timingFunction.keyword).toBe('ease-out');
   });
 
   it('reverse preserves duration, delay, and property', () => {

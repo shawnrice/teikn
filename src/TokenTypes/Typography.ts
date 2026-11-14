@@ -1,4 +1,5 @@
 import { Dimension } from './Dimension.js';
+import { CSS_NUMBER, assertNotPaddedRef } from './parse-utils.js';
 import type { RefFields } from './ref-guard.js';
 import { assertNotRef, isRefString } from './ref-guard.js';
 
@@ -11,8 +12,11 @@ import { assertNotRef, isRefString } from './ref-guard.js';
 // comma-joined CSS form up front so every getter/serializer sees a single
 // string — callers may still author it as `["Inter", "sans-serif"]`. A plain
 // string (including a `{ref}`) passes through.
-const toFamily = (value: string | readonly string[]): string =>
-  Array.isArray(value) ? value.join(', ') : (value as string);
+const toFamily = (value: string | readonly string[]): string => {
+  assertNotPaddedRef(value, 'Typography fontFamily');
+
+  return Array.isArray(value) ? value.join(', ') : (value as string);
+};
 
 // fontSize / letterSpacing are lengths. We accept a `Dimension` or a CSS
 // string and coerce to `Dimension`, mirroring how `Transition` coerces its
@@ -38,6 +42,8 @@ const toDimension = (value: Dimension | string, field: string): Dimension | stri
   return new Dimension(value);
 };
 
+const numberRe = new RegExp(`^${CSS_NUMBER}$`, 'i');
+
 // fontWeight / lineHeight are unitless numbers (see the DTCG `number` type).
 // A numeric string is tolerated so authors can paste values from a spec.
 const toNumber = (value: number | string, field: string): number | string => {
@@ -45,7 +51,8 @@ const toNumber = (value: number | string, field: string): number | string => {
     return value;
   }
 
-  const n = typeof value === 'number' ? value : Number(value);
+  // Decimal numbers only: `Number()` alone would read `""` as 0 and `"0x10"` as 16.
+  const n = typeof value === 'number' || numberRe.test(String(value).trim()) ? Number(value) : NaN;
 
   if (!Number.isFinite(n)) {
     throw new Error(`Typography ${field} must be a finite number, got ${JSON.stringify(value)}`);

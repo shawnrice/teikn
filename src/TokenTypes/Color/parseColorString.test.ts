@@ -235,4 +235,89 @@ describe('parseColorString', () => {
   test('throws on rgb with out-of-range values', () => {
     expect(() => parseColorString('rgb(999, 999, 999)')).toThrow();
   });
+
+  // ─── Separators and component count ───────────────────────
+
+  test.each([
+    'rgb(123)',
+    'rgb(255255255)',
+    'rgb(1,,2)',
+    'rgb(1 2)',
+    'rgb(1 2 3 4 5)',
+    'rgb(1 2 3 /)',
+    'rgb(1 2 3 / 0.5 / 1)',
+    'rgb(1px 2 3)',
+    'rgb(1 2 3)x',
+    'rgb(-1 0 0)',
+    'hsl(120 50%)',
+    'lab(50 20)',
+    'lab(50 20 30 0.5)',
+    'lch(50 30)',
+    'oklab(0.5 0.1)',
+    'oklch(0.7 0.15)',
+    'xyz(0.5 0.3)',
+    'hsl(10% 50% 50%)',
+    'color(srgb 1 0 0)',
+    'rgb(from red r g b)',
+  ])('rejects malformed %p', input => {
+    expect(() => parseColorString(input)).toThrow('Cannot extract color');
+  });
+
+  test('rgba() without alpha is opaque (rgba is an alias of rgb)', () => {
+    expect(parseColorString('rgba(255, 0, 0)')).toEqual({
+      space: 'rgb',
+      data: [255, 0, 0],
+      alpha: 1,
+    });
+  });
+
+  // ─── CSS Color 4 forms ────────────────────────────────────
+
+  test.each([
+    ['rgb(255 0 0 / 0.5)', 'rgb', [255, 0, 0], 0.5],
+    ['rgba(255 0 0 / 0.5)', 'rgb', [255, 0, 0], 0.5],
+    ['rgb(255, 0, 0, 0.5)', 'rgb', [255, 0, 0], 0.5],
+    ['rgb(255 0 0 / 50%)', 'rgb', [255, 0, 0], 0.5],
+    ['rgb( 255, 0, 0 )', 'rgb', [255, 0, 0], 1],
+    ['rgb(100% 0% 0%)', 'rgb', [255, 0, 0], 1],
+    ['rgb(none 0 0)', 'rgb', [0, 0, 0], 1],
+    ['RGB(1 2 3)', 'rgb', [1, 2, 3], 1],
+    ['rgba(1, 2, 3, 2)', 'rgb', [1, 2, 3], 1],
+    ['hsla(210 50% 50% / 0.5)', 'hsl', [210, 0.5, 0.5], 0.5],
+    ['hsl(210, 50%, 50%, 0.5)', 'hsl', [210, 0.5, 0.5], 0.5],
+    ['hsl(0.5turn 50% 50%)', 'hsl', [180, 0.5, 0.5], 1],
+    ['hsl(200grad 50% 50%)', 'hsl', [180, 0.5, 0.5], 1],
+    ['hsl(90deg 50% 50%)', 'hsl', [90, 0.5, 0.5], 1],
+    ['lab(50 20 .5)', 'lab', [50, 20, 0.5], 1],
+    ['lab(50% 20 -30)', 'lab', [50, 20, -30], 1],
+    ['lab(50 150 0)', 'lab', [50, 150, 0], 1],
+    ['lab(150 0 0)', 'lab', [100, 0, 0], 1],
+    ['lab(-5 0 0)', 'lab', [0, 0, 0], 1],
+    ['lab(none 20 30)', 'lab', [0, 20, 30], 1],
+    ['lab(50, 20, 30 / 0.5)', 'lab', [50, 20, 30], 0.5],
+    ['lch(50 30 400)', 'lch', [50, 30, 40], 1],
+    ['lch(50 30 -30)', 'lch', [50, 30, 330], 1],
+    ['lch(50 160 40)', 'lch', [50, 160, 40], 1],
+    ['oklab(60% 0.1 -0.1 / 30%)', 'oklab', [0.6, 0.1, -0.1], 0.3],
+    ['oklch(0.7 0.15 0.5turn)', 'oklch', [0.7, 0.15, 180], 1],
+    ['xyz(-0.1, 0.07, 0.95)', 'xyz', [-0.1, 0.07, 0.95], 1],
+  ] as const)('parses %p', (input, space, data, alpha) => {
+    expect(parseColorString(input)).toEqual({ space, data: [...data], alpha });
+  });
+
+  test('parses a rad hue', () => {
+    const [h] = parseColorString(`hsl(${Math.PI}rad 50% 50%)`).data;
+    expect(h).toBeCloseTo(180, 10);
+  });
+
+  test('rounds fractional rgb channels instead of truncating', () => {
+    expect(parseColorString('rgb(127.5, 0.4, 254.6)').data).toEqual([128, 0, 255]);
+  });
+
+  // ─── Prototype keys are not colors ────────────────────────
+
+  test.each(['constructor', 'toString', '__proto__'])('xkcd:%s is an unknown color', name => {
+    expect(() => parseColorString(`xkcd:${name}`)).toThrow('Unknown xkcd color');
+    expect(() => parseColorString(name)).toThrow('Cannot extract color');
+  });
 });

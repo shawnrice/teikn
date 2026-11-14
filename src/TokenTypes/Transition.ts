@@ -1,16 +1,25 @@
 import { splitTopLevel, splitTopLevelWhitespace } from '../string-utils.js';
 import { CubicBezier } from './CubicBezier.js';
 import { Duration } from './Duration.js';
+import { CSS_NUMBER, assertNotPaddedRef } from './parse-utils.js';
 import type { RefFields } from './ref-guard.js';
 import { assertNotRef, isRefString } from './ref-guard.js';
 
 // Leading `-?` so a negative `transition-delay` (valid CSS) parses as a time
 // rather than falling through to `property`.
-const timeRe = /^(-?\d+(?:\.\d+)?)(ms|s)$/;
+const timeRe = new RegExp(`^${CSS_NUMBER}(?:ms|s)$`, 'i');
 
 const timingKeywords = new Set(['ease', 'ease-in', 'ease-out', 'ease-in-out', 'linear']);
 
+// Valid CSS easings that a CubicBezier cannot represent.
+const unsupportedTimingRe = /^(?:step-start$|step-end$|steps\(|linear\()/i;
+
+const propertyRe = /^(?:--|-?[a-z_])[\w-]*$/i;
+
 const isTimeValue = (s: string): boolean => timeRe.test(s);
+
+const invalid = (css: string, reason: string): Error =>
+  new Error(`Invalid transition: "${css}" — ${reason}`);
 
 const parse = (
   css: string,
@@ -27,10 +36,26 @@ const parse = (
       timingKeywords.has(part.toLowerCase()) ||
       part.toLowerCase().startsWith('cubic-bezier(')
     ) {
+      if (timing !== null) {
+        throw invalid(css, `more than one timing function ("${timing}", "${part}")`);
+      }
+
       timing = part;
+    } else if (unsupportedTimingRe.test(part)) {
+      throw invalid(
+        css,
+        `unsupported timing function "${part}" (only cubic-bezier() and the ` +
+          `ease/linear keywords can be represented)`,
+      );
+    } else if (property !== null || !propertyRe.test(part)) {
+      throw invalid(css, `unexpected "${part}"`);
     } else {
       property = part;
     }
+  }
+
+  if (times.length > 2) {
+    throw invalid(css, `expected at most 2 times, got ${times.length}`);
   }
 
   return {
@@ -128,6 +153,7 @@ export class Transition implements RefFields {
       this.#timingFunction = toTiming(opts.timingFunction);
       this.#delay = opts.delay !== undefined ? toDuration(opts.delay) : new Duration(0, 's');
       this.#property = opts.property ?? 'all';
+      assertNotPaddedRef(this.#property, 'Transition property');
 
       return;
     }
@@ -136,6 +162,7 @@ export class Transition implements RefFields {
     this.#timingFunction = toTiming(timingFunction ?? 'ease');
     this.#delay = delay !== undefined ? toDuration(delay) : new Duration(0, 's');
     this.#property = property ?? 'all';
+    assertNotPaddedRef(this.#property, 'Transition property');
   }
 
   get duration(): Duration | string {
@@ -293,12 +320,12 @@ export class TransitionList implements RefFields {
 
     if (typeof first === 'string') {
       assertNotRef(first, 'TransitionList');
-      this.#layers = splitTopLevel(first).map(s => new Transition(s));
+      this.#layers = Object.freeze(splitTopLevel(first).map(s => new Transition(s)));
 
       return;
     }
 
-    this.#layers = [...first];
+    this.#layers = Object.freeze([...first]);
   }
 
   get layers(): readonly Transition[] {
