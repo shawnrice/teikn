@@ -32,9 +32,10 @@ export class Json extends Generator<JsonOpts> {
   }
 
   combinator(tokens: Token[]): string {
-    const combined = tokens.reduce(
-      (acc, token) => Object.assign(acc, this.generateToken(token)),
-      {},
+    // `fromEntries` defines own properties, so a token named `__proto__` is
+    // kept instead of being swallowed by the prototype setter.
+    const combined = Object.fromEntries(
+      tokens.flatMap(token => Object.entries(this.generateToken(token))),
     );
 
     return JSON.stringify(combined, null, 2);

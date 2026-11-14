@@ -1,7 +1,7 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`TypeScript meta generator > combined output matches snapshot (catches structural drift) 1`] = `
-"=== tokens.d.ts ===
+"=== tokens.d.mts ===
 /**
  * Teikn vtest
  * Generated Mon Jan 01 2024 12:00:00

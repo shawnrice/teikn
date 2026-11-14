@@ -419,7 +419,8 @@ export type TypeScriptDeclarationsOpts = {
      * Pair the declarations file with a specific runtime module format. When
      * set to \`"cjs"\`, emit \`.d.cts\` instead of \`.d.ts\` so Node's strict
      * ESM/CJS resolvers (\`moduleResolution: "node16" | "bundler"\`) pick up
-     * the declarations alongside the \`.cjs\` runtime file.
+     * the declarations alongside the \`.cjs\` runtime file. Likewise \`"esm"\`
+     * emits \`.d.mts\` to pair with the \`.mjs\` runtime. Unset: plain \`.d.ts\`.
      */
     module?: JavaScriptModule;
 } & GeneratorOptions;

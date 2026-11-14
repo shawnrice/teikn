@@ -102,11 +102,11 @@ describe('duplicate filenames within a single generator', () => {
 
 // ─── Scenario 3: TypeScript meta option propagation ───────────────
 describe('TypeScript meta option propagation', () => {
-  test('filename propagates to both .mjs and .d.ts outputs', () => {
+  test('filename propagates to both .mjs and .d.mts outputs', () => {
     const ts = new TypeScript({ filename: 'design', dateFn: fixedDate });
     const files = ts.filenames();
     expect(files).toContain('design.mjs');
-    expect(files).toContain('design.d.ts');
+    expect(files).toContain('design.d.mts');
   });
 
   test("module: 'cjs' emits .cjs for JS and .d.cts for declarations", () => {
@@ -120,7 +120,7 @@ describe('TypeScript meta option propagation', () => {
     const out = new TypeScript({ loose: true, dateFn: fixedDate, filename: 't' }).generateFiles(
       tokens,
     );
-    const dts = out.get('t.d.ts')!;
+    const dts = out.get('t.d.mts')!;
     const mjs = out.get('t.mjs')!;
     expect(dts).toMatch(/:\s*string;/); // widened
     expect(dts).not.toContain('"#0066cc"');
@@ -136,7 +136,7 @@ describe('TypeScript meta option propagation', () => {
       filename: 't',
     }).generateFiles(tokens);
     expect(out.get('t.mjs')).toContain('PRIMARY');
-    expect(out.get('t.d.ts')).toContain('PRIMARY');
+    expect(out.get('t.d.mts')).toContain('PRIMARY');
   });
 
   test('groups propagates to both', () => {
@@ -144,7 +144,7 @@ describe('TypeScript meta option propagation', () => {
       tokens,
     );
     expect(out.get('t.mjs')).toMatch(/export const color\s*=/);
-    expect(out.get('t.d.ts')).toMatch(/export declare const color:/);
+    expect(out.get('t.d.mts')).toMatch(/export declare const color:/);
   });
 
   test('version propagates to both', () => {
@@ -154,13 +154,13 @@ describe('TypeScript meta option propagation', () => {
       filename: 't',
     }).generateFiles(tokens);
     expect(out.get('t.mjs')).toContain('stress-test');
-    expect(out.get('t.d.ts')).toContain('stress-test');
+    expect(out.get('t.d.mts')).toContain('stress-test');
   });
 
   test('dateFn propagates to both', () => {
     const out = new TypeScript({ dateFn: () => 'DATESTAMP', filename: 't' }).generateFiles(tokens);
     expect(out.get('t.mjs')).toContain('DATESTAMP');
-    expect(out.get('t.d.ts')).toContain('DATESTAMP');
+    expect(out.get('t.d.mts')).toContain('DATESTAMP');
   });
 
   test('explicit ext is rejected on TypeScript meta', () => {
@@ -204,13 +204,13 @@ describe('TypeScript meta + sibling collision', () => {
     ).toThrow(/Duplicate/);
   });
 
-  test('TS meta + TypeScriptDeclarations using same filename collides on .d.ts', () => {
+  test('TS meta + TypeScriptDeclarations using same filename collides on .d.mts', () => {
     expect(
       () =>
         new Teikn({
           generators: [
             new TypeScript({ filename: 'design', dateFn: fixedDate }),
-            new TypeScriptDeclarations({ filename: 'design' }),
+            new TypeScriptDeclarations({ filename: 'design', module: 'esm' }),
           ],
         }),
     ).toThrow(/Duplicate/);
