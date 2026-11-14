@@ -158,9 +158,12 @@ const generatePaletteTokens = (
     const amount = toLight
       ? (targetLightness - seed.lightness) / (1 - seed.lightness)
       : (seed.lightness - targetLightness) / seed.lightness;
-    const clamped = Math.max(0, Math.min(1, amount));
+    // A white seed tinting (or a black seed shading) divides 0 by 0: there is
+    // nowhere further to go, so the step stays at the seed.
+    const clamped = Number.isFinite(amount) ? Math.max(0, Math.min(1, amount)) : 0;
 
-    return toLight ? seed.tint(clamped) : seed.shade(clamped);
+    // tint/shade mix with opaque white/black; a ramp holds the seed's alpha.
+    return (toLight ? seed.tint(clamped) : seed.shade(clamped)).setAlpha(seed.alpha);
   };
 
   // Each mode (a hand-authored mode or a theme override, now indistinguishable)
@@ -211,6 +214,16 @@ export class PalettePlugin extends Plugin<PalettePluginOptions> {
 
   constructor(options: PalettePluginOptions = {}) {
     super(options);
+
+    for (const end of ['lightEnd', 'darkEnd'] as const) {
+      const value = options[end];
+
+      if (value !== undefined && !(value >= 0 && value <= 100)) {
+        throw new Error(
+          `PalettePlugin: ${end} must be a lightness percentage from 0 to 100, got ${value}`,
+        );
+      }
+    }
   }
 
   expand(tokens: Token[]): Token[] {

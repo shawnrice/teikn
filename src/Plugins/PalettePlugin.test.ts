@@ -267,3 +267,36 @@ describe('PalettePlugin: modes and references', () => {
     expect(result.filter(t => t.name.startsWith('text'))).toEqual([tokens[1]!]);
   });
 });
+
+describe('PalettePlugin: edge values', () => {
+  const stepValue = (tokens: Token[], name: string): string =>
+    String(tokens.find(t => t.name === name)!.value);
+
+  test('a black seed with darkEnd 0 and a white seed with lightEnd 100 stay valid colors', () => {
+    const dark = new PalettePlugin({ steps: [500, 900], darkEnd: 0 }).expand([
+      { name: 'k', type: 'color', value: '#000' },
+    ]);
+    const light = new PalettePlugin({ steps: [100, 500], lightEnd: 100 }).expand([
+      { name: 'w', type: 'color', value: '#fff' },
+    ]);
+
+    expect(stepValue(dark, 'k-900')).toBe('rgb(0, 0, 0)');
+    expect(stepValue(light, 'w-100')).toBe('rgb(255, 255, 255)');
+  });
+
+  test('an RGB ramp holds the seed alpha on every step', () => {
+    const result = new PalettePlugin({ steps: [100, 500, 900] }).expand([
+      { name: 'a', type: 'color', value: 'rgba(0, 102, 204, 0.5)' },
+    ]);
+
+    for (const name of ['a-100', 'a-500', 'a-900']) {
+      expect(new Color(stepValue(result, name)).alpha).toBe(0.5);
+    }
+  });
+
+  test('lightEnd and darkEnd outside 0-100 are rejected', () => {
+    expect(() => new PalettePlugin({ lightEnd: 150 })).toThrow(/lightEnd/);
+    expect(() => new PalettePlugin({ darkEnd: -1 })).toThrow(/darkEnd/);
+    expect(() => new PalettePlugin({ darkEnd: Number.NaN })).toThrow(/darkEnd/);
+  });
+});
