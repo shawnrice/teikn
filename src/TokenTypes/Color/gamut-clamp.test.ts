@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
+import { convert } from './ColorSpace.js';
 import { Color } from './index.js';
 
 // Regression: out-of-sRGB lab()/lch()/xyz() colors (all legitimate CSS) used to
@@ -25,6 +26,23 @@ describe('sRGB gamut clamping', () => {
   test('out-of-gamut LCH and XYZ likewise produce valid hex', () => {
     expect(isValidHex(Color.fromLCH(50, 130, 20).asHex())).toBe(true);
     expect(isValidHex(Color.fromXYZ(0.9, 0, 0).asHex())).toBe(true);
+  });
+
+  test('out-of-gamut lab/lch/xyz colors are gamut-mapped, preserving OKLCH hue', () => {
+    // CSS Color 4 reduces chroma in OKLCH, holding lightness and hue. A naive
+    // per-channel clip (the old behavior) would shift hue by many degrees.
+    const hueDiff = (a: number, b: number) => Math.min(Math.abs(a - b), 360 - Math.abs(a - b));
+
+    for (const lch of [
+      [50, 130, 20],
+      [70, 100, 250],
+      [80, 90, 140],
+    ] as [number, number, number][]) {
+      const inHue = (convert('lch', 'oklch', lch) as number[])[2]!;
+      const outHue = (convert('rgb', 'oklch', Color.fromLCH(...lch).asRGB()) as number[])[2]!;
+
+      expect(hueDiff(inHue, outHue)).toBeLessThan(1);
+    }
   });
 
   test('out-of-range HSL saturation clamps instead of emitting invalid bytes', () => {

@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- **Out-of-gamut `lab()`/`lch()`/`xyz()` colors are now gamut-mapped into sRGB** via CSS Color 4
+  chroma reduction, the same mapper `oklab()`/`oklch()` already used, instead of a per-channel clip
+  that distorted hue and lightness. In-gamut colors are unchanged.
+
 ## 2.0.0-rc.1
 
 ### Removed

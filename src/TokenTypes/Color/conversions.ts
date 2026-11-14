@@ -111,15 +111,14 @@ export const RGBToXYZ = (rgb: RGB): XYZ => {
  */
 export const XYZToRGB = (xyz: XYZ): RGB => {
   const m = xyzToSRGBMatrix;
+  const lin = [0, 1, 2].map(
+    i => xyz[0] * m[i]![0] + xyz[1] * m[i]![1] + xyz[2] * m[i]![2],
+  ) as unknown as [number, number, number];
 
-  // Per-channel clamp to the sRGB gamut, mirroring `linearSRGBToByte`. Any
-  // lab()/lch()/xyz() color outside sRGB (all legitimate CSS) reaches RGB
-  // through this edge; without the clamp its channels fall outside [0, 255]
-  // and produce an invalid, un-parseable hex string.
-  return xyz
-    .map((_, i) => xyz[0] * m[i]![0] + xyz[1] * m[i]![1] + xyz[2] * m[i]![2])
-    .map(applyGamma)
-    .map(x => Math.round(clamp(0, 1, x) * 255)) as unknown as RGB;
+  // lab()/lch()/xyz() colors (all legitimate CSS) reach sRGB through this edge
+  // and are often out of gamut. Out-of-gamut colors route through the same CSS
+  // Color 4 chroma-reduction mapper oklab/oklch use, not a hue-distorting clip.
+  return linInGamut(lin) ? linearSRGBToByte(lin) : OklabToRGB(linearSRGBToOklab(lin));
 };
 
 // ─── XYZ ↔ LAB ──────────────────────────────────────────────
