@@ -128,3 +128,37 @@ describe('ReducedMotionPlugin', () => {
     expect(reduced.usage).toBe('Fade animation duration');
   });
 });
+
+describe('ReducedMotionPlugin: modes', () => {
+  const reduced = (token: Token): Token =>
+    new ReducedMotionPlugin().expand([token]).find(t => t.name.startsWith('reduced-'))!;
+
+  test('a mode on the source does not put the unreduced duration back', () => {
+    const token = reduced({
+      name: 'm',
+      type: 'duration',
+      value: '200ms',
+      modes: { slow: '400ms' },
+    });
+
+    expect(String(token.value)).toBe('0s');
+    expect(String(token.modes!.slow)).toBe('0s');
+  });
+
+  test('a transition mode is reduced like the default value', () => {
+    const token = reduced({
+      name: 'fade',
+      type: 'transition',
+      value: new Transition('0.3s', CubicBezier.ease),
+      modes: { slow: new Transition('0.6s', CubicBezier.ease) },
+    });
+
+    expect((token.modes!.slow as Transition).duration.toString()).toBe('0s');
+  });
+
+  test('the reduced token is not a linked alias', () => {
+    expect(
+      reduced({ name: 'm', type: 'duration', value: '{base}', link: 'duration-base' }).link,
+    ).toBe(undefined);
+  });
+});

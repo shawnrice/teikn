@@ -14,7 +14,12 @@
 
 - **References are resolved per mode.** A token whose value references a token with modes now
   inherits those modes (`brand = {primary}` gets primary's `dark` value), and a mode value that is a
-  reference resolves to its target's value for that mode rather than the target's default.
+  reference resolves to its target's value for that mode rather than the target's default. A linked
+  ref (`ref(name, { link: true })`) inherits nothing: it stays a live alias in every mode.
+  `validate` follows the same per-mode chains when checking for cycles.
+- **`ReducedMotionPlugin` and `ColorBlindnessPlugin` derive their tokens per mode.** A mode or theme
+  on the source token no longer puts the unreduced or unsimulated value back on the derived token.
+  `ColorBlindnessPlugin` also resolves a `{reference}` color before simulating it.
 - **`PalettePlugin` passes through a color that aliases a generated step** (`text = {brand-950}`)
   instead of throwing; it gets no ramp of its own and resolves in the normal reference pass.
 
