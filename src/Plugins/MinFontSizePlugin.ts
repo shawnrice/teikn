@@ -49,7 +49,7 @@ const toPx = (value: unknown, basePx: number): number | null => {
 };
 
 export class MinFontSizePlugin extends Plugin<MinFontSizePluginOptions> {
-  tokenType: RegExp = /font-size/;
+  tokenType: RegExp = /font[-_]?size/i;
   outputType: RegExp = /.*/;
 
   override audit(tokens: Token[]): AuditIssue[] {

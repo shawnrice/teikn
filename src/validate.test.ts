@@ -1,5 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 
+import { group } from './builders.js';
+import { resolveReferences } from './resolve.js';
 import type { Token } from './Token.js';
 import { Color } from './TokenTypes/Color/index.js';
 import { validate } from './validate.js';
@@ -282,5 +284,85 @@ describe('validate', () => {
         i => i.message.includes('mode "mobile"') && i.message.includes('missing fields'),
       ),
     ).toBe(true);
+  });
+});
+
+describe('validate reference walking', () => {
+  test.each<[string, Token['value'], string]>([
+    ['a top-level array', ['{nope}', 'serif'], 'Unresolved reference: {nope}'],
+    [
+      'a nested plain object',
+      { a: { b: '{nope}' } },
+      'Unresolved reference in field "a.b": {nope}',
+    ],
+    [
+      'an array inside an object',
+      { a: ['x', '{nope}'] },
+      'Unresolved reference in field "a": {nope}',
+    ],
+  ])('reports a dangling ref in %s, as the resolver would', (_label, value, message) => {
+    const tokens: Token[] = [{ name: 'f', type: 'font', value }];
+    expect(() => resolveReferences(tokens)).toThrow('Unresolved reference');
+    expect(validate(tokens).issues).toEqual([{ severity: 'error', token: 'f', message }]);
+  });
+
+  test('checks nested refs in mode values', () => {
+    const tokens: Token[] = [
+      { name: 'f', type: 'font', value: ['serif'], modes: { dark: ['{nope}'] } },
+    ];
+    expect(validate(tokens).issues[0]!.message).toBe('[mode "dark"] Unresolved reference: {nope}');
+  });
+
+  test('accepts nested refs that resolve', () => {
+    const tokens: Token[] = [
+      { name: 'base', type: 'font', value: 'serif' },
+      { name: 'f', type: 'font', value: ['{base}', { a: { b: '{base}' } }] as Token['value'] },
+    ];
+    expect(validate(tokens).valid).toBe(true);
+  });
+});
+
+describe('validate duplicate output names', () => {
+  test('flags tokens in different groups that emit the same type-name', () => {
+    const result = validate([
+      { name: 'primary', type: 'color', value: '#000' },
+      { name: 'primary', type: 'color', group: 'color', value: '#000' },
+      { name: 'primary', type: 'color', group: 'brand', value: '#000' },
+    ]);
+    expect(result.valid).toBe(false);
+    expect(result.issues.map(i => i.message)).toEqual([
+      expect.stringContaining(
+        'Duplicate output name "color-primary" — tokens "primary" and "color.primary"',
+      ),
+      expect.stringContaining(
+        'Duplicate output name "color-primary" — tokens "primary" and "brand.primary"',
+      ),
+    ]);
+  });
+
+  test('flags a type/name split that joins to the same output name', () => {
+    const result = validate([
+      ...group('font', { 'size-sm': '1px' }),
+      ...group('font-size', { sm: '2px' }),
+    ]);
+    expect(result.issues).toHaveLength(1);
+    expect(result.issues[0]!.message).toContain('Duplicate output name "font-size-sm"');
+  });
+
+  test('does not double-report a duplicate qualified name', () => {
+    const result = validate([
+      { name: 'primary', type: 'color', value: '#000' },
+      { name: 'primary', type: 'color', value: '#111' },
+    ]);
+    expect(result.issues).toHaveLength(1);
+    expect(result.issues[0]!.message).toContain('Duplicate qualified token name');
+  });
+
+  test('same name under different types is fine', () => {
+    const result = validate([
+      ...group('color', { primary: '#000' }),
+      ...group('spacing', { primary: '4px' }),
+    ]);
+    expect(result.valid).toBe(true);
   });
 });

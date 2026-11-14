@@ -119,10 +119,6 @@ const validateValue = (
     issue('warning', token.name, `${label}Color value "${value}" could not be parsed`);
   }
 
-  if (isRef(value)) {
-    checkRef(value, tokenKeys, token.name, 'Unresolved reference', label, issue);
-  }
-
   if (COMPOSITE_TYPES.has(token.type) && isComposite(value)) {
     const shapeError = validateCompositeShape(token.type, value as CompositeValue);
 
@@ -131,66 +127,51 @@ const validateValue = (
     }
   }
 
-  if (isComposite(value)) {
-    for (const [field, fieldValue] of Object.entries(value as CompositeValue)) {
-      if (isRef(fieldValue)) {
-        checkRef(
-          fieldValue,
-          tokenKeys,
-          token.name,
-          `Unresolved reference in field "${field}"`,
-          label,
-          issue,
-        );
-      }
-    }
-  }
-
+  // Walk the value the way `resolveReferences` does — arrays, nested plain
+  // objects and wrapper fields — so every ref it would follow is checked here.
   // First-class wrappers (Typography, Border, BoxShadow, Gradient) carry their
   // fields behind private state; inspect them through the RefFields protocol so
   // per-field references get the same unresolved/ambiguous checks as plain
   // composites. Recurse into arrays and nested wrappers so refs buried inside a
   // gradient's stops (an array of `{ color, position }`) are still caught.
-  if (hasRefFields(value)) {
-    const checkFieldRefs = (field: string, fieldValue: unknown): void => {
-      if (isRef(fieldValue)) {
-        checkRef(
-          fieldValue,
-          tokenKeys,
-          token.name,
-          `Unresolved reference in field "${field}"`,
-          label,
-          issue,
-        );
+  const checkRefs = (field: string, fieldValue: unknown): void => {
+    const at = (key: string): string => (field ? `${field}.${key}` : key);
 
-        return;
-      }
+    if (isRef(fieldValue)) {
+      checkRef(
+        fieldValue,
+        tokenKeys,
+        token.name,
+        field ? `Unresolved reference in field "${field}"` : 'Unresolved reference',
+        label,
+        issue,
+      );
 
-      if (Array.isArray(fieldValue)) {
-        fieldValue.forEach(item => checkFieldRefs(field, item));
-
-        return;
-      }
-
-      if (hasRefFields(fieldValue)) {
-        for (const [k, v] of Object.entries(fieldValue.__teikn_fields__())) {
-          checkFieldRefs(`${field}.${k}`, v);
-        }
-
-        return;
-      }
-
-      if (isComposite(fieldValue)) {
-        for (const [k, v] of Object.entries(fieldValue as CompositeValue)) {
-          checkFieldRefs(`${field}.${k}`, v);
-        }
-      }
-    };
-
-    for (const [field, fieldValue] of Object.entries(value.__teikn_fields__())) {
-      checkFieldRefs(field, fieldValue);
+      return;
     }
-  }
+
+    if (Array.isArray(fieldValue)) {
+      fieldValue.forEach(item => checkRefs(field, item));
+
+      return;
+    }
+
+    if (hasRefFields(fieldValue)) {
+      for (const [k, v] of Object.entries(fieldValue.__teikn_fields__())) {
+        checkRefs(at(k), v);
+      }
+
+      return;
+    }
+
+    if (isComposite(fieldValue)) {
+      for (const [k, v] of Object.entries(fieldValue as CompositeValue)) {
+        checkRefs(at(k), v);
+      }
+    }
+  };
+
+  checkRefs('', value);
 };
 
 /**
@@ -198,7 +179,7 @@ const validateValue = (
  *
  * Checks:
  * - Required fields (name, value, type)
- * - Duplicate token names
+ * - Duplicate token names, and distinct tokens sharing a default output name (`type-name`)
  * - Color values are parseable
  * - References point to existing tokens
  * - No circular references
@@ -216,6 +197,7 @@ const validateValue = (
 export const validate = (tokens: Token[]): ValidationResult => {
   const issues: ValidationIssue[] = [];
   const names = new Map<string, number>();
+  const emitted = new Map<string, string>();
   const tokenMap = new Map<string, Token>();
 
   const issue = (severity: ValidationSeverity, token: string, message: string) => {
@@ -266,6 +248,21 @@ export const validate = (tokens: Token[]): ValidationResult => {
           token.name,
           `Duplicate qualified token name "${qualifiedName}" — two tokens resolve to the same key. ` +
             `The resolver picks one non-deterministically; rename one of the tokens.`,
+        );
+      }
+
+      // Generators emit `type-name` by default, so two keys can share one output name.
+      const outputName = `${token.type}-${token.name}`;
+      const prior = emitted.get(outputName);
+
+      if (prior === undefined) {
+        emitted.set(outputName, qualifiedName);
+      } else if (prior !== qualifiedName) {
+        issue(
+          'error',
+          token.name,
+          `Duplicate output name "${outputName}" — tokens "${prior}" and "${qualifiedName}" are both emitted under it. ` +
+            `Rename one of the tokens or change its type.`,
         );
       }
 

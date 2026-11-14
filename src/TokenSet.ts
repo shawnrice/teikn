@@ -61,7 +61,7 @@ export const composeTokenSetsAsModes = (
       const existing = tokenMap.get(key);
 
       if (existing) {
-        existing.modes = { ...existing.modes, [modeName]: modeToken.value };
+        existing.modes = { ...existing.modes, ...modeToken.modes, [modeName]: modeToken.value };
       } else {
         throw new Error(
           `composeTokenSetsAsModes(): missing base token "${key}" for mode "${modeName}"`,

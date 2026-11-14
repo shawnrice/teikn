@@ -1,6 +1,9 @@
+import { createSeedResolver } from '../resolve.js';
+import { tokenKey } from '../token-keys.js';
 import type { Token } from '../Token.js';
 import { Dimension } from '../TokenTypes/Dimension.js';
 import { Plugin } from './Plugin.js';
+import { findTokens } from './token-names.js';
 
 type ClampPair = { min: string; max: string; output: string };
 
@@ -30,9 +33,7 @@ const toRem = (value: number, unit: string, remBase = 16): number => {
   return dim.to('px').value / remBase;
 };
 
-const extractNumericValue = (token: Token): { value: number; unit: string } | null => {
-  const { value } = token;
-
+const extractNumericValue = (value: unknown): { value: number; unit: string } | null => {
   if (value instanceof Dimension) {
     return { value: value.value, unit: value.unit };
   }
@@ -86,6 +87,14 @@ export class ClampPlugin extends Plugin<ClampPluginOptions> {
 
   constructor(options: ClampPluginOptions = {}) {
     super(options);
+
+    const { viewportMin = DEFAULT_VIEWPORT_MIN, viewportMax = DEFAULT_VIEWPORT_MAX } = options;
+
+    if (!(viewportMin < viewportMax)) {
+      throw new Error(
+        `ClampPlugin: viewportMin (${viewportMin}) must be less than viewportMax (${viewportMax})`,
+      );
+    }
   }
 
   expand(tokens: Token[]): Token[] {
@@ -97,31 +106,58 @@ export class ClampPlugin extends Plugin<ClampPluginOptions> {
       return tokens;
     }
 
-    const tokenMap = new Map(tokens.map(t => [t.name, t]));
-    const generated: Token[] = [];
+    const resolve = createSeedResolver(tokens);
 
-    for (const pair of pairs) {
-      const minToken = tokenMap.get(pair.min);
-      const maxToken = tokenMap.get(pair.max);
+    const find = (pair: ClampPair, role: 'min' | 'max'): Token => {
+      const name = pair[role];
+      const where = `ClampPlugin pair "${pair.output}": ${role} token "${name}"`;
+      const found = findTokens(tokens, name);
 
-      if (!minToken || !maxToken) {
-        continue;
+      if (found.length === 0) {
+        throw new Error(`${where} was not found`);
       }
 
-      const minExtracted = extractNumericValue(minToken);
-      const maxExtracted = extractNumericValue(maxToken);
+      if (found.length > 1) {
+        const keys = found.map(t => tokenKey(t));
 
-      if (!minExtracted || !maxExtracted) {
-        continue;
+        throw new Error(
+          `${where} is ambiguous — matches ${keys.join(', ')}. Use a qualified name like "${keys[0]}".`,
+        );
       }
 
-      const minRem = toRem(minExtracted.value, minExtracted.unit);
-      const maxRem = toRem(maxExtracted.value, maxExtracted.unit);
+      return found[0]!;
+    };
 
-      const clampStr = buildClampValue(minRem, maxRem, viewportMin, viewportMax);
+    const remOf = (pair: ClampPair, role: 'min' | 'max'): { token: Token; rem: number } => {
+      const token = find(pair, role);
+      const where = `ClampPlugin pair "${pair.output}": ${role} token "${pair[role]}"`;
+      const extracted = extractNumericValue(resolve(token.value, tokenKey(token)));
 
-      generated.push({ name: pair.output, type: minToken.type, value: clampStr });
-    }
+      if (!extracted) {
+        throw new Error(
+          `${where} is not a length (expected a number, a Dimension, or e.g. "16px")`,
+        );
+      }
+
+      try {
+        return { token, rem: toRem(extracted.value, extracted.unit) };
+      } catch {
+        throw new Error(
+          `${where} uses unit "${extracted.unit}", which cannot be converted to rem. Use px, rem or an absolute unit.`,
+        );
+      }
+    };
+
+    const generated = pairs.map((pair): Token => {
+      const min = remOf(pair, 'min');
+      const max = remOf(pair, 'max');
+
+      return {
+        name: pair.output,
+        type: min.token.type,
+        value: buildClampValue(min.rem, max.rem, viewportMin, viewportMax),
+      };
+    });
 
     return [...tokens, ...generated];
   }

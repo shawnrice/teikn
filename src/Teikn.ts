@@ -296,6 +296,12 @@ export class Teikn {
       );
     }
 
+    // Theme names become mode keys on plain objects, where `__proto__` is
+    // silently swallowed rather than stored.
+    if (themes?.some(t => t.name === '__proto__')) {
+      throw new Error('Theme name "__proto__" is reserved. Rename the theme.');
+    }
+
     this.plugins = plugins;
     this.themes = themes ?? [];
     this.outDir = outDir ?? process.cwd();
@@ -326,13 +332,18 @@ export class Teikn {
     return result;
   }
 
-  /** Run audit() on all plugins that support it, returning all issues. */
+  /**
+   * Run audit() on all plugins that support it, returning all issues. Plugins
+   * see reference-resolved tokens, so an alias is audited by the value it
+   * points at; an unresolvable reference throws.
+   */
   audit(tokens: Token[]): AuditIssue[] {
     const issues: AuditIssue[] = [];
+    const resolved = resolveReferences(tokens);
 
     for (const plugin of this.plugins) {
       if (plugin.audit) {
-        issues.push(...plugin.audit(tokens));
+        issues.push(...plugin.audit(resolved));
       }
     }
 
@@ -403,8 +414,9 @@ export class Teikn {
 
   async transform(tokens: Token[]): Promise<TransformResult> {
     // generateToStrings() handles validation, so we don't duplicate it here
-    const auditIssues = this.audit(tokens);
+    // Generate first so invalid tokens fail validation before audit resolves them.
     const generated = this.generateToStrings(tokens);
+    const auditIssues = this.audit(tokens);
     const files: TransformResult['files'] = [];
     const errors: TransformResult['errors'] = [];
 
@@ -415,7 +427,7 @@ export class Teikn {
 
         try {
           await fs.promises.writeFile(filename, content);
-          files.push({ path: filename, size: content.length });
+          files.push({ path: filename, size: Buffer.byteLength(content, 'utf8') });
         } catch (error) {
           errors.push({ path: filename, error });
         }

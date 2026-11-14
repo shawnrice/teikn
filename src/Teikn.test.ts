@@ -1,4 +1,7 @@
 import { describe, expect, test } from 'bun:test';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 
 import { group, theme, tokens } from './builders.js';
 import { Generator } from './Generators/Generator.js';
@@ -369,5 +372,45 @@ describe('Teikn', () => {
       const json = JSON.parse(writer.generateToStrings(colors).get('tokens.json')!);
       expect(json.colorPrimary.modes).toEqual({ dark: '#3399ff' });
     });
+  });
+});
+
+describe('Teikn.audit / transform', () => {
+  test('audit throws on an unresolvable reference', () => {
+    const writer = new Teikn({ generators: [new Json()] });
+    expect(() => writer.audit([{ name: 'a', type: 'color', value: '{nope}' }])).toThrow(
+      'Unresolved reference: {nope}',
+    );
+  });
+
+  test('transform reports validation errors before auditing', async () => {
+    const writer = new Teikn({ generators: [new Json()] });
+    await expect(writer.transform([{ name: 'a', type: 'color', value: '{nope}' }])).rejects.toThrow(
+      'Token validation failed',
+    );
+  });
+
+  test('transform reports file sizes in bytes', async () => {
+    const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'teikn-size-'));
+
+    try {
+      const writer = new Teikn({ generators: [new Json()], outDir });
+      const result = await writer.transform([{ name: 'quote', type: 'string', value: '“é”' }]);
+      const [file] = result.files;
+      const content = fs.readFileSync(file!.path, 'utf8');
+
+      expect(file!.size).toBe(fs.statSync(file!.path).size);
+      expect(file!.size).toBeGreaterThan(content.length);
+    } finally {
+      fs.rmSync(outDir, { recursive: true, force: true });
+    }
+  });
+
+  test('rejects a theme named __proto__ instead of dropping it', () => {
+    const colors = group('color', { primary: '#0066cc' });
+    const themes = [theme('__proto__', colors, { primary: '#3399ff' })];
+    expect(() => new Teikn({ generators: [new Json()], themes })).toThrow(
+      'Theme name "__proto__" is reserved',
+    );
   });
 });

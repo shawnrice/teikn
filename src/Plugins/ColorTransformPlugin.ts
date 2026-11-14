@@ -12,6 +12,18 @@ import { Plugin } from './Plugin.js';
 
 export type ColorTransformPluginOptions = { type?: ColorFormat };
 
+// CSS-wide and special keywords carry no color to convert.
+const PASSTHROUGH_KEYWORDS = new Set([
+  'currentcolor',
+  'inherit',
+  'initial',
+  'unset',
+  'revert',
+  'revert-layer',
+]);
+
+const isPassthrough = (value: string): boolean => PASSTHROUGH_KEYWORDS.has(value.toLowerCase());
+
 /**
  * Normalizes colors to a single format — including colors nested inside
  * composite tokens (box shadows, borders, gradients), not just standalone
@@ -93,7 +105,12 @@ export class ColorTransformPlugin extends Plugin<ColorTransformPluginOptions> {
 
     // A bare color string only appears on a color-typed token; other string
     // values (dimensions, durations, …) must be left alone.
-    if (typeof value === 'string' && !isRefString(value) && tokenType === 'color') {
+    if (
+      typeof value === 'string' &&
+      !isRefString(value) &&
+      !isPassthrough(value) &&
+      tokenType === 'color'
+    ) {
       return new Color(value).toString(type);
     }
 

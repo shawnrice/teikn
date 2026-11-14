@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
+import { ref, scale } from '../builders.js';
 import type { Token } from '../Token.js';
 import { Dimension } from '../TokenTypes/Dimension.js';
 import { ClampPlugin } from './ClampPlugin.js';
@@ -78,13 +79,77 @@ describe('ClampPlugin', () => {
     expect(fluid.value).toContain('2.5rem');
   });
 
-  test('expand skips pairs where tokens are missing', () => {
+  test('expand throws when a pair names a missing token', () => {
     const pluginWithMissing = new ClampPlugin({
-      pairs: [{ min: 'missing-min', max: 'missing-max', output: 'missing-fluid' }],
+      pairs: [{ min: 'fontSize-100', max: 'missing-max', output: 'missing-fluid' }],
     });
     const tokens: Token[] = [{ name: 'fontSize-100', type: 'dimension', value: '1rem' }];
-    const result = pluginWithMissing.expand(tokens);
-    expect(result).toHaveLength(1);
+    expect(() => pluginWithMissing.expand(tokens)).toThrow(
+      'ClampPlugin pair "missing-fluid": max token "missing-max" was not found',
+    );
+  });
+
+  test.each([
+    ['bare', '100', '700'],
+    ['qualified', 'fontSize.100', 'fontSize.700'],
+    ['prefixed', 'fontSize-100', 'fontSize-700'],
+  ])('expand accepts %s names for builder tokens', (_label, min, max) => {
+    const fluid = new ClampPlugin({ pairs: [{ min, max, output: 'fluid' }] })
+      .expand(scale('fontSize', { 100: '16px', 700: '32px' }))
+      .at(-1)!;
+    expect(fluid).toMatchObject({ name: 'fluid', type: 'fontSize' });
+    expect(fluid.value).toBe('clamp(1rem, 0.6667rem + 1.6667vw, 2rem)');
+  });
+
+  test('expand throws on a bare name shared by two groups', () => {
+    const tokens = [
+      ...scale('fontSize', { 100: '16px', 700: '32px' }),
+      ...scale('spacing', { 100: '4px' }),
+    ];
+    const ambiguous = new ClampPlugin({ pairs: [{ min: '100', max: '700', output: 'fluid' }] });
+    expect(() => ambiguous.expand(tokens)).toThrow(
+      'min token "100" is ambiguous — matches fontSize.100, spacing.100',
+    );
+  });
+
+  test('expand follows a reference to its length', () => {
+    const tokens = scale('fontSize', { base: '16px', 100: ref('base'), 700: '32px' });
+    const fluid = new ClampPlugin({ pairs: [{ min: '100', max: '700', output: 'fluid' }] })
+      .expand(tokens)
+      .at(-1)!;
+    expect(fluid.value).toBe('clamp(1rem, 0.6667rem + 1.6667vw, 2rem)');
+  });
+
+  test('expand throws on a value that is not a length', () => {
+    const tokens: Token[] = [
+      { name: 'a', type: 'dimension', value: 'auto' },
+      { name: 'b', type: 'dimension', value: '2rem' },
+    ];
+    const bad = new ClampPlugin({ pairs: [{ min: 'a', max: 'b', output: 'c' }] });
+    expect(() => bad.expand(tokens)).toThrow('ClampPlugin pair "c": min token "a" is not a length');
+  });
+
+  test.each([
+    ['1em', 'em'],
+    ['50%', '%'],
+  ])('expand names the pair and unit for %s', (value, unit) => {
+    const tokens: Token[] = [
+      { name: 'a', type: 'dimension', value: '16px' },
+      { name: 'b', type: 'dimension', value },
+    ];
+    const bad = new ClampPlugin({ pairs: [{ min: 'a', max: 'b', output: 'c' }] });
+    expect(() => bad.expand(tokens)).toThrow(
+      `ClampPlugin pair "c": max token "b" uses unit "${unit}", which cannot be converted to rem`,
+    );
+  });
+
+  test.each([
+    [320, 320],
+    [1280, 320],
+  ])('rejects viewportMin %d with viewportMax %d', (viewportMin, viewportMax) => {
+    expect(() => new ClampPlugin({ viewportMin, viewportMax })).toThrow(
+      'must be less than viewportMax',
+    );
   });
 
   test('custom viewport options', () => {

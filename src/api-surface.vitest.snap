@@ -565,6 +565,7 @@ export declare class ContrastValidatorPlugin extends Plugin<ContrastValidatorPlu
 
 // src/Plugins/DeprecationPlugin.d.ts
 import type { Token } from '../Token.js';
+import type { AuditIssue } from './Plugin.js';
 import { Plugin } from './Plugin.js';
 export type DeprecationPluginOptions = {
     tokens: Record<string, string | true>;
@@ -573,6 +574,7 @@ export declare class DeprecationPlugin extends Plugin<DeprecationPluginOptions> 
     tokenType: RegExp;
     outputType: RegExp;
     transform(token: Token): Token;
+    audit(tokens: Token[]): AuditIssue[];
 }
 
 // src/Plugins/MinFontSizePlugin.d.ts
@@ -929,7 +931,11 @@ export declare class Teikn {
     validate(tokens: Token[]): ValidationResult;
     /** Run expand() on all plugins that support it, returning the expanded token set. */
     expand(tokens: Token[]): Token[];
-    /** Run audit() on all plugins that support it, returning all issues. */
+    /**
+     * Run audit() on all plugins that support it, returning all issues. Plugins
+     * see reference-resolved tokens, so an alias is audited by the value it
+     * points at; an unresolvable reference throws.
+     */
     audit(tokens: Token[]): AuditIssue[];
     generateToStrings(tokens: Token[]): Map<string, string>;
     transform(tokens: Token[]): Promise<TransformResult>;
@@ -2651,7 +2657,7 @@ export type ValidationResult = {
  *
  * Checks:
  * - Required fields (name, value, type)
- * - Duplicate token names
+ * - Duplicate token names, and distinct tokens sharing a default output name (\`type-name\`)
  * - Color values are parseable
  * - References point to existing tokens
  * - No circular references

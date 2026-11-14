@@ -299,3 +299,20 @@ describe('TokenSet', () => {
     });
   });
 });
+
+describe('composeTokenSetsAsModes with nested modes', () => {
+  test("keeps a mode-set token's own modes; the composed mode wins on conflict", () => {
+    const base = tokenSet('base', [
+      { name: 'bg', type: 'color', value: '#fff', modes: { print: '#fff' } },
+    ]);
+    const dark = tokenSet('dark', [
+      { name: 'bg', type: 'color', value: '#000', modes: { hc: '#111', dark: '#222' } },
+    ]);
+
+    expect(composeTokenSetsAsModes(base, { dark })[0]!.modes).toEqual({
+      print: '#fff',
+      hc: '#111',
+      dark: '#000',
+    });
+  });
+});
