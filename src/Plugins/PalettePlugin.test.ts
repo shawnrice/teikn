@@ -227,6 +227,36 @@ describe('PalettePlugin: modes and references', () => {
     );
   });
 
+  test("a {ref} seed follows its target's modes", () => {
+    const tokens: Token[] = [
+      { name: 'primary', type: 'color', value: '#3b82f6', modes: { dark: '#1e3a8a' } },
+      { name: 'brand', type: 'color', value: '{primary}' },
+      { name: 'plain', type: 'color', value: '#00cc88' },
+    ];
+    const result = plugin.expand(tokens);
+
+    for (const name of ['brand-50', 'brand-500', 'brand-950']) {
+      expect(String(step(result, name).modes!.dark)).toBe(
+        String(step(result, name.replace('brand', 'primary')).modes!.dark),
+      );
+    }
+
+    // A seed no mode reaches stays mode-free.
+    expect(step(result, 'plain-500').modes).toBeUndefined();
+  });
+
+  test('a mode referencing a generated step leaves the steps on their default', () => {
+    const tokens: Token[] = [
+      { name: 'brand', type: 'color', value: '#3b82f6' },
+      { name: 'surface', type: 'color', value: '#ffffff', modes: { dark: '{brand-950}' } },
+    ];
+    const result = plugin.expand(tokens);
+
+    // The seed keeps its mode for the full resolve pass; the steps carry none.
+    expect(step(result, 'surface').modes).toEqual({ dark: '{brand-950}' });
+    expect(step(result, 'surface-500').modes).toBeUndefined();
+  });
+
   test('a dangling seed reference throws', () => {
     const token: Token = { name: 'brand', type: 'color', value: '{nope}' };
     expect(() => plugin.expand([token])).toThrow(/Unresolved reference/);

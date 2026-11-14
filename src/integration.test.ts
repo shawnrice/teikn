@@ -369,3 +369,22 @@ describe('integration: a theme drives a palette ramp', () => {
     }
   });
 });
+
+describe('integration: a theme points a color at a generated ramp step', () => {
+  const palette = group('color', { brand: '#3b82f6', surface: '#ffffff' });
+  const darkSurface = theme('dark', palette, { surface: '{brand-950}' });
+
+  const writer = new Teikn({
+    generators: [new Teikn.generators.CssVars(testOpts)],
+    themes: [darkSurface],
+    plugins: [new Teikn.plugins.PalettePlugin({ steps: [50, 500, 950] })],
+  });
+
+  test('the override resolves after expansion', () => {
+    const css = writer.generateToStrings(tokens(palette)).get('tokens.css')!;
+    const [, , darkTheme = ''] = css.split(/:root \{|\[data-theme="dark"\] \{/);
+
+    expect(darkTheme).toMatch(/--color-surface: (?!\{)\S/);
+    expect(darkTheme).not.toContain('{brand-950}');
+  });
+});

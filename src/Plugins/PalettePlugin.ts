@@ -1,12 +1,12 @@
 import { createSeedResolver } from '../resolve.js';
-import type { Token } from '../Token.js';
 import { tokenKey } from '../token-keys.js';
+import type { Token } from '../Token.js';
 import { Color } from '../TokenTypes/Color/index.js';
 import type { ColorFormat } from '../TokenTypes/Color/types.js';
 import { Plugin } from './Plugin.js';
 
 /** Resolve a seed value (default or mode) to a concrete color, following references. */
-type SeedResolver = (value: unknown, tokenName: string) => unknown;
+type SeedResolver = (value: unknown, tokenName: string, mode?: string) => unknown;
 
 /**
  * Output color space for the generated ramp. `'auto'` (the default) keeps each
@@ -102,10 +102,11 @@ const generatePaletteTokens = (
   lightEnd: number,
   darkEnd: number,
   space: PaletteSpace | undefined,
-  resolveSeed: SeedResolver,
+  { resolveSeed, modeNames }: { resolveSeed: SeedResolver; modeNames: string[] },
 ): Token[] => {
   const seedName = tokenKey(token);
-  const baseColor = new Color(resolveSeed(token.value, seedName) as string | Color);
+  const baseValue = resolveSeed(token.value, seedName);
+  const baseColor = new Color(baseValue as string | Color);
   const format = resolveFormat(baseColor, space);
   const minStep = Math.min(...steps);
   const maxStep = Math.max(...steps);
@@ -146,11 +147,25 @@ const generatePaletteTokens = (
 
   // Each mode (a hand-authored mode or a theme override, now indistinguishable)
   // rampifies its own resolved base color, so the whole ramp follows a theme.
-  const modeColors = token.modes
-    ? Object.entries(token.modes).map(
-        ([mode, v]) => [mode, new Color(resolveSeed(v, seedName) as string | Color)] as const,
-      )
-    : [];
+  // A seed without its own value for a mode still gets one when its reference
+  // chain does (`brand = {primary}` follows primary's modes).
+  const modeColors = modeNames.flatMap(mode => {
+    const own = token.modes?.[mode];
+
+    try {
+      const resolved = resolveSeed(own ?? token.value, seedName, mode);
+
+      return own === undefined && resolved === baseValue
+        ? []
+        : [[mode, new Color(resolved as string | Color)] as const];
+    } catch {
+      // Not resolvable before expansion (e.g. a mode pointing at another ramp's
+      // generated step): the steps fall back to their default value in this
+      // mode. The seed keeps its mode, so the full validate/resolve pass still
+      // reports a genuinely dangling or circular reference.
+      return [];
+    }
+  });
 
   // Strip the seed's own modes from the spread; each step gets its own rampified
   // modes (or none), never the seed's raw mode values.
@@ -192,13 +207,20 @@ export class PalettePlugin extends Plugin<PalettePluginOptions> {
     // color. Generated step values come out concrete, so the later pass is a
     // no-op on them.
     const resolveSeed: SeedResolver = createSeedResolver(tokens);
+    const modeNames = [...new Set(tokens.flatMap(t => Object.keys(t.modes ?? {})))];
 
     return tokens.flatMap(token => {
       if (token.type !== 'color') {
         return [token];
       }
 
-      return [token, ...generatePaletteTokens(token, steps, lightEnd, darkEnd, space, resolveSeed)];
+      return [
+        token,
+        ...generatePaletteTokens(token, steps, lightEnd, darkEnd, space, {
+          resolveSeed,
+          modeNames,
+        }),
+      ];
     });
   }
 }

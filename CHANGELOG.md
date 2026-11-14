@@ -4,11 +4,11 @@
 
 ### Added
 
-- **`PalettePlugin` ramps follow theme overrides and token modes.** A theme that overrides a
-  palette seed (or a seed authored with modes) now regenerates the whole ramp per mode instead of
-  freezing it at the default value, and a seed may be a `{reference}` that resolves to a color.
-  Themes apply before expansion, so `theme('dark', colors, { brand })` themes `brand-50 … -950`,
-  not just `brand`.
+- **`PalettePlugin` ramps follow theme overrides and token modes.** A theme that overrides a palette
+  seed (or a seed authored with modes) now regenerates the whole ramp per mode instead of freezing
+  it at the default value, and a seed may be a `{reference}` that resolves to a color (its ramp
+  follows the referenced token's modes). Themes apply before expansion, so
+  `theme('dark', colors, { brand })` themes `brand-50 … -950`, not just `brand`.
 
 ### Fixed
 
