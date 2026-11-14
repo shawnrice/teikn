@@ -196,7 +196,7 @@ describe('Color tests', () => {
   // ─── Format conversion tests ─────────────────────────────
 
   test('Color("aliceblue") can convert to HSLA', () => {
-    expect(new Color('aliceblue').toString('hsla')).toBe('hsla(208, 100%, 97%, 1)');
+    expect(new Color('aliceblue').toString('hsla')).toBe('hsla(208, 100%, 97.06%, 1)');
   });
 
   test('HSL colors white works', () => {

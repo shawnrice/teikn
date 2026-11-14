@@ -30,7 +30,15 @@ import type {
   XYZ,
   XYZA,
 } from './types.js';
-import { hexRange, normalizeDegrees, percentRange, round, toPercent } from './util.js';
+import {
+  assertFinite,
+  byteRange,
+  clamp,
+  normalizeDegrees,
+  percentRange,
+  round,
+  toPercent,
+} from './util.js';
 import { closest } from './xkcdNamedColors.js';
 
 // Symbol for internal construction — only accessible within this module and operations
@@ -46,6 +54,31 @@ const PRECISION_XYZ = 5;
 // more decimals; hue is in degrees and needs fewer.
 const PRECISION_OKLAB = 5;
 const PRECISION_OK_HUE = 3;
+// Two decimals on hue and on the s/l percentages round-trips every 8-bit sRGB color.
+const PRECISION_HSL = 2;
+
+// Clamp / wrap components to the ranges CSS accepts, so every color a caller can
+// build serializes to a string the parser reads back.
+const normalize = (space: Space, data: SpaceData[Space]): SpaceData[Space] => {
+  const [a, b, c] = data;
+
+  switch (space) {
+    case 'rgb':
+      return [byteRange(a), byteRange(b), byteRange(c)];
+    case 'hsl':
+      return [normalizeDegrees(a), percentRange(b), percentRange(c)];
+    case 'lab':
+      return [clamp(0, 100, a), b, c];
+    case 'lch':
+      return [clamp(0, 100, a), Math.max(0, b), normalizeDegrees(c)];
+    case 'oklab':
+      return [percentRange(a), b, c];
+    case 'oklch':
+      return [percentRange(a), Math.max(0, b), normalizeDegrees(c)];
+    default:
+      return data;
+  }
+};
 
 // String formatters — each handles both opaque and alpha variants
 const fmtTriplet = (
@@ -90,7 +123,7 @@ const fmt = {
   },
   hsl: (values: HSL | HSLA): string => {
     const [h, s, l] = values;
-    const core = `${h}, ${toPercent(s)}, ${toPercent(l)}`;
+    const core = `${round(PRECISION_HSL, h) % 360}, ${toPercent(s, PRECISION_HSL)}, ${toPercent(l, PRECISION_HSL)}`;
 
     return values.length === 4
       ? `hsla(${core}, ${round(PRECISION_ALPHA, values[3])})`
@@ -251,7 +284,7 @@ export class Color {
       }
 
       this.#nativeSpace = 'rgb';
-      this.#nativeData = [hexRange(r), hexRange(g as number), hexRange(b as number)] as RGB;
+      this.#nativeData = [byteRange(r), byteRange(g as number), byteRange(b as number)] as RGB;
       this.#alpha = typeof a === 'number' ? percentRange(a) : 1;
       this.#cache = { rgb: this.#nativeData as RGB };
 
@@ -281,7 +314,9 @@ export class Color {
   }
 
   static #new(space: Space, data: SpaceData[Space], alpha: number): Color {
-    return new Color(INTERNAL, space, data, alpha);
+    assertFinite(`${space} components and alpha`, [...data, alpha]);
+
+    return new Color(INTERNAL, space, normalize(space, data), percentRange(alpha));
   }
 
   // Bound version for operations classes — delegates to static factory, no `this` needed
@@ -363,11 +398,7 @@ export class Color {
       return Color.#fromSpace('rgb', first, second);
     }
 
-    return Color.#new(
-      'rgb',
-      [hexRange(first), hexRange(second!), hexRange(third!)] as RGB,
-      alpha ?? 1,
-    );
+    return Color.#new('rgb', [first, second!, third!] as RGB, alpha ?? 1);
   }
 
   static fromHSL(h: number, s: number, l: number, a?: number): Color;
@@ -475,22 +506,22 @@ export class Color {
 
   /** Create a modified copy with a new red value */
   setRed(red: number): Color {
-    return Color.#new('rgb', [hexRange(red), this.green, this.blue], this.#alpha);
+    return Color.#new('rgb', [red, this.green, this.blue], this.#alpha);
   }
 
   /** Create a modified copy with a new green value */
   setGreen(green: number): Color {
-    return Color.#new('rgb', [this.red, hexRange(green), this.blue], this.#alpha);
+    return Color.#new('rgb', [this.red, green, this.blue], this.#alpha);
   }
 
   /** Create a modified copy with a new blue value */
   setBlue(blue: number): Color {
-    return Color.#new('rgb', [this.red, this.green, hexRange(blue)], this.#alpha);
+    return Color.#new('rgb', [this.red, this.green, blue], this.#alpha);
   }
 
   /** Create a modified copy with a new alpha value */
   setAlpha(alpha: number): Color {
-    return Color.#new(this.#nativeSpace, this.#nativeData, percentRange(alpha));
+    return Color.#new(this.#nativeSpace, this.#nativeData, alpha);
   }
 
   /** Create a color with inverted RGB values */
@@ -741,6 +772,8 @@ export class Color {
    * @param amount Amount to mix (0-1), where 0 is this color and 1 is the other color
    */
   mix(color: Color | string, amount = 0.5): Color {
+    assertFinite('mix amount', [amount]);
+
     const c = color instanceof Color ? color : new Color(color);
     const amt = percentRange(amount);
     const [r1, g1, b1] = this.asRGB();
@@ -763,7 +796,7 @@ export class Color {
     const premulB2 = b2 * a2;
 
     const unmul = (p1: number, p2: number) =>
-      Math.round(hexRange(round(2, (p1 * (1 - amt) + p2 * amt) / resultAlpha)));
+      byteRange(round(2, (p1 * (1 - amt) + p2 * amt) / resultAlpha));
     const resultR = unmul(premulR1, premulR2);
     const resultG = unmul(premulG1, premulG2);
     const resultB = unmul(premulB1, premulB2);
@@ -895,7 +928,7 @@ export class Color {
 
   /** Get the color as a 3-digit hex string (if possible) */
   asHex3(): string {
-    return `#${RGBToHex(this.asRGB(), true)}`;
+    return `#${RGBToHex(this.asRGB().map(byteRange) as unknown as RGB, true)}`;
   }
 
   /** Get the color as a 3-digit hex string */
@@ -905,7 +938,7 @@ export class Color {
 
   /** Get the color as a 6-digit hex string */
   asHex(): string {
-    return `#${RGBToHex(this.asRGB(), false)}`;
+    return `#${RGBToHex(this.asRGB().map(byteRange) as unknown as RGB, false)}`;
   }
 
   /** Get the color as a 6-digit hex string */
@@ -923,12 +956,20 @@ export class Color {
   /** Convert to a string in the specified format */
   toString(type?: ColorFormat): string {
     switch (type) {
-      case 'named':
-        if (this.toString('rgba') === 'rgba(0, 0, 0, 0)') {
+      case 'named': {
+        const hex = this.toString('hex');
+
+        if (this.#alpha === 0 && hex === '#000000') {
           return 'transparent';
         }
 
-        return namedColorsByValue[this.toString('hex') as NamedColorValue] ?? this.toString('rgb');
+        // A non-opaque color has no CSS name
+        if (this.#alpha !== 1) {
+          return this.toString('rgba');
+        }
+
+        return namedColorsByValue[hex as NamedColorValue] ?? this.toString('rgb');
+      }
       case 'xkcd': {
         const match = closest(this);
 

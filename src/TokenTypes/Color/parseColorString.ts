@@ -1,130 +1,129 @@
 import type { Space, SpaceData } from './ColorSpace.js';
 import { hexToRGBWithAlpha } from './conversions.js';
 import { namedColors } from './namedColors.js';
-import {
-  isHex,
-  isHSL,
-  isHSLA,
-  isLAB,
-  isLCH,
-  isOklab,
-  isOklch,
-  isRGB,
-  isRGBA,
-  isXYZ,
-  normalizeDegrees,
-  stringToRgb,
-  stringToRgba,
-} from './util.js';
+import { clamp, isHex, normalizeDegrees } from './util.js';
 import { xkcdColors } from './xkcdNamedColors.js';
 
 export type ParsedColor = { space: Space; data: SpaceData[Space]; alpha: number };
 
-const hslRegex =
-  /^hsla?\([\s]*(-?[0-9]+(?:\.[0-9]+)?)(?:deg)?[\s,]*([0-9]+(?:\.[0-9]+)?)%[\s,]*([0-9]+(?:\.[0-9]+)?)%(?:[\s,]*(?:\/[\s]*)?([0-9]*\.?[0-9]+))?\)$/i;
-const labRegex =
-  /^lab\([\s]*([0-9]+(?:\.[0-9]+)?)[\s,]*([+-]?[0-9]+(?:\.[0-9]+)?)[\s,]*([+-]?[0-9]+(?:\.[0-9]+)?)(?:[\s]*\/[\s]*([0-9]*\.?[0-9]+))?\)$/i;
-const lchRegex =
-  /^lch\([\s]*([0-9]+(?:\.[0-9]+)?)[\s,]*([0-9]+(?:\.[0-9]+)?)[\s,]*([0-9]+(?:\.[0-9]+)?)(?:[\s]*\/[\s]*([0-9]*\.?[0-9]+))?\)$/i;
-const xyzRegex =
-  /^xyz\([\s]*([0-9]+(?:\.[0-9]+)?)[\s,]*([0-9]+(?:\.[0-9]+)?)[\s,]*([0-9]+(?:\.[0-9]+)?)(?:[\s]*\/[\s]*([0-9]*\.?[0-9]+))?\)$/i;
-const oklabRegex =
-  /^oklab\([\s]*([0-9]*\.?[0-9]+%?)[\s,]*([+-]?[0-9]*\.?[0-9]+)[\s,]*([+-]?[0-9]*\.?[0-9]+)(?:[\s]*\/[\s]*([0-9]*\.?[0-9]+))?\)$/i;
-const oklchRegex =
-  /^oklch\([\s]*([0-9]*\.?[0-9]+%?)[\s,]*([0-9]*\.?[0-9]+)[\s,]*([+-]?[0-9]*\.?[0-9]+)(?:deg)?(?:[\s]*\/[\s]*([0-9]*\.?[0-9]+))?\)$/i;
+const functionRegex = /^(rgba?|hsla?|lab|lch|oklab|oklch|xyz)\(\s*(.*?)\s*\)$/i;
+const numberRegex = /^([+-]?(?:\d+(?:\.\d+)?|\.\d+)(?:e[+-]?\d+)?)(%|deg|grad|rad|turn)?$/i;
+// Components are separated by a comma or by whitespace — never by nothing.
+const separatorRegex = /\s*,\s*|\s+/;
 
-/** Oklab/Oklch lightness accepts either a 0-1 number or a 0%-100% percentage. */
-const parseOkLightness = (raw: string): number =>
-  raw.trim().endsWith('%') ? parseFloat(raw) / 100 : parseFloat(raw);
+type Token = { value: number; unit: string };
 
-const parseHSLString = (c: string): ParsedColor => {
-  const m = c.match(hslRegex);
+// A reader returns NaN for a token it cannot accept (wrong unit, out of range).
+type Reader = (token: Token) => number;
 
-  if (!m) {
-    throw new Error(`Cannot parse HSL from "${c}"`);
-  }
+const hueFactors = new Map([
+  ['', 1],
+  ['deg', 1],
+  ['grad', 0.9],
+  ['rad', 180 / Math.PI],
+  ['turn', 360],
+]);
 
-  const h = normalizeDegrees(parseFloat(m[1]!));
-  const s = parseFloat(m[2]!) / 100;
-  const l = parseFloat(m[3]!) / 100;
-  const a = m[4] !== undefined ? parseFloat(m[4]) : 1;
+/** A plain number, or a percentage where 100% maps to `ref` */
+const numberOrPercent =
+  (ref: number): Reader =>
+  ({ value, unit }) => {
+    if (unit === '') {
+      return value;
+    }
 
-  return { space: 'hsl', data: [h, s, l], alpha: a };
+    return unit === '%' ? (value / 100) * ref : NaN;
+  };
+
+const clamped =
+  ({ min, max, read }: { min: number; max: number; read: Reader }): Reader =>
+  token =>
+    clamp(min, max, read(token));
+
+const hue: Reader = ({ value, unit }) => normalizeDegrees(value * (hueFactors.get(unit) ?? NaN));
+
+// Out-of-range rgb channels are rejected rather than clamped.
+const rgbChannel: Reader = token => {
+  const value = numberOrPercent(255)(token);
+
+  return value >= 0 && value <= 255 ? Math.round(value) : NaN;
 };
 
-const parseLABString = (c: string): ParsedColor => {
-  const m = c.match(labRegex);
+const hslPercent: Reader = token => clamp(0, 100, numberOrPercent(100)(token)) / 100;
 
-  if (!m) {
-    throw new Error(`Cannot parse LAB from "${c}"`);
-  }
+const alphaChannel = clamped({ min: 0, max: 1, read: numberOrPercent(1) });
+const labLightness = clamped({ min: 0, max: 100, read: numberOrPercent(100) });
+// Oklab/Oklch lightness accepts either a 0-1 number or a 0%-100% percentage.
+const okLightness = clamped({ min: 0, max: 1, read: numberOrPercent(1) });
+const chroma = (ref: number): Reader =>
+  clamped({ min: 0, max: Infinity, read: numberOrPercent(ref) });
 
-  const L = parseFloat(m[1]!);
-  const a = parseFloat(m[2]!);
-  const b = parseFloat(m[3]!);
-  const alpha = m[4] !== undefined ? parseFloat(m[4]) : 1;
+// `legacy` functions also take alpha as a fourth positional argument.
+type FunctionSpec = { space: Space; readers: readonly Reader[]; legacy: boolean };
 
-  return { space: 'lab', data: [L, a, b], alpha };
+const rgbSpec: FunctionSpec = {
+  space: 'rgb',
+  readers: [rgbChannel, rgbChannel, rgbChannel],
+  legacy: true,
 };
 
-const parseLCHString = (c: string): ParsedColor => {
-  const m = c.match(lchRegex);
-
-  if (!m) {
-    throw new Error(`Cannot parse LCH from "${c}"`);
-  }
-
-  const L = parseFloat(m[1]!);
-  const C = parseFloat(m[2]!);
-  const H = parseFloat(m[3]!);
-  const alpha = m[4] !== undefined ? parseFloat(m[4]) : 1;
-
-  return { space: 'lch', data: [L, C, H], alpha };
+const hslSpec: FunctionSpec = {
+  space: 'hsl',
+  readers: [hue, hslPercent, hslPercent],
+  legacy: true,
 };
 
-const parseXYZString = (c: string): ParsedColor => {
-  const m = c.match(xyzRegex);
+const modern = (space: Space, readers: readonly Reader[]): FunctionSpec => ({
+  space,
+  readers,
+  legacy: false,
+});
 
-  if (!m) {
-    throw new Error(`Cannot parse XYZ from "${c}"`);
+const specs = new Map<string, FunctionSpec>([
+  ['rgb', rgbSpec],
+  ['rgba', rgbSpec],
+  ['hsl', hslSpec],
+  ['hsla', hslSpec],
+  ['lab', modern('lab', [labLightness, numberOrPercent(125), numberOrPercent(125)])],
+  ['lch', modern('lch', [labLightness, chroma(150), hue])],
+  ['oklab', modern('oklab', [okLightness, numberOrPercent(0.4), numberOrPercent(0.4)])],
+  ['oklch', modern('oklch', [okLightness, chroma(0.4), hue])],
+  ['xyz', modern('xyz', [numberOrPercent(1), numberOrPercent(1), numberOrPercent(1)])],
+]);
+
+// `none` (a missing component) is treated as 0.
+const tokenize = (raw: string): Token => {
+  if (raw.toLowerCase() === 'none') {
+    return { value: 0, unit: '' };
   }
 
-  const x = parseFloat(m[1]!);
-  const y = parseFloat(m[2]!);
-  const z = parseFloat(m[3]!);
-  const alpha = m[4] !== undefined ? parseFloat(m[4]) : 1;
+  const m = raw.match(numberRegex);
 
-  return { space: 'xyz', data: [x, y, z], alpha };
+  return m
+    ? { value: parseFloat(m[1]!), unit: (m[2] ?? '').toLowerCase() }
+    : { value: NaN, unit: '' };
 };
 
-const parseOklabString = (c: string): ParsedColor => {
-  const m = c.match(oklabRegex);
+const parseFunction = ({ name, args }: { name: string; args: string }): ParsedColor | null => {
+  const { space, readers, legacy } = specs.get(name.toLowerCase())!;
+  const [body, slashAlpha, ...rest] = args.split('/');
+  const parts = body!.trim().split(separatorRegex);
+  const positionalAlpha = legacy && slashAlpha === undefined ? parts[3] : undefined;
+  const expected = positionalAlpha === undefined ? 3 : 4;
 
-  if (!m) {
-    throw new Error(`Cannot parse Oklab from "${c}"`);
+  if (rest.length > 0 || parts.length !== expected) {
+    return null;
   }
 
-  const L = parseOkLightness(m[1]!);
-  const a = parseFloat(m[2]!);
-  const b = parseFloat(m[3]!);
-  const alpha = m[4] !== undefined ? parseFloat(m[4]) : 1;
+  const rawAlpha = slashAlpha?.trim() ?? positionalAlpha;
+  const data = readers.map((read, i) => read(tokenize(parts[i]!)));
+  const alpha = rawAlpha === undefined ? 1 : alphaChannel(tokenize(rawAlpha));
 
-  return { space: 'oklab', data: [L, a, b], alpha };
-};
-
-const parseOklchString = (c: string): ParsedColor => {
-  const m = c.match(oklchRegex);
-
-  if (!m) {
-    throw new Error(`Cannot parse Oklch from "${c}"`);
+  if (![...data, alpha].every(Number.isFinite)) {
+    return null;
   }
 
-  const L = parseOkLightness(m[1]!);
-  const C = parseFloat(m[2]!);
-  const H = normalizeDegrees(parseFloat(m[3]!));
-  const alpha = m[4] !== undefined ? parseFloat(m[4]) : 1;
-
-  return { space: 'oklch', data: [L, C, H], alpha };
+  return { space, data: data as unknown as SpaceData[Space], alpha };
 };
 
 export const parseColorString = (c: string): ParsedColor => {
@@ -134,7 +133,7 @@ export const parseColorString = (c: string): ParsedColor => {
   if (trimmed.toLowerCase().startsWith('xkcd:')) {
     const name = trimmed.slice(5).toLowerCase();
 
-    if (name in xkcdColors) {
+    if (Object.hasOwn(xkcdColors, name)) {
       return parseColorString(xkcdColors[name as keyof typeof xkcdColors]);
     }
 
@@ -142,7 +141,7 @@ export const parseColorString = (c: string): ParsedColor => {
   }
 
   // CSS named colors → resolve to their hex value and re-parse
-  if (Object.keys(namedColors).includes(trimmed.toLowerCase())) {
+  if (Object.hasOwn(namedColors, trimmed.toLowerCase())) {
     const resolved: string = namedColors[trimmed.toLowerCase() as keyof typeof namedColors];
 
     return parseColorString(resolved);
@@ -155,46 +154,13 @@ export const parseColorString = (c: string): ParsedColor => {
     return { space: 'rgb', data: rgb, alpha };
   }
 
-  // RGB / RGBA
-  if (isRGB(trimmed)) {
-    return { space: 'rgb', data: stringToRgb(trimmed), alpha: 1 };
+  // Functional notation: rgb(a), hsl(a), lab, lch, oklab, oklch, xyz
+  const fn = trimmed.match(functionRegex);
+  const parsed = fn ? parseFunction({ name: fn[1]!, args: fn[2]! }) : null;
+
+  if (!parsed) {
+    throw new Error(`Cannot extract color from "${c}"`);
   }
 
-  if (isRGBA(trimmed)) {
-    const rgba = stringToRgba(trimmed);
-
-    return { space: 'rgb', data: [rgba[0], rgba[1], rgba[2]], alpha: rgba[3] };
-  }
-
-  // HSL / HSLA
-  if (isHSL(trimmed) || isHSLA(trimmed)) {
-    return parseHSLString(trimmed);
-  }
-
-  // LAB
-  if (isLAB(trimmed)) {
-    return parseLABString(trimmed);
-  }
-
-  // LCH
-  if (isLCH(trimmed)) {
-    return parseLCHString(trimmed);
-  }
-
-  // Oklab
-  if (isOklab(trimmed)) {
-    return parseOklabString(trimmed);
-  }
-
-  // Oklch
-  if (isOklch(trimmed)) {
-    return parseOklchString(trimmed);
-  }
-
-  // XYZ
-  if (isXYZ(trimmed)) {
-    return parseXYZString(trimmed);
-  }
-
-  throw new Error(`Cannot extract color from "${c}"`);
+  return parsed;
 };
