@@ -2479,6 +2479,17 @@ export type DtcgTypeName = (typeof DtcgTypes)[keyof typeof DtcgTypes];
 // src/resolve.d.ts
 import type { Token } from './Token.js';
 /**
+ * Build a single-value resolver bound to a token set: \`(value, tokenName) =>
+ * resolved\`. Follows \`{ref}\` references through the set and throws on a
+ * circular or dangling reference, seeding the cycle guard with \`tokenName\`.
+ *
+ * Used by expand plugins to resolve a seed value (e.g. a palette base color)
+ * to a concrete value before the full {@link resolveReferences} pass runs over
+ * the whole set. The token-keys index is an internal detail kept off the
+ * signature so this stays a plain \`(unknown, string) => unknown\`.
+ */
+export declare const createSeedResolver: (tokens: Token[]) => ((value: unknown, tokenName: string) => unknown);
+/**
  * Resolve all \`{tokenName}\` references in a token set.
  * References are looked up by token name (case-sensitive).
  * Circular references throw an error.

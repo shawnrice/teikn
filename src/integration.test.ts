@@ -339,3 +339,33 @@ describe('integration: multi-generator output', () => {
     }
   });
 });
+
+// ─── Themed ramps ───────────────────────────────────────────
+
+describe('integration: a theme drives a palette ramp', () => {
+  const brand = group('color', { brand: '#3b82f6' });
+  const darkBrand = theme('dark', brand, { brand: '#1e3a8a' });
+
+  const writer = new Teikn({
+    generators: [new Teikn.generators.CssVars(testOpts)],
+    themes: [darkBrand],
+    plugins: [new Teikn.plugins.PalettePlugin({ steps: [50, 500, 950] })],
+  });
+
+  const css = writer.generateToStrings(tokens(brand)).get('tokens.css')!;
+  const [, root = '', darkTheme = ''] = css.split(/:root \{|\[data-theme="dark"\] \{/);
+
+  test('the dark block carries the whole ramp, not just the seed', () => {
+    // Step 500 is the seed itself: light vs dark base.
+    expect(root).toContain('--color-brand-500: rgb(59, 130, 246)');
+    expect(darkTheme).toContain('--color-brand-500: rgb(30, 58, 138)');
+    // The derived steps are themed too, and differ between the two ramps.
+    const stepValue = (block: string, step: string): string | undefined =>
+      block.match(new RegExp(`--color-brand-${step}: (rgb\\([^)]+\\))`))?.[1];
+
+    for (const step of ['50', '950']) {
+      expect(darkTheme).toContain(`--color-brand-${step}:`);
+      expect(stepValue(darkTheme, step)).not.toBe(stepValue(root, step));
+    }
+  });
+});

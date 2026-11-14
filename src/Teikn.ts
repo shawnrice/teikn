@@ -340,11 +340,16 @@ export class Teikn {
   }
 
   generateToStrings(tokens: Token[]): Map<string, string> {
-    const expanded = this.expand(tokens);
+    // Apply themes before expand so a theme override on a seed token is visible
+    // to expand plugins as a mode — letting a ramp recompute per theme instead
+    // of freezing at the default value. `theme()` already authors override keys
+    // against the pre-expand token set, so this is the consistent apply point.
+    const withThemes = applyThemes(this.themes, tokens);
+    const expanded = this.expand(withThemes);
 
-    // Validate after expand so plugin-added tokens are also covered.
-    // If expand plugins are disabled or add no tokens, `expanded` equals
-    // the input and behavior is unchanged.
+    // Validate after expand so plugin-added tokens (and themed modes) are also
+    // covered. If expand plugins are disabled or add no tokens, `expanded`
+    // equals the input and behavior is unchanged.
     if (this.options.validate !== false) {
       const result = validate(expanded);
       const errors = result.issues.filter(i => i.severity === 'error');
@@ -356,8 +361,7 @@ export class Teikn {
       }
     }
 
-    const withThemes = applyThemes(this.themes, expanded);
-    const resolved = resolveReferences(withThemes);
+    const resolved = resolveReferences(expanded);
     const named = prefixTokenNames(resolved);
 
     this.generators.forEach(g => {

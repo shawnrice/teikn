@@ -171,3 +171,64 @@ describe('PalettePlugin', () => {
     expect(light.hue).toBeCloseTo(dark.hue, 1);
   });
 });
+
+// ─── Modes and references ──────────────────────────────────────
+
+describe('PalettePlugin: modes and references', () => {
+  const plugin = new PalettePlugin({ steps: [50, 500, 950] });
+  const step = (tokens: Token[], name: string): Token => tokens.find(t => t.name === name)!;
+  const modeColor = (t: Token, mode: string): Color => new Color(t.modes![mode] as string | Color);
+
+  test('an authored mode on the seed is rampified onto every step', () => {
+    const token: Token = {
+      name: 'brand',
+      type: 'color',
+      value: '#3b82f6',
+      modes: { dark: '#1e3a8a' },
+    };
+    const result = plugin.expand([token]);
+
+    // Step 500 holds the mode's own base; the ramp moves its lightness.
+    expect(modeColor(step(result, 'brand-500'), 'dark').lightness).toBeCloseTo(
+      new Color('#1e3a8a').lightness,
+      5,
+    );
+    expect(modeColor(step(result, 'brand-50'), 'dark').lightness).toBeGreaterThan(
+      modeColor(step(result, 'brand-950'), 'dark').lightness,
+    );
+    // The dark ramp is distinct from the default ramp.
+    expect(String(step(result, 'brand-500').modes!.dark)).not.toBe(
+      String(step(result, 'brand-500').value),
+    );
+  });
+
+  test('a {ref} default seed rampifies its target', () => {
+    const tokens: Token[] = [
+      { name: 'primary', type: 'color', value: '#3b82f6' },
+      { name: 'brand', type: 'color', value: '{primary}' },
+    ];
+    const result = plugin.expand(tokens);
+
+    // brand's ramp equals primary's ramp, step for step.
+    expect(String(step(result, 'brand-500').value)).toBe(String(step(result, 'primary-500').value));
+    expect(String(step(result, 'brand-50').value)).toBe(String(step(result, 'primary-50').value));
+  });
+
+  test('a {ref} mode seed rampifies per mode', () => {
+    const tokens: Token[] = [
+      { name: 'primary-dark', type: 'color', value: '#1e3a8a' },
+      { name: 'brand', type: 'color', value: '#3b82f6', modes: { dark: '{primary-dark}' } },
+    ];
+    const result = plugin.expand(tokens);
+
+    expect(modeColor(step(result, 'brand-500'), 'dark').lightness).toBeCloseTo(
+      new Color('#1e3a8a').lightness,
+      5,
+    );
+  });
+
+  test('a dangling seed reference throws', () => {
+    const token: Token = { name: 'brand', type: 'color', value: '{nope}' };
+    expect(() => plugin.expand([token])).toThrow(/Unresolved reference/);
+  });
+});

@@ -1,7 +1,12 @@
+import { createSeedResolver } from '../resolve.js';
 import type { Token } from '../Token.js';
+import { tokenKey } from '../token-keys.js';
 import { Color } from '../TokenTypes/Color/index.js';
 import type { ColorFormat } from '../TokenTypes/Color/types.js';
 import { Plugin } from './Plugin.js';
+
+/** Resolve a seed value (default or mode) to a concrete color, following references. */
+type SeedResolver = (value: unknown, tokenName: string) => unknown;
 
 /**
  * Output color space for the generated ramp. `'auto'` (the default) keeps each
@@ -97,20 +102,24 @@ const generatePaletteTokens = (
   lightEnd: number,
   darkEnd: number,
   space: PaletteSpace | undefined,
+  resolveSeed: SeedResolver,
 ): Token[] => {
-  const baseColor = new Color(token.value as string | Color);
+  const seedName = tokenKey(token);
+  const baseColor = new Color(resolveSeed(token.value, seedName) as string | Color);
   const format = resolveFormat(baseColor, space);
   const minStep = Math.min(...steps);
   const maxStep = Math.max(...steps);
 
   // Perceptual ramp: hold hue + chroma, interpolate lightness in `format`'s
   // space. Falls back to RGB tint/shade for spaces without a lightness channel
-  // (rgb, hex, named, …), preserving the long-standing output there.
+  // (rgb, hex, named, …), preserving the long-standing output there. The ramp's
+  // output space and endpoints are seed-level; only the base color differs per
+  // mode, so each mode ramps around its own lightness.
   const lightnessSpace = lightnessSpaceFor(format);
 
-  const stepColor = (step: number): Color => {
+  const stepColor = (seed: Color, step: number): Color => {
     if (step === MID_STEP) {
-      return baseColor;
+      return seed;
     }
 
     const toLight = step < MID_STEP;
@@ -120,26 +129,47 @@ const generatePaletteTokens = (
     const endPct = toLight ? lightEnd : darkEnd;
 
     if (lightnessSpace) {
-      const { basePct, at } = lightnessOps(lightnessSpace, baseColor);
+      const { basePct, at } = lightnessOps(lightnessSpace, seed);
 
       return at(interpolate(basePct, endPct, t));
     }
 
     // RGB tint (mix toward white) / shade (mix toward black).
-    const targetLightness = interpolate(baseColor.lightness * 100, endPct, t) / 100;
+    const targetLightness = interpolate(seed.lightness * 100, endPct, t) / 100;
     const amount = toLight
-      ? (targetLightness - baseColor.lightness) / (1 - baseColor.lightness)
-      : (baseColor.lightness - targetLightness) / baseColor.lightness;
+      ? (targetLightness - seed.lightness) / (1 - seed.lightness)
+      : (seed.lightness - targetLightness) / seed.lightness;
     const clamped = Math.max(0, Math.min(1, amount));
 
-    return toLight ? baseColor.tint(clamped) : baseColor.shade(clamped);
+    return toLight ? seed.tint(clamped) : seed.shade(clamped);
   };
 
-  return steps.map(step => ({
-    ...token,
-    name: `${token.name}-${step}`,
-    value: toOutputValue(stepColor(step), format),
-  }));
+  // Each mode (a hand-authored mode or a theme override, now indistinguishable)
+  // rampifies its own resolved base color, so the whole ramp follows a theme.
+  const modeColors = token.modes
+    ? Object.entries(token.modes).map(
+        ([mode, v]) => [mode, new Color(resolveSeed(v, seedName) as string | Color)] as const,
+      )
+    : [];
+
+  // Strip the seed's own modes from the spread; each step gets its own rampified
+  // modes (or none), never the seed's raw mode values.
+  const { modes: _seedModes, ...rest } = token;
+
+  return steps.map(step => {
+    const modes = modeColors.length
+      ? Object.fromEntries(
+          modeColors.map(([mode, color]) => [mode, toOutputValue(stepColor(color, step), format)]),
+        )
+      : undefined;
+
+    return {
+      ...rest,
+      name: `${token.name}-${step}`,
+      value: toOutputValue(stepColor(baseColor, step), format),
+      ...(modes ? { modes } : {}),
+    };
+  });
 };
 
 export class PalettePlugin extends Plugin<PalettePluginOptions> {
@@ -156,12 +186,19 @@ export class PalettePlugin extends Plugin<PalettePluginOptions> {
     const darkEnd = this.options.darkEnd ?? DEFAULT_DARK_END;
     const { space } = this.options;
 
+    // Resolve a seed against the pre-expand token set so a `{ref}` seed (default
+    // or themed mode) rampifies its target. The full resolve pass still runs
+    // later over the whole set; this is only the lookup needed to know the base
+    // color. Generated step values come out concrete, so the later pass is a
+    // no-op on them.
+    const resolveSeed: SeedResolver = createSeedResolver(tokens);
+
     return tokens.flatMap(token => {
       if (token.type !== 'color') {
         return [token];
       }
 
-      return [token, ...generatePaletteTokens(token, steps, lightEnd, darkEnd, space)];
+      return [token, ...generatePaletteTokens(token, steps, lightEnd, darkEnd, space, resolveSeed)];
     });
   }
 }
