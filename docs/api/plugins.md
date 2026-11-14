@@ -29,7 +29,7 @@ const writer = new Teikn({
 `DeprecationPlugin` keys match a token by its authored name (`oldPrimary`), its qualified key
 (`color.oldPrimary`) or its prefixed output name (`color-oldPrimary`). A bare name marks every token
 with that name; qualify it to target one group. A key that matches no token is reported as an
-`error` audit issue (see `Teikn.transform()`'s `auditIssues`, or call `writer.audit(tokens)`).
+`warning` audit issue (see `Teikn.transform()`'s `auditIssues`, or call `writer.audit(tokens)`).
 
 `ColorTransformPlugin` leaves the keywords `currentColor`, `inherit`, `initial`, `unset`, `revert`
 and `revert-layer` untouched. Any other color string that cannot be parsed fails generation with an
@@ -125,7 +125,7 @@ issues.forEach(i => console.warn(`[${i.severity}] ${i.token}: ${i.message}`));
 
 | Plugin                       | Description                                                                                                                                                                                                                                                                                                                                                          |
 | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **ContrastValidatorPlugin**  | Validates WCAG contrast ratios (AA: 4.5:1, AAA: 7:1) between foreground/background color pairs. A pair name that is missing or matches several color tokens is reported as an error                                                                                                                                                                                  |
+| **ContrastValidatorPlugin**  | Validates WCAG contrast ratios (AA: 4.5:1, AAA: 7:1) between foreground/background color pairs. A pair name that is missing or matches several color tokens is reported as a warning                                                                                                                                                                                 |
 | **MinFontSizePlugin**        | Warns when font-size tokens (type `fontSize`, `font-size` or `font_size`) fall below an accessibility minimum (default 12px)                                                                                                                                                                                                                                         |
 | **TouchTargetPlugin**        | Warns when size/icon tokens are below minimum touch target size (default 44px per WCAG/Apple HIG)                                                                                                                                                                                                                                                                    |
 | **PerceptualDistancePlugin** | Warns when colors in a declared peer `set` are too perceptually similar, using [CIEDE2000](https://en.wikipedia.org/wiki/Color_difference#CIEDE2000) (Delta E 2000). Takes intent explicitly (like `ContrastValidator`'s `pairs`): pass `sets` to gate, `all: true` to compare every pair, or `report: true` for a non-gating ΔE report. Default threshold: ΔE < 5.0 |

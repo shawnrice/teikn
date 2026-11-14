@@ -42,7 +42,7 @@ export class DeprecationPlugin extends Plugin<DeprecationPluginOptions> {
     return Object.keys(this.options.tokens)
       .filter(key => !known.has(key))
       .map(key => ({
-        severity: 'error' as const,
+        severity: 'warning' as const,
         token: key,
         message: `DeprecationPlugin: "${key}" matches no token, so nothing is marked deprecated`,
       }));

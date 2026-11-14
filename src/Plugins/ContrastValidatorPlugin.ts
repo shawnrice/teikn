@@ -21,7 +21,7 @@ const findColorTokens = (tokens: Token[], name: string): Token[] => {
 };
 
 const ambiguous = (role: string, name: string, found: Token[]): AuditIssue => ({
-  severity: 'error',
+  severity: 'warning',
   token: name,
   message: `${role} token "${name}" is ambiguous — matches ${found.map(t => tokenKey(t)).join(', ')}. Use a qualified name.`,
 });
@@ -42,7 +42,7 @@ export class ContrastValidatorPlugin extends Plugin<ContrastValidatorPluginOptio
       if (!fgToken) {
         return [
           {
-            severity: 'error' as const,
+            severity: 'warning' as const,
             token: foreground,
             message: `Foreground token "${foreground}" not found`,
           },
@@ -52,7 +52,7 @@ export class ContrastValidatorPlugin extends Plugin<ContrastValidatorPluginOptio
       if (!bgToken) {
         return [
           {
-            severity: 'error' as const,
+            severity: 'warning' as const,
             token: background,
             message: `Background token "${background}" not found`,
           },
@@ -79,7 +79,7 @@ export class ContrastValidatorPlugin extends Plugin<ContrastValidatorPluginOptio
         if (ratio < threshold) {
           return [
             {
-              severity: 'error' as const,
+              severity: 'warning' as const,
               token: foreground,
               message: `Contrast ratio ${rounded}:1 between "${foreground}" and "${background}" is below WCAG ${level} threshold of ${threshold}:1`,
             },
@@ -90,7 +90,7 @@ export class ContrastValidatorPlugin extends Plugin<ContrastValidatorPluginOptio
       } catch {
         return [
           {
-            severity: 'error' as const,
+            severity: 'warning' as const,
             token: foreground,
             message: `Could not compute contrast between "${foreground}" and "${background}" — invalid color value`,
           },

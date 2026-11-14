@@ -566,7 +566,7 @@ describe('Scenario 16 — ContrastValidatorPlugin failure mode', () => {
     // Direct audit — returns issues
     const issues = plugin.audit!(tokens);
     expect(issues.length).toBeGreaterThan(0);
-    expect(issues[0]!.severity).toBe('error');
+    expect(issues[0]!.severity).toBe('warning');
     expect(issues[0]!.message).toMatch(/contrast/i);
     // Through Teikn — generates files successfully, doesn't throw
     const teikn = new Teikn({ generators: [new Json()], plugins: [plugin], validate: false });

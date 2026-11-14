@@ -81,7 +81,7 @@ describe('DeprecationPlugin in the pipeline', () => {
     const plugin = new DeprecationPlugin({ tokens: { old: true, oldd: 'new' } });
     expect(plugin.audit(tokens)).toEqual([
       {
-        severity: 'error',
+        severity: 'warning',
         token: 'oldd',
         message: 'DeprecationPlugin: "oldd" matches no token, so nothing is marked deprecated',
       },

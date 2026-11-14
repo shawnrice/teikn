@@ -37,7 +37,7 @@ describe('ContrastValidatorPlugin', () => {
     const tokens = [makeToken('fg', '#777777'), makeToken('bg', '#888888')];
     const issues = plugin.audit!(tokens);
     expect(issues).toHaveLength(1);
-    expect(issues[0]!.severity).toBe('error');
+    expect(issues[0]!.severity).toBe('warning');
     expect(issues[0]!.message).toContain('WCAG AA');
     expect(issues[0]!.message).toContain('4.5:1');
   });
@@ -72,7 +72,7 @@ describe('ContrastValidatorPlugin', () => {
     const tokens = [makeToken('bg', '#fff')];
     const issues = plugin.audit!(tokens);
     expect(issues).toHaveLength(1);
-    expect(issues[0]!.severity).toBe('error');
+    expect(issues[0]!.severity).toBe('warning');
     expect(issues[0]!.message).toContain('not found');
   });
 
@@ -156,7 +156,7 @@ describe('ContrastValidatorPlugin lookups', () => {
     ];
     expect(pair('primary', 'bg').audit(tokens)).toEqual([
       {
-        severity: 'error',
+        severity: 'warning',
         token: 'primary',
         message:
           'Foreground token "primary" is ambiguous — matches color.primary, brand.primary. Use a qualified name.',
