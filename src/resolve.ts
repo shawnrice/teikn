@@ -9,6 +9,11 @@ const REF_PATTERN = /^\{([^}]+)\}$/;
 const isRef = (value: unknown): value is string =>
   typeof value === 'string' && REF_PATTERN.test(value);
 
+// Mode names are author-chosen, so read them as own properties only: a mode
+// called `constructor` must not reach `Object.prototype`.
+const ownMode = (modes: ModeValues | undefined, mode: string): unknown =>
+  modes && Object.hasOwn(modes, mode) ? modes[mode] : undefined;
+
 const isCompositeValue = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value) && !isFirstClassValue(value);
 
@@ -111,7 +116,7 @@ const createResolver = (tokenMap: Map<string, Token>, tokenKeys: KeyAliasIndex) 
 
         // With a `mode`, a referenced token contributes its value for that mode
         // (when it has one), so the chain is followed as that mode sees it.
-        const modeValue = mode === undefined ? undefined : referenced.modes?.[mode];
+        const modeValue = mode === undefined ? undefined : ownMode(referenced.modes, mode);
 
         if (modeValue !== undefined) {
           modeHits += 1;
@@ -133,7 +138,7 @@ const createResolver = (tokenMap: Map<string, Token>, tokenKeys: KeyAliasIndex) 
     tokenName,
     modeNames,
   }: ResolveModesArgs): Record<string, unknown> | undefined => {
-    const resolved: Record<string, unknown> = {};
+    const resolved: [string, unknown][] = [];
     let changed = false;
 
     for (const [mode, own] of Object.entries(modes)) {
@@ -143,7 +148,7 @@ const createResolver = (tokenMap: Map<string, Token>, tokenKeys: KeyAliasIndex) 
         currentName: tokenName,
         mode,
       });
-      resolved[mode] = next;
+      resolved.push([mode, next]);
 
       if (next !== own) {
         changed = true;
@@ -154,7 +159,7 @@ const createResolver = (tokenMap: Map<string, Token>, tokenKeys: KeyAliasIndex) 
     // value references a token that has it (`brand = {primary}` follows
     // primary's dark value).
     for (const mode of modeNames) {
-      if (mode in modes) {
+      if (Object.hasOwn(modes, mode)) {
         continue;
       }
 
@@ -167,14 +172,14 @@ const createResolver = (tokenMap: Map<string, Token>, tokenKeys: KeyAliasIndex) 
       });
 
       if (modeHits !== before) {
-        resolved[mode] = next;
+        resolved.push([mode, next]);
         changed = true;
       }
     }
 
     // Return undefined when nothing changed so the caller's identity
     // short-circuit can skip the shallow clone for literal-only modes.
-    return changed ? resolved : undefined;
+    return changed ? Object.fromEntries(resolved) : undefined;
   };
 
   return { resolveValue, resolveModes };
@@ -239,11 +244,13 @@ export const resolveReferences = (tokens: Token[]): Token[] => {
       seen: new Set([tokenKey(token)]),
       currentName: tokenKey(token),
     });
+    // A linked ref stays a live alias of its target in every mode, so it takes
+    // no inherited mode values of its own.
     const resolvedModes = resolveModes({
       modes: token.modes,
       value: token.value,
       tokenName: tokenKey(token),
-      modeNames,
+      modeNames: token.link ? [] : modeNames,
     });
 
     if (resolvedValue === token.value && resolvedModes === undefined) {
