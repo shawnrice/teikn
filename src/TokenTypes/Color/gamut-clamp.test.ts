@@ -41,7 +41,9 @@ describe('sRGB gamut clamping', () => {
       const inHue = (convert('lch', 'oklch', lch) as number[])[2]!;
       const outHue = (convert('rgb', 'oklch', Color.fromLCH(...lch).asRGB()) as number[])[2]!;
 
-      expect(hueDiff(inHue, outHue)).toBeLessThan(1);
+      // inHue is the true (unmapped) hue; the mapper's final JND clip may
+      // drift it by a few degrees.
+      expect(hueDiff(inHue, outHue)).toBeLessThan(5);
     }
   });
 
@@ -55,8 +57,8 @@ describe('sRGB gamut clamping', () => {
   });
 
   test('in-gamut colors are unchanged by the clamp', () => {
-    // LAB for pure sRGB red round-trips to #ff0000.
-    expect(Color.fromLAB(53.24, 80.09, 67.2).asHex()).toBe('#ff0000');
+    // LAB (D50, as CSS defines lab()) for pure sRGB red round-trips to #ff0000.
+    expect(Color.fromLAB(54.29, 80.805, 69.891).asHex()).toBe('#ff0000');
   });
 
   test('non-finite numeric components are rejected', () => {

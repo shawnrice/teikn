@@ -55,9 +55,12 @@ export const RGBToHSL = (rgb: RGB): HSL => {
 };
 
 export const HSLToRGB = ([hue, saturation, lightness]: HSL): RGB => {
+  // Normalise first: `%` keeps the sign, so a negative hue would break `k` below.
+  const h = ((hue % 360) + 360) % 360;
+
   const f = (coefficient: number) => {
     const angle = saturation * Math.min(lightness, 1 - lightness);
-    const k = (coefficient + hue / 30) % 12;
+    const k = (coefficient + h / 30) % 12;
 
     return lightness - angle * Math.max(Math.min(k - 3, 9 - k, 1), -1);
   };
@@ -69,19 +72,30 @@ export const HSLToRGB = ([hue, saturation, lightness]: HSL): RGB => {
 
 // ─── RGB ↔ XYZ ──────────────────────────────────────────────
 
+type Vec3 = readonly [number, number, number];
+type Mat3 = readonly [Vec3, Vec3, Vec3];
+
+const transform = (m: Mat3, [x, y, z]: Vec3): [number, number, number] => [
+  m[0][0] * x + m[0][1] * y + m[0][2] * z,
+  m[1][0] * x + m[1][1] * y + m[1][2] * z,
+  m[2][0] * x + m[2][1] * y + m[2][2] * z,
+];
+
+// Exact rational matrices from the CSS Color 4 sample code (D65). The rounded
+// 7-digit forms leave greys slightly chromatic once adapted to D50 for Lab.
 // prettier-ignore
-const sRGBToXYZMatrix = [
-  [0.4124564, 0.3575761, 0.1804375],
-  [0.2126729, 0.7151522, 0.0721750],
-  [0.0193339, 0.1191920, 0.9503041],
-] as const;
+const sRGBToXYZMatrix: Mat3 = [
+  [506752 / 1228815,  87881 / 245763,   12673 /   70218],
+  [ 87098 /  409605, 175762 / 245763,   12673 /  175545],
+  [  7918 /  409605,  87881 / 737289, 1001167 / 1053270],
+];
 
 // prettier-ignore
-const xyzToSRGBMatrix = [
-  [ 3.2404542, -1.5371385, -0.4985314],
-  [-0.969266,   1.8760108,  0.0415560],
-  [ 0.0556434, -0.2040259,  1.0572252],
-] as const;
+const xyzToSRGBMatrix: Mat3 = [
+  [  12831 /   3959,    -329 /    214, -1974 /   3959],
+  [-851781 / 878810, 1648619 / 878810, 36519 / 878810],
+  [    705 /  12673,   -2585 /  12673,   705 /    667],
+];
 
 const linearize = (v: number): number => (v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
 
@@ -95,14 +109,9 @@ const applyGamma = (v: number): number =>
  * @see https://mina86.com/2021/srgb-lab-lchab-conversions/
  */
 export const RGBToXYZ = (rgb: RGB): XYZ => {
-  const [r, g, b] = rgb.map(byteToUnit).map(linearize) as [number, number, number];
-  const m = sRGBToXYZMatrix;
+  const lin = rgb.map(byteToUnit).map(linearize) as [number, number, number];
 
-  return [
-    r * m[0][0] + g * m[0][1] + b * m[0][2],
-    r * m[1][0] + g * m[1][1] + b * m[1][2],
-    r * m[2][0] + g * m[2][1] + b * m[2][2],
-  ];
+  return transform(sRGBToXYZMatrix, lin);
 };
 
 /**
@@ -110,10 +119,7 @@ export const RGBToXYZ = (rgb: RGB): XYZ => {
  * @see https://www.image-engineering.de/library/technotes/958-how-to-convert-between-srgb-and-ciexyz
  */
 export const XYZToRGB = (xyz: XYZ): RGB => {
-  const m = xyzToSRGBMatrix;
-  const lin = [0, 1, 2].map(
-    i => xyz[0] * m[i]![0] + xyz[1] * m[i]![1] + xyz[2] * m[i]![2],
-  ) as unknown as [number, number, number];
+  const lin = transform(xyzToSRGBMatrix, xyz);
 
   // lab()/lch()/xyz() colors (all legitimate CSS) reach sRGB through this edge
   // and are often out of gamut. Out-of-gamut colors route through the same CSS
@@ -123,19 +129,37 @@ export const XYZToRGB = (xyz: XYZ): RGB => {
 
 // ─── XYZ ↔ LAB ──────────────────────────────────────────────
 
-/** D65 illuminant reference white point */
-const D65 = [0.95047, 1.0, 1.08883] as const;
-const [wpX, wpY, wpZ] = D65;
+// CSS Color 4 defines lab()/lch() relative to D50; teikn's `xyz` is D65, so
+// Lab conversions adapt between the two with the spec's Bradford matrices.
+
+/** D50 illuminant reference white point */
+const D50 = [0.3457 / 0.3585, 1.0, (1.0 - 0.3457 - 0.3585) / 0.3585] as const;
+const [wpX, wpY, wpZ] = D50;
+
+// prettier-ignore
+const D65ToD50Matrix: Mat3 = [
+  [ 1.0479297925449969,   0.022946870601609652, -0.05019226628920524 ],
+  [ 0.02962780877005599,  0.9904344267538799,   -0.017073799063418826],
+  [-0.009243040646204504, 0.015055191490298152,  0.7518742814281371  ],
+];
+
+// prettier-ignore
+const D50ToD65Matrix: Mat3 = [
+  [ 0.955473421488075,    -0.02309845494876471,  0.06325924320057072 ],
+  [-0.0283697093338637,    1.0099953980813041,   0.021041441191917323],
+  [ 0.012314014864481998, -0.020507649298898964, 1.330365926242124   ],
+];
 
 const labEpsilon = (6 / 29) ** 3; // 0.008856
 const labKappa = (1 / 3) * (29 / 6) ** 2; // 7.787
 
 const labF = (t: number): number => (t > labEpsilon ? t ** (1 / 3) : labKappa * t + 16 / 116);
 
-export const XYZToLAB = ([x, y, z]: XYZ): LAB => {
-  const fx = labF(x / D65[0]);
-  const fy = labF(y / D65[1]);
-  const fz = labF(z / D65[2]);
+export const XYZToLAB = (xyz: XYZ): LAB => {
+  const [x, y, z] = transform(D65ToD50Matrix, xyz);
+  const fx = labF(x / wpX);
+  const fy = labF(y / wpY);
+  const fz = labF(z / wpZ);
 
   const L = 116 * fy - 16;
   const a = 500 * (fx - fy);
@@ -157,7 +181,7 @@ export const LABToXYZ = ([L, a, b]: LAB): XYZ => {
   const yVal = y3 > labEpsilon ? y3 : (y - 16 / 116) / labKappa;
   const zVal = z3 > labEpsilon ? z3 : (z - 16 / 116) / labKappa;
 
-  return [xVal * wpX, yVal * wpY, zVal * wpZ] as XYZ;
+  return transform(D50ToD65Matrix, [xVal * wpX, yVal * wpY, zVal * wpZ]);
 };
 
 // ─── LAB ↔ LCH ──────────────────────────────────────────────
@@ -167,6 +191,12 @@ const RAD = Math.PI / 180;
 
 export const LABToLCH = ([L, a, b]: LAB): LCH => {
   const C = Math.sqrt(a * a + b * b);
+
+  // Below this chroma the hue is meaningless (achromatic) — pin it to 0.
+  if (C < 0.0015) {
+    return [L, C, 0];
+  }
+
   const H = Math.atan2(b, a) * DEG;
 
   return [L, C, H < 0 ? H + 360 : H];
@@ -243,6 +273,12 @@ export const OklchToOklab = ([L, C, h]: Oklch): Oklab => {
 
 export const RGBToOklab = (rgb: RGB): Oklab =>
   linearSRGBToOklab(rgb.map(byteToUnit).map(linearize) as [number, number, number]);
+
+// Unquantised, un-gamut-mapped bridge between the XYZ side and the Oklab side.
+export const XYZToOklab = (xyz: XYZ): Oklab => linearSRGBToOklab(transform(xyzToSRGBMatrix, xyz));
+
+export const OklabToXYZ = (oklab: Oklab): XYZ =>
+  transform(sRGBToXYZMatrix, oklabToLinearSRGB(oklab));
 
 const linInGamut = ([r, g, b]: readonly [number, number, number]): boolean =>
   r >= -1e-4 && r <= 1 + 1e-4 && g >= -1e-4 && g <= 1 + 1e-4 && b >= -1e-4 && b <= 1 + 1e-4;
