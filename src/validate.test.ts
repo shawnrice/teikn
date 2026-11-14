@@ -366,3 +366,35 @@ describe('validate duplicate output names', () => {
     expect(result.valid).toBe(true);
   });
 });
+
+describe('validate: cycles follow the mode being resolved', () => {
+  const circular = (tokens: Token[]): boolean =>
+    validate(tokens).issues.some(i => i.message.includes('Circular'));
+
+  test('a chain that only loops by switching modes is not a cycle', () => {
+    expect(
+      circular([
+        { name: 'a', type: 'color', value: '{b}', modes: { dark: '#111' } },
+        { name: 'b', type: 'color', value: '#fff', modes: { dark: '{a}' } },
+      ]),
+    ).toBe(false);
+  });
+
+  test('a cycle that exists within one mode is reported', () => {
+    expect(
+      circular([
+        { name: 'a', type: 'color', value: '#000', modes: { dark: '{b}' } },
+        { name: 'b', type: 'color', value: '#fff', modes: { dark: '{a}' } },
+      ]),
+    ).toBe(true);
+  });
+
+  test('a cycle reached through an inherited mode is reported', () => {
+    expect(
+      circular([
+        { name: 'a', type: 'color', value: '{b}' },
+        { name: 'b', type: 'color', value: '#fff', modes: { dark: '{a}' } },
+      ]),
+    ).toBe(true);
+  });
+});

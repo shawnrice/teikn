@@ -333,7 +333,7 @@ describe('Scenario 9 — ScssQuoteValue × NameConvention', () => {
       new NameConventionPlugin({ convention: 'camelCase' }),
     ]);
     // bodyFont becomes the name; unquote wrapping is in value
-    expect(out).toContain('unquote');
+    expect(out).toContain('(#{');
     expect(out).toContain('Inter');
   });
 

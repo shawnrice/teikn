@@ -287,20 +287,22 @@ export const validate = (tokens: Token[]): ValidationResult => {
     }
   }
 
-  // Walks refs (follow the chain), composites (visit each field),
-  // and modes of referenced tokens.
+  // Walks refs (follow the chain) and composites (visit each field). With a
+  // `mode`, a referenced token is followed through its value for that mode,
+  // exactly as the resolver does, so only cycles the resolver would hit count.
   const checkCircularValue = (
     value: unknown,
     originName: string,
     visited: Set<string>,
+    mode?: string,
   ): boolean => {
     if (Array.isArray(value)) {
-      return value.some(item => checkCircularValue(item, originName, visited));
+      return value.some(item => checkCircularValue(item, originName, visited, mode));
     }
 
     if (isComposite(value)) {
       for (const fieldValue of Object.values(value as CompositeValue)) {
-        if (checkCircularValue(fieldValue, originName, visited)) {
+        if (checkCircularValue(fieldValue, originName, visited, mode)) {
           return true;
         }
       }
@@ -310,7 +312,7 @@ export const validate = (tokens: Token[]): ValidationResult => {
 
     if (hasRefFields(value)) {
       for (const fieldValue of Object.values(value.__teikn_fields__())) {
-        if (checkCircularValue(fieldValue, originName, visited)) {
+        if (checkCircularValue(fieldValue, originName, visited, mode)) {
           return true;
         }
       }
@@ -340,20 +342,15 @@ export const validate = (tokens: Token[]): ValidationResult => {
     const next = new Set(visited);
     next.add(resolved.key);
 
-    if (checkCircularValue(referenced.value, originName, next)) {
-      return true;
-    }
+    const modeValue =
+      mode !== undefined && referenced.modes && Object.hasOwn(referenced.modes, mode)
+        ? referenced.modes[mode]
+        : undefined;
 
-    if (referenced.modes) {
-      for (const modeVal of Object.values(referenced.modes)) {
-        if (checkCircularValue(modeVal, originName, next)) {
-          return true;
-        }
-      }
-    }
-
-    return false;
+    return checkCircularValue(modeValue ?? referenced.value, originName, next, mode);
   };
+
+  const modeNames = [...new Set(tokens.flatMap(t => Object.keys(t.modes ?? {})))];
 
   for (const token of tokens) {
     if (!token.name) {
@@ -362,11 +359,16 @@ export const validate = (tokens: Token[]): ValidationResult => {
 
     const visited = new Set([tokenKey(token)]);
 
-    checkCircularValue(token.value, token.name, visited);
+    if (checkCircularValue(token.value, token.name, visited)) {
+      continue;
+    }
 
-    if (token.modes) {
-      for (const modeVal of Object.values(token.modes)) {
-        checkCircularValue(modeVal, token.name, visited);
+    // One report per token: stop at the first mode whose chain cycles.
+    for (const mode of modeNames) {
+      const own = token.modes && Object.hasOwn(token.modes, mode) ? token.modes[mode] : undefined;
+
+      if (checkCircularValue(own ?? token.value, token.name, visited, mode)) {
+        break;
       }
     }
   }
