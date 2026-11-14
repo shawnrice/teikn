@@ -18,10 +18,10 @@ describe('ScssQuoteValuePlugin', () => {
     expect(plugin.tokenType.test('color')).toBe(false);
   });
 
-  test('transform wraps value with unquote', () => {
+  test('transform wraps value in an interpolation', () => {
     const token: Token = { name: 'body', type: 'font-family', value: '"Arial", sans-serif' };
     const result = plugin.transform(token);
-    expect(result.value).toBe('unquote(\'#{"Arial", sans-serif}\')');
+    expect(result.value).toBe('#{"Arial", sans-serif}');
     expect(result.name).toBe('body');
     expect(result.type).toBe('font-family');
   });
@@ -30,6 +30,6 @@ describe('ScssQuoteValuePlugin', () => {
     const token: Token = { name: 'heading', type: 'font', value: 'Georgia', usage: 'Heading font' };
     const result = plugin.transform(token);
     expect(result.usage).toBe('Heading font');
-    expect(result.value).toBe("unquote('#{Georgia}')");
+    expect(result.value).toBe('#{Georgia}');
   });
 });

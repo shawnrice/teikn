@@ -34,8 +34,8 @@ $colorSecondary: rgb(102, 205, 170);
 $spacingSm: 4px;
 
 $color-values: (
-  primary: $colorPrimary,
-  secondary: $colorSecondary,
+  'primary': $colorPrimary,
+  'secondary': $colorSecondary,
 );
 
 @function color($name) {
@@ -47,7 +47,7 @@ $color-values: (
 }
 
 $spacing-values: (
-  sm: $spacingSm,
+  'sm': $spacingSm,
 );
 
 @function spacing($name) {

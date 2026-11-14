@@ -164,7 +164,7 @@ describe('ScssQuoteValuePlugin with modes', () => {
     ];
     const output = new Scss(opts).generate(tokens, [plugin]);
     // Both base and mode should be wrapped with unquote
-    expect(output).toContain('unquote');
+    expect(output).toContain('(#{');
     // The mode value should also be quoted
     expect(output).not.toContain('brand: "Montserrat"');
   });
