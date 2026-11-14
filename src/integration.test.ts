@@ -240,7 +240,7 @@ describe('integration: TypeScript meta generator', () => {
 
   test('emits both runtime and declaration files from a single construction', () => {
     expect(output.has('tokens.mjs')).toBe(true);
-    expect(output.has('tokens.d.ts')).toBe(true);
+    expect(output.has('tokens.d.mts')).toBe(true);
   });
 
   test('runtime output is a valid ES module with tokens export', () => {
@@ -251,7 +251,7 @@ describe('integration: TypeScript meta generator', () => {
   });
 
   test('declaration output is ambient and narrow-typed', () => {
-    const dts = output.get('tokens.d.ts')!;
+    const dts = output.get('tokens.d.mts')!;
     expect(dts).toContain('export declare const tokens: {');
     expect(dts).toContain('readonly');
   });
@@ -262,7 +262,7 @@ describe('integration: TypeScript meta generator', () => {
         new Teikn({
           generators: [
             new Teikn.generators.TypeScript({ filename: 'tokens' }),
-            new Teikn.generators.TypeScriptDeclarations({ filename: 'tokens' }),
+            new Teikn.generators.TypeScriptDeclarations({ filename: 'tokens', module: 'esm' }),
           ],
         }),
     ).toThrow('Duplicate generator output filenames');

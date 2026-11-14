@@ -81,7 +81,9 @@ describe('TypeScriptDeclarations generator', () => {
     ];
     const output = new Generator({ dateFn: fixedDate }).generate(tokens);
     expect(output).toContain('export declare const modes: {');
-    expect(output).toContain('readonly dark: Partial<typeof tokens>;');
+    expect(output).toContain('readonly dark: {');
+    expect(output).toContain("readonly colorSurface?: '#1a1a1a';");
+    expect(output).not.toContain('Partial<typeof tokens>');
   });
 
   test('omits modes type when no tokens have modes', () => {
