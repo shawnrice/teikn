@@ -61,7 +61,10 @@ export class Dtcg extends Generator<DtcgOpts> {
   }
 
   combinator(tokens: Token[]): string {
-    const doc = serializeDtcg(tokens, {
+    // Names reaching a generator are already type-prefixed (`color-primary`),
+    // so the group must not be prepended to the path a second time.
+    const named = tokens.map(({ group: _, ...token }) => token);
+    const doc = serializeDtcg(named, {
       hierarchical: this.options.hierarchical ?? true,
       separator: this.options.separator ?? '.',
     });
