@@ -1,5 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 
+import { ref, scale } from '../builders.js';
+import { Teikn } from '../Teikn.js';
 import type { Token } from '../Token.js';
 import { Dimension } from '../TokenTypes/Dimension.js';
 import { MinFontSizePlugin } from './MinFontSizePlugin.js';
@@ -98,5 +100,22 @@ describe('MinFontSizePlugin', () => {
     const tokens = [makeToken('small', '8pt')];
     const issues = plugin.audit!(tokens);
     expect(issues).toHaveLength(1);
+  });
+});
+
+describe('MinFontSizePlugin type matching', () => {
+  test.each(['fontSize', 'font-size', 'font_size', 'FontSize'])('audits type "%s"', type => {
+    const issues = new MinFontSizePlugin({}).audit(scale(type, { xs: '8px', md: '16px' }));
+    expect(issues.map(i => i.token)).toEqual(['xs']);
+  });
+
+  test('ignores unrelated types', () => {
+    expect(new MinFontSizePlugin({}).audit(scale('spacing', { xs: '8px' }))).toEqual([]);
+  });
+
+  test('Teikn.audit checks a size that references another token', () => {
+    const tokens = scale('fontSize', { tiny: '8px', caption: ref('tiny') });
+    const issues = new Teikn({ plugins: [new MinFontSizePlugin({})] }).audit(tokens);
+    expect(issues.map(i => i.token)).toEqual(['tiny', 'caption']);
   });
 });

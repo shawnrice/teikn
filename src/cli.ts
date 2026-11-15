@@ -231,37 +231,39 @@ const resolveConfigPath = () => {
   return CONFIG_FILES.map(name => getPathTo(name)).find(p => fs.existsSync(p)) ?? null;
 };
 
-const getGenerators = () => {
-  const requested = new Set(
-    parseArgFlag('generators')
-      .split(',')
-      .filter(Boolean)
-      .map(x => x.toLowerCase().trim()),
+// Resolve a comma-separated flag against a registry. Unknown names are an
+// error; `fallback` applies only when the flag is absent.
+const pickByFlag = <T>(flag: string, registry: Record<string, T>, fallback: T[]): T[] => {
+  const requested = parseArgFlag(flag)
+    .split(',')
+    .map(x => x.trim())
+    .filter(Boolean);
+
+  if (requested.length === 0) {
+    return fallback;
+  }
+
+  const byName = new Map(
+    Object.entries(registry).map(([name, value]) => [name.toLowerCase(), value]),
   );
+  const unknown = requested.filter(name => !byName.has(name.toLowerCase()));
 
-  const gens = Object.entries(Teikn.generators)
-    .filter(([name]) => requested.has(name.toLowerCase()))
-    .map(([, Generator]) => Generator);
+  if (unknown.length > 0) {
+    console.error(`Unknown --${flag}: ${unknown.join(', ')}`);
+    console.error(`Valid ${flag}: ${Object.keys(registry).join(', ')}`);
+    process.exit(1);
+  }
 
-  return gens.length ? gens : [Teikn.generators.Json];
+  return [...new Set(requested.map(name => byName.get(name.toLowerCase())!))];
 };
 
-const getPlugins = () => {
-  const requested = new Set(
-    parseArgFlag('plugins')
-      .split(',')
-      .filter(Boolean)
-      .map(x => x.toLowerCase().trim()),
-  );
+const getGenerators = () => pickByFlag('generators', Teikn.generators, [Teikn.generators.Json]);
 
-  const plugins = Object.entries(Teikn.plugins)
-    .filter(([name]) => requested.has(name.toLowerCase()))
-    .map(([, Plugin]) => Plugin);
-
-  return plugins.length
-    ? plugins
-    : [Teikn.plugins.ColorTransformPlugin, Teikn.plugins.ScssQuoteValuePlugin];
-};
+const getPlugins = () =>
+  pickByFlag('plugins', Teikn.plugins, [
+    Teikn.plugins.ColorTransformPlugin,
+    Teikn.plugins.ScssQuoteValuePlugin,
+  ]);
 
 const dryRun = (writer: Teikn, tokens: any) => {
   const files = writer.generateToStrings(tokens);

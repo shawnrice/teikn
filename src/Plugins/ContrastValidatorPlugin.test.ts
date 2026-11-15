@@ -1,5 +1,7 @@
 import { describe, expect, test } from 'bun:test';
 
+import { group, ref } from '../builders.js';
+import { Teikn } from '../Teikn.js';
 import type { Token } from '../Token.js';
 import { Color } from '../TokenTypes/Color/index.js';
 import { ContrastValidatorPlugin } from './ContrastValidatorPlugin.js';
@@ -35,7 +37,7 @@ describe('ContrastValidatorPlugin', () => {
     const tokens = [makeToken('fg', '#777777'), makeToken('bg', '#888888')];
     const issues = plugin.audit!(tokens);
     expect(issues).toHaveLength(1);
-    expect(issues[0]!.severity).toBe('error');
+    expect(issues[0]!.severity).toBe('warning');
     expect(issues[0]!.message).toContain('WCAG AA');
     expect(issues[0]!.message).toContain('4.5:1');
   });
@@ -70,7 +72,7 @@ describe('ContrastValidatorPlugin', () => {
     const tokens = [makeToken('bg', '#fff')];
     const issues = plugin.audit!(tokens);
     expect(issues).toHaveLength(1);
-    expect(issues[0]!.severity).toBe('error');
+    expect(issues[0]!.severity).toBe('warning');
     expect(issues[0]!.message).toContain('not found');
   });
 
@@ -107,5 +109,58 @@ describe('ContrastValidatorPlugin', () => {
     const issues = plugin.audit!(tokens);
     expect(issues).toHaveLength(1);
     expect(issues[0]!.token).toBe('low-fg');
+  });
+});
+
+describe('ContrastValidatorPlugin lookups', () => {
+  const pair = (foreground: string, background: string) =>
+    new ContrastValidatorPlugin({ pairs: [{ foreground, background }] });
+
+  test('Teikn.audit resolves alias tokens before auditing', () => {
+    const tokens = group('color', {
+      black: '#000',
+      white: '#fff',
+      grey: '#aaa',
+      text: ref('black'),
+      muted: ref('grey'),
+      bg: ref('white'),
+    });
+    expect(new Teikn({ plugins: [pair('text', 'bg')] }).audit(tokens)).toEqual([]);
+
+    const issues = new Teikn({ plugins: [pair('muted', 'bg')] }).audit(tokens);
+    expect(issues).toHaveLength(1);
+    expect(issues[0]!.message).toContain('Contrast ratio 2.32:1');
+  });
+
+  test('prefers the color token when a bare name is shared with another type', () => {
+    const tokens = [
+      ...group('color', { primary: '#000', bg: '#fff' }),
+      ...group('spacing', { primary: '4px' }),
+    ];
+    expect(pair('primary', 'bg').audit(tokens)).toEqual([]);
+  });
+
+  test('accepts qualified and prefixed names', () => {
+    const tokens = [
+      ...group('color', { primary: '#000', bg: '#fff' }),
+      { name: 'primary', type: 'color', group: 'brand', value: '#fefefe' },
+    ];
+    expect(pair('color.primary', 'color-bg').audit(tokens)).toEqual([]);
+    expect(pair('brand.primary', 'bg').audit(tokens)).toHaveLength(1);
+  });
+
+  test('reports an ambiguous name instead of picking one', () => {
+    const tokens = [
+      ...group('color', { primary: '#000', bg: '#fff' }),
+      { name: 'primary', type: 'color', group: 'brand', value: '#fefefe' },
+    ];
+    expect(pair('primary', 'bg').audit(tokens)).toEqual([
+      {
+        severity: 'warning',
+        token: 'primary',
+        message:
+          'Foreground token "primary" is ambiguous — matches color.primary, brand.primary. Use a qualified name.',
+      },
+    ]);
   });
 });

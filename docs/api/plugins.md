@@ -19,11 +19,21 @@ const writer = new Teikn({
     new Teikn.plugins.ScssQuoteValuePlugin(),
     new Teikn.plugins.RemUnitPlugin({ base: 16, targetUnit: 'rem' }),
     new Teikn.plugins.AlphaMultiplyPlugin({ background: '#ffffff' }),
-    new Teikn.plugins.NameConventionPlugin({ convention: 'camelCase' }),
+    // List DeprecationPlugin before NameConventionPlugin so it sees un-renamed names.
     new Teikn.plugins.DeprecationPlugin({ tokens: { oldPrimary: 'primary', legacySpacing: true } }),
+    new Teikn.plugins.NameConventionPlugin({ convention: 'camelCase' }),
   ],
 });
 ```
+
+`DeprecationPlugin` keys match a token by its authored name (`oldPrimary`), its qualified key
+(`color.oldPrimary`) or its prefixed output name (`color-oldPrimary`). A bare name marks every token
+with that name; qualify it to target one group. A key that matches no token is reported as an
+`warning` audit issue (see `Teikn.transform()`'s `auditIssues`, or call `writer.audit(tokens)`).
+
+`ColorTransformPlugin` leaves the keywords `currentColor`, `inherit`, `initial`, `unset`, `revert`
+and `revert-layer` untouched. Any other color string that cannot be parsed fails generation with an
+error naming the token.
 
 | Plugin                    | Description                                                                                                                                               |
 | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -50,8 +60,11 @@ const palette = new PalettePlugin({ steps: [100, 300, 500, 700, 900] });
 // stays RGB). Pass a space to force it: 'oklch' | 'lch' | 'hsl' | 'rgb' | …
 const perceptualPalette = new PalettePlugin({ space: 'oklch' });
 const motion = new ReducedMotionPlugin({ prefix: 'reduced-' });
+// `min`/`max` take a bare name ('100'), a qualified key ('fontSize.100') or the
+// prefixed output name ('fontSize-100'). `output` is a bare name: it inherits
+// the min token's type, so this emits `--font-size-fluid`.
 const clamp = new ClampPlugin({
-  pairs: [{ min: 'fontSize-100', max: 'fontSize-700', output: 'fontSize-fluid' }],
+  pairs: [{ min: 'fontSize.100', max: 'fontSize.700', output: 'fluid' }],
 });
 const cbSim = new ColorBlindnessPlugin({ types: ['protanopia', 'deuteranopia'] });
 
@@ -66,19 +79,27 @@ allTokens = cbSim.expand(allTokens);
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | **PalettePlugin**        | Generates shade scales (50–950) from base color tokens. In a lightness space (`oklch`/`lch`/`hsl`) it holds hue+chroma and interpolates lightness; otherwise it tints/shades in RGB. Options: `space` (default `'auto'` — the base's authored space), `steps`, `lightEnd`, `darkEnd` |
 | **ReducedMotionPlugin**  | Generates `prefers-reduced-motion` companion tokens: zeroed durations, linear easing. Options: `prefix`                                                                                                                                                                              |
-| **ClampPlugin**          | Generates CSS `clamp()` fluid values from min/max token pairs. Options: `viewportMin`, `viewportMax`, `pairs`                                                                                                                                                                        |
+| **ClampPlugin**          | Generates CSS `clamp()` fluid values from min/max token pairs. Options: `viewportMin`, `viewportMax` (must be greater than `viewportMin`), `pairs`                                                                                                                                   |
 | **ColorBlindnessPlugin** | Generates companion tokens simulating color vision deficiencies (protanopia, deuteranopia, tritanopia)                                                                                                                                                                               |
+
+`ClampPlugin` throws when a pair's `min` or `max` matches no token, matches more than one (a bare
+name shared by two groups — qualify it), is not a length, or uses a unit that cannot be converted to
+rem (`em`, `%`, viewport units). A `min`/`max` token that references another token is followed to
+its value.
 
 ## Audit Plugins (Accessibility)
 
 These validate tokens and report issues without modifying them. Call `audit(tokens)` to get a list
-of issues.
+of issues. `Teikn.transform()` and `writer.audit(tokens)` resolve references first, so an alias
+token is audited by the value it points at; calling a plugin's `audit()` yourself checks the tokens
+exactly as given, so pass `Teikn.resolveReferences(tokens)` if they contain references.
 
 ```typescript
 const contrastCheck = new ContrastValidatorPlugin({
   pairs: [
     { foreground: 'textPrimary', background: 'surface', level: 'AA' },
-    { foreground: 'onPrimary', background: 'primary', level: 'AAA' },
+    // Qualify a name shared by several groups; a bare name prefers `color` tokens.
+    { foreground: 'color.onPrimary', background: 'color.primary', level: 'AAA' },
   ],
 });
 
@@ -91,11 +112,12 @@ const distanceCheck = new PerceptualDistancePlugin({
   minDeltaE: 5.0,
 });
 
+const resolved = Teikn.resolveReferences(allTokens);
 const issues = [
-  ...contrastCheck.audit(allTokens),
-  ...fontCheck.audit(allTokens),
-  ...touchCheck.audit(allTokens),
-  ...distanceCheck.audit(allTokens),
+  ...contrastCheck.audit(resolved),
+  ...fontCheck.audit(resolved),
+  ...touchCheck.audit(resolved),
+  ...distanceCheck.audit(resolved),
 ];
 
 issues.forEach(i => console.warn(`[${i.severity}] ${i.token}: ${i.message}`));
@@ -103,8 +125,8 @@ issues.forEach(i => console.warn(`[${i.severity}] ${i.token}: ${i.message}`));
 
 | Plugin                       | Description                                                                                                                                                                                                                                                                                                                                                          |
 | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **ContrastValidatorPlugin**  | Validates WCAG contrast ratios (AA: 4.5:1, AAA: 7:1) between foreground/background color pairs                                                                                                                                                                                                                                                                       |
-| **MinFontSizePlugin**        | Warns when font-size tokens fall below an accessibility minimum (default 12px)                                                                                                                                                                                                                                                                                       |
+| **ContrastValidatorPlugin**  | Validates WCAG contrast ratios (AA: 4.5:1, AAA: 7:1) between foreground/background color pairs. A pair name that is missing or matches several color tokens is reported as a warning                                                                                                                                                                                 |
+| **MinFontSizePlugin**        | Warns when font-size tokens (type `fontSize`, `font-size` or `font_size`) fall below an accessibility minimum (default 12px)                                                                                                                                                                                                                                         |
 | **TouchTargetPlugin**        | Warns when size/icon tokens are below minimum touch target size (default 44px per WCAG/Apple HIG)                                                                                                                                                                                                                                                                    |
 | **PerceptualDistancePlugin** | Warns when colors in a declared peer `set` are too perceptually similar, using [CIEDE2000](https://en.wikipedia.org/wiki/Color_difference#CIEDE2000) (Delta E 2000). Takes intent explicitly (like `ContrastValidator`'s `pairs`): pass `sets` to gate, `all: true` to compare every pair, or `report: true` for a non-gating ΔE report. Default threshold: ΔE < 5.0 |
 

@@ -1,5 +1,8 @@
 import { describe, expect, test } from 'bun:test';
 
+import { group } from '../builders.js';
+import { CssVars } from '../Generators/index.js';
+import { Teikn } from '../Teikn.js';
 import type { Token } from '../Token.js';
 import { DeprecationPlugin } from './DeprecationPlugin.js';
 
@@ -51,5 +54,37 @@ describe('DeprecationPlugin', () => {
     expect(result.type).toBe('color');
     expect(result.value).toBe('#f00');
     expect(result.group).toBe('brand');
+  });
+});
+
+describe('DeprecationPlugin in the pipeline', () => {
+  const tokens = group('color', { old: '#000', valueOf: '#111' });
+
+  test.each(['old', 'color.old', 'color-old'])('key "%s" marks the token deprecated', key => {
+    const writer = new Teikn({
+      generators: [new CssVars({ version: 'test' })],
+      plugins: [new DeprecationPlugin({ tokens: { [key]: 'new' } })],
+    });
+    const css = writer.generateToStrings(tokens).get('tokens.css')!;
+    expect(css).toContain('/* DEPRECATED: use "new" instead. */\n  --color-old: #000;');
+    expect(writer.audit(tokens)).toEqual([]);
+  });
+
+  test('inherited Object.prototype names are not treated as configured', () => {
+    const plugin = new DeprecationPlugin({ tokens: {} });
+    const token: Token = { name: 'valueOf', type: 'color', value: '#111' };
+    expect(plugin.transform(token)).toBe(token);
+    expect(plugin.transform({ ...token, name: 'constructor' }).deprecated).toBeUndefined();
+  });
+
+  test('audit reports a configured key that matches no token', () => {
+    const plugin = new DeprecationPlugin({ tokens: { old: true, oldd: 'new' } });
+    expect(plugin.audit(tokens)).toEqual([
+      {
+        severity: 'warning',
+        token: 'oldd',
+        message: 'DeprecationPlugin: "oldd" matches no token, so nothing is marked deprecated',
+      },
+    ]);
   });
 });

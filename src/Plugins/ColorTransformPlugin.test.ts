@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
+import { applyPlugin } from '../Generators/Generator.js';
 import type { Token } from '../Token.js';
 import { Border } from '../TokenTypes/Border.js';
 import { BoxShadow } from '../TokenTypes/BoxShadow.js';
@@ -149,5 +150,34 @@ describe('ColorTransformPlugin', () => {
       expect(issues[0]!.token).toBe('card');
       expect(issues[0]!.message).toContain('alpha');
     });
+  });
+});
+
+describe('ColorTransformPlugin keywords', () => {
+  const plugin = new ColorTransformPlugin({ type: 'hsl' });
+
+  test.each(['currentColor', 'inherit', 'initial', 'unset', 'revert', 'CURRENTCOLOR'])(
+    'passes %s through untouched',
+    value => {
+      const token: Token = { name: 'c', type: 'color', value };
+      expect(plugin.transform(token)).toBe(token);
+    },
+  );
+
+  test('passes keyword mode values through and still converts colors', () => {
+    const token: Token = {
+      name: 'c',
+      type: 'color',
+      value: '#ff0000',
+      modes: { dark: 'inherit', hc: '#00ff00' },
+    };
+    const result = applyPlugin(plugin, token);
+    expect(result.value).toBe('hsl(0, 100%, 50%)');
+    expect(result.modes).toEqual({ dark: 'inherit', hc: 'hsl(120, 100%, 50%)' });
+  });
+
+  test('an unparseable color still fails, naming the token', () => {
+    const token: Token = { name: 'color-bad', type: 'color', value: 'not-a-color' };
+    expect(() => applyPlugin(plugin, token)).toThrow('token `color-bad`');
   });
 });

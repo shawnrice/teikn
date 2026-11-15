@@ -274,14 +274,39 @@ describe('cli: named tokens export', () => {
 describe('cli: invalid generator name', () => {
   const fallbackOutDir = path.join(tmpDir, 'fallback-gen-out');
 
-  test('falls back to Json for unknown generator names', () => {
-    const { stdout: _stdout, code } = run(
+  test('rejects unknown generator names instead of falling back to Json', () => {
+    const { stderr, code } = run(
       'example/raw-tokens.ts',
       `--outDir=${fallbackOutDir}`,
-      '--generators="NonexistentGenerator"',
+      '--generators=CssVar,Scs,Json',
     );
+    expect(code).toBe(1);
+    expect(stderr).toContain('Unknown --generators: CssVar, Scs');
+    expect(stderr).toContain('CssVars');
+    expect(fs.existsSync(path.join(fallbackOutDir, 'tokens.json'))).toBe(false);
+  });
+
+  test('rejects unknown plugin names instead of running the defaults', () => {
+    const { stderr, code } = run(
+      'example/raw-tokens.ts',
+      `--outDir=${fallbackOutDir}`,
+      '--plugins=Nope',
+    );
+    expect(code).toBe(1);
+    expect(stderr).toContain('Unknown --plugins: Nope');
+    expect(stderr).toContain('ColorTransformPlugin');
+  });
+
+  test('default plugins pass CSS keyword colors through', () => {
+    const tokenFile = path.join(tmpDir, 'keyword-tokens.json');
+    const outDir = path.join(tmpDir, 'keyword-out');
+    fs.writeFileSync(
+      tokenFile,
+      JSON.stringify([{ name: 'c', type: 'color', value: 'currentColor' }]),
+    );
+
+    const { code } = run(tokenFile, `--outDir=${outDir}`);
     expect(code).toBe(0);
-    // getGenerators() falls back to Json when no valid generators match
-    expect(fs.existsSync(path.join(fallbackOutDir, 'tokens.json'))).toBe(true);
+    expect(fs.readFileSync(path.join(outDir, 'tokens.json'), 'utf-8')).toContain('currentColor');
   });
 });
