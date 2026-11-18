@@ -6,7 +6,7 @@ import { isFirstClassValue } from '../type-classifiers.js';
 import type { GeneratorInfo, GeneratorOptions } from './Generator.js';
 import { Generator } from './Generator.js';
 import type { JavaScriptModule } from './JavaScript.js';
-import { assertGroupExportName, jsDocLines } from './js-emit.js';
+import { assertGroupExportName, assertUniqueGroupNames, jsDocLines } from './js-emit.js';
 import { quoteKey, quoteString } from './value-serializers.js';
 
 /**
@@ -136,6 +136,7 @@ export class TypeScriptDeclarations extends Generator<TypeScriptDeclarationsOpts
     const parts = ['export declare const tokens: {', values.join(EOL), '};'];
 
     const groups = this.tokenGroups(tokens);
+    assertUniqueGroupNames({ generator: 'TypeScriptDeclarations', groups });
 
     if (groups.length > 0) {
       const { nameTransformer } = this.options;
@@ -144,6 +145,14 @@ export class TypeScriptDeclarations extends Generator<TypeScriptDeclarationsOpts
           .map(({ token }) => quoteString(nameTransformer!(token.name)))
           .join(' | ');
         const typeName = groupName.charAt(0).toUpperCase() + groupName.slice(1);
+
+        if (typeName === 'All') {
+          throw new Error(
+            `TypeScriptDeclarations: token type ${JSON.stringify(entries[0]!.token.type)} produces ` +
+              `the \`TokenNames\` key \`All\`, which is reserved for the union of every group. ` +
+              `Rename the type.`,
+          );
+        }
 
         return `  ${quoteKey(typeName)}: ${names};`;
       });
@@ -162,6 +171,7 @@ export class TypeScriptDeclarations extends Generator<TypeScriptDeclarationsOpts
         assertGroupExportName({
           generator: 'TypeScriptDeclarations',
           groupName,
+          module: this.options.module,
           type: entries[0]!.token.type,
         });
         const union = entries.map(({ shortName }) => quoteString(shortName)).join(' | ');
