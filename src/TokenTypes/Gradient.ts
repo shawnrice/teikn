@@ -1,5 +1,6 @@
 import { splitTopLevel } from '../string-utils.js';
 import { Color } from './Color/index.js';
+import { formatNumber } from './parse-utils.js';
 import type { RefFields } from './ref-guard.js';
 import { assertNotRef, isRefString } from './ref-guard.js';
 
@@ -161,7 +162,15 @@ const parseDegrees = (str: string): number | null => {
   }
 };
 
-const normalizeAngle = (deg: number): number => ((deg % 360) + 360) % 360;
+// Into `[0, 360)`. The modulo adds float noise (`33.3` → `33.30000000000001`),
+// which `round` drops; a non-finite or missing angle is rejected.
+const normalizeAngle = (deg: number): number => {
+  if (typeof deg !== 'number' || !Number.isFinite(deg)) {
+    throw new Error(`Invalid linear-gradient angle: ${deg} — expected a finite number of degrees`);
+  }
+
+  return round(((deg % 360) + 360) % 360) % 360;
+};
 
 type Direction = { angle: number; corner?: string };
 
@@ -339,7 +348,7 @@ export class LinearGradient implements RefFields {
     }
 
     const stopsStr = this.#stops.map(s => renderStop(s, renderColor)).join(', ');
-    const dir = this.#corner ?? sideKeywords[this.#angle] ?? `${this.#angle}deg`;
+    const dir = this.#corner ?? sideKeywords[this.#angle] ?? `${formatNumber(this.#angle)}deg`;
 
     return `linear-gradient(${dir}, ${stopsStr})`;
   }
@@ -396,6 +405,24 @@ const parseRadialPrelude = (part: string): RadialPrelude | null => {
   };
 };
 
+const assertRadial = ({ shape, size, position }: RadialPrelude): void => {
+  if (shape !== 'circle' && shape !== 'ellipse') {
+    throw new Error(`Invalid radial-gradient shape: "${shape}"`);
+  }
+
+  if (typeof size !== 'string' || size.trim() === '') {
+    throw new Error(`Invalid radial-gradient size: "${size}"`);
+  }
+
+  if (shape === 'circle' && /\s/.test(size.trim())) {
+    throw new Error(`Invalid radial-gradient size: "${size}" — a circle takes a single radius`);
+  }
+
+  if (typeof position !== 'string' || position.trim() === '') {
+    throw new Error(`Invalid radial-gradient position: "${position}"`);
+  }
+};
+
 export class RadialGradient implements RefFields {
   /** @internal brand — do not use directly; see `isFirstClassValue()` */
   readonly __teikn_fcv__: true = true;
@@ -432,6 +459,7 @@ export class RadialGradient implements RefFields {
         this.#size = prelude.size;
         this.#position = prelude.position;
         this.#stops = Object.freeze(parts.slice(1).map(parseStop));
+        assertRadial(prelude);
 
         return;
       }
@@ -449,6 +477,7 @@ export class RadialGradient implements RefFields {
     this.#size = first.size ?? 'farthest-corner';
     this.#position = first.position ?? 'center';
     this.#stops = freezeStops(stops ?? []);
+    assertRadial({ shape: this.#shape, size: this.#size, position: this.#position });
   }
 
   get shape(): RadialShape {

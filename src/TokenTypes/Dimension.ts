@@ -142,14 +142,11 @@ export const convertDimension = (
   }
 
   // Absolute ↔ absolute (through px)
-  const fromFactor = absoluteConversions[from as AbsoluteUnit];
-  const toFactor = absoluteConversions[to as AbsoluteUnit];
-
-  if (fromFactor === undefined || toFactor === undefined) {
+  if (!isAbsoluteUnit(from) || !isAbsoluteUnit(to)) {
     throw new Error(`Cannot convert ${from} to ${to}`);
   }
 
-  return (value * fromFactor) / toFactor;
+  return (value * absoluteConversions[from]) / absoluteConversions[to];
 };
 
 // ─── Parsing ────────────────────────────────────────────────

@@ -29,7 +29,16 @@ export const isBorderStyle = (value: string): boolean => borderStyles.has(value)
 
 const numericRe = /^[+-]?\.?\d/;
 
-const parse = (css: string): { width: Dimension; style: string; color: Color } => {
+// `border-width` takes a non-negative length: no percentage, no `fr`.
+const assertWidth = (width: Dimension): Dimension => {
+  if (width.value < 0 || width.unit === '%' || width.unit === 'fr') {
+    throw new Error(`Invalid border width "${width}" — expected a non-negative length.`);
+  }
+
+  return width;
+};
+
+const parse = (css: string): { width: Dimension; style: string; color: Color | string } => {
   const fail = (): never => {
     throw new Error(
       `Invalid border: "${css}". Expected the CSS shorthand \`<width> <style> <color>\` ` +
@@ -42,7 +51,7 @@ const parse = (css: string): { width: Dimension; style: string; color: Color } =
   const parts = splitTopLevelWhitespace(css.trim());
   let width: Dimension | null = null;
   let style: string | null = null;
-  let color: Color | null = null;
+  let color: Color | string | null = null;
 
   // A repeated or unparseable part fails the whole shorthand.
   const attempt = <T>(seen: T | null, make: () => T): T => {
@@ -58,10 +67,13 @@ const parse = (css: string): { width: Dimension; style: string; color: Color } =
   };
 
   for (const part of parts) {
-    if (isBorderStyle(part)) {
-      style = attempt(style, () => part);
+    if (isBorderStyle(part.toLowerCase())) {
+      style = attempt(style, () => part.toLowerCase());
     } else if (numericRe.test(part)) {
-      width = attempt(width, () => new Dimension(part));
+      width = attempt(width, () => assertWidth(new Dimension(part)));
+    } else if (isRefString(part)) {
+      // A `{ref}` color is kept as a reference string; it resolves per-field later.
+      color = attempt(color, () => part);
     } else {
       // Anything left is the color (named, hex, or function form). Tolerate a
       // parse failure here so the unified "Invalid border" error below reports
@@ -84,7 +96,7 @@ const parse = (css: string): { width: Dimension; style: string; color: Color } =
 
 const toWidth = (value: Dimension | string): Dimension | string => {
   if (value instanceof Dimension) {
-    return value;
+    return assertWidth(value);
   }
 
   if (typeof value === 'number') {
@@ -98,12 +110,18 @@ const toWidth = (value: Dimension | string): Dimension | string => {
     return value;
   }
 
-  return new Dimension(value);
+  return assertWidth(new Dimension(value));
 };
 
 const toStyle = (value: string): string => {
-  if (isRefString(value) || isBorderStyle(value)) {
+  const style = String(value).toLowerCase();
+
+  if (isRefString(value)) {
     return value;
+  }
+
+  if (isBorderStyle(style)) {
+    return style;
   }
 
   throw new Error(

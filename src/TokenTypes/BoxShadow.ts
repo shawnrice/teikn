@@ -1,6 +1,6 @@
 import { splitTopLevel, splitTopLevelWhitespace } from '../string-utils.js';
 import { Color } from './Color/index.js';
-import { Dimension } from './Dimension.js';
+import { Dimension, isDimensionUnit } from './Dimension.js';
 import { CSS_NUMBER, formatNumber, tidy } from './parse-utils.js';
 import type { RefFields } from './ref-guard.js';
 import { assertNotRef, isRefString } from './ref-guard.js';
@@ -110,7 +110,14 @@ const parse = (
 
   // The lengths share one unit (px unless the shorthand says otherwise);
   // `0` is unitless and contributes none.
-  const units = [...new Set(lengths.map(l => l.unit).filter(Boolean))];
+  const units = [
+    ...new Set(
+      lengths
+        .filter(l => l.value !== 0)
+        .map(l => l.unit)
+        .filter(Boolean),
+    ),
+  ];
 
   if (units.length > 1) {
     throw invalid(
@@ -122,6 +129,11 @@ const parse = (
   // A `{ref}` color in the shorthand (e.g. "0 2px 8px {color.ink}") is kept as a
   // reference string rather than erroring; it resolves per-field later.
   const color = parseShorthandColor(colors[0], str);
+
+  if (lengths.length < 2) {
+    throw invalid(str, `expected at least 2 lengths, got ${lengths.length}`);
+  }
+
   const nums = lengths.map(l => l.value);
 
   return {
@@ -131,8 +143,25 @@ const parse = (
     spread: nums[3] ?? 0,
     color,
     inset,
-    unit: units[0] ?? 'px',
+    // An all-zero shadow takes the unit its zeros were written in, if any.
+    unit: units[0] ?? lengths.find(l => l.unit)?.unit ?? 'px',
   };
+};
+
+const assertValid = ({ offsetX, offsetY, blur, spread, unit }: BoxShadow): void => {
+  if (![offsetX, offsetY, blur, spread].every(n => typeof n === 'number' && Number.isFinite(n))) {
+    throw new Error(
+      `Invalid box-shadow: lengths must be finite numbers, got ${[offsetX, offsetY, blur, spread]}`,
+    );
+  }
+
+  if (blur < 0) {
+    throw new Error(`Invalid box-shadow: blur cannot be negative, got ${blur}`);
+  }
+
+  if (!isDimensionUnit(unit) || unit === '%' || unit === 'fr') {
+    throw new Error(`Invalid box-shadow: unsupported length unit "${unit}"`);
+  }
 };
 
 export type BoxShadowOptions = {
@@ -196,6 +225,7 @@ export class BoxShadow implements RefFields {
       this.#color = parsed.color;
       this.#inset = parsed.inset;
       this.#unit = parsed.unit;
+      assertValid(this);
 
       return;
     }
@@ -208,6 +238,7 @@ export class BoxShadow implements RefFields {
       this.#color = toColor(first.color);
       this.#inset = first.inset ?? false;
       this.#unit = first.unit ?? 'px';
+      assertValid(this);
 
       return;
     }
@@ -220,6 +251,7 @@ export class BoxShadow implements RefFields {
     this.#color = toColor(color);
     this.#inset = inset ?? false;
     this.#unit = 'px';
+    assertValid(this);
   }
 
   get offsetX(): number {
@@ -305,8 +337,13 @@ export class BoxShadow implements RefFields {
       parts.push('inset');
     }
 
-    parts.push(fmtLength(this.#offsetX, this.#unit));
-    parts.push(fmtLength(this.#offsetY, this.#unit));
+    // An all-zero shadow has no length to carry a non-default unit, so its
+    // zeros spell the unit out and the string re-parses to the same value.
+    const bareZero =
+      this.#unit === 'px' || [this.#offsetX, this.#offsetY, this.#blur, this.#spread].some(Boolean);
+
+    parts.push(bareZero ? fmtLength(this.#offsetX, this.#unit) : `0${this.#unit}`);
+    parts.push(bareZero ? fmtLength(this.#offsetY, this.#unit) : `0${this.#unit}`);
 
     if (this.#blur !== 0 || this.#spread !== 0) {
       parts.push(fmtLength(this.#blur, this.#unit));
