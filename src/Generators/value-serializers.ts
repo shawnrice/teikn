@@ -67,6 +67,78 @@ export const cssValue = (value: unknown): string => {
   return Object.values(obj).join(' ');
 };
 
+// Sass ends a line (and so a `//` comment or a string) at any of these.
+export const sassLines = (text: string): string[] => text.split(/\r\n|[\r\n\f]/);
+
+// Quoted so Sass reads a key as a string, never as a color (`red`) or number (`100`).
+export const sassQuote = (str: string): string =>
+  `'${sassLines(str.replace(/[\\']/g, '\\$&').replace(/#\{/g, '#\\{')).join('\\a ')}'`;
+
+export const isSassIdentifier = (name: string): boolean =>
+  /^(?:--|-?[a-z_\u0080-\u{10ffff}])[\w\u0080-\u{10ffff}-]*$/iu.test(name);
+
+// Names Sass refuses for a `@function`, plus `if`, which always calls the built-in.
+const SASS_RESERVED_FUNCTIONS = new Set([
+  'and',
+  'element',
+  'expression',
+  'if',
+  'not',
+  'or',
+  'type',
+  'url',
+]);
+
+/**
+ * Group accessors are emitted as `@function <name>`, so the name must be one
+ * Sass accepts and can call. Throws rather than silently renaming.
+ */
+export const assertSassGroupName = ({
+  generator,
+  name,
+  type,
+  taken = [],
+}: {
+  generator: string;
+  name: string;
+  type: string;
+  taken?: string[];
+}): void => {
+  const reasons = [
+    !isSassIdentifier(name) && 'is not a valid Sass identifier',
+    SASS_RESERVED_FUNCTIONS.has(name) && 'is reserved by Sass',
+    taken.includes(name) && "collides with the module's own members",
+  ];
+  const reason = reasons.find(Boolean);
+
+  if (reason) {
+    throw new Error(
+      `${generator}: cannot emit a group accessor for token type ${JSON.stringify(type)} — ` +
+        `the function name \`${name}\` ${reason}. Rename the type or disable \`groups\`.`,
+    );
+  }
+};
+
+// Where Sass leaves a `/` as written: quoted strings, `url()`, and color
+// functions (which must stay colors rather than become strings).
+const SLASH_SAFE =
+  /"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|\b(?:url|rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\([^()]*\)/gi;
+
+// Sass divides `16/9` and evaluates `calc(100% / 3)`. An interpolated string is
+// the one form it passes through verbatim. A value that already interpolates is
+// left to its author.
+const sassVerbatim = (serialized: string): string | null =>
+  !serialized.includes('#{') && serialized.replace(SLASH_SAFE, '').includes('/')
+    ? `#{${sassQuote(serialized)}}`
+    : null;
+
+/** Serialize a value for a Sass variable, keeping any `/` in it from being divided. */
+export const sassValue = (value: unknown): string => {
+  const serialized = cssValue(value);
+
+  return sassVerbatim(serialized) ?? serialized;
+};
+
 /**
  * Serialize a value for use as an SCSS map-entry value. Wraps compound
  * objects whose serialization contains a top-level comma in parens so
@@ -92,7 +164,10 @@ export const cssMapValue = (value: unknown): string => {
   // time a first-class composite reaches here it has already been stringified
   // (Generator.stringifyValues), so a type check would never fire for the exact
   // cases this guards.
-  return splitTopLevel(serialized).length > 1 ? `(${serialized})` : serialized;
+  return (
+    sassVerbatim(serialized) ??
+    (splitTopLevel(serialized).length > 1 ? `(${serialized})` : serialized)
+  );
 };
 
 // ─── JS value serialization ─────────────────────────────────────

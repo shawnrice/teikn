@@ -2,10 +2,18 @@ import { EOL } from 'node:os';
 
 import { camelCase, deriveShortName, kebabCase } from '../string-utils.js';
 import type { Token, TokenValue } from '../Token.js';
+import { Typography } from '../TokenTypes/Typography.js';
 import type { Generator, GeneratorInfo } from './Generator.js';
 import { composeSymbol } from './prefix-utils.js';
 import { Scss } from './Scss.js';
-import { cssValue, stringifyWithRefs, valueDependencies } from './value-serializers.js';
+import {
+  assertSassGroupName,
+  isSassIdentifier,
+  sassLines,
+  sassValue,
+  stringifyWithRefs,
+  valueDependencies,
+} from './value-serializers.js';
 
 const topoSort = (tokens: Token[], refMap: Map<unknown, string>): Token[] => {
   const byName = new Map(tokens.map(t => [t.name, t]));
@@ -68,7 +76,20 @@ export class ScssVars extends Scss {
   // existing snapshots remain stable.
   #emit(name: string): string {
     // Anything Sass cannot read in a variable name (space, slash, quote) becomes `-`.
-    return composeSymbol(name, s => s, this.options).replace(/[^\w\u0080-\u{10ffff}-]+/gu, '-');
+    const variable = composeSymbol(name, s => s, this.options).replace(
+      /[^\w\u0080-\u{10ffff}-]+/gu,
+      '-',
+    );
+
+    // A leading digit is not renamed: `$2xl` has no predictable valid spelling.
+    if (!isSassIdentifier(variable)) {
+      throw new Error(
+        `ScssVars: token "${name}" would emit $${variable}, which Sass cannot read as a variable name. ` +
+          'Rename the token or set a `prefix`.',
+      );
+    }
+
+    return variable;
   }
 
   override prepareTokens(...args: Parameters<Generator['prepareTokens']>): Token[] {
@@ -84,6 +105,15 @@ export class ScssVars extends Scss {
   }
 
   protected override stringifyTokenValue(value: TokenValue): string {
+    // Sass would divide `$size/1.5`, so a typography's font size is interpolated.
+    if (value instanceof Typography) {
+      return stringifyWithRefs(value, v => {
+        const reference = this.#ref(v);
+
+        return reference && `#{${reference}}`;
+      });
+    }
+
     return stringifyWithRefs(value, v => this.#ref(v));
   }
 
@@ -114,48 +144,55 @@ export class ScssVars extends Scss {
     const { usage, value, link } = token;
     // A linked ref (`ref(name, { link: true })`) emits a `$target` alias so the
     // variable tracks the target instead of baking in its resolved value.
-    const rhs = link ? `$${this.#emit(link)}` : cssValue(value) || '""';
-    const docs = usage ? usage.split(/\r?\n/).map(line => `/// ${line}`) : [];
+    const rhs = link ? `$${this.#emit(link)}` : sassValue(value) || '""';
+    const docs = usage ? sassLines(usage).map(line => `/// ${line}`) : [];
 
     return [...docs, `$${this.#emit(token.name)}: ${rhs};`].join(EOL);
+  }
+
+  // A later `$name:` silently overwrites an earlier one, so two sources
+  // emitting the same variable is an error rather than a lost value.
+  #declared: Map<string, { variable: string; source: string }> = new Map();
+
+  #declare(variable: string, source: string): string {
+    // Sass reads `_` and `-` as the same character in a variable name.
+    const key = variable.replace(/_/g, '-');
+    const existing = this.#declared.get(key);
+
+    if (existing) {
+      const hint =
+        existing.variable === variable ? '' : ' (Sass reads `_` and `-` as the same character)';
+
+      throw new Error(
+        `ScssVars: ${source} and ${existing.source} both emit $${key}${hint}. Rename one of them.`,
+      );
+    }
+
+    this.#declared.set(key, { variable, source });
+
+    return variable;
   }
 
   override combinator(tokens: Token[]): string {
     const values = tokens.map(token => this.generateToken(token));
     const lines = [values.join(EOL)];
 
-    // A later `$name:` silently overwrites an earlier one, so two sources
-    // emitting the same variable is an error rather than a lost value.
-    const declared = new Map<string, string>();
-    const declare = (variable: string, source: string): string => {
-      const existing = declared.get(variable);
-
-      if (existing) {
-        throw new Error(
-          `ScssVars: ${source} and ${existing} both emit $${variable}. Rename one of them.`,
-        );
-      }
-
-      declared.set(variable, source);
-
-      return variable;
-    };
-
-    tokens.forEach(token => declare(this.#emit(token.name), `token "${token.name}"`));
+    this.#declared = new Map();
+    tokens.forEach(token => this.#declare(this.#emit(token.name), `token "${token.name}"`));
 
     const { separator = '-' } = this.options;
     const modeMap = this.buildModeMap(tokens, (_key, val, mode, token) => {
-      const variable = declare(
+      const variable = this.#declare(
         this.#emit(`${token.name}${separator}${mode}`),
         `mode "${mode}" of token "${token.name}"`,
       );
 
-      return `$${variable}: ${cssValue(val) || '""'};`;
+      return `$${variable}: ${sassValue(val) || '""'};`;
     });
 
     for (const [mode, entries] of modeMap) {
       lines.push('');
-      lines.push(`// Mode: ${mode}`);
+      lines.push(`// Mode: ${sassLines(mode).join(' ')}`);
       lines.push(...entries);
     }
 
@@ -186,6 +223,9 @@ export class ScssVars extends Scss {
     return groups
       .map(({ groupName, entries }) => {
         const groupKebab = kebabCase(groupName);
+        const { type } = entries[0]!.token;
+        assertSassGroupName({ generator: 'ScssVars', name: groupKebab, type });
+        this.#declare(`${groupKebab}-values`, `the "${type}" group map`);
         const mapEntries = entries
           .map(({ shortName, token }) => `  '${kebabCase(shortName)}': $${this.#emit(token.name)},`)
           .join(EOL);
