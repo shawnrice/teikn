@@ -7,6 +7,7 @@ import type { ColorFormat } from '../TokenTypes/Color/types.js';
 import type { GradientStop } from '../TokenTypes/Gradient.js';
 import { GradientList, LinearGradient, RadialGradient } from '../TokenTypes/Gradient.js';
 import { isRefString } from '../TokenTypes/ref-guard.js';
+import { colorFormatNames, isColorFormat, parseColor } from './color-values.js';
 import type { AuditIssue } from './Plugin.js';
 import { Plugin } from './Plugin.js';
 
@@ -22,7 +23,23 @@ const PASSTHROUGH_KEYWORDS = new Set([
   'revert-layer',
 ]);
 
-const isPassthrough = (value: string): boolean => PASSTHROUGH_KEYWORDS.has(value.toLowerCase());
+// Computed colors have no value to convert until the browser resolves them.
+const PASSTHROUGH_FUNCTION = /^(var|color-mix|light-dark)\(/i;
+
+const isPassthrough = (value: string): boolean =>
+  PASSTHROUGH_KEYWORDS.has(value.toLowerCase()) || PASSTHROUGH_FUNCTION.test(value.trim());
+
+// The alpha-carrying form of each format that has one. `hex`/`hex3` have none
+// (audit warns); `named` and `native` already fall back to an alpha form.
+const ALPHA_FORMAT: Partial<Record<ColorFormat, ColorFormat>> = {
+  rgb: 'rgba',
+  hsl: 'hsla',
+  xyz: 'xyza',
+  lab: 'laba',
+  lch: 'lcha',
+  oklab: 'oklaba',
+  oklch: 'oklcha',
+};
 
 /**
  * Normalizes colors to a single format — including colors nested inside
@@ -42,6 +59,21 @@ export class ColorTransformPlugin extends Plugin<ColorTransformPluginOptions> {
 
   constructor(options: ColorTransformPluginOptions) {
     super(options);
+
+    const type = options?.type;
+
+    if (type !== undefined && !isColorFormat(type)) {
+      throw new Error(
+        `ColorTransformPlugin: unknown type "${String(type)}". Use one of: ${colorFormatNames()}`,
+      );
+    }
+  }
+
+  // The requested format, or its alpha-carrying form for a translucent color.
+  #format(color: Color): ColorFormat | undefined {
+    const { type } = this.options;
+
+    return color.alpha < 1 && type ? (ALPHA_FORMAT[type] ?? type) : type;
   }
 
   // Re-base a single color into the target space. A `{ref}` string (an
@@ -55,7 +87,7 @@ export class ColorTransformPlugin extends Plugin<ColorTransformPluginOptions> {
 
     // Round-trip through the target format so the stored color's native space
     // becomes `type` — the composite serializers then emit it in that space.
-    return new Color(color.toString(type));
+    return new Color(color.toString(this.#format(color)));
   }
 
   #reStop(stop: GradientStop): GradientStop {
@@ -66,11 +98,9 @@ export class ColorTransformPlugin extends Plugin<ColorTransformPluginOptions> {
   // Values that carry no color are returned unchanged (referential identity),
   // so the plugin is a no-op on dimensions, durations, etc.
   #transformValue(value: unknown, tokenType: string): unknown {
-    const { type } = this.options;
-
     if (value instanceof Color) {
       // Standalone color token → normalized string (long-standing behavior).
-      return value.toString(type);
+      return value.toString(this.#format(value));
     }
 
     if (value instanceof BoxShadow) {
@@ -111,7 +141,9 @@ export class ColorTransformPlugin extends Plugin<ColorTransformPluginOptions> {
       !isPassthrough(value) &&
       tokenType === 'color'
     ) {
-      return new Color(value).toString(type);
+      const color = new Color(value);
+
+      return color.toString(this.#format(color));
     }
 
     return value;
@@ -151,11 +183,9 @@ export class ColorTransformPlugin extends Plugin<ColorTransformPluginOptions> {
     }
 
     if (typeof value === 'string' && !isRefString(value) && tokenType === 'color') {
-      try {
-        return [new Color(value)];
-      } catch {
-        return [];
-      }
+      const color = parseColor(value);
+
+      return color ? [color] : [];
     }
 
     return [];

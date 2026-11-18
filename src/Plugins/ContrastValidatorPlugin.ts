@@ -30,6 +30,17 @@ export class ContrastValidatorPlugin extends Plugin<ContrastValidatorPluginOptio
   tokenType: string = 'color';
   outputType: RegExp = /.*/;
 
+  constructor(options: ContrastValidatorPluginOptions) {
+    super(options);
+
+    if (!Array.isArray(options?.pairs)) {
+      throw new Error(
+        'ContrastValidatorPlugin: `pairs` is required, e.g. ' +
+          '{ pairs: [{ foreground: "text", background: "surface" }] }',
+      );
+    }
+  }
+
   override audit(tokens: Token[]): AuditIssue[] {
     const { pairs, minRatio } = this.options;
 

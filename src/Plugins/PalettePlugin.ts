@@ -3,6 +3,7 @@ import { tokenKey } from '../token-keys.js';
 import type { Token } from '../Token.js';
 import { Color } from '../TokenTypes/Color/index.js';
 import type { ColorFormat } from '../TokenTypes/Color/types.js';
+import { colorFormatNames, isColorFormat, parseColor } from './color-values.js';
 import { Plugin } from './Plugin.js';
 
 /** Resolve a seed value (default or mode) to a concrete color, following references. */
@@ -124,7 +125,13 @@ const generatePaletteTokens = (
   }
 
   const baseValue = resolveSeed(token.value, seedName);
-  const baseColor = new Color(baseValue as string | Color);
+  const baseColor = parseColor(baseValue);
+
+  // `currentColor`, `var(--x)` and the like have no lightness to ramp.
+  if (!baseColor) {
+    return [];
+  }
+
   const format = resolveFormat(baseColor, space);
   const minStep = Math.min(...steps);
   const maxStep = Math.max(...steps);
@@ -149,8 +156,11 @@ const generatePaletteTokens = (
 
     if (lightnessSpace) {
       const { basePct, at } = lightnessOps(lightnessSpace, seed);
+      // A seed already past the endpoint stays put (as the RGB path does)
+      // rather than ramping back toward it.
+      const end = toLight ? Math.max(endPct, basePct) : Math.min(endPct, basePct);
 
-      return at(interpolate(basePct, endPct, t));
+      return at(interpolate(basePct, end, t));
     }
 
     // RGB tint (mix toward white) / shade (mix toward black).
@@ -224,6 +234,14 @@ export class PalettePlugin extends Plugin<PalettePluginOptions> {
           `PalettePlugin: ${end} must be a lightness percentage from 0 to 100, got ${value}`,
         );
       }
+    }
+
+    const { space } = options;
+
+    if (space !== undefined && space !== 'auto' && !isColorFormat(space)) {
+      throw new Error(
+        `PalettePlugin: unknown space "${String(space)}". Use 'auto' or one of: ${colorFormatNames()}`,
+      );
     }
   }
 

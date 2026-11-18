@@ -1,7 +1,9 @@
+import { tokenKey } from '../token-keys.js';
 import type { Token } from '../Token.js';
 import { Color } from '../TokenTypes/Color/index.js';
 import type { AuditIssue } from './Plugin.js';
 import { Plugin } from './Plugin.js';
+import { findTokens } from './token-names.js';
 
 /**
  * "These two colors are too similar" is a judgment, and judgment needs intent:
@@ -54,18 +56,14 @@ type Measurement = { a: Token; b: Token; deltaE: number };
 
 const round2 = (n: number): number => Math.round(n * 100) / 100;
 
-/** Measure ΔE00 for every pair of the named tokens, skipping unknown/invalid. */
-const measurePairs = (names: string[], tokenMap: Map<string, Token>): Measurement[] => {
+/** Measure ΔE00 for every pair of the given tokens, skipping invalid colors. */
+const measurePairs = (peers: Token[]): Measurement[] => {
   const measurements: Measurement[] = [];
 
-  for (let i = 0; i < names.length; i++) {
-    for (let j = i + 1; j < names.length; j++) {
-      const tA = tokenMap.get(names[i]!);
-      const tB = tokenMap.get(names[j]!);
-
-      if (!tA || !tB) {
-        continue;
-      }
+  for (let i = 0; i < peers.length; i++) {
+    for (let j = i + 1; j < peers.length; j++) {
+      const tA = peers[i]!;
+      const tB = peers[j]!;
 
       const cA = toColor(tA);
       const cB = toColor(tB);
@@ -90,23 +88,43 @@ export class PerceptualDistancePlugin extends Plugin<PerceptualDistancePluginOpt
     const peerSets = sets;
 
     const colorTokens = tokens.filter(t => t.type === 'color');
-    const tokenMap = new Map(colorTokens.map(t => [t.name, t]));
-    const allNames = colorTokens.map(t => t.name);
+
+    // Each declared name must be exactly one color token; anything else is
+    // reported instead of silently dropping out of the comparison.
+    const lookups = (peerSets ?? []).map(names =>
+      names.map(name => ({ name, found: findTokens(colorTokens, name) })),
+    );
+    const peerTokens = lookups.map(set =>
+      set.flatMap(({ found }) => (found.length === 1 ? found : [])),
+    );
+    const nameIssues: AuditIssue[] = lookups
+      .flat()
+      .filter(({ found }) => found.length !== 1)
+      .map(({ name, found }) => ({
+        severity: 'warning' as const,
+        token: name,
+        message: found.length
+          ? `PerceptualDistancePlugin: "${name}" is ambiguous — matches ${found.map(t => tokenKey(t)).join(', ')}. Use a qualified name.`
+          : `PerceptualDistancePlugin: "${name}" matches no color token, so it is not compared`,
+      }));
 
     // Report mode: pure measurement, no judgment. Emit every measured pair as a
     // non-gating `info`, most-similar first, so the author (or a downstream
     // tool) can decide what counts as "too close".
     if (report) {
-      const scope = peerSets ?? [allNames];
+      const scope = peerSets ? peerTokens : [colorTokens];
       const measurements = scope
-        .flatMap(names => measurePairs(names, tokenMap))
+        .flatMap(peers => measurePairs(peers))
         .toSorted((x, y) => x.deltaE - y.deltaE);
 
-      return measurements.map(({ a, b, deltaE }) => ({
-        severity: 'info' as const,
-        token: a.name,
-        message: `ΔE = ${round2(deltaE)} between "${a.name}" and "${b.name}"`,
-      }));
+      return [
+        ...nameIssues,
+        ...measurements.map(({ a, b, deltaE }) => ({
+          severity: 'info' as const,
+          token: a.name,
+          message: `ΔE = ${round2(deltaE)} between "${a.name}" and "${b.name}"`,
+        })),
+      ];
     }
 
     const gate = (measurements: Measurement[]): AuditIssue[] =>
@@ -120,12 +138,12 @@ export class PerceptualDistancePlugin extends Plugin<PerceptualDistancePluginOpt
 
     // Declared peer sets — the recommended, intent-explicit mode.
     if (peerSets) {
-      return peerSets.flatMap(names => gate(measurePairs(names, tokenMap)));
+      return [...nameIssues, ...peerTokens.flatMap(peers => gate(measurePairs(peers)))];
     }
 
     // Explicit opt-in to all-pairs gating.
     if (all) {
-      return gate(measurePairs(allNames, tokenMap));
+      return gate(measurePairs(colorTokens));
     }
 
     // No intent declared → no judgment. Surface a single non-gating advisory so
