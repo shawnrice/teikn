@@ -31,12 +31,22 @@ exports[`Dtcg tests > snapshot test with standard token set 1`] = `
       "$value": {
         "value": 8,
         "unit": "px"
+      },
+      "$extensions": {
+        "teikn": {
+          "type": "spacing"
+        }
       }
     },
     "md": {
       "$value": {
         "value": 16,
         "unit": "px"
+      },
+      "$extensions": {
+        "teikn": {
+          "type": "spacing"
+        }
       }
     },
     "$type": "dimension"
@@ -60,7 +70,12 @@ exports[`Dtcg tests > snapshot test with standard token set 1`] = `
   },
   "opacity": {
     "muted": {
-      "$value": 0.5
+      "$value": 0.5,
+      "$extensions": {
+        "teikn": {
+          "type": "opacity"
+        }
+      }
     },
     "$type": "number"
   }
