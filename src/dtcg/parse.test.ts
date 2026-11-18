@@ -60,7 +60,7 @@ describe('parseDtcg', () => {
     expect(tokens[0]!.value.toString()).toBe('16px');
   });
 
-  test('nested groups produce dot-separated names', () => {
+  test('the top-level group is the token group; deeper segments join into the name', () => {
     const doc: DtcgDocument = {
       color: {
         brand: {
@@ -69,15 +69,22 @@ describe('parseDtcg', () => {
       },
     };
     const tokens = parseDtcg(doc);
-    expect(tokens[0]!.name).toBe('color.brand.primary');
+    expect(tokens[0]!.group).toBe('color');
+    expect(tokens[0]!.name).toBe('brand-primary');
   });
 
-  test('custom separator works', () => {
+  test('custom separator joins the segments below the group', () => {
     const doc: DtcgDocument = {
-      color: { primary: { $value: { colorSpace: 'srgb', components: [1, 0, 0] }, $type: 'color' } },
+      color: {
+        primary: { $value: { colorSpace: 'srgb', components: [1, 0, 0] }, $type: 'color' },
+        brand: { dark: { $value: '{color.primary}' } },
+      },
     };
     const tokens = parseDtcg(doc, { separator: '/' });
-    expect(tokens[0]!.name).toBe('color/primary');
+    expect(tokens.map(t => [t.group, t.name])).toEqual([
+      ['color', 'primary'],
+      ['color', 'brand/dark'],
+    ]);
   });
 
   test('dimension values are converted to Dimension instances', () => {
@@ -293,7 +300,7 @@ describe('parseDtcg', () => {
       },
     };
     const tokens = parseDtcg(doc);
-    const action = tokens.find(t => t.name === 'color.action');
+    const action = tokens.find(t => t.group === 'color' && t.name === 'action');
     expect(action!.value).toBe('{color.primary}');
   });
 

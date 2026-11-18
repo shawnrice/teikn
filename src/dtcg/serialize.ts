@@ -1,9 +1,10 @@
+import { tokenKey } from '../token-keys.js';
 import type { Token } from '../Token.js';
 import type { TokenWithExtensions, WithGroupMeta } from './meta.js';
-import { groupMetaKey, teiknExtension } from './meta.js';
+import { groupMetaKey, sourceKey, teiknExtension } from './meta.js';
 import type { DtcgDocument, DtcgToken } from './types.js';
 import type { DtcgRefMap } from './values.js';
-import { mapAliases, teiknToDtcg, teiknTypeToDtcg } from './values.js';
+import { dtcgTypeToTeikn, mapAliases, teiknToDtcg } from './values.js';
 
 export type SerializeOptions = {
   /** Separator used in token names to reconstruct groups. Default: '.' */
@@ -164,8 +165,13 @@ const tokenToDtcg = (
     result.$description = token.usage;
   }
 
+  // Recorded whenever parsing the emitted `$type` would not give the name back.
   const ownType =
-    token.type !== 'unknown' && teiknTypeToDtcg(token.type) !== type ? token.type : undefined;
+    token.type !== 'unknown' &&
+    token.type !== type &&
+    (type === undefined || token.type !== dtcgTypeToTeikn(type))
+      ? token.type
+      : undefined;
   const previous = token.extensions?.[teiknExtension];
   const modes = Object.entries(token.modes ?? {});
 
@@ -229,6 +235,10 @@ const restoreGroupMeta = (doc: Node, tokens: Token[], hierarchical: boolean): vo
   }
 };
 
+// A parsed token goes back where the document had it, unless it was renamed.
+const sourcePath = (token: TokenWithExtensions): string[] | undefined =>
+  token[sourceKey]?.key === tokenKey(token) ? token[sourceKey].path : undefined;
+
 export const serializeDtcg = (tokens: Token[], options?: SerializeOptions): DtcgDocument => {
   const separator = options?.separator ?? '.';
   const hierarchical = options?.hierarchical ?? true;
@@ -237,13 +247,29 @@ export const serializeDtcg = (tokens: Token[], options?: SerializeOptions): Dtcg
   // groups (`line-height.tight`, `letter-spacing.tight`) do not collide.
   const keyOf = (token: Token): string =>
     token.group ? `${token.group}${separator}${token.name}` : token.name;
-  const pathOf = (token: Token): string[] =>
-    hierarchical ? keyOf(token).split(separator) : [keyOf(token)];
+  const pathOf = (token: Token): string[] => {
+    const nested = sourcePath(token) ?? keyOf(token).split(separator);
+    const path = hierarchical ? nested : [nested.join(separator)];
+    const reserved = path.find(segment => segment.startsWith('$') && segment !== '$root');
+
+    if (reserved !== undefined) {
+      throw new Error(
+        `DTCG serialization: token "${tokenKey(token)}" has the path segment "${reserved}". A ` +
+          `DTCG token or group name must not start with "$" (reserved for \`$value\`, \`$type\` ` +
+          `and the like); rename the token or its group.`,
+      );
+    }
+
+    return path;
+  };
+
   const aliasOf = (token: Token): string => pathOf(token).join('.');
 
-  // Bare names first, so a qualified key always wins over a bare one.
+  // Bare names first, so a qualified key always wins over a bare one. Teikn
+  // references are written `group.name` whatever the separator.
   const aliasPaths = new Map<string, string>([
     ...tokens.toReversed().map(token => [token.name, aliasOf(token)] as const),
+    ...tokens.map(token => [tokenKey(token), aliasOf(token)] as const),
     ...tokens.map(token => [keyOf(token), aliasOf(token)] as const),
   ]);
 

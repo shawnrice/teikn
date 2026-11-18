@@ -2623,7 +2623,10 @@ export * from './serialize.js';
 import type { Token } from '../Token.js';
 import type { DtcgDocument } from './types.js';
 export type ParseOptions = {
-    /** Separator for flattening group paths into token names. Default: '.' */
+    /**
+     * Separator joining the path segments below the top-level group into the
+     * token name (the top-level group becomes the token's \`group\`). Default: '-'
+     */
     separator?: string;
     /** When true, map Dtcg type names to teikn equivalents. Default: true */
     mapTypes?: boolean;
