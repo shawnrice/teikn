@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test';
 
 import { resolveReferences } from './resolve.js';
 import type { Token } from './Token.js';
+import { Border } from './TokenTypes/Border.js';
 import { BoxShadow, BoxShadowList } from './TokenTypes/BoxShadow.js';
 import { Color } from './TokenTypes/Color/index.js';
 import { CubicBezier } from './TokenTypes/CubicBezier.js';
@@ -480,5 +481,28 @@ describe('resolveReferences: mode edge cases', () => {
 
     expect(byName(result, 'a').value).toBe('#fff');
     expect(byName(result, 'b').modes).toEqual({ dark: '#111' });
+  });
+});
+
+describe('resolveReferences: wrapper field resolving to the wrong type', () => {
+  const wrongType = (card: unknown): Token[] => [
+    { name: 'gap', type: 'spacing', group: 'spacing', value: '4px' },
+    { name: 'card', type: 'border', group: 'border', value: card as Token['value'] },
+  ];
+
+  test('names the token and the referencing field', () => {
+    const tokens = wrongType(new Border({ width: '1px', style: 'solid', color: '{gap}' }));
+
+    expect(() => resolveReferences(tokens)).toThrow(
+      /Token "border\.card".*Border.*field "color" \(\{gap\}\).*Cannot extract color from "4px"/s,
+    );
+  });
+
+  test('names the token when the wrapper sits inside a list', () => {
+    const shadow = new BoxShadow({ offsetX: 0, offsetY: 1, blur: 2, spread: 0, color: '{gap}' });
+
+    expect(() => resolveReferences(wrongType(new BoxShadowList([shadow])))).toThrow(
+      /Token "border\.card".*field "color" \(\{gap\}\)/s,
+    );
   });
 });

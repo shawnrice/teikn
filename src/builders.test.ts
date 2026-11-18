@@ -13,6 +13,7 @@ import {
   theme,
   tokens,
 } from './builders.js';
+import type { Token } from './Token.js';
 import { Color } from './TokenTypes/Color/index.js';
 import { CubicBezier } from './TokenTypes/CubicBezier.js';
 import { Dimension } from './TokenTypes/Dimension.js';
@@ -224,6 +225,32 @@ describe('builders', () => {
     test('uses identity transform when not provided', () => {
       const result = scale('zLayer', [1000, 2000]);
       expect(result[0]!.value).toBe(1000);
+    });
+
+    test('object form applies transform to numbers and usage as a default', () => {
+      const result = scale(
+        'spacing',
+        { sm: 4, md: 8, lg: '1rem', xl: [32, 'own usage'] },
+        { transform: n => `${n}px`, usage: 'spacing step' },
+      );
+
+      expect(result.map(t => t.value)).toEqual(['4px', '8px', '1rem', 32]);
+      expect(result.map(t => t.usage)).toEqual([
+        'spacing step',
+        'spacing step',
+        'spacing step',
+        'own usage',
+      ]);
+    });
+
+    test('object and array forms agree for the same options', () => {
+      const options = { transform: (n: number) => `${n}px`, usage: 'step' };
+      const strip = (list: Token[]) =>
+        list.map(({ name, value, usage }) => ({ name, value, usage }));
+
+      expect(strip(scale('spacing', { a: 4, b: 8 }, options))).toEqual(
+        strip(scale('spacing', [4, 8], { ...options, names: ['a', 'b'] })),
+      );
     });
   });
 
@@ -551,6 +578,21 @@ describe('builders', () => {
     test('scale stamps preview on the object path (via group)', () => {
       const result = scale({ type: 'ring', preview: 'borderWidth' }, { thin: '1px', thick: '4px' });
       expect(result.every(t => t.preview === 'borderWidth')).toBe(true);
+    });
+
+    test('composite accepts a ref() entry the way group does', () => {
+      const h1 = { fontFamily: 'A', fontSize: '2rem', fontWeight: 700, lineHeight: 1.2 };
+      const entries = { h1, h2: ref('h1'), h3: ref('h1', { usage: 'same', link: true }) };
+      const fromComposite = composite('typography', entries as never);
+      const fromGroup = group('typography', entries as never);
+
+      expect(fromComposite[1]).toEqual({
+        name: 'h2',
+        value: '{h1}',
+        type: 'typography',
+        group: 'typography',
+      });
+      expect(fromComposite).toEqual([...fromGroup]);
     });
 
     test('composite stamps preview on each token', () => {

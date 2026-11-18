@@ -85,7 +85,20 @@ const createResolver = (tokenMap: Map<string, Token>, tokenKeys: KeyAliasIndex) 
         resolved[k] = resolveValue({ value: v, seen, currentName, mode });
       }
 
-      return value.__teikn_fromFields__(resolved);
+      try {
+        return value.__teikn_fromFields__(resolved);
+      } catch (cause) {
+        const refs = Object.entries(fields)
+          .filter(([, v]) => isRef(v))
+          .map(([k, v]) => `field "${k}" (${v})`);
+        const where = refs.length > 0 ? refs.join(', ') : 'a field reference';
+        const { message } = cause as Error;
+
+        throw new Error(
+          `Token "${currentName}": ${value.constructor.name} cannot use the value ${where} resolves to: ${message}`,
+          { cause },
+        );
+      }
     }
 
     if (!isRef(value)) {

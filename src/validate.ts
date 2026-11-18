@@ -1,3 +1,4 @@
+import { createSeedResolver } from './resolve.js';
 import type { KeyAliasIndex } from './token-keys.js';
 import { ambiguousKeyMessage, buildKeyAliasIndex, resolveKey, tokenKey } from './token-keys.js';
 import type { CompositeValue, Token } from './Token.js';
@@ -172,6 +173,36 @@ const validateValue = (
   };
 
   checkRefs('', value);
+};
+
+type CheckResolvesArgs = {
+  tokens: Token[];
+  modeNames: string[];
+  issue: (severity: ValidationSeverity, tokenName: string, message: string) => void;
+};
+
+// A reference can exist and still not fit where it is used (a wrapper's color
+// field pointing at a dimension). Only resolving shows that, and only once
+// every reference is known to resolve.
+const checkResolves = ({ tokens, modeNames, issue }: CheckResolvesArgs): void => {
+  const resolve = createSeedResolver(tokens);
+
+  for (const token of tokens) {
+    for (const mode of [undefined, ...modeNames]) {
+      const own =
+        mode !== undefined && token.modes && Object.hasOwn(token.modes, mode)
+          ? token.modes[mode]
+          : undefined;
+
+      try {
+        resolve(own ?? token.value, tokenKey(token), mode);
+      } catch (error) {
+        const label = mode === undefined ? '' : `[mode "${mode}"] `;
+        issue('error', token.name, `${label}${(error as Error).message}`);
+        break;
+      }
+    }
+  }
 };
 
 /**
@@ -371,6 +402,10 @@ export const validate = (tokens: Token[]): ValidationResult => {
         break;
       }
     }
+  }
+
+  if (issues.every(i => i.severity !== 'error')) {
+    checkResolves({ tokens, modeNames, issue });
   }
 
   return { valid: issues.filter(i => i.severity === 'error').length === 0, issues };

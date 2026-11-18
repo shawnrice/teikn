@@ -15,6 +15,7 @@ import { Dimension, allUnits } from './TokenTypes/Dimension.js';
 import type { DimensionUnit } from './TokenTypes/Dimension.js';
 import { Duration, durationUnits } from './TokenTypes/Duration.js';
 import type { DurationUnit } from './TokenTypes/Duration.js';
+import { isRefString } from './TokenTypes/ref-guard.js';
 import { isFirstClassValue } from './type-classifiers.js';
 
 const arrayKeys = new Set(Object.getOwnPropertyNames(Array.prototype));
@@ -71,6 +72,11 @@ const resolveTokenInput = (name: string, input: TokenInput): Omit<Token, 'type'>
 const resolveCompositeInput = (name: string, input: CompositeTokenInput): Omit<Token, 'type'> => {
   if (Array.isArray(input)) {
     return { name, value: input[0], usage: input[1] };
+  }
+
+  // A `ref()` entry is a token-input object too: its value is a `{ref}` string.
+  if (isRefString((input as TokenInputObject).value)) {
+    return resolveTokenInput(name, input as TokenInputObject);
   }
 
   if (typeof input === 'object' && 'value' in input && typeof input.value === 'object') {
@@ -200,8 +206,23 @@ export const scale = (
     });
   }
 
+  const { transform, usage } = options ?? {};
+  const entries = transform
+    ? Object.fromEntries(
+        Object.entries(values).map(([k, v]) => [k, typeof v === 'number' ? transform(v) : v]),
+      )
+    : values;
+
   // Re-pass the original arg so `group` applies the same preview stamping.
-  return group(typeArg, values);
+  const result = group(typeArg, entries);
+
+  if (usage) {
+    for (const token of result) {
+      token.usage ??= usage;
+    }
+  }
+
+  return result;
 };
 
 /**

@@ -3,11 +3,22 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
-import { group, theme, tokens } from './builders.js';
+import { group, ref, theme, tokens } from './builders.js';
 import { Generator } from './Generators/Generator.js';
 import { Json } from './Generators/index.js';
-import { Plugin, PrefixTypePlugin, StripTypePrefixPlugin } from './Plugins/index.js';
+import type { AuditIssue } from './Plugins/index.js';
+import {
+  ClampPlugin,
+  ColorBlindnessPlugin,
+  ContrastValidatorPlugin,
+  PalettePlugin,
+  Plugin,
+  PrefixTypePlugin,
+  ReducedMotionPlugin,
+  StripTypePrefixPlugin,
+} from './Plugins/index.js';
 import { Teikn } from './Teikn.js';
+import type { Token } from './Token.js';
 
 const parseOutput = (writer: Teikn, tokenList: any[]) => {
   const output = writer.generateToStrings(tokenList);
@@ -412,5 +423,146 @@ describe('Teikn.audit / transform', () => {
     expect(() => new Teikn({ generators: [new Json()], themes })).toThrow(
       'Theme name "__proto__" is reserved',
     );
+  });
+});
+
+describe('Teikn: audit and transform see the generation token set', () => {
+  class Spy extends Plugin {
+    tokenType: RegExp = /.*/;
+    outputType: RegExp = /.*/;
+    seen: Token[][] = [];
+
+    override audit(input: Token[]): AuditIssue[] {
+      this.seen.push(input);
+
+      return [];
+    }
+  }
+
+  // One row per expand plugin: tokens it expands, and a token it generates.
+  // ColorBlindnessPlugin cannot expand a color that aliases its own output, so
+  // its alias lives in another type.
+  const expandCases: Record<
+    string,
+    { plugin: () => Plugin; tokens: Token[]; generated: string; aliasType?: string }
+  > = {
+    PalettePlugin: {
+      plugin: () => new PalettePlugin(),
+      tokens: group('color', { brand: '#06c' }),
+      generated: 'brand-900',
+    },
+    ColorBlindnessPlugin: {
+      plugin: () => new ColorBlindnessPlugin({ types: ['protanopia'] }),
+      tokens: group('color', { brand: '#06c' }),
+      generated: 'brand-protanopia',
+      aliasType: 'semantic',
+    },
+    ClampPlugin: {
+      plugin: () => new ClampPlugin({ pairs: [{ min: 'sm', max: 'lg', output: 'fluid' }] }),
+      tokens: group('font-size', { sm: '16px', lg: '32px' }),
+      generated: 'fluid',
+    },
+    ReducedMotionPlugin: {
+      plugin: () => new ReducedMotionPlugin(),
+      tokens: group('duration', { fast: '100ms' }),
+      generated: 'reduced-fast',
+    },
+  };
+
+  test('every built-in expand plugin has a case here', () => {
+    const expanders = Object.entries(Teikn.plugins)
+      .filter(([, P]) => 'expand' in P.prototype)
+      .map(([name]) => name);
+
+    expect(Object.keys(expandCases).toSorted()).toEqual(expanders.toSorted());
+  });
+
+  for (const [name, row] of Object.entries(expandCases)) {
+    const { plugin, tokens: authored, generated, aliasType = authored[0]!.type } = row;
+    const withAlias = [...authored, ...group(aliasType, { alias: ref(generated) })];
+
+    test(`${name}: transform() accepts an alias of a generated token`, async () => {
+      const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'teikn-expand-'));
+
+      try {
+        const writer = new Teikn({ generators: [new Json()], plugins: [plugin()], outDir });
+        const expected = writer.generateToStrings(withAlias).get('tokens.json')!;
+        const result = await writer.transform(withAlias);
+
+        expect(result.errors).toEqual([]);
+        expect(fs.readFileSync(result.files[0]!.path, 'utf8')).toBe(expected);
+      } finally {
+        fs.rmSync(outDir, { recursive: true, force: true });
+      }
+    });
+
+    test(`${name}: audit() resolves an alias of a generated token`, () => {
+      const spy = new Spy({});
+      const writer = new Teikn({ generators: [new Json()], plugins: [plugin(), spy] });
+
+      expect(writer.audit(withAlias)).toEqual([]);
+
+      const byName = new Map(spy.seen[0]!.map(t => [t.name, t]));
+      expect(byName.has(generated)).toBe(true);
+      expect(String(byName.get('alias')!.value)).toBe(String(byName.get(generated)!.value));
+    });
+  }
+
+  test('audit() sees generated palette steps and theme modes', () => {
+    const colors = group('color', { brand: '#06c', bg: '#fff' });
+    const spy = new Spy({});
+    const writer = new Teikn({
+      generators: [new Json()],
+      themes: [theme('dark', colors, { bg: '#000' })],
+      plugins: [
+        new PalettePlugin(),
+        new ContrastValidatorPlugin({
+          pairs: [{ foreground: 'brand-900', background: 'brand-800' }],
+        }),
+        spy,
+      ],
+    });
+
+    const issues = writer.audit(colors);
+
+    expect(issues).toHaveLength(1);
+    expect(issues[0]!.token).toContain('brand-900');
+    expect(spy.seen[0]!.find(t => t.name === 'bg')!.modes).toEqual({ dark: '#000' });
+  });
+
+  test('transform() expands once and audits the tokens it generated from', async () => {
+    const outDir = fs.mkdtempSync(path.join(os.tmpdir(), 'teikn-once-'));
+    const calls = { expand: 0, audited: [] as string[][] };
+
+    class Counting extends Plugin {
+      tokenType: RegExp = /.*/;
+      outputType: RegExp = /.*/;
+      // oxlint-disable-next-line class-methods-use-this
+      expand(input: Token[]): Token[] {
+        calls.expand += 1;
+
+        return [...input, { name: 'added', type: 'color', value: '{a}' }];
+      }
+
+      // oxlint-disable-next-line class-methods-use-this
+      override audit(input: Token[]): AuditIssue[] {
+        calls.audited.push(input.map(t => `${t.name}=${String(t.value)}`));
+
+        return [{ severity: 'warning', token: 'added', message: 'seen' }];
+      }
+    }
+
+    try {
+      const writer = new Teikn({ generators: [new Json()], plugins: [new Counting({})], outDir });
+      const result = await writer.transform([{ name: 'a', type: 'color', value: '#fff' }]);
+
+      expect(calls.expand).toBe(1);
+      expect(calls.audited).toEqual([['a=#fff', 'added=#fff']]);
+      expect(result.auditIssues).toEqual([
+        { severity: 'warning', token: 'added', message: 'seen' },
+      ]);
+    } finally {
+      fs.rmSync(outDir, { recursive: true, force: true });
+    }
   });
 });
