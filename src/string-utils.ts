@@ -12,7 +12,12 @@ export const camelToKebabCase = (str: string): string => {
 };
 
 export const kebabCase = (str: string): string => {
-  return camelToKebabCase(camelCase(str));
+  // camelCase has no way to mark a boundary between two digits, so `t2-500`
+  // would come back as `t-2500`. Convert each side of such a seam on its own.
+  return str
+    .split(/(?<=\p{N})[^\p{L}\p{N}]+(?=\p{N})/u)
+    .map(part => camelToKebabCase(camelCase(part)))
+    .join('-');
 };
 
 export const camelCase = (str: string): string =>

@@ -165,7 +165,9 @@ export class CssVars extends Generator<CssVarsOpts> {
       const { useMediaQuery, modeSelectors } = this.options;
       // Plugins (NameConventionPlugin) may rename mode keys; `modeSelectors` is
       // keyed by the authored name, so fall back to it.
-      const raw = modeSelectors?.[mode] ?? modeSelectors?.[this.#modeOrigin.get(mode) ?? mode];
+      const own = (key: string): ModeSelector | undefined =>
+        modeSelectors && Object.hasOwn(modeSelectors, key) ? modeSelectors[key] : undefined;
+      const raw = own(mode) ?? own(this.#modeOrigin.get(mode) ?? mode);
       const { atRule, selector } = parseModeSelector(raw, mode);
 
       if (atRule) {

@@ -75,7 +75,53 @@ const componentByKind: Record<PreviewKind, ComponentMapping> = {
 const classifyGroup = (members: Token[]): ComponentMapping =>
   componentByKind[resolvePreviewKind(members[0]!)];
 
-const toStoryName = (type: string): string => camelCase(type).replace(/^./, c => c.toUpperCase());
+// Names a stories file already binds: its imports and the `Story` type alias.
+const TAKEN_STORY_NAMES = new Set([
+  ...Object.values(componentByKind).map(({ component }) => component),
+  'TokenStory',
+  'TokenGrid',
+  'TokenList',
+  'ModeTable',
+  'Meta',
+  'StoryObj',
+  'Story',
+]);
+
+// camelCase keeps any Unicode letter or number, but not all of those may
+// appear in an identifier (`²`), and the result may be empty (emoji-only) or
+// start with a digit.
+const toIdentifier = (type: string): string => {
+  const base = camelCase(type).replace(/[^\p{ID_Continue}]/gu, '');
+
+  return /^\p{ID_Start}/u.test(base) ? base : `type${base}`;
+};
+
+const toStoryName = (type: string): string => {
+  const name = toIdentifier(type).replace(/^./, c => c.toUpperCase());
+
+  return TAKEN_STORY_NAMES.has(name) ? `${name}Tokens` : name;
+};
+
+const toKeysVarName = (type: string): string =>
+  `${toStoryName(type).replace(/^./, c => c.toLowerCase())}Keys`;
+
+const assertUniqueStoryNames = (types: string[]): void => {
+  const seen = new Map<string, string>();
+
+  for (const type of types) {
+    const name = toStoryName(type);
+    const prior = seen.get(name);
+
+    if (prior !== undefined) {
+      throw new Error(
+        `Storybook: token types ${JSON.stringify(prior)} and ${JSON.stringify(type)} both ` +
+          `produce the story export \`${name}\`. Rename one of them.`,
+      );
+    }
+
+    seen.set(name, type);
+  }
+};
 
 // ─── Story render builder ───────────────────────────────────
 
@@ -203,6 +249,7 @@ export class Storybook extends Generator<StorybookOpts> {
     const { nameTransformer, storyTitle, darkMode } = this.options;
     const ts = this.isTypeScript();
     const groups = groupTokens(tokens);
+    assertUniqueStoryNames([...groups.keys()]);
     const hasModes = tokens.some(t => t.modes && Object.keys(t.modes).length > 0);
 
     // Collect needed component imports
@@ -239,7 +286,7 @@ export class Storybook extends Generator<StorybookOpts> {
 
     // Key arrays per type
     for (const [type, typeTokens] of groups) {
-      const varName = `${camelCase(type)}Keys`;
+      const varName = toKeysVarName(type);
       const keys = typeTokens.map(t => quoteString(nameTransformer!(t.name))).join(', ');
       lines.push(`const ${varName} = [${keys}]${ts ? ' as const' : ''};`);
     }
@@ -290,7 +337,7 @@ export class Storybook extends Generator<StorybookOpts> {
 
     for (const [type, typeTokens] of groups) {
       const storyName = toStoryName(type);
-      const keysVarName = `${camelCase(type)}Keys`;
+      const keysVarName = toKeysVarName(type);
       const mapping = classifyGroup(typeTokens);
       const typeModes =
         hasModes && typeTokens.some(t => t.modes && Object.keys(t.modes).length > 0);

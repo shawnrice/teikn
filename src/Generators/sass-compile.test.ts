@@ -166,11 +166,17 @@ describe('Scss output compiles with Sass', () => {
     expect(() => compiles(scss)).not.toThrow();
   });
 
+  test('names a digit apart from a separator keep distinct keys', () => {
+    const scss = generate(new Scss(testOpts), scale('spacing', { '1-5': dp(6), '15': dp(60) }));
+
+    expect(() => compiles(scss)).not.toThrow();
+  });
+
   test('names that transform to the same key are rejected before Sass sees them', () => {
-    const set = scale('spacing', { '1-5': dp(6), '15': dp(60) });
+    const set = scale('spacing', { 'a-1': dp(6), a1: dp(60) });
 
     expect(() => generate(new Scss(testOpts), set)).toThrow(
-      /emits the name `get-token\('spacing-15'\)` for two different tokens/,
+      /emits the name `get-token\('spacing-a-1'\)` for two different tokens/,
     );
   });
 

@@ -393,6 +393,7 @@ export declare class TypeScript extends Generator<TypeScriptOpts> {
     #private;
     constructor(options?: Partial<TypeScriptOpts>);
     describe(): GeneratorInfo;
+    tokenUsage(token: Token): string | null;
     generateToken(): string;
     combinator(): string;
     filenames(): string[];

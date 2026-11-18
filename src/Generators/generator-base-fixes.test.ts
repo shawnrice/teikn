@@ -54,7 +54,7 @@ describe('plugins run before stringification in every generator', () => {
 
 describe('emitted-name collisions throw', () => {
   const cases: [string, Token[]][] = [
-    ['1-5 / 15', scale('spacing', { '1-5': dp(6), '15': dp(60) })],
+    ['a-1 / a1', scale('spacing', { 'a-1': dp(6), a1: dp(60) })],
     ['blue-100 / blue100', group('color', { 'blue-100': '#00f', blue100: '#00e' })],
     ['textPrimary / text-primary', group('color', { textPrimary: '#000', 'text-primary': '#111' })],
   ];
@@ -68,12 +68,29 @@ describe('emitted-name collisions throw', () => {
   }
 
   test('names the generator, emitted name and both sources', () => {
-    const set = scale('spacing', { '1-5': dp(6), '15': dp(60) });
+    const set = scale('spacing', { 'a-1': dp(6), a1: dp(60) });
 
     expect(() => new Teikn({ generators: [new CssVars()] }).generateToStrings(set)).toThrow(
-      'Generator `CssVars` emits the name `var(--spacing-15)` for two different tokens: ' +
-        '`spacing.15` and `spacing.1-5`.',
+      'Generator `CssVars` emits the name `var(--spacing-a-1)` for two different tokens: ' +
+        '`spacing.a-1` and `spacing.a1`.',
     );
+  });
+
+  test('a separator between two digits survives kebab-case, so 1-5 and 15 do not collide', () => {
+    const set = scale('spacing', { '1-5': dp(6), '15': dp(60) });
+
+    for (const Gen of [CssVars, Scss]) {
+      const out = new Teikn({ generators: [new Gen()] }).generateToStrings(set);
+
+      expect([...out.values()][0]).toMatch(/spacing-1-5'?:/);
+      expect([...out.values()][0]).toMatch(/spacing-15'?:/);
+    }
+
+    for (const Gen of [JavaScript, Json]) {
+      expect(() => new Teikn({ generators: [new Gen()] }).generateToStrings(set)).toThrow(
+        /emits the name .* for two different tokens/,
+      );
+    }
   });
 
   test('same name and type across groups', () => {
