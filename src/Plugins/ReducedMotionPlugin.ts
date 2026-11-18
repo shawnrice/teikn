@@ -118,17 +118,8 @@ export class ReducedMotionPlugin extends Plugin<ReducedMotionPluginOptions> {
 
       // An alias is reduced as its target, so it keeps the target's property.
       // One that does not resolve before expansion is left for the fallback.
-      const resolve: Resolve = (value, mode) => {
-        if (!isRefString(value)) {
-          return value;
-        }
-
-        try {
-          return resolveSeed(value, tokenKey(token), mode);
-        } catch {
-          return value;
-        }
-      };
+      const resolve: Resolve = (value, mode) =>
+        isRefString(value) ? (resolveSeed(value, tokenKey(token), mode).value ?? value) : value;
 
       const reduced = makeReducedToken(token, prefix, zeroDuration, resolve);
 

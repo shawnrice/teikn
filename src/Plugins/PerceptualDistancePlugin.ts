@@ -44,13 +44,7 @@ export type PerceptualDistancePluginOptions = {
   report?: boolean;
 };
 
-const toColor = (t: Token): Color | null => {
-  try {
-    return t.value instanceof Color ? t.value : new Color(t.value as string);
-  } catch {
-    return null;
-  }
-};
+const toColor = (t: Token): Color | null => Color.tryParse(t.value);
 
 type Measurement = { a: Token; b: Token; deltaE: number };
 

@@ -1,6 +1,5 @@
 import type { Token } from '../Token.js';
 import { Color } from '../TokenTypes/Color/index.js';
-import { parseColor } from './color-values.js';
 import { Plugin } from './Plugin.js';
 
 export type AlphaMultiplyPluginOptions = { background?: string };
@@ -16,7 +15,7 @@ export class AlphaMultiplyPlugin extends Plugin<AlphaMultiplyPluginOptions> {
   override transform(token: Token): Token {
     const { background = '#ffffff' } = this.options;
 
-    const fg = parseColor(token.value);
+    const fg = Color.tryParse(token.value);
 
     if (!fg || fg.alpha >= 1) {
       return token;

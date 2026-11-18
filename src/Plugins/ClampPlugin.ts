@@ -131,7 +131,13 @@ export class ClampPlugin extends Plugin<ClampPluginOptions> {
     const remOf = (pair: ClampPair, role: 'min' | 'max'): { token: Token; rem: number } => {
       const token = find(pair, role);
       const where = `ClampPlugin pair "${pair.output}": ${role} token "${pair[role]}"`;
-      const extracted = extractNumericValue(resolve(token.value, tokenKey(token)));
+      const { value, error } = resolve(token.value, tokenKey(token));
+
+      if (error !== undefined) {
+        throw new Error(error);
+      }
+
+      const extracted = extractNumericValue(value);
 
       if (!extracted) {
         throw new Error(

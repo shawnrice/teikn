@@ -7,7 +7,6 @@ import type { ColorFormat } from '../TokenTypes/Color/types.js';
 import type { GradientStop } from '../TokenTypes/Gradient.js';
 import { GradientList, LinearGradient, RadialGradient } from '../TokenTypes/Gradient.js';
 import { isRefString } from '../TokenTypes/ref-guard.js';
-import { assertColorFormat, parseColor } from './color-values.js';
 import type { AuditIssue } from './Plugin.js';
 import { Plugin } from './Plugin.js';
 
@@ -52,8 +51,10 @@ export class ColorTransformPlugin extends Plugin<ColorTransformPluginOptions> {
   constructor(options: ColorTransformPluginOptions) {
     super(options);
 
-    if (options?.type !== undefined) {
-      assertColorFormat({ plugin: 'ColorTransformPlugin', option: 'type', value: options.type });
+    const type: unknown = options?.type;
+
+    if (type !== undefined && !Color.isFormat(type)) {
+      throw new Error(`ColorTransformPlugin: unknown type "${String(type)}"`);
     }
   }
 
@@ -173,7 +174,7 @@ export class ColorTransformPlugin extends Plugin<ColorTransformPluginOptions> {
     }
 
     if (typeof value === 'string' && !isRefString(value) && tokenType === 'color') {
-      const color = parseColor(value);
+      const color = Color.tryParse(value);
 
       return color ? [color] : [];
     }

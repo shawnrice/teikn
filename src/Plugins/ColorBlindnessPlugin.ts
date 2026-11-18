@@ -1,8 +1,7 @@
 import { createSeedResolver } from '../resolve.js';
 import { tokenKey } from '../token-keys.js';
 import type { Token } from '../Token.js';
-import type { Color } from '../TokenTypes/Color/index.js';
-import { parseColor } from './color-values.js';
+import { Color } from '../TokenTypes/Color/index.js';
 import { Plugin } from './Plugin.js';
 
 type ColorBlindnessType = 'protanopia' | 'deuteranopia' | 'tritanopia';
@@ -63,20 +62,15 @@ export class ColorBlindnessPlugin extends Plugin<ColorBlindnessPluginOptions> {
         return [token];
       }
 
-      const resolve: Resolve = (value, mode) => {
-        try {
-          return resolveSeed(value, tokenKey(token), mode);
-        } catch {
-          // Not resolvable before expansion (e.g. a mode pointing at a token another
-          // plugin generates later): the simulated token keeps its default there.
-          return undefined;
-        }
-      };
+      // `undefined` when not resolvable before expansion (e.g. a mode pointing at
+      // a token another plugin generates later): the simulated token keeps its
+      // default there.
+      const resolve: Resolve = (value, mode) => resolveSeed(value, tokenKey(token), mode).value;
 
       // A default that is not resolvable yet, or is not a color at all
       // (`currentColor`, `var(--x)`), has nothing to simulate.
       const baseValue = resolve(token.value);
-      const base = parseColor(baseValue);
+      const base = Color.tryParse(baseValue);
 
       if (!base) {
         return [token];
@@ -87,7 +81,7 @@ export class ColorBlindnessPlugin extends Plugin<ColorBlindnessPluginOptions> {
       const modeColors = modeNames.flatMap(mode => {
         const own = token.modes && Object.hasOwn(token.modes, mode) ? token.modes[mode] : undefined;
         const resolved = resolve(own ?? token.value, mode);
-        const color = own === undefined && resolved === baseValue ? null : parseColor(resolved);
+        const color = own === undefined && resolved === baseValue ? null : Color.tryParse(resolved);
 
         return color ? [[mode, color] as const] : [];
       });

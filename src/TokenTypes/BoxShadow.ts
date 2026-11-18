@@ -60,11 +60,13 @@ const parseShorthandColor = (token: string | undefined, str: string): Color | st
     return token;
   }
 
-  try {
-    return new Color(token);
-  } catch {
+  const color = Color.tryParse(token);
+
+  if (!color) {
     throw invalid(str, `unsupported color "${token}"`);
   }
+
+  return color;
 };
 
 const parse = (

@@ -1487,6 +1487,13 @@ export declare class Color {
      */
     get space(): Space;
     static from(color: Color | string): Color;
+    /**
+     * The color \`value\` holds, or \`null\` when it holds none: a CSS-wide keyword,
+     * \`currentColor\`, \`var(--x)\`, a \`{ref}\`, a non-string. Never throws.
+     */
+    static tryParse(value: unknown): Color | null;
+    /** Whether \`value\` is a format {@link Color.toString} accepts. */
+    static isFormat(value: unknown): value is ColorFormat;
     static fromRGB(r: number, g: number, b: number, a?: number): Color;
     static fromRGB(rgb: RGB, a?: number): Color;
     static fromHSL(h: number, s: number, l: number, a?: number): Color;
@@ -2762,19 +2769,27 @@ export type DtcgTypeName = (typeof DtcgTypes)[keyof typeof DtcgTypes];
 
 // src/resolve.d.ts
 import type { Token } from './Token.js';
+/** What a seed resolved to, or why it did not (a circular or dangling reference). */
+export type SeedResolution = {
+    value: unknown;
+    error?: undefined;
+} | {
+    value?: undefined;
+    error: string;
+};
 /**
  * Build a single-value resolver bound to a token set: \`(value, tokenName, mode?)
- * => resolved\`. Follows \`{ref}\` references through the set and throws on a
- * circular or dangling reference, seeding the cycle guard with \`tokenName\`.
- * With \`mode\`, each referenced token contributes its value for that mode when
- * it has one.
+ * => { value } | { error }\`. Follows \`{ref}\` references through the set and
+ * reports a circular or dangling reference as \`error\` rather than throwing,
+ * seeding the cycle guard with \`tokenName\`. With \`mode\`, each referenced token
+ * contributes its value for that mode when it has one.
  *
  * Used by expand plugins to resolve a seed value (e.g. a palette base color)
  * to a concrete value before the full {@link resolveReferences} pass runs over
  * the whole set. The token-keys index is an internal detail kept off the
  * signature.
  */
-export declare const createSeedResolver: (tokens: Token[]) => ((value: unknown, tokenName: string, mode?: string) => unknown);
+export declare const createSeedResolver: (tokens: Token[]) => ((value: unknown, tokenName: string, mode?: string) => SeedResolution);
 /**
  * Resolve all \`{tokenName}\` references in a token set.
  * References are looked up by token name (case-sensitive).

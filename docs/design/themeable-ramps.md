@@ -76,8 +76,9 @@ per mode.
 
 `PalettePlugin.expand` gets the resolver from `createSeedResolver(tokens)` (exported from
 `resolve.ts`): it builds the token map and alias index from the array the plugin is already passed
-and returns a `(value, tokenName) => resolved` closure. The internal key-alias index stays off that
-signature, so the only public-surface addition is one plainly typed function. The full
+and returns a `(value, tokenName, mode?) => { value } | { error }` closure, so a seed that does not
+resolve yet is a value to branch on rather than a throw to catch. The internal key-alias index stays
+off that signature, so the only public-surface addition is one plainly typed function. The full
 reference-resolution pass still runs later over the whole set; this is only the local lookup needed
 to know what color to rampify.
 

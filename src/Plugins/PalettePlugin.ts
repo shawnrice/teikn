@@ -3,11 +3,10 @@ import { tokenKey } from '../token-keys.js';
 import type { Token } from '../Token.js';
 import { Color } from '../TokenTypes/Color/index.js';
 import type { ColorFormat } from '../TokenTypes/Color/types.js';
-import { assertColorFormat, parseColor } from './color-values.js';
 import { Plugin } from './Plugin.js';
 
 /** Resolve a seed value (default or mode) to a concrete color, following references. */
-type SeedResolver = (value: unknown, tokenName: string, mode?: string) => unknown;
+type SeedResolver = ReturnType<typeof createSeedResolver>;
 
 /**
  * Output color space for the generated ramp. `'auto'` (the default) keeps each
@@ -97,19 +96,6 @@ const resolveFormat = (base: Color, space: PaletteSpace | undefined): ColorForma
   return space;
 };
 
-// A value that does not resolve before expansion is not a seed (typically an
-// alias of another ramp's generated step); the full validate/resolve pass
-// reports it if the reference is actually broken.
-const resolvesBeforeExpand = (resolve: () => unknown): boolean => {
-  try {
-    resolve();
-
-    return true;
-  } catch {
-    return false;
-  }
-};
-
 const generatePaletteTokens = (
   token: Token,
   steps: number[],
@@ -120,14 +106,13 @@ const generatePaletteTokens = (
 ): Token[] => {
   const seedName = tokenKey(token);
 
-  if (!resolvesBeforeExpand(() => resolveSeed(token.value, seedName))) {
-    return [];
-  }
+  // A value that does not resolve before expansion is not a seed (typically an
+  // alias of another ramp's generated step); the full validate/resolve pass
+  // reports it if the reference is actually broken. Neither is `currentColor`,
+  // `var(--x)` and the like, which have no lightness to ramp.
+  const { value: baseValue } = resolveSeed(token.value, seedName);
+  const baseColor = Color.tryParse(baseValue);
 
-  const baseValue = resolveSeed(token.value, seedName);
-  const baseColor = parseColor(baseValue);
-
-  // `currentColor`, `var(--x)` and the like have no lightness to ramp.
   if (!baseColor) {
     return [];
   }
@@ -183,19 +168,14 @@ const generatePaletteTokens = (
   const modeColors = modeNames.flatMap(mode => {
     const own = token.modes && Object.hasOwn(token.modes, mode) ? token.modes[mode] : undefined;
 
-    try {
-      const resolved = resolveSeed(own ?? token.value, seedName, mode);
+    // Not resolvable before expansion (e.g. a mode pointing at another ramp's
+    // generated step): the steps fall back to their default value in this
+    // mode. The seed keeps its mode, so the full validate/resolve pass still
+    // reports a genuinely dangling or circular reference.
+    const { value: resolved } = resolveSeed(own ?? token.value, seedName, mode);
+    const color = own === undefined && resolved === baseValue ? null : Color.tryParse(resolved);
 
-      return own === undefined && resolved === baseValue
-        ? []
-        : [[mode, new Color(resolved as string | Color)] as const];
-    } catch {
-      // Not resolvable before expansion (e.g. a mode pointing at another ramp's
-      // generated step): the steps fall back to their default value in this
-      // mode. The seed keeps its mode, so the full validate/resolve pass still
-      // reports a genuinely dangling or circular reference.
-      return [];
-    }
+    return color ? [[mode, color] as const] : [];
   });
 
   // Strip the seed's own modes from the spread; each step gets its own rampified
@@ -238,8 +218,8 @@ export class PalettePlugin extends Plugin<PalettePluginOptions> {
 
     const { space } = options;
 
-    if (space !== undefined && space !== 'auto') {
-      assertColorFormat({ plugin: 'PalettePlugin', option: 'space', value: space });
+    if (space !== undefined && space !== 'auto' && !Color.isFormat(space)) {
+      throw new Error(`PalettePlugin: unknown space "${String(space)}"`);
     }
   }
 

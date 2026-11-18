@@ -44,21 +44,7 @@ const vizClassForKind = (kind: PreviewKind): string => gridClassByKind[kind] ?? 
 const escapeHtml = (str: string): string =>
   str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
-const toColor = (value: TokenValue | CompositeValue): Color | null => {
-  if (value instanceof Color) {
-    return value;
-  }
-
-  if (typeof value === 'string') {
-    try {
-      return new Color(value);
-    } catch {
-      return null;
-    }
-  }
-
-  return null;
-};
+const toColor = (value: TokenValue | CompositeValue): Color | null => Color.tryParse(value);
 
 const valueToString = (value: TokenValue | CompositeValue): string => {
   if (isFirstClassValue(value)) {

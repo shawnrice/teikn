@@ -11,7 +11,7 @@ import { OklabOperations } from './operations/OklabOperations.js';
 import { OklchOperations } from './operations/OklchOperations.js';
 import { RGBOperations } from './operations/RGBOperations.js';
 import { XYZOperations } from './operations/XYZOperations.js';
-import { parseColorString } from './parseColorString.js';
+import { parseColorString, tryParseColorString } from './parseColorString.js';
 import type {
   ColorBlindnessType,
   ColorFormat,
@@ -85,8 +85,11 @@ const normalize = (space: Space, data: SpaceData[Space]): SpaceData[Space] => {
 // would overflow to Infinity and then NaN, so it is rejected when a color is built.
 const MAX_COMPONENT = 1e9;
 
+const isRepresentable = (data: SpaceData[Space]): boolean =>
+  data.every(v => Math.abs(v) <= MAX_COMPONENT);
+
 const assertRepresentable = (space: Space, data: SpaceData[Space]): void => {
-  if (data.some(v => Math.abs(v) > MAX_COMPONENT)) {
+  if (!isRepresentable(data)) {
     throw new Error(
       `Color: ${space} components must be within ±${MAX_COMPONENT}, got (${data.join(', ')})`,
     );
@@ -412,6 +415,27 @@ export class Color {
 
   static from(color: Color | string): Color {
     return new Color(color);
+  }
+
+  /**
+   * The color `value` holds, or `null` when it holds none: a CSS-wide keyword,
+   * `currentColor`, `var(--x)`, a `{ref}`, a non-string. Never throws.
+   */
+  static tryParse(value: unknown): Color | null {
+    if (value instanceof Color) {
+      return value;
+    }
+
+    const parsed = typeof value === 'string' ? tryParseColorString(value) : null;
+
+    return parsed && isRepresentable(parsed.data)
+      ? new Color(INTERNAL, parsed.space, parsed.data, parsed.alpha)
+      : null;
+  }
+
+  /** Whether `value` is a format {@link Color.toString} accepts. */
+  static isFormat(value: unknown): value is ColorFormat {
+    return FORMATS.includes(value as string);
   }
 
   static #fromSpace<S extends Space>(

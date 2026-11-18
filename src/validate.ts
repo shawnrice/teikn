@@ -34,16 +34,6 @@ const BORDER_FIELDS = new Set(['width', 'style', 'color']);
 const SHADOW_FIELDS = new Set(['color', 'offsetX', 'offsetY', 'blur', 'spread']);
 const TRANSITION_FIELDS = new Set(['duration', 'timingFunction']);
 
-const tryParseColor = (value: string): boolean => {
-  try {
-    new Color(value);
-
-    return true;
-  } catch {
-    return false;
-  }
-};
-
 const validateCompositeShape = (type: string, value: CompositeValue): string | null => {
   const keys = new Set(Object.keys(value));
   const check = (expected: Set<string>, label: string) => {
@@ -115,7 +105,7 @@ const validateValue = (
     COLOR_TYPES.has(token.type) &&
     typeof value === 'string' &&
     !isRef(value) &&
-    !tryParseColor(value)
+    !Color.tryParse(value)
   ) {
     issue('warning', token.name, `${label}Color value "${value}" could not be parsed`);
   }
@@ -194,11 +184,10 @@ const checkResolves = ({ tokens, modeNames, issue }: CheckResolvesArgs): void =>
           ? token.modes[mode]
           : undefined;
 
-      try {
-        resolve(own ?? token.value, tokenKey(token), mode);
-      } catch (error) {
-        const label = mode === undefined ? '' : `[mode "${mode}"] `;
-        issue('error', token.name, `${label}${(error as Error).message}`);
+      const { error } = resolve(own ?? token.value, tokenKey(token), mode);
+
+      if (error !== undefined) {
+        issue('error', token.name, `${mode === undefined ? '' : `[mode "${mode}"] `}${error}`);
         break;
       }
     }
