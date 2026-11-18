@@ -285,7 +285,8 @@ const fixedDate = () => 'FIXED';
 const buildGenerators = (): Generator[] => [
   new CssVars({ dateFn: fixedDate }),
   new Scss({ filename: 'tokens-scss', dateFn: fixedDate }),
-  new ScssVars({ filename: 'tokens-vars', dateFn: fixedDate }),
+  // Prefixed: a stripped name can start with a digit, which is not a Sass variable.
+  new ScssVars({ filename: 'tokens-vars', dateFn: fixedDate, prefix: 'fuzz' }),
   new Html({ dateFn: fixedDate }),
   new Json(),
   new Dtcg(),

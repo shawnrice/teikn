@@ -7,13 +7,14 @@ import type { GeneratorInfo, GeneratorOptions } from './Generator.js';
 import { Generator } from './Generator.js';
 import type { PrefixOptions } from './prefix-utils.js';
 import { composeSymbol } from './prefix-utils.js';
-import { cssMapValue } from './value-serializers.js';
+import {
+  assertSassGroupName,
+  cssMapValue,
+  sassLines,
+  sassQuote as quote,
+} from './value-serializers.js';
 
 const defaultOptions = { ext: 'scss', nameTransformer: kebabCase };
-
-// Quoted so Sass reads a key as a string, never as a color (`red`) or number (`100`).
-const quote = (str: string): string =>
-  `'${str.replace(/[\\']/g, '\\$&').replace(/#\{/g, '#\\{').replace(/\r?\n/g, '\\a ')}'`;
 
 // An empty string serializes to nothing, which is not a valid map value.
 const mapValue = (value: unknown): string => cssMapValue(value) || '""';
@@ -62,7 +63,7 @@ export class Scss extends Generator<ScssOpts> {
   generateToken(token: Token): string {
     const { usage, value } = token;
     const key = quote(this.#emit(token.name));
-    const docs = usage ? usage.split(/\r?\n/).map(line => `  /// ${line}`) : [];
+    const docs = usage ? sassLines(usage).map(line => `  /// ${line}`) : [];
 
     return [...docs, `  ${key}: ${mapValue(value)},`].join(EOL);
   }
@@ -122,6 +123,13 @@ export class Scss extends Generator<ScssOpts> {
     return groups
       .map(({ groupName, entries }) => {
         const groupKebab = kebabCase(groupName);
+        assertSassGroupName({
+          generator: 'Scss',
+          name: groupKebab,
+          type: entries[0]!.token.type,
+          // `$token-values` and `get-token` are the module's own.
+          taken: ['token', 'get-token'],
+        });
         const mapEntries = entries
           .map(
             ({ shortName, token }) =>
