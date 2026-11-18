@@ -5,6 +5,7 @@ import type { Token } from '../Token.js';
 import { validate } from '../validate.js';
 import { Border } from './Border.js';
 import { BoxShadow, BoxShadowList } from './BoxShadow.js';
+import { Color } from './Color/index.js';
 import { CubicBezier } from './CubicBezier.js';
 import type { DimensionUnit } from './Dimension.js';
 import { Dimension, absoluteUnits, convertDimension } from './Dimension.js';
@@ -1050,5 +1051,40 @@ describe('output sanity', () => {
     expect(derived.slice(0, 3).map(make => String(make()))).toEqual(['0.3rem', '0.3rem', '0.2rem']);
     expect(String(new Dimension(1e21, 'px').scale(10))).toBe(`1${'0'.repeat(22)}px`);
     expect(String(new Dimension(1e-7, 'px').scale(0.1))).toBe('0.00000001px');
+  });
+});
+
+describe('tryParse returns null where the constructor throws', () => {
+  const never = ['{color.ink}', 3, null];
+  const cases = [
+    ['Color', Color, ['#f00', 'oklch(0.7 0.1 200)', 'rebeccapurple'], ['', 'nope']],
+    ['Dimension', Dimension, ['16px', '0', '1.5REM'], ['', '16', '1e999px', '4 px']],
+    ['Duration', Duration, ['200ms', '.2s'], ['', '200', '1e999s']],
+    [
+      'CubicBezier',
+      CubicBezier,
+      ['ease-in', 'cubic-bezier(0.4, 0, 0.2, 1)'],
+      ['', 'cubic-bezier(2, 0, 0, 1)'],
+    ],
+    [
+      'Transition',
+      Transition,
+      ['opacity 200ms ease-in 50ms', '0.3s'],
+      ['', '1s 2s 3s', 'a b', '1e999s'],
+    ],
+    ['TransitionList', TransitionList, ['opacity 200ms, transform 0.3s ease', ''], ['a b, 1s']],
+  ] as const;
+
+  test.each(cases)('%s', (_name, Class, valid, invalid) => {
+    const make = (input: unknown) => new (Class as new (input: unknown) => unknown)(input);
+
+    for (const input of valid) {
+      expect(String(Class.tryParse(input))).toBe(String(make(input)));
+    }
+
+    for (const input of [...invalid, ...never]) {
+      expect(Class.tryParse(input)).toBeNull();
+      expect(() => make(input)).toThrow();
+    }
   });
 });

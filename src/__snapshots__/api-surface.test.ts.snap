@@ -2020,6 +2020,8 @@ export declare class CubicBezier {
         x2: number;
         y2: number;
     } | CubicBezier | string);
+    /** The easing \`value\` holds — an instance, a preset name or \`cubic-bezier()\` — or \`null\`. Never throws. */
+    static tryParse(value: unknown): CubicBezier | null;
     static from(value: CubicBezier | {
         x1: number;
         y1: number;
@@ -2085,6 +2087,8 @@ export declare class Dimension {
     readonly __teikn_fcv__: true;
     constructor(value: number, unit: DimensionUnit);
     constructor(input: DimensionInput | Dimension | string);
+    /** The dimension \`value\` holds — an instance or a CSS length — or \`null\`. Never throws. */
+    static tryParse(value: unknown): Dimension | null;
     get value(): number;
     get unit(): DimensionUnit;
     get isAbsolute(): boolean;
@@ -2128,6 +2132,8 @@ export declare class Duration {
     readonly __teikn_fcv__: true;
     constructor(value: number, unit: DurationUnit);
     constructor(input: DurationInput | Duration | string);
+    /** The duration \`value\` holds — an instance or a CSS time — or \`null\`. Never throws. */
+    static tryParse(value: unknown): Duration | null;
     get value(): number;
     get unit(): DurationUnit;
     to(targetUnit: DurationUnit): Duration;
@@ -2290,6 +2296,8 @@ export declare class Transition implements RefFields {
     toJSON(): string;
     toString(): string;
     static from(value: Transition | TransitionInput | string): Transition;
+    /** The transition \`value\` holds — an instance or a CSS shorthand — or \`null\`. Never throws. */
+    static tryParse(value: unknown): Transition | null;
     static readonly fade: Transition;
     static readonly slide: Transition;
     static readonly quick: Transition;
@@ -2309,6 +2317,8 @@ export declare class TransitionList implements RefFields {
     __teikn_fromFields__(fields: Record<string, unknown>): TransitionList;
     toJSON(): string;
     toString(): string;
+    /** The list \`value\` holds — an instance or comma-separated shorthands — or \`null\`. Never throws. */
+    static tryParse(value: unknown): TransitionList | null;
     static from(value: TransitionList | string | Transition[]): TransitionList;
 }
 

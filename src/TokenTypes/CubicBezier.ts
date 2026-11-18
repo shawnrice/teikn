@@ -35,6 +35,19 @@ const assertFinite = (points: readonly number[]): void => {
 
 const clampX = (v: number): number => clamp(0, 1, v);
 
+// The control points of a preset name or a `cubic-bezier()` whose numbers are
+// finite, or `null`. The x range is checked by the caller, which reports it.
+const tryParseCss = (css: string): ControlPoints | null => {
+  const points = css.trim().match(RE)?.slice(1).map(Number);
+
+  return (
+    presets.get(css.trim().toLowerCase()) ??
+    (points?.every(Number.isFinite) ? (points as unknown as ControlPoints) : null)
+  );
+};
+
+const xInRange = ([x1, , x2]: ControlPoints): boolean => x1 >= 0 && x1 <= 1 && x2 >= 0 && x2 <= 1;
+
 // Parametric cubic bezier for one axis:
 //   B(t) = 3(1-t)^2 * t * p1 + 3(1-t) * t^2 * p2 + t^3
 const bezierAt = (p1: number, p2: number, t: number): number => {
@@ -120,24 +133,13 @@ export class CubicBezier {
 
     if (typeof first === 'string') {
       assertNotRef(first, 'CubicBezier');
-      const named = presets.get(first.trim().toLowerCase());
+      const points = tryParseCss(first);
 
-      if (named) {
-        [this.#x1, this.#y1, this.#x2, this.#y2] = named;
-
-        return;
-      }
-
-      const m = first.trim().match(RE);
-
-      if (!m) {
+      if (!points) {
         throw new Error(`Invalid cubic-bezier: "${first}"`);
       }
 
-      const points = m.slice(1).map(Number) as [number, number, number, number];
-      assertFinite(points);
-
-      if (points[0] < 0 || points[0] > 1 || points[2] < 0 || points[2] > 1) {
+      if (!xInRange(points)) {
         throw new Error(`Invalid cubic-bezier: "${first}" — x values must be within [0, 1]`);
       }
 
@@ -161,6 +163,17 @@ export class CubicBezier {
     this.#y1 = y1!;
     this.#x2 = clampX(x2!);
     this.#y2 = y2!;
+  }
+
+  /** The easing `value` holds — an instance, a preset name or `cubic-bezier()` — or `null`. Never throws. */
+  static tryParse(value: unknown): CubicBezier | null {
+    if (value instanceof CubicBezier) {
+      return value;
+    }
+
+    const points = typeof value === 'string' ? tryParseCss(value) : null;
+
+    return points && xInRange(points) ? new CubicBezier(...points) : null;
   }
 
   static from(

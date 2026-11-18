@@ -6,6 +6,7 @@ import { Duration } from '../TokenTypes/Duration.js';
 import { isRefString } from '../TokenTypes/ref-guard.js';
 import type { TransitionInput } from '../TokenTypes/Transition.js';
 import { Transition, TransitionList } from '../TokenTypes/Transition.js';
+import { isFirstClassValue } from '../type-classifiers.js';
 import { Plugin } from './Plugin.js';
 
 export type ReducedMotionPluginOptions = { prefix?: string; zeroDuration?: boolean };
@@ -20,21 +21,16 @@ const getDurationValue = (value: unknown): Duration | string =>
 // A transition (or list) in any authored form: first-class, shorthand string or
 // plain composite. `null` when the value is not one (`none`, `var(--x)`, …).
 const toTransition = (value: unknown): Transition | TransitionList | null => {
-  if (value instanceof Transition || value instanceof TransitionList) {
-    return value;
+  if (typeof value !== 'object' || value === null || isFirstClassValue(value)) {
+    return Transition.tryParse(value) ?? TransitionList.tryParse(value);
   }
 
-  try {
-    if (typeof value === 'string') {
-      const list = new TransitionList(value);
+  // A plain composite reads as the shorthand its fields spell.
+  const { property, duration, timingFunction, delay } = value as Partial<TransitionInput>;
 
-      return list.length === 1 ? list.at(0)! : list;
-    }
-
-    return Transition.from(value as TransitionInput);
-  } catch {
-    return null;
-  }
+  return Transition.tryParse(
+    [property, duration, timingFunction, delay].filter(part => part !== undefined).join(' '),
+  );
 };
 
 // Only the motion goes: the property and delay are kept.

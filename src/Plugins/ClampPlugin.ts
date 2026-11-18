@@ -1,7 +1,7 @@
 import { createSeedResolver } from '../resolve.js';
 import { tokenKey } from '../token-keys.js';
 import type { Token } from '../Token.js';
-import { Dimension } from '../TokenTypes/Dimension.js';
+import { Dimension, isConvertible } from '../TokenTypes/Dimension.js';
 import { Plugin } from './Plugin.js';
 import { findTokens } from './token-names.js';
 
@@ -145,13 +145,13 @@ export class ClampPlugin extends Plugin<ClampPluginOptions> {
         );
       }
 
-      try {
-        return { token, rem: toRem(extracted.value, extracted.unit) };
-      } catch {
+      if (!isConvertible(extracted.unit, 'rem') && !isConvertible(extracted.unit, 'px')) {
         throw new Error(
           `${where} uses unit "${extracted.unit}", which cannot be converted to rem. Use px, rem or an absolute unit.`,
         );
       }
+
+      return { token, rem: toRem(extracted.value, extracted.unit) };
     };
 
     const generated = pairs.map((pair): Token => {

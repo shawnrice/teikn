@@ -36,17 +36,13 @@ const parseLength = (token: string, str: string): { value: number; unit: string 
     return { value: Number(token), unit: '' };
   }
 
-  try {
-    const { value, unit } = new Dimension(token);
+  const length = Dimension.tryParse(token);
 
-    if (unit !== '%' && unit !== 'fr') {
-      return { value, unit };
-    }
-  } catch {
-    // fall through to the unified error
+  if (!length || length.unit === '%' || length.unit === 'fr') {
+    throw invalid(str, `unsupported length "${token}"`);
   }
 
-  throw invalid(str, `unsupported length "${token}"`);
+  return { value: length.value, unit: length.unit };
 };
 
 // The one non-length token is the color: a `{ref}` string (kept for per-field

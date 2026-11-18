@@ -30,8 +30,11 @@ export const isBorderStyle = (value: string): boolean => borderStyles.has(value)
 const numericRe = /^[+-]?\.?\d/;
 
 // `border-width` takes a non-negative length: no percentage, no `fr`.
+const isWidth = (width: Dimension): boolean =>
+  width.value >= 0 && width.unit !== '%' && width.unit !== 'fr';
+
 const assertWidth = (width: Dimension): Dimension => {
-  if (width.value < 0 || width.unit === '%' || width.unit === 'fr') {
+  if (!isWidth(width)) {
     throw new Error(`Invalid border width "${width}" — expected a non-negative length.`);
   }
 
@@ -54,31 +57,23 @@ const parse = (css: string): { width: Dimension; style: string; color: Color | s
   let color: Color | string | null = null;
 
   // A repeated or unparseable part fails the whole shorthand.
-  const attempt = <T>(seen: T | null, make: () => T): T => {
-    if (seen !== null) {
-      return fail();
-    }
-
-    try {
-      return make();
-    } catch {
-      return fail();
-    }
-  };
+  const attempt = <T>(seen: T | null, made: T | null): T =>
+    seen === null && made !== null ? made : fail();
 
   for (const part of parts) {
     if (isBorderStyle(part.toLowerCase())) {
-      style = attempt(style, () => part.toLowerCase());
+      style = attempt(style, part.toLowerCase());
     } else if (numericRe.test(part)) {
-      width = attempt(width, () => assertWidth(new Dimension(part)));
+      const parsed = Dimension.tryParse(part);
+      width = attempt(width, parsed && isWidth(parsed) ? parsed : null);
     } else if (isRefString(part)) {
       // A `{ref}` color is kept as a reference string; it resolves per-field later.
-      color = attempt(color, () => part);
+      color = attempt(color, part);
     } else {
       // Anything left is the color (named, hex, or function form). Tolerate a
       // parse failure here so the unified "Invalid border" error below reports
       // the whole shorthand rather than Color's per-token message.
-      color = attempt(color, () => new Color(part));
+      color = attempt(color, Color.tryParse(part));
     }
   }
 
