@@ -17,13 +17,6 @@ import { ScssVars } from './ScssVars.js';
 // The Scss and ScssVars generators are otherwise only snapshot-tested; these
 // compile their output with Sass and read values back through it.
 
-// A known bug: the test body states the correct behaviour and is expected to
-// fail. Once the bug is fixed the runner reports it, and the marker comes off.
-// (bun calls this `test.failing`, vitest `test.fails`.)
-type KnownBug = (name: string, fn: () => void) => void;
-const markers = test as unknown as { failing?: KnownBug; fails?: KnownBug };
-const knownBug: KnownBug = (markers.failing ?? markers.fails)!;
-
 type Options = ConstructorParameters<typeof Teikn>[0];
 
 const generate = (generator: Generator, set: Token[], options: Partial<Options> = {}): string =>
@@ -155,9 +148,7 @@ describe('Scss output compiles with Sass', () => {
     expect(() => compiles(scss)).not.toThrow();
   });
 
-  // Still a known bug: needs the generic name-collision check in the Generator
-  // base class, not a Scss-only fix.
-  knownBug('names that transform to the same key are rejected before Sass sees them', () => {
+  test('names a digit apart from a separator keep distinct keys', () => {
     const scss = generate(new Scss(testOpts), scale('spacing', { '1-5': dp(6), '15': dp(60) }));
 
     expect(() => compiles(scss)).not.toThrow();

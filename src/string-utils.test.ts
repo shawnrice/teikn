@@ -97,6 +97,69 @@ describe('kebabCase', () => {
   test('converts multi-word camelCase to kebab-case', () => {
     expect(kebabCase('borderTopLeftRadius')).toBe('border-top-left-radius');
   });
+
+  // Established output that must not move.
+  for (const [input, expected] of [
+    ['t2', 't-2'],
+    ['color-t2', 'color-t-2'],
+    ['size-2xl', 'size-2xl'],
+    ['gray-50', 'gray-50'],
+    ['a1-b2', 'a-1-b-2'],
+    ['spacing2', 'spacing-2'],
+    ['Font Size', 'font-size'],
+    ['XMLHttpRequest', 'xmlhttp-request'],
+    ['café-au-lait', 'café-au-lait'],
+    ['--leading', 'leading'],
+    ['', ''],
+  ] as const) {
+    test(`keeps ${JSON.stringify(input)} → ${JSON.stringify(expected)}`, () => {
+      expect(kebabCase(input)).toBe(expected);
+    });
+  }
+
+  // A separator between two digits is the only thing keeping them apart.
+  for (const [input, expected] of [
+    ['t2-500', 't-2-500'],
+    ['color-t2-900', 'color-t-2-900'],
+    ['spacing-1-5', 'spacing-1-5'],
+    ['spacing-1.5', 'spacing-1-5'],
+    ['1_5', '1-5'],
+    ['v1.2.3', 'v-1-2-3'],
+    ['t2--500', 't-2-500'],
+    ['a 1 2 b', 'a-1-2-b'],
+  ] as const) {
+    test(`keeps the digit boundary in ${JSON.stringify(input)}`, () => {
+      expect(kebabCase(input)).toBe(expected);
+    });
+  }
+
+  test('distinct numeric steps stay distinct', () => {
+    expect(kebabCase('t2-500')).not.toBe(kebabCase('t-2500'));
+    expect(kebabCase('1-5')).not.toBe(kebabCase('15'));
+  });
+
+  test('is idempotent', () => {
+    for (const input of ['t2-500', 'spacing-1.5', 'colorPrimary', 'a1-b2', 'XMLHttpRequest']) {
+      expect(kebabCase(kebabCase(input))).toBe(kebabCase(input));
+    }
+  });
+
+  test('differs from camelCase → camelToKebabCase only at a digit|digit seam', () => {
+    const alphabet = ['a', 'B', '2', '7', '-', '_', ' ', '.', 'é'];
+    const grow = (words: string[]): string[] => words.flatMap(w => alphabet.map(ch => w + ch));
+    const corpus = [1, 2, 3, 4, 5].reduce<string[][]>(
+      (acc, _) => [...acc, grow(acc.at(-1)!)],
+      [['']],
+    );
+    const seam = /\d[^a-zA-Z0-9é]+\d/;
+    const unchanged = corpus.flat().filter(word => !seam.test(word));
+
+    expect(unchanged.length).toBeGreaterThan(40000);
+
+    for (const word of unchanged) {
+      expect(kebabCase(word)).toBe(camelToKebabCase(camelCase(word)));
+    }
+  });
 });
 
 describe('deriveShortName', () => {
