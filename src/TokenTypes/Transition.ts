@@ -25,6 +25,11 @@ const parse = (
   css: string,
 ): { duration: string; timingFunction: CubicBezier; delay: string; property: string } => {
   const parts = splitTopLevelWhitespace(css.trim());
+
+  if (parts.length === 0) {
+    throw invalid(css, 'expected a duration, timing function or property');
+  }
+
   const times: string[] = [];
   let timing: string | null = null;
   let property: string | null = null;
@@ -85,6 +90,27 @@ const toTiming = (value: CubicBezier | string): CubicBezier | string => {
   return new CubicBezier(value);
 };
 
+// The property must be one the shorthand parser would read back as a property
+// (a single identifier that is not a time or timing function), or a `{ref}`.
+const toProperty = (value: string | undefined): string => {
+  const property = value ?? 'all';
+  const name = String(property);
+  assertNotPaddedRef(property, 'Transition property');
+
+  if (
+    isRefString(property) ||
+    (propertyRe.test(name) &&
+      !timingKeywords.has(name.toLowerCase()) &&
+      !unsupportedTimingRe.test(name))
+  ) {
+    return property;
+  }
+
+  throw new Error(
+    `Invalid transition property ${JSON.stringify(property)} — expected a single CSS property name`,
+  );
+};
+
 // Transforms (scale/shift/reverse) are only defined on resolved fields; a
 // lingering reference means `resolve.ts` has not run yet.
 const requireResolved = <T>(value: T | string, op: string): T => {
@@ -135,7 +161,12 @@ export class Transition implements RefFields {
       return;
     }
 
-    if (typeof first === 'string' && timingFunction === undefined) {
+    if (
+      typeof first === 'string' &&
+      timingFunction === undefined &&
+      delay === undefined &&
+      property === undefined
+    ) {
       assertNotRef(first, 'Transition');
       const parsed = parse(first);
       this.#duration = new Duration(parsed.duration);
@@ -152,8 +183,7 @@ export class Transition implements RefFields {
       this.#duration = toDuration(opts.duration);
       this.#timingFunction = toTiming(opts.timingFunction);
       this.#delay = opts.delay !== undefined ? toDuration(opts.delay) : new Duration(0, 's');
-      this.#property = opts.property ?? 'all';
-      assertNotPaddedRef(this.#property, 'Transition property');
+      this.#property = toProperty(opts.property);
 
       return;
     }
@@ -161,8 +191,7 @@ export class Transition implements RefFields {
     this.#duration = toDuration(first);
     this.#timingFunction = toTiming(timingFunction ?? 'ease');
     this.#delay = delay !== undefined ? toDuration(delay) : new Duration(0, 's');
-    this.#property = property ?? 'all';
-    assertNotPaddedRef(this.#property, 'Transition property');
+    this.#property = toProperty(property);
   }
 
   get duration(): Duration | string {

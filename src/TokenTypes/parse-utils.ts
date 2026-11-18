@@ -3,8 +3,16 @@ import { isRefString } from './ref-guard.js';
 /** Source of a regex matching a CSS `<number>`: `1`, `-1.5`, `.5`, `+5`, `1e3`. */
 export const CSS_NUMBER: string = String.raw`[+-]?(?:\d+(?:\.\d+)?|\.\d+)(?:e[+-]?\d+)?`;
 
-/** Strip float noise from an arithmetic result (`0.1 * 3` → `0.3`). */
-export const tidy = (n: number): number => (Number.isInteger(n) ? n : Number(n.toPrecision(12)));
+/**
+ * Strip float noise from an arithmetic result (`0.1 * 3` → `0.3`). Only a
+ * value within a few ulps of a 12-digit decimal is snapped to it; anything
+ * else (`4 / 3`, `1234567890123.5`) is returned untouched.
+ */
+export const tidy = (n: number): number => {
+  const snapped = Number(n.toPrecision(12));
+
+  return Math.abs(snapped - n) <= 8 * Number.EPSILON * Math.abs(n) ? snapped : n;
+};
 
 /** Format a number for CSS output — never exponent notation. */
 export const formatNumber = (n: number): string => {
