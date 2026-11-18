@@ -22,29 +22,24 @@ export const parseColor = (value: unknown): Color | null => {
   }
 };
 
-const COLOR_FORMATS: Record<ColorFormat, true> = {
-  rgb: true,
-  rgba: true,
-  hex3: true,
-  hex: true,
-  hsl: true,
-  hsla: true,
-  xyz: true,
-  xyza: true,
-  lab: true,
-  laba: true,
-  lch: true,
-  lcha: true,
-  oklab: true,
-  oklaba: true,
-  oklch: true,
-  oklcha: true,
-  named: true,
-  xkcd: true,
-  native: true,
+const BLACK = new Color('#000');
+
+/** Throws, naming the plugin option and the valid formats, when `value` is not a color format. */
+export const assertColorFormat = ({
+  plugin,
+  option,
+  value,
+}: {
+  plugin: string;
+  option: string;
+  value: unknown;
+}): void => {
+  try {
+    BLACK.toString(value as ColorFormat);
+  } catch (cause) {
+    throw new Error(
+      `${plugin}: unknown ${option} "${String(value)}". ${(cause as Error).message}`,
+      { cause },
+    );
+  }
 };
-
-export const isColorFormat = (value: unknown): value is ColorFormat =>
-  typeof value === 'string' && Object.hasOwn(COLOR_FORMATS, value);
-
-export const colorFormatNames = (): string => Object.keys(COLOR_FORMATS).join(', ');

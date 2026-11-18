@@ -189,7 +189,7 @@ describe('group names that collide', () => {
 
   test('declarations: two types that camelCase the same throw, naming both', () => {
     expect(() => run({ generators: [new TypeScriptDeclarations(testOpts)], tokens: pair })).toThrow(
-      /TypeScriptDeclarations: token types "font-size" and "fontSize" both .*`fontSize`/,
+      /TypeScriptDeclarations: token type "fontSize" produces the name `fontSize`, which token type "font-size" already uses/,
     );
   });
 
@@ -200,7 +200,7 @@ describe('group names that collide', () => {
           generators: [new TypeScriptDeclarations(testOpts)],
           tokens: [{ name: 'a', type, value: 1 }],
         }),
-      ).toThrow(new RegExp(`TypeScriptDeclarations: token type "${type}" .*\`All\``));
+      ).toThrow(new RegExp(`TypeScriptDeclarations: token type "${type}" .*TokenNames\\.All`));
     });
   }
 
@@ -208,7 +208,9 @@ describe('group names that collide', () => {
     test(`JavaScript groups (${module}): two types that camelCase the same throw`, () => {
       expect(() =>
         run({ generators: [new JavaScript({ ...testOpts, groups: true, module })], tokens: pair }),
-      ).toThrow(/JavaScript: token types "font-size" and "fontSize" both .*`fontSize`/);
+      ).toThrow(
+        /JavaScript: token type "fontSize" produces the name `fontSize`, which token type "font-size" already uses/,
+      );
     });
   }
 
@@ -227,13 +229,13 @@ describe('JavaScript cjs groups: CommonJS wrapper bindings', () => {
     test(`type "${type}" throws for cjs`, () => {
       expect(() =>
         run({ generators: [new JavaScript({ ...testOpts, groups: true, module: 'cjs' })], tokens }),
-      ).toThrow(/JavaScript: cannot emit a group accessor for token type .* CommonJS/);
+      ).toThrow(/JavaScript: token type .* CommonJS/);
       expect(() =>
         run({
           generators: [new TypeScriptDeclarations({ ...testOpts, groups: true, module: 'cjs' })],
           tokens,
         }),
-      ).toThrow(/TypeScriptDeclarations: cannot emit a group accessor for token type/);
+      ).toThrow(/TypeScriptDeclarations: token type/);
     });
 
     test(`type "${type}" still works for esm`, async () => {
@@ -294,7 +296,7 @@ describe('Storybook: type-derived identifiers', () => {
 
   test('two types that derive the same identifier throw, naming both', () => {
     expect(() => stories(['font-size', 'fontSize'])).toThrow(
-      /Storybook: token types "font-size" and "fontSize" both .*`FontSize`/,
+      /Storybook: token type "fontSize" produces the name `FontSize`, which token type "font-size" already uses/,
     );
   });
 });

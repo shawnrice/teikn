@@ -287,25 +287,20 @@ const getPlugins = () =>
     Teikn.plugins.ScssQuoteValuePlugin,
   ]);
 
-// These do nothing useful (or crash) without options, which a name cannot carry.
-const NEEDS_OPTIONS = new Set<unknown>([
-  Teikn.plugins.ContrastValidatorPlugin,
-  Teikn.plugins.DeprecationPlugin,
-  Teikn.plugins.NameConventionPlugin,
-]);
-
+// A plugin named on the command line gets no options; one that requires them
+// says so from its constructor.
 const createPlugin = (P: unknown): Plugin => {
   const PluginClass = P as new (opts: Record<string, unknown>) => Plugin;
 
-  if (NEEDS_OPTIONS.has(P)) {
+  try {
+    return new PluginClass({});
+  } catch {
     console.error(
       `${PluginClass.name} needs options, so it cannot be used by name. ` +
         `Configure it in a config file (teikn.config.ts): plugins: [new ${PluginClass.name}({ ... })]`,
     );
     process.exit(1);
   }
-
-  return new PluginClass({});
 };
 
 const dryRun = (writer: Teikn, tokens: any) => {

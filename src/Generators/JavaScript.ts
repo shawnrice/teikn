@@ -4,13 +4,7 @@ import { camelCase, deriveShortName } from '../string-utils.js';
 import type { Token } from '../Token.js';
 import type { GeneratorInfo, GeneratorOptions } from './Generator.js';
 import { Generator } from './Generator.js';
-import {
-  assertGroupExportName,
-  assertUniqueGroupNames,
-  jsDocLines,
-  objectKey,
-  propertyAccess,
-} from './js-emit.js';
+import { jsDocLines, objectKey, propertyAccess, unusableExportName } from './js-emit.js';
 import { maybeQuote } from './value-serializers.js';
 
 export type JavaScriptModule = 'esm' | 'cjs';
@@ -105,6 +99,10 @@ export class JavaScript extends Generator<JavaScriptOpts> {
       .join(EOL);
   }
 
+  protected override unusableTypeName(name: string): string | null {
+    return unusableExportName({ name, module: this.options.module });
+  }
+
   combinator(tokens: Token[]): string {
     const { nameTransformer, groups, module: moduleKind } = this.options;
     const isCjs = moduleKind === 'cjs';
@@ -116,15 +114,7 @@ export class JavaScript extends Generator<JavaScriptOpts> {
     const exportNames = ['tokens'];
 
     if (groups) {
-      const tokenGroups = this.tokenGroups(tokens);
-      assertUniqueGroupNames({ generator: 'JavaScript', groups: tokenGroups });
-      const groupBlocks = tokenGroups.map(({ groupName, entries }) => {
-        assertGroupExportName({
-          generator: 'JavaScript',
-          groupName,
-          module: moduleKind,
-          type: entries[0]!.token.type,
-        });
+      const groupBlocks = this.tokenGroups(tokens).map(({ groupName, entries }) => {
         exportNames.push(groupName);
         const mapEntries = entries
           .map(

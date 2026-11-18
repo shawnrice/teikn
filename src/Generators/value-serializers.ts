@@ -89,34 +89,13 @@ const SASS_RESERVED_FUNCTIONS = new Set([
   'url',
 ]);
 
-/**
- * Group accessors are emitted as `@function <name>`, so the name must be one
- * Sass accepts and can call. Throws rather than silently renaming.
- */
-export const assertSassGroupName = ({
-  generator,
-  name,
-  type,
-  taken = [],
-}: {
-  generator: string;
-  name: string;
-  type: string;
-  taken?: string[];
-}): void => {
-  const reasons = [
-    !isSassIdentifier(name) && 'is not a valid Sass identifier',
-    SASS_RESERVED_FUNCTIONS.has(name) && 'is reserved by Sass',
-    taken.includes(name) && "collides with the module's own members",
-  ];
-  const reason = reasons.find(Boolean);
-
-  if (reason) {
-    throw new Error(
-      `${generator}: cannot emit a group accessor for token type ${JSON.stringify(type)} — ` +
-        `the function name \`${name}\` ${reason}. Rename the type or disable \`groups\`.`,
-    );
+/** Why `name` cannot be an `@function` Sass accepts and can call, or `null`. */
+export const unusableSassFunction = (name: string): string | null => {
+  if (!isSassIdentifier(name)) {
+    return 'is not a valid Sass identifier';
   }
+
+  return SASS_RESERVED_FUNCTIONS.has(name) ? 'is reserved by Sass' : null;
 };
 
 // Where Sass leaves a `/` as written: quoted strings, `url()`, and color

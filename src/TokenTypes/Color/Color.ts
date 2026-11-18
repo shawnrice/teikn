@@ -202,27 +202,10 @@ const NATIVE_FORMAT: Record<Space, ColorFormat> = {
   oklch: 'oklch',
 };
 
-const FORMATS: readonly ColorFormat[] = [
-  'rgb',
-  'rgba',
-  'hex',
-  'hex3',
-  'hsl',
-  'hsla',
-  'xyz',
-  'xyza',
-  'lab',
-  'laba',
-  'lch',
-  'lcha',
-  'oklab',
-  'oklaba',
-  'oklch',
-  'oklcha',
-  'named',
-  'xkcd',
-  'native',
-];
+const FORMATS =
+  'rgb rgba hex hex3 hsl hsla xyz xyza lab laba lch lcha oklab oklaba oklch oklcha named xkcd native'.split(
+    ' ',
+  );
 
 const quoteList = (items: readonly string[]): string => items.map(x => `'${x}'`).join(', ');
 

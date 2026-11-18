@@ -8,10 +8,10 @@ import { Generator } from './Generator.js';
 import type { PrefixOptions } from './prefix-utils.js';
 import { composeSymbol } from './prefix-utils.js';
 import {
-  assertSassGroupName,
   cssMapValue,
   sassLines,
   sassQuote as quote,
+  unusableSassFunction,
 } from './value-serializers.js';
 
 const defaultOptions = { ext: 'scss', nameTransformer: kebabCase };
@@ -113,6 +113,17 @@ export class Scss extends Generator<ScssOpts> {
     ].join(EOL);
   }
 
+  protected override typeNames(tokens: Token[]): { name: string; type: string }[] {
+    return super.typeNames(tokens).map(({ name, type }) => ({ name: kebabCase(name), type }));
+  }
+
+  protected override unusableTypeName(name: string): string | null {
+    // `$token-values` and `get-token` are the module's own.
+    return ['token', 'get-token'].includes(name)
+      ? "collides with the module's own members"
+      : unusableSassFunction(name);
+  }
+
   protected generateGroupBlocks(tokens: Token[]): string | null {
     if (!this.options.groups) {
       return null;
@@ -123,13 +134,6 @@ export class Scss extends Generator<ScssOpts> {
     return groups
       .map(({ groupName, entries }) => {
         const groupKebab = kebabCase(groupName);
-        assertSassGroupName({
-          generator: 'Scss',
-          name: groupKebab,
-          type: entries[0]!.token.type,
-          // `$token-values` and `get-token` are the module's own.
-          taken: ['token', 'get-token'],
-        });
         const mapEntries = entries
           .map(
             ({ shortName, token }) =>

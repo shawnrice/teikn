@@ -96,13 +96,13 @@ describe('JavaScript: emitted module parses', () => {
 
         expect(() =>
           run({ generators: [new JavaScript({ ...testOpts, groups: true, module })], tokens }),
-        ).toThrow(/JavaScript: cannot emit a group accessor for token type/);
+        ).toThrow(/JavaScript: token type/);
         expect(() =>
           run({
             generators: [new TypeScriptDeclarations({ ...testOpts, groups: true, module })],
             tokens,
           }),
-        ).toThrow(/TypeScriptDeclarations: cannot emit a group accessor for token type/);
+        ).toThrow(/TypeScriptDeclarations: token type/);
       });
     }
   }

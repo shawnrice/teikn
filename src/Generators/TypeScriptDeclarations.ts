@@ -6,7 +6,7 @@ import { isFirstClassValue } from '../type-classifiers.js';
 import type { GeneratorInfo, GeneratorOptions } from './Generator.js';
 import { Generator } from './Generator.js';
 import type { JavaScriptModule } from './JavaScript.js';
-import { assertGroupExportName, assertUniqueGroupNames, jsDocLines } from './js-emit.js';
+import { jsDocLines, unusableExportName } from './js-emit.js';
 import { quoteKey, quoteString } from './value-serializers.js';
 
 /**
@@ -131,12 +131,24 @@ export class TypeScriptDeclarations extends Generator<TypeScriptDeclarationsOpts
       .join(EOL);
   }
 
+  // `TokenNames` is keyed by type whether or not `groups` is on.
+  protected override typeNames(tokens: Token[]): { name: string; type: string }[] {
+    return this.tokenGroups(tokens).map(({ groupName, type }) => ({ name: groupName, type }));
+  }
+
+  protected override unusableTypeName(name: string): string | null {
+    if (name === 'all') {
+      return 'is the `TokenNames.All` key, reserved for the union of every group';
+    }
+
+    return this.options.groups ? unusableExportName({ name, module: this.options.module }) : null;
+  }
+
   combinator(tokens: Token[]): string {
     const values = tokens.map(t => this.generateToken(t));
     const parts = ['export declare const tokens: {', values.join(EOL), '};'];
 
     const groups = this.tokenGroups(tokens);
-    assertUniqueGroupNames({ generator: 'TypeScriptDeclarations', groups });
 
     if (groups.length > 0) {
       const { nameTransformer } = this.options;
@@ -145,14 +157,6 @@ export class TypeScriptDeclarations extends Generator<TypeScriptDeclarationsOpts
           .map(({ token }) => quoteString(nameTransformer!(token.name)))
           .join(' | ');
         const typeName = groupName.charAt(0).toUpperCase() + groupName.slice(1);
-
-        if (typeName === 'All') {
-          throw new Error(
-            `TypeScriptDeclarations: token type ${JSON.stringify(entries[0]!.token.type)} produces ` +
-              `the \`TokenNames\` key \`All\`, which is reserved for the union of every group. ` +
-              `Rename the type.`,
-          );
-        }
 
         return `  ${quoteKey(typeName)}: ${names};`;
       });
@@ -168,12 +172,6 @@ export class TypeScriptDeclarations extends Generator<TypeScriptDeclarationsOpts
 
     if (this.options.groups) {
       const groupDecls = groups.map(({ groupName, entries }) => {
-        assertGroupExportName({
-          generator: 'TypeScriptDeclarations',
-          groupName,
-          module: this.options.module,
-          type: entries[0]!.token.type,
-        });
         const union = entries.map(({ shortName }) => quoteString(shortName)).join(' | ');
         // The accessor does a runtime lookup, so the return can't be narrowed
         // to a specific value per name — widen to the primitive type(s)

@@ -367,6 +367,41 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
 
       seen.set(emitted, source);
     });
+
+    const types = new Map<string, string>();
+
+    for (const { name, type } of this.typeNames(transformed)) {
+      const prior = types.get(name);
+      const reason =
+        this.unusableTypeName(name) ??
+        (prior === undefined ? null : `token type ${JSON.stringify(prior)} already uses`);
+
+      if (reason) {
+        throw new Error(
+          `${this.constructor.name}: token type ${JSON.stringify(type)} produces the name ` +
+            `\`${name}\`, which ${reason}. Rename the type.`,
+        );
+      }
+
+      types.set(name, type);
+    }
+  }
+
+  /**
+   * The name this generator emits for each token type (a group accessor, a
+   * story export). Checked before any output: each must pass
+   * {@link unusableTypeName} and no two types may share one.
+   */
+  protected typeNames(tokens: Token[]): { name: string; type: string }[] {
+    return this.options.groups
+      ? this.tokenGroups(tokens).map(({ groupName, type }) => ({ name: groupName, type }))
+      : [];
+  }
+
+  /** Why a type's name cannot be emitted (`is a reserved word`), or `null`. */
+  // oxlint-disable-next-line class-methods-use-this
+  protected unusableTypeName(_name: string): string | null {
+    return null;
   }
 
   prepareTokens(tokens: Token[], plugins: Plugin[]): Token[] {
@@ -377,7 +412,7 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
 
   protected tokenGroups(
     tokens: Token[],
-  ): { groupName: string; entries: { shortName: string; token: Token }[] }[] {
+  ): { groupName: string; type: string; entries: { shortName: string; token: Token }[] }[] {
     const map = new Map<string, { shortName: string; token: Token }[]>();
 
     for (const token of tokens) {
@@ -388,7 +423,11 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
       ]);
     }
 
-    return [...map.entries()].map(([type, entries]) => ({ groupName: camelCase(type), entries }));
+    return [...map.entries()].map(([type, entries]) => ({
+      groupName: camelCase(type),
+      type,
+      entries,
+    }));
   }
 
   tokenUsage(_: Token): string | null {

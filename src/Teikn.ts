@@ -207,91 +207,6 @@ export type TransformResult = {
   errors: { path: string; error: unknown }[];
 };
 
-type PrepareArgs = { teikn: Teikn; tokens: Token[]; check: boolean };
-
-// The token set generators and audit plugins both work from: themed, expanded
-// and reference-resolved, so audits cover generated tokens and theme modes.
-const prepareTokens = ({ teikn, tokens, check }: PrepareArgs): Token[] => {
-  // Apply themes before expand so a theme override on a seed token is visible
-  // to expand plugins as a mode — letting a ramp recompute per theme instead
-  // of freezing at the default value. `theme()` already authors override keys
-  // against the pre-expand token set, so this is the consistent apply point.
-  const withThemes = applyThemes(teikn.themes, tokens);
-  const expanded = teikn.expand(withThemes);
-
-  // Validate after expand so plugin-added tokens (and themed modes) are also
-  // covered. If expand plugins are disabled or add no tokens, `expanded`
-  // equals the input and behavior is unchanged.
-  if (check && teikn.options.validate !== false) {
-    const result = validate(expanded);
-    const errors = result.issues.filter(i => i.severity === 'error');
-
-    if (errors.length > 0) {
-      throw new Error(
-        `Token validation failed:\n${errors.map(e => `  ${e.token}: ${e.message}`).join('\n')}`,
-      );
-    }
-  }
-
-  return resolveReferences(expanded);
-};
-
-type GenerateArgs = { teikn: Teikn; resolved: Token[] };
-
-const generateResolved = ({ teikn, resolved }: GenerateArgs): Map<string, string> => {
-  const named = prefixTokenNames(resolved);
-
-  teikn.generators.forEach(g => {
-    g.siblings = teikn.generators;
-  });
-
-  const results = new Map<string, string>();
-
-  for (const generator of teikn.generators) {
-    const declared = new Set(generator.filenames());
-    const produced = generator.generateFiles(named, teikn.plugins);
-    const emitted = new Set(produced.keys());
-
-    const undeclared = [...emitted].filter(k => !declared.has(k));
-
-    if (undeclared.length > 0) {
-      throw new Error(
-        `Generator \`${generator.constructor.name}\` emitted file(s) it did not declare in filenames(): ${undeclared.join(', ')}. ` +
-          `This is a bug in the generator's generateFiles() implementation — declared keys and emitted keys must match.`,
-      );
-    }
-
-    const missing = [...declared].filter(k => !emitted.has(k));
-
-    if (missing.length > 0) {
-      throw new Error(
-        `Generator \`${generator.constructor.name}\` declared filename(s) in filenames() but did not emit them from generateFiles(): ${missing.join(', ')}. ` +
-          `This is a bug in the generator's generateFiles() implementation — declared keys and emitted keys must match.`,
-      );
-    }
-
-    for (const [filename, content] of produced) {
-      results.set(filename, content);
-    }
-  }
-
-  return results;
-};
-
-type AuditArgs = { plugins: Plugin[]; resolved: Token[] };
-
-const auditResolved = ({ plugins, resolved }: AuditArgs): AuditIssue[] => {
-  const issues: AuditIssue[] = [];
-
-  for (const plugin of plugins) {
-    if (plugin.audit) {
-      issues.push(...plugin.audit(resolved));
-    }
-  }
-
-  return issues;
-};
-
 export class Teikn {
   generators: Generator[];
 
@@ -423,23 +338,90 @@ export class Teikn {
    * points at; an unresolvable reference throws.
    */
   audit(tokens: Token[]): AuditIssue[] {
-    const resolved = prepareTokens({ teikn: this, tokens, check: false });
+    return this.#audit(this.#prepare({ tokens, check: false }));
+  }
 
-    return auditResolved({ plugins: this.plugins, resolved });
+  #audit(resolved: Token[]): AuditIssue[] {
+    return this.plugins.flatMap(plugin => plugin.audit?.(resolved) ?? []);
   }
 
   generateToStrings(tokens: Token[]): Map<string, string> {
-    const resolved = prepareTokens({ teikn: this, tokens, check: true });
+    return this.#generate(this.#prepare({ tokens, check: true }));
+  }
 
-    return generateResolved({ teikn: this, resolved });
+  // The token set generators and audit plugins both work from: themed, expanded
+  // and reference-resolved, so audits cover generated tokens and theme modes.
+  #prepare({ tokens, check }: { tokens: Token[]; check: boolean }): Token[] {
+    // Apply themes before expand so a theme override on a seed token is visible
+    // to expand plugins as a mode — letting a ramp recompute per theme instead
+    // of freezing at the default value. `theme()` already authors override keys
+    // against the pre-expand token set, so this is the consistent apply point.
+    const withThemes = applyThemes(this.themes, tokens);
+    const expanded = this.expand(withThemes);
+
+    // Validate after expand so plugin-added tokens (and themed modes) are also
+    // covered. If expand plugins are disabled or add no tokens, `expanded`
+    // equals the input and behavior is unchanged.
+    if (check && this.options.validate !== false) {
+      const result = validate(expanded);
+      const errors = result.issues.filter(i => i.severity === 'error');
+
+      if (errors.length > 0) {
+        throw new Error(
+          `Token validation failed:\n${errors.map(e => `  ${e.token}: ${e.message}`).join('\n')}`,
+        );
+      }
+    }
+
+    return resolveReferences(expanded);
+  }
+
+  #generate(resolved: Token[]): Map<string, string> {
+    const named = prefixTokenNames(resolved);
+
+    this.generators.forEach(g => {
+      g.siblings = this.generators;
+    });
+
+    const results = new Map<string, string>();
+
+    for (const generator of this.generators) {
+      const declared = new Set(generator.filenames());
+      const produced = generator.generateFiles(named, this.plugins);
+      const emitted = new Set(produced.keys());
+
+      const undeclared = [...emitted].filter(k => !declared.has(k));
+
+      if (undeclared.length > 0) {
+        throw new Error(
+          `Generator \`${generator.constructor.name}\` emitted file(s) it did not declare in filenames(): ${undeclared.join(', ')}. ` +
+            `This is a bug in the generator's generateFiles() implementation — declared keys and emitted keys must match.`,
+        );
+      }
+
+      const missing = [...declared].filter(k => !emitted.has(k));
+
+      if (missing.length > 0) {
+        throw new Error(
+          `Generator \`${generator.constructor.name}\` declared filename(s) in filenames() but did not emit them from generateFiles(): ${missing.join(', ')}. ` +
+            `This is a bug in the generator's generateFiles() implementation — declared keys and emitted keys must match.`,
+        );
+      }
+
+      for (const [filename, content] of produced) {
+        results.set(filename, content);
+      }
+    }
+
+    return results;
   }
 
   async transform(tokens: Token[]): Promise<TransformResult> {
-    // prepareTokens() handles validation, so we don't duplicate it here
+    // #prepare() handles validation, so we don't duplicate it here
     // Prepare once so audit sees the same themed, expanded tokens generation does.
-    const resolved = prepareTokens({ teikn: this, tokens, check: true });
-    const generated = generateResolved({ teikn: this, resolved });
-    const auditIssues = auditResolved({ plugins: this.plugins, resolved });
+    const resolved = this.#prepare({ tokens, check: true });
+    const generated = this.#generate(resolved);
+    const auditIssues = this.#audit(resolved);
     const files: TransformResult['files'] = [];
     const errors: TransformResult['errors'] = [];
 

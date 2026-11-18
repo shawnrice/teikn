@@ -7,7 +7,7 @@ import type { ColorFormat } from '../TokenTypes/Color/types.js';
 import type { GradientStop } from '../TokenTypes/Gradient.js';
 import { GradientList, LinearGradient, RadialGradient } from '../TokenTypes/Gradient.js';
 import { isRefString } from '../TokenTypes/ref-guard.js';
-import { colorFormatNames, isColorFormat, parseColor } from './color-values.js';
+import { assertColorFormat, parseColor } from './color-values.js';
 import type { AuditIssue } from './Plugin.js';
 import { Plugin } from './Plugin.js';
 
@@ -29,17 +29,9 @@ const PASSTHROUGH_FUNCTION = /^(var|color-mix|light-dark)\(/i;
 const isPassthrough = (value: string): boolean =>
   PASSTHROUGH_KEYWORDS.has(value.toLowerCase()) || PASSTHROUGH_FUNCTION.test(value.trim());
 
-// The alpha-carrying form of each format that has one. `hex`/`hex3` have none
+// The formats with an alpha-carrying `<format>a` form. `hex`/`hex3` have none
 // (audit warns); `named` and `native` already fall back to an alpha form.
-const ALPHA_FORMAT: Partial<Record<ColorFormat, ColorFormat>> = {
-  rgb: 'rgba',
-  hsl: 'hsla',
-  xyz: 'xyza',
-  lab: 'laba',
-  lch: 'lcha',
-  oklab: 'oklaba',
-  oklch: 'oklcha',
-};
+const HAS_ALPHA_FORM = /^(rgb|hsl|xyz|lab|lch|oklab|oklch)$/;
 
 /**
  * Normalizes colors to a single format — including colors nested inside
@@ -60,12 +52,8 @@ export class ColorTransformPlugin extends Plugin<ColorTransformPluginOptions> {
   constructor(options: ColorTransformPluginOptions) {
     super(options);
 
-    const type = options?.type;
-
-    if (type !== undefined && !isColorFormat(type)) {
-      throw new Error(
-        `ColorTransformPlugin: unknown type "${String(type)}". Use one of: ${colorFormatNames()}`,
-      );
+    if (options?.type !== undefined) {
+      assertColorFormat({ plugin: 'ColorTransformPlugin', option: 'type', value: options.type });
     }
   }
 
@@ -73,7 +61,9 @@ export class ColorTransformPlugin extends Plugin<ColorTransformPluginOptions> {
   #format(color: Color): ColorFormat | undefined {
     const { type } = this.options;
 
-    return color.alpha < 1 && type ? (ALPHA_FORMAT[type] ?? type) : type;
+    return color.alpha < 1 && type && HAS_ALPHA_FORM.test(type)
+      ? (`${type}a` as ColorFormat)
+      : type;
   }
 
   // Re-base a single color into the target space. A `{ref}` string (an

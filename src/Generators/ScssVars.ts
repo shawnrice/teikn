@@ -7,10 +7,10 @@ import type { Generator, GeneratorInfo } from './Generator.js';
 import { composeSymbol } from './prefix-utils.js';
 import { Scss } from './Scss.js';
 import {
-  assertSassGroupName,
   isSassIdentifier,
   sassLines,
   sassValue,
+  unusableSassFunction,
   stringifyWithRefs,
   valueDependencies,
 } from './value-serializers.js';
@@ -173,6 +173,11 @@ export class ScssVars extends Scss {
     return variable;
   }
 
+  // oxlint-disable-next-line class-methods-use-this
+  protected override unusableTypeName(name: string): string | null {
+    return unusableSassFunction(name);
+  }
+
   override combinator(tokens: Token[]): string {
     const values = tokens.map(token => this.generateToken(token));
     const lines = [values.join(EOL)];
@@ -221,10 +226,8 @@ export class ScssVars extends Scss {
     const groups = this.tokenGroups(tokens);
 
     return groups
-      .map(({ groupName, entries }) => {
+      .map(({ groupName, type, entries }) => {
         const groupKebab = kebabCase(groupName);
-        const { type } = entries[0]!.token;
-        assertSassGroupName({ generator: 'ScssVars', name: groupKebab, type });
         this.#declare(`${groupKebab}-values`, `the "${type}" group map`);
         const mapEntries = entries
           .map(({ shortName, token }) => `  '${kebabCase(shortName)}': $${this.#emit(token.name)},`)

@@ -195,7 +195,7 @@ describe('Scss output compiles with Sass', () => {
     const set: Token[] = [{ name: 'a', type, value: '1px' }];
 
     expect(() => generate(new Scss({ ...testOpts, groups: true }), set)).toThrow(
-      `Scss: cannot emit a group accessor for token type "${type}"`,
+      `Scss: token type "${type}"`,
     );
   });
 
@@ -204,7 +204,7 @@ describe('Scss output compiles with Sass', () => {
       const set: Token[] = [{ name: 'a', type, value: '1px' }];
 
       expect(() => generate(new Scss({ ...testOpts, groups: true }), set)).toThrow(
-        `Scss: cannot emit a group accessor for token type "${type}"`,
+        `Scss: token type "${type}"`,
       );
     }
   });
@@ -403,7 +403,7 @@ describe('ScssVars output compiles with Sass', () => {
     const set: Token[] = [{ name: 'a', type, value: '1px' }];
 
     expect(() => new ScssVars({ ...testOpts, groups: true }).generate(set)).toThrow(
-      `ScssVars: cannot emit a group accessor for token type "${type}"`,
+      `ScssVars: token type "${type}"`,
     );
   });
 

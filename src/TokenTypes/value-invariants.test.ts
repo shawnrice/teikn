@@ -36,7 +36,7 @@ const expectSame = (a: unknown, b: unknown): void => {
 
 // ─── Regressions and reported bugs ───────────────────────────
 
-describe('R4: tidy only strips float noise', () => {
+describe('tidy only strips float noise', () => {
   test('exact round trips stay exact', () => {
     expect(String(new Dimension(1, 'pt').to('px').to('pt'))).toBe('1pt');
     expect(new Dimension(10, 'px').toRem(3).toPx(3).value).toBe(10);
@@ -66,7 +66,7 @@ describe('R4: tidy only strips float noise', () => {
   });
 });
 
-describe('R5: BoxShadow zero lengths are unit-agnostic', () => {
+describe('BoxShadow zero lengths are unit-agnostic', () => {
   test('a zero with a unit does not count as a mixed unit', () => {
     const shadow = new BoxShadow('0px 0.25rem 0.5rem red');
     expect(shadow.unit).toBe('rem');
@@ -90,7 +90,7 @@ describe('R5: BoxShadow zero lengths are unit-agnostic', () => {
   });
 });
 
-describe('M8: LinearGradient angles carry no float noise', () => {
+describe('LinearGradient angles carry no float noise', () => {
   test.each([0.1, 33.3, 0.7, 118.8, 200.2, 359.9])('%p stays as written', angle => {
     expect(new LinearGradient(angle, ['red', 'blue']).angle).toBe(angle);
   });
@@ -120,7 +120,7 @@ describe('M8: LinearGradient angles carry no float noise', () => {
   });
 });
 
-describe('M9: gradients reject invalid options', () => {
+describe('gradients reject invalid options', () => {
   test.each([NaN, Infinity, -Infinity, undefined])('LinearGradient angle %p throws', angle => {
     const bad = angle as unknown as number;
     expect(() => new LinearGradient(bad, ['red', 'blue'])).toThrow('angle');
@@ -157,7 +157,7 @@ describe('M9: gradients reject invalid options', () => {
   });
 });
 
-describe('M10: Transition validates property on every path', () => {
+describe('Transition validates property on every path', () => {
   const invalid = ['opacity, transform', '', ' ', 'opacity 5s', 'ease-in', 'linear', '1s', '5px'];
 
   test.each(invalid)('property %p throws in every form', property => {
@@ -183,7 +183,7 @@ describe('M10: Transition validates property on every path', () => {
   });
 });
 
-describe('M11: Typography fontFamily arrays resolve per element', () => {
+describe('Typography fontFamily arrays resolve per element', () => {
   const tokens = (value: unknown): Token[] =>
     [
       { name: 'body', type: 'font-family', value: 'Inter' },
@@ -234,7 +234,7 @@ describe('M11: Typography fontFamily arrays resolve per element', () => {
   );
 });
 
-describe('M12: empty and incomplete strings throw', () => {
+describe('empty and incomplete strings throw', () => {
   test.each([
     ['Transition ""', () => new Transition('')],
     ['Transition "  "', () => new Transition('  ')],

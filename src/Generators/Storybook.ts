@@ -105,24 +105,6 @@ const toStoryName = (type: string): string => {
 const toKeysVarName = (type: string): string =>
   `${toStoryName(type).replace(/^./, c => c.toLowerCase())}Keys`;
 
-const assertUniqueStoryNames = (types: string[]): void => {
-  const seen = new Map<string, string>();
-
-  for (const type of types) {
-    const name = toStoryName(type);
-    const prior = seen.get(name);
-
-    if (prior !== undefined) {
-      throw new Error(
-        `Storybook: token types ${JSON.stringify(prior)} and ${JSON.stringify(type)} both ` +
-          `produce the story export \`${name}\`. Rename one of them.`,
-      );
-    }
-
-    seen.set(name, type);
-  }
-};
-
 // ─── Story render builder ───────────────────────────────────
 
 const buildRenderBody = (mapping: ComponentMapping, keysVarName: string, ts = true): string[] => {
@@ -245,11 +227,15 @@ export class Storybook extends Generator<StorybookOpts> {
     return /\.tsx?$/.test(this.options.ext);
   }
 
+  // oxlint-disable-next-line class-methods-use-this
+  protected override typeNames(tokens: Token[]): { name: string; type: string }[] {
+    return [...groupTokens(tokens).keys()].map(type => ({ name: toStoryName(type), type }));
+  }
+
   combinator(tokens: Token[]): string {
     const { nameTransformer, storyTitle, darkMode } = this.options;
     const ts = this.isTypeScript();
     const groups = groupTokens(tokens);
-    assertUniqueStoryNames([...groups.keys()]);
     const hasModes = tokens.some(t => t.modes && Object.keys(t.modes).length > 0);
 
     // Collect needed component imports

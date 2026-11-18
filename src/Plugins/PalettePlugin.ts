@@ -3,7 +3,7 @@ import { tokenKey } from '../token-keys.js';
 import type { Token } from '../Token.js';
 import { Color } from '../TokenTypes/Color/index.js';
 import type { ColorFormat } from '../TokenTypes/Color/types.js';
-import { colorFormatNames, isColorFormat, parseColor } from './color-values.js';
+import { assertColorFormat, parseColor } from './color-values.js';
 import { Plugin } from './Plugin.js';
 
 /** Resolve a seed value (default or mode) to a concrete color, following references. */
@@ -238,10 +238,8 @@ export class PalettePlugin extends Plugin<PalettePluginOptions> {
 
     const { space } = options;
 
-    if (space !== undefined && space !== 'auto' && !isColorFormat(space)) {
-      throw new Error(
-        `PalettePlugin: unknown space "${String(space)}". Use 'auto' or one of: ${colorFormatNames()}`,
-      );
+    if (space !== undefined && space !== 'auto') {
+      assertColorFormat({ plugin: 'PalettePlugin', option: 'space', value: space });
     }
   }
 
