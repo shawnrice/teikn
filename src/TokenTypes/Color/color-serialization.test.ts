@@ -62,7 +62,9 @@ describe("toString('named')", () => {
     ['transparent', 'transparent'],
     ['rgba(255, 0, 0, 0.5)', 'rgba(255, 0, 0, 0.5)'],
     ['rgba(1, 2, 3, 0.5)', 'rgba(1, 2, 3, 0.5)'],
-    ['rgba(0, 0, 0, 0.00001)', 'rgba(0, 0, 0, 0)'],
+    // Alpha prints as 0, and `rgba(0, 0, 0, 0)` reads back as transparent.
+    ['rgba(0, 0, 0, 0.00001)', 'transparent'],
+    ['rgba(255, 0, 0, 0.99999)', 'red'],
     ['rgba(255, 0, 0, 0)', 'rgba(255, 0, 0, 0)'],
     ['rgb(1, 2, 3)', 'rgb(1, 2, 3)'],
   ])('%p → %p', (input, expected) => {
