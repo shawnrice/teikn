@@ -4,30 +4,52 @@
 
 ### Added
 
-- **`PalettePlugin` ramps follow theme overrides and token modes.** A theme that overrides a palette
-  seed (or a seed authored with modes) now regenerates the whole ramp per mode instead of freezing
-  it at the default value, and a seed may be a `{reference}` that resolves to a color (its ramp
-  follows the referenced token's modes). Themes apply before expansion, so
-  `theme('dark', colors, { brand })` themes `brand-50 … -950`, not just `brand`.
+- **`PalettePlugin` ramps follow theme overrides and token modes.** A themed or moded seed
+  regenerates the whole ramp per mode, and a seed may be a `{reference}` to a color.
+- **Parsers accept more of CSS.** Color strings take the CSS Color 4 forms (space-separated, slash
+  alpha, `none`, hue units), `Dimension` and `Duration` take any CSS number (`.5rem`, `1e3px`), and
+  gradients take two-position stops and a radial shape, size and position.
+- **DTCG import keeps a color's `colorSpace`**, along with `$root` tokens, unknown `$extensions` and
+  group descriptions.
 
 ### Changed
 
-- **References are resolved per mode.** A token whose value references a token with modes now
-  inherits those modes (`brand = {primary}` gets primary's `dark` value), and a mode value that is a
-  reference resolves to its target's value for that mode rather than the target's default. A linked
-  ref (`ref(name, { link: true })`) inherits nothing: it stays a live alias in every mode.
-  `validate` follows the same per-mode chains when checking for cycles.
-- **`ReducedMotionPlugin` and `ColorBlindnessPlugin` derive their tokens per mode.** A mode or theme
-  on the source token no longer puts the unreduced or unsimulated value back on the derived token.
-  `ColorBlindnessPlugin` also resolves a `{reference}` color before simulating it.
+- **References are resolved per mode.** A token inherits the modes of the token it references; a
+  linked ref (`ref(name, { link: true })`) inherits none and stays a live alias.
+- **`ReducedMotionPlugin` and `ColorBlindnessPlugin` derive their tokens per mode.**
 - **`PalettePlugin` passes through a color that aliases a generated step** (`text = {brand-950}`)
-  instead of throwing; it gets no ramp of its own and resolves in the normal reference pass.
+  instead of throwing.
+- **`lab()` and `lch()` use a D50 white point**, as CSS Color 4 defines them, so every sRGB↔lab/lch
+  value changes to match browsers. Conversions among lab/lch/xyz/oklab/oklch no longer pass through
+  sRGB.
+- **Malformed color strings and value shorthands throw** instead of building the wrong value
+  (`rgb(123)` used to parse as `rgb(1, 2, 3)`; `'0.5rem 4px 8px red'` as an all-`rem` shadow).
+- **HSL output prints two decimals**, and `LinearGradient` emits diagonal angles as `Ndeg` rather
+  than corner keywords.
+- **Two tokens that emit the same name throw**, in the generators, `validate` and `serializeDtcg`.
+- **Plugins run before values are stringified in every generator**, so value plugins reach colors
+  nested in composites everywhere, not only in CssVars and ScssVars.
+- **The `TypeScript` generator emits `tokens.d.mts` in ESM mode**, and Scss `$modes` keys carry the
+  `prefix`.
+- **Audits run on reference-resolved tokens** and report warnings. `ClampPlugin` throws on a pair it
+  cannot build, and the CLI exits 1 on an unknown `--generators` or `--plugins` name.
+- **DTCG `$type` is derived from the value**, with the teikn type name kept in
+  `$extensions.teikn.type`. Values DTCG cannot express throw.
 
 ### Fixed
 
-- **Out-of-gamut `lab()`/`lch()`/`xyz()` colors are now gamut-mapped into sRGB** via CSS Color 4
-  chroma reduction, the same mapper `oklab()`/`oklch()` already used, instead of a per-channel clip
-  that distorted hue and lightness. In-gamut colors are unchanged.
+- **Out-of-gamut `lab()`/`lch()`/`xyz()` colors are gamut-mapped into sRGB** by CSS Color 4 chroma
+  reduction instead of a per-channel clip.
+- **Color:** negative HSL hues, invalid hex from fractional RGB, alpha dropped by
+  `toString('named')`, and hsl output that did not round-trip.
+- **`PalettePlugin`:** `NaN` steps at the lightness extremes, and alpha drifting across an RGB ramp.
+- **Value types:** `Transition`, `BoxShadow`, `CubicBezier` and gradient strings that misparsed or
+  could not re-parse their own output, and float noise in arithmetic results.
+- **Generators:** output that did not parse or compile for awkward token, mode and group names in
+  JavaScript, the declarations, CssVars, Scss, ScssVars and Storybook.
+- **Plugins:** `ContrastValidatorPlugin`, `MinFontSizePlugin`, `DeprecationPlugin` and `ClampPlugin`
+  silently matched nothing for names the docs use; `ColorTransformPlugin` threw on `currentColor`.
+- **DTCG:** shadows, gradient stops, aliases and custom separators now survive a round trip.
 
 ## 2.0.0-rc.1
 
