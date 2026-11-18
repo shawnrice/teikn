@@ -787,6 +787,7 @@ export type ContrastValidatorPluginOptions = {
 export declare class ContrastValidatorPlugin extends Plugin<ContrastValidatorPluginOptions> {
     tokenType: string;
     outputType: RegExp;
+    constructor(options: ContrastValidatorPluginOptions);
     audit(tokens: Token[]): AuditIssue[];
 }
 
@@ -800,6 +801,7 @@ export type DeprecationPluginOptions = {
 export declare class DeprecationPlugin extends Plugin<DeprecationPluginOptions> {
     tokenType: RegExp;
     outputType: RegExp;
+    constructor(options: DeprecationPluginOptions);
     transform(token: Token): Token;
     audit(tokens: Token[]): AuditIssue[];
 }
@@ -829,6 +831,7 @@ export declare class NameConventionPlugin extends Plugin<NameConventionPluginOpt
     tokenType: RegExp;
     outputType: RegExp;
     readonly runAfter: string[];
+    constructor(options: NameConventionPluginOptions);
     transform(token: Token): Token;
 }
 export {};

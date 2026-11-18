@@ -19,6 +19,19 @@ export class DeprecationPlugin extends Plugin<DeprecationPluginOptions> {
   tokenType: RegExp = /.*/;
   outputType: RegExp = /.*/;
 
+  constructor(options: DeprecationPluginOptions) {
+    super(options);
+
+    const tokens = options?.tokens;
+
+    if (tokens === null || typeof tokens !== 'object') {
+      throw new Error(
+        'DeprecationPlugin: `tokens` is required, e.g. ' +
+          '{ tokens: { "old-name": "new-name", "legacy": true } }',
+      );
+    }
+  }
+
   override transform(token: Token): Token {
     const { tokens } = this.options;
     const key = namesFor(token).find(name => Object.hasOwn(tokens, name));

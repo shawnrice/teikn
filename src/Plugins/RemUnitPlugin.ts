@@ -44,6 +44,12 @@ export class RemUnitPlugin extends Plugin<RemUnitPluginOptions> {
 
   constructor(options: RemUnitPluginOptions = {}) {
     super(options);
+
+    const { base } = options;
+
+    if (base !== undefined && !(Number.isFinite(base) && base > 0)) {
+      throw new Error(`RemUnitPlugin: base must be a positive, finite number, got ${base}`);
+    }
   }
 
   override transform(token: Token): Token {
