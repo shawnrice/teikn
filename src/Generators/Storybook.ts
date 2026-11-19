@@ -228,7 +228,9 @@ export class Storybook extends Generator<StorybookOpts> {
   }
 
   // oxlint-disable-next-line class-methods-use-this
-  protected override typeNames(tokens: Token[]): { name: string; type: string }[] {
+  protected override typeIdentifiers(
+    tokens: Token[],
+  ): { name: string; type: string; problem?: string | null }[] {
     return [...groupTokens(tokens).keys()].map(type => ({ name: toStoryName(type), type }));
   }
 

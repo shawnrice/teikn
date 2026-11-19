@@ -370,10 +370,10 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
 
     const types = new Map<string, string>();
 
-    for (const { name, type } of this.typeNames(transformed)) {
+    for (const { name, type, problem } of this.typeIdentifiers(transformed)) {
       const prior = types.get(name);
       const reason =
-        this.unusableTypeName(name) ??
+        problem ??
         (prior === undefined ? null : `token type ${JSON.stringify(prior)} already uses`);
 
       if (reason) {
@@ -388,20 +388,16 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
   }
 
   /**
-   * The name this generator emits for each token type (a group accessor, a
-   * story export). Checked before any output: each must pass
-   * {@link unusableTypeName} and no two types may share one.
+   * The identifier this generator emits for each token type (a group accessor,
+   * a story export), with the `problem` that makes one unusable (`is a reserved
+   * word`). Checked before any output; no two types may share an identifier.
    */
-  protected typeNames(tokens: Token[]): { name: string; type: string }[] {
+  protected typeIdentifiers(
+    tokens: Token[],
+  ): { name: string; type: string; problem?: string | null }[] {
     return this.options.groups
       ? this.tokenGroups(tokens).map(({ groupName, type }) => ({ name: groupName, type }))
       : [];
-  }
-
-  /** Why a type's name cannot be emitted (`is a reserved word`), or `null`. */
-  // oxlint-disable-next-line class-methods-use-this
-  protected unusableTypeName(_name: string): string | null {
-    return null;
   }
 
   prepareTokens(tokens: Token[], plugins: Plugin[]): Token[] {

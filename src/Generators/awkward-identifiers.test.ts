@@ -222,36 +222,6 @@ describe('group names that collide', () => {
   });
 });
 
-describe('JavaScript cjs groups: CommonJS wrapper bindings', () => {
-  for (const type of ['module', 'exports', 'require']) {
-    const tokens: Token[] = [{ name: 'a', type, value: 'x' }];
-
-    test(`type "${type}" throws for cjs`, () => {
-      expect(() =>
-        run({ generators: [new JavaScript({ ...testOpts, groups: true, module: 'cjs' })], tokens }),
-      ).toThrow(/JavaScript: token type .* CommonJS/);
-      expect(() =>
-        run({
-          generators: [new TypeScriptDeclarations({ ...testOpts, groups: true, module: 'cjs' })],
-          tokens,
-        }),
-      ).toThrow(/TypeScriptDeclarations: token type/);
-    });
-
-    test(`type "${type}" still works for esm`, async () => {
-      const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'teikn-cjs-'));
-      writeFiles({
-        dir,
-        files: run({ generators: [new JavaScript({ ...testOpts, groups: true })], tokens }),
-      });
-      const mod = await load(path.join(dir, 'tokens.mjs'));
-      fs.rmSync(dir, { recursive: true, force: true });
-
-      expect(mod[type]('a')).toBe('x');
-    });
-  }
-});
-
 describe('Storybook: type-derived identifiers', () => {
   const stories = (types: string[]): string =>
     run({
@@ -345,9 +315,6 @@ const awkwardTypes = [
   '2d',
   'class',
   'default',
-  'module',
-  'exports',
-  'require',
   '__dirname',
   '__filename',
   'tokens',

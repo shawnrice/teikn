@@ -10,7 +10,6 @@ import {
   isSassIdentifier,
   sassLines,
   sassValue,
-  unusableSassFunction,
   stringifyWithRefs,
   valueDependencies,
 } from './value-serializers.js';
@@ -171,11 +170,6 @@ export class ScssVars extends Scss {
     this.#declared.set(key, { variable, source });
 
     return variable;
-  }
-
-  // oxlint-disable-next-line class-methods-use-this
-  protected override unusableTypeName(name: string): string | null {
-    return unusableSassFunction(name);
   }
 
   override combinator(tokens: Token[]): string {

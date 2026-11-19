@@ -132,16 +132,19 @@ export class TypeScriptDeclarations extends Generator<TypeScriptDeclarationsOpts
   }
 
   // `TokenNames` is keyed by type whether or not `groups` is on.
-  protected override typeNames(tokens: Token[]): { name: string; type: string }[] {
-    return this.tokenGroups(tokens).map(({ groupName, type }) => ({ name: groupName, type }));
-  }
+  protected override typeIdentifiers(
+    tokens: Token[],
+  ): { name: string; type: string; problem?: string | null }[] {
+    const accessor = this.options.groups ? unusableExportName : () => null;
 
-  protected override unusableTypeName(name: string): string | null {
-    if (name === 'all') {
-      return 'is the `TokenNames.All` key, reserved for the union of every group';
-    }
-
-    return this.options.groups ? unusableExportName({ name, module: this.options.module }) : null;
+    return this.tokenGroups(tokens).map(({ groupName: name, type }) => ({
+      name,
+      type,
+      problem:
+        name === 'all'
+          ? 'is the `TokenNames.All` key, reserved for the union of every group'
+          : accessor(name),
+    }));
   }
 
   combinator(tokens: Token[]): string {

@@ -99,8 +99,12 @@ export class JavaScript extends Generator<JavaScriptOpts> {
       .join(EOL);
   }
 
-  protected override unusableTypeName(name: string): string | null {
-    return unusableExportName({ name, module: this.options.module });
+  protected override typeIdentifiers(
+    tokens: Token[],
+  ): { name: string; type: string; problem?: string | null }[] {
+    return super
+      .typeIdentifiers(tokens)
+      .map(({ name, type }) => ({ name, type, problem: unusableExportName(name) }));
   }
 
   combinator(tokens: Token[]): string {

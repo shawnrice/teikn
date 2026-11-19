@@ -166,16 +166,15 @@ export declare abstract class Generator<Opts extends GeneratorOptions = Generato
      */
     protected applyPluginPipeline(tokens: Token[], plugins: Plugin[]): Token[];
     /**
-     * The name this generator emits for each token type (a group accessor, a
-     * story export). Checked before any output: each must pass
-     * {@link unusableTypeName} and no two types may share one.
+     * The identifier this generator emits for each token type (a group accessor,
+     * a story export), with the \`problem\` that makes one unusable (\`is a reserved
+     * word\`). Checked before any output; no two types may share an identifier.
      */
-    protected typeNames(tokens: Token[]): {
+    protected typeIdentifiers(tokens: Token[]): {
         name: string;
         type: string;
+        problem?: string | null;
     }[];
-    /** Why a type's name cannot be emitted (\`is a reserved word\`), or \`null\`. */
-    protected unusableTypeName(_name: string): string | null;
     prepareTokens(tokens: Token[], plugins: Plugin[]): Token[];
     protected tokenGroups(tokens: Token[]): {
         groupName: string;
@@ -287,7 +286,11 @@ export declare class JavaScript extends Generator<JavaScriptOpts> {
     tokenUsage(token: Token): string | null;
     header(): string;
     generateToken(token: Token): string;
-    protected unusableTypeName(name: string): string | null;
+    protected typeIdentifiers(tokens: Token[]): {
+        name: string;
+        type: string;
+        problem?: string | null;
+    }[];
     combinator(tokens: Token[]): string;
 }
 
@@ -324,11 +327,11 @@ export declare class Scss extends Generator<ScssOpts> {
     combinator(tokens: Token[]): string;
     header(): string | null;
     footer(): string | null;
-    protected typeNames(tokens: Token[]): {
+    protected typeIdentifiers(tokens: Token[]): {
         name: string;
         type: string;
+        problem?: string | null;
     }[];
-    protected unusableTypeName(name: string): string | null;
     protected generateGroupBlocks(tokens: Token[]): string | null;
     generate(tokens: Token[], plugins?: Plugin[]): string;
 }
@@ -344,7 +347,6 @@ export declare class ScssVars extends Scss {
     describe(): GeneratorInfo | null;
     tokenUsage(token: Token): string | null;
     generateToken(token: Token): string;
-    protected unusableTypeName(name: string): string | null;
     combinator(tokens: Token[]): string;
     footer(): null;
     header(): string | null;
@@ -376,9 +378,10 @@ export declare class Storybook extends Generator<StorybookOpts> {
     generateToken(_: Token): string;
     private detectImportSource;
     private isTypeScript;
-    protected typeNames(tokens: Token[]): {
+    protected typeIdentifiers(tokens: Token[]): {
         name: string;
         type: string;
+        problem?: string | null;
     }[];
     combinator(tokens: Token[]): string;
 }
@@ -459,11 +462,11 @@ export declare class TypeScriptDeclarations extends Generator<TypeScriptDeclarat
     tokenUsage(token: Token): string | null;
     header(): string;
     generateToken(token: Token): string;
-    protected typeNames(tokens: Token[]): {
+    protected typeIdentifiers(tokens: Token[]): {
         name: string;
         type: string;
+        problem?: string | null;
     }[];
-    protected unusableTypeName(name: string): string | null;
     combinator(tokens: Token[]): string;
     footer(): string;
 }

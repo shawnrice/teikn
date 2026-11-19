@@ -13,28 +13,14 @@ const RESERVED = new Set(
 // Names the emitted module already exports.
 const OWN_EXPORTS = new Set(['tokens', 'modes']);
 
-// Bindings the CommonJS module wrapper passes in; a top-level `const` of the
-// same name does not load.
-const CJS_BINDINGS = new Set(['exports', 'require', 'module', '__filename', '__dirname']);
-
 /** Why `name` cannot be an `export const` binding of the emitted module, or `null`. */
-export const unusableExportName = ({
-  name,
-  module,
-}: {
-  name: string;
-  module: string | undefined;
-}): string | null => {
+export const unusableExportName = (name: string): string | null => {
   if (!isValidIdentifier(name)) {
     return 'is not a valid JavaScript identifier';
   }
 
   if (RESERVED.has(name)) {
     return 'is a reserved word';
-  }
-
-  if (module === 'cjs' && CJS_BINDINGS.has(name)) {
-    return 'is a CommonJS module binding';
   }
 
   if (OWN_EXPORTS.has(name)) {

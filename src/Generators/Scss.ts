@@ -113,15 +113,20 @@ export class Scss extends Generator<ScssOpts> {
     ].join(EOL);
   }
 
-  protected override typeNames(tokens: Token[]): { name: string; type: string }[] {
-    return super.typeNames(tokens).map(({ name, type }) => ({ name: kebabCase(name), type }));
-  }
+  protected override typeIdentifiers(
+    tokens: Token[],
+  ): { name: string; type: string; problem?: string | null }[] {
+    // `$token-values` and `get-token` are the footer's own; ScssVars has neither.
+    const taken = this.footer() ? ['token', 'get-token'] : [];
 
-  protected override unusableTypeName(name: string): string | null {
-    // `$token-values` and `get-token` are the module's own.
-    return ['token', 'get-token'].includes(name)
-      ? "collides with the module's own members"
-      : unusableSassFunction(name);
+    return super.typeIdentifiers(tokens).map(({ name: groupName, type }) => {
+      const name = kebabCase(groupName);
+      const problem = taken.includes(name)
+        ? "collides with the module's own members"
+        : unusableSassFunction(name);
+
+      return { name, type, problem };
+    });
   }
 
   protected generateGroupBlocks(tokens: Token[]): string | null {
