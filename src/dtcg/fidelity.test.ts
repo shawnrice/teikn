@@ -226,15 +226,21 @@ describe('4. shadow units and aliases', () => {
     expect(rt(doc).s.$value.color).toBe('{color.ink}');
   });
 
-  test('a dimension alias keeps the raw composite (no NaN)', () => {
+  test('a dimension alias keeps a plain composite (no NaN)', () => {
     const doc = shadowDoc({ blur: '{spacing.sm}' });
-    expect(first(doc).value).toEqual(doc.s.$value);
+    const { value } = first(doc);
+    expect(value).not.toBeInstanceOf(BoxShadow);
+    expect(value.blur).toBe('{spacing.sm}');
+    expect(String(value.offsetY)).toBe('0.5rem');
+    expect(value.color).toBeInstanceOf(Color);
     expect(rt(doc)).toEqual(doc);
   });
 
-  test('an alias element in a shadow array keeps the raw array', () => {
+  test('an alias element in a shadow array keeps a plain array', () => {
     const doc = { s: { $type: 'shadow', $value: ['{shadow.a}', shadowDoc().s.$value] } };
-    expect(first(doc).value).toEqual(doc.s.$value);
+    const { value } = first(doc);
+    expect(value[0]).toBe('{shadow.a}');
+    expect(String(value[1].blur)).toBe('1rem');
     expect(rt(doc)).toEqual(doc);
   });
 
@@ -322,7 +328,10 @@ describe('9. string values under structured types', () => {
       ...group('color', { c: '#ff0000' }),
     ]);
 
-    expect(doc.easing).toEqual({ std: { $value: [0.42, 0, 0.58, 1] }, $type: 'cubicBezier' });
+    expect(doc.easing).toEqual({
+      std: { $value: [0.42, 0, 0.58, 1], $extensions: { teikn: { type: 'easing' } } },
+      $type: 'cubicBezier',
+    });
     expect(doc.duration.a.$value).toEqual({ value: 0.2, unit: 's' });
     expect(doc.shadow.s.$value.blur).toEqual(px(2));
     expect(doc.shadow.s.$value.color).toEqual({ ...srgb(0, 0, 0), alpha: 0.2 });
@@ -429,8 +438,8 @@ describe('10. $type follows the value', () => {
     );
     expect(doc['line-height'].a).toMatchObject({ $value: px(24), $type: 'dimension' });
     expect(doc['line-height'].b).toMatchObject({ $value: px(24), $type: 'dimension' });
-    expect(doc['line-height'].c).toEqual({ $value: 1.5, $type: 'number' });
-    expect(doc['line-height'].d).toEqual({ $value: 1.5, $type: 'number' });
+    expect(doc['line-height'].c).toMatchObject({ $value: 1.5, $type: 'number' });
+    expect(doc['line-height'].d).toMatchObject({ $value: 1.5, $type: 'number' });
   });
 
   test('a type name with no DTCG equivalent emits no $type', () => {
@@ -453,11 +462,32 @@ describe('10. $type follows the value', () => {
     expect(tokens[1]!.value).toBeInstanceOf(Dimension);
   });
 
-  test('a plain composite keeps its DTCG type, and the recorded name, to stay serialisable', () => {
+  test('a composite under a teikn-only type name comes back as its class, with the name', () => {
     const doc = stable(group('motion', { fade: new Transition('100ms', 'ease') }));
     const [token] = parseDtcg(doc) as any[];
+    expect(token.value).toBeInstanceOf(Transition);
+    expect(token.type).toBe('motion');
+    expect(token.extensions).toBeUndefined();
+  });
+
+  test('a plain composite keeps its DTCG type, and the recorded name, to stay serialisable', () => {
+    // The explicit zero delay is something `Transition` would not re-emit.
+    const doc = {
+      fade: {
+        $type: 'transition',
+        $value: {
+          duration: { value: 100, unit: 'ms' },
+          delay: { value: 0, unit: 'ms' },
+          timingFunction: [0, 0, 1, 1],
+        },
+        $extensions: { teikn: { type: 'motion' } },
+      },
+    };
+    const [token] = parseDtcg(doc) as any[];
+    expect(token.value).not.toBeInstanceOf(Transition);
     expect(token.type).toBe('transition');
     expect(token.extensions).toEqual({ teikn: { type: 'motion' } });
+    expect(rt(doc)).toEqual(doc);
   });
 
   test('an alias under a teikn-only type name round-trips', () => {
@@ -518,10 +548,11 @@ describe('11. __proto__ path segments', () => {
       '{"__proto__":{"x":{"$value":1},"$type":"number"},' +
         '"constructor":{"prototype":{"y":{"$value":2}},"$type":"number"}}',
     );
-    expect(parseDtcg(JSON.parse(json)).map(t => t.name)).toEqual([
-      '__proto__.x',
-      'constructor.prototype.y',
+    expect(parseDtcg(JSON.parse(json)).map(t => [t.group, t.name])).toEqual([
+      ['__proto__', 'x'],
+      ['constructor', 'prototype-y'],
     ]);
+    expect(JSON.stringify(serializeDtcg(parseDtcg(JSON.parse(json))))).toBe(json);
   });
 
   test('flat output and mode names are safe too', () => {
@@ -560,14 +591,15 @@ describe('12. custom separator', () => {
     shade: { $type: 'shadow', $value: shadowDoc({ color: '{color.b}' }).s.$value },
   };
 
-  test('alias paths are rewritten to the separator, everywhere', () => {
+  test('alias paths are rewritten to the token keys, everywhere', () => {
     const tokens = parseDtcg(doc, { separator: '-' });
     const byName = Object.fromEntries(tokens.map(t => [t.name, t])) as Record<string, any>;
 
-    expect(byName['color-b'].value).toBe('{color-a}');
-    expect(byName['color-b'].modes.dark).toBe('{color-a}');
-    expect(byName.edge.value.color).toBe('{color-a}');
-    expect(byName.shade.value.color).toBe('{color-b}');
+    expect(byName.b.group).toBe('color');
+    expect(byName.b.value).toBe('{color.a}');
+    expect(byName.b.modes.dark).toBe('{color.a}');
+    expect(byName.edge.value.color).toBe('{color.a}');
+    expect(byName.shade.value.color).toBe('{color.b}');
     expect(() => resolveReferences(tokens)).not.toThrow();
     expect(String(resolveReferences(tokens)[1]!.value)).toBe('rgb(255, 0, 0)');
   });
@@ -677,7 +709,10 @@ describe('14. structure preserved through DTCG → teikn → DTCG', () => {
 
   test('group metadata does not disturb the token list', () => {
     const tokens = parseDtcg({ g: { $description: 'x', a: { $type: 'number', $value: 1 } } });
-    expect(tokens).toEqual([{ name: 'g.a', value: 1, type: 'number' }]);
+    expect(tokens.map(token => ({ ...token }))).toMatchObject([
+      { group: 'g', name: 'a', value: 1, type: 'number' },
+    ]);
+    expect(Object.keys(tokens[0]!)).toEqual(['group', 'name', 'value', 'type']);
     expect(Object.keys(tokens)).toEqual(['0']);
   });
 
@@ -693,10 +728,10 @@ describe('14. structure preserved through DTCG → teikn → DTCG', () => {
       },
     };
     const tokens = parseDtcg(doc);
-    expect(tokens.map(t => t.name)).toEqual([
-      'color.accent.$root',
-      'color.accent.light',
-      'color.accent.link',
+    expect(tokens.map(t => `${t.group}.${t.name}`)).toEqual([
+      'color.accent-$root',
+      'color.accent-light',
+      'color.accent-link',
     ]);
     expect(tokens[0]!.value).toBeInstanceOf(Color);
     expect(resolveReferences(tokens)[2]!.value).toBe(tokens[0]!.value);

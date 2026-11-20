@@ -3,6 +3,7 @@ import { describe, expect, test } from 'bun:test';
 import { group } from './builders.js';
 import { resolveReferences } from './resolve.js';
 import type { Token } from './Token.js';
+import { Border } from './TokenTypes/Border.js';
 import { Color } from './TokenTypes/Color/index.js';
 import { validate } from './validate.js';
 
@@ -396,5 +397,55 @@ describe('validate: cycles follow the mode being resolved', () => {
         { name: 'b', type: 'color', value: '#fff', modes: { dark: '{a}' } },
       ]),
     ).toBe(true);
+  });
+});
+
+describe('validate: wrapper field resolving to the wrong type', () => {
+  const tokens = (card: Token['value'], modes?: Token['modes']): Token[] => [
+    { name: 'gap', type: 'spacing', group: 'spacing', value: '4px' },
+    { name: 'ink', type: 'color', group: 'color', value: '#000' },
+    { name: 'card', type: 'border', group: 'border', value: card, ...(modes ? { modes } : {}) },
+  ];
+  const border = (color: string) => new Border({ width: '1px', style: 'solid', color });
+
+  test('reports a color field that points at a dimension', () => {
+    const result = validate(tokens(border('{gap}')));
+
+    expect(result.valid).toBe(false);
+    expect(result.issues).toEqual([
+      {
+        severity: 'error',
+        token: 'card',
+        message: expect.stringMatching(/field "color" \(\{gap\}\).*Cannot extract color/s),
+      },
+    ]);
+  });
+
+  test('reports the same problem in a mode value', () => {
+    const result = validate(tokens(border('{ink}'), { dark: border('{gap}') }));
+
+    expect(result.issues).toHaveLength(1);
+    expect(result.issues[0]!.message).toMatch(/^\[mode "dark"\] .*field "color"/s);
+  });
+
+  test('accepts a field ref to a token of the right type', () => {
+    expect(validate(tokens(border('{ink}'))).issues).toEqual([]);
+  });
+
+  test('agrees with resolveReferences on whether the set resolves', () => {
+    for (const color of ['{gap}', '{ink}']) {
+      const set = tokens(border(color));
+      const resolves = (() => {
+        try {
+          resolveReferences(set);
+
+          return true;
+        } catch {
+          return false;
+        }
+      })();
+
+      expect(validate(set).valid).toBe(resolves);
+    }
   });
 });

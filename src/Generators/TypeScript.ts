@@ -79,6 +79,10 @@ export class TypeScript extends Generator<TypeScriptOpts> {
     return { format: 'TypeScript (runtime + declarations)', usage: js.usage };
   }
 
+  override tokenUsage(token: Token): string | null {
+    return this.#javascript.tokenUsage(token);
+  }
+
   // oxlint-disable-next-line class-methods-use-this
   generateToken(): string {
     return '';

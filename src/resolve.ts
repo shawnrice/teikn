@@ -85,7 +85,20 @@ const createResolver = (tokenMap: Map<string, Token>, tokenKeys: KeyAliasIndex) 
         resolved[k] = resolveValue({ value: v, seen, currentName, mode });
       }
 
-      return value.__teikn_fromFields__(resolved);
+      try {
+        return value.__teikn_fromFields__(resolved);
+      } catch (cause) {
+        const refs = Object.entries(fields)
+          .filter(([, v]) => isRef(v))
+          .map(([k, v]) => `field "${k}" (${v})`);
+        const where = refs.length > 0 ? refs.join(', ') : 'a field reference';
+        const { message } = cause as Error;
+
+        throw new Error(
+          `Token "${currentName}": ${value.constructor.name} cannot use the value ${where} resolves to: ${message}`,
+          { cause },
+        );
+      }
     }
 
     if (!isRef(value)) {
@@ -185,12 +198,17 @@ const createResolver = (tokenMap: Map<string, Token>, tokenKeys: KeyAliasIndex) 
   return { resolveValue, resolveModes };
 };
 
+/** What a seed resolved to, or why it did not (a circular or dangling reference). */
+export type SeedResolution =
+  | { value: unknown; error?: undefined }
+  | { value?: undefined; error: string };
+
 /**
  * Build a single-value resolver bound to a token set: `(value, tokenName, mode?)
- * => resolved`. Follows `{ref}` references through the set and throws on a
- * circular or dangling reference, seeding the cycle guard with `tokenName`.
- * With `mode`, each referenced token contributes its value for that mode when
- * it has one.
+ * => { value } | { error }`. Follows `{ref}` references through the set and
+ * reports a circular or dangling reference as `error` rather than throwing,
+ * seeding the cycle guard with `tokenName`. With `mode`, each referenced token
+ * contributes its value for that mode when it has one.
  *
  * Used by expand plugins to resolve a seed value (e.g. a palette base color)
  * to a concrete value before the full {@link resolveReferences} pass runs over
@@ -199,7 +217,7 @@ const createResolver = (tokenMap: Map<string, Token>, tokenKeys: KeyAliasIndex) 
  */
 export const createSeedResolver = (
   tokens: Token[],
-): ((value: unknown, tokenName: string, mode?: string) => unknown) => {
+): ((value: unknown, tokenName: string, mode?: string) => SeedResolution) => {
   const tokenMap = new Map<string, Token>();
 
   for (const token of tokens) {
@@ -212,8 +230,17 @@ export const createSeedResolver = (
 
   const { resolveValue } = createResolver(tokenMap, buildKeyAliasIndex([...tokenMap.keys()]));
 
-  return (value, tokenName, mode) =>
-    resolveValue({ value, seen: new Set([tokenName]), currentName: tokenName, mode });
+  // The one place a failed resolution is caught: every caller wants to branch
+  // on it, and the recursion and the value constructors beneath it throw.
+  return (value, tokenName, mode) => {
+    try {
+      return {
+        value: resolveValue({ value, seen: new Set([tokenName]), currentName: tokenName, mode }),
+      };
+    } catch (error) {
+      return { error: (error as Error).message };
+    }
+  };
 };
 
 /**

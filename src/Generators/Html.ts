@@ -44,21 +44,7 @@ const vizClassForKind = (kind: PreviewKind): string => gridClassByKind[kind] ?? 
 const escapeHtml = (str: string): string =>
   str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
-const toColor = (value: TokenValue | CompositeValue): Color | null => {
-  if (value instanceof Color) {
-    return value;
-  }
-
-  if (typeof value === 'string') {
-    try {
-      return new Color(value);
-    } catch {
-      return null;
-    }
-  }
-
-  return null;
-};
+const toColor = (value: TokenValue | CompositeValue): Color | null => Color.tryParse(value);
 
 const valueToString = (value: TokenValue | CompositeValue): string => {
   if (isFirstClassValue(value)) {
@@ -268,8 +254,25 @@ const borderFields = (value: TokenValue | CompositeValue): [string, string][] =>
 const slugify = (str: string): string =>
   str
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/[^\p{L}\p{N}]+/gu, '-')
     .replace(/^-|-$/g, '');
+
+// One unique, non-empty section id per type: distinct types can share a slug
+// (`Font Size` / `font-size`) or have none at all (emoji-only).
+const sectionIds = (types: string[]): Map<string, string> => {
+  const taken = new Set<string>();
+
+  return new Map(
+    types.map(type => {
+      const base = `section-${slugify(type) || 'type'}`;
+      const candidates = [base, ...types.map((_, i) => `${base}-${i + 2}`)];
+      const id = candidates.find(candidate => !taken.has(candidate))!;
+      taken.add(id);
+
+      return [type, id];
+    }),
+  );
+};
 
 // ─── CSS ─────────────────────────────────────────────────────
 
@@ -1240,8 +1243,15 @@ export class Html extends Generator<HtmlOpts> {
     ].join(EOL);
   }
 
-  private renderSection(type: string, tokens: Token[]): string {
-    const id = slugify(type);
+  private renderSection({
+    id,
+    tokens,
+    type,
+  }: {
+    id: string;
+    tokens: Token[];
+    type: string;
+  }): string {
     const rows = tokens.map(t => this.generateToken(t));
     // All tokens in a section share a type (and preview), so the first is
     // representative of how the whole section should be pictured.
@@ -1268,7 +1278,7 @@ export class Html extends Generator<HtmlOpts> {
     const vizWrapClass = isZLayer ? 'zlayer-stack' : vizClassForKind(kind);
 
     return [
-      `<section id="section-${id}">`,
+      `<section id="${id}">`,
       `<h2>${escapeHtml(type)}</h2>`,
       vizs.length
         ? `<div class="token-visualizations ${vizWrapClass}">${EOL}${vizs.join(EOL)}${EOL}</div>`
@@ -1291,7 +1301,7 @@ export class Html extends Generator<HtmlOpts> {
       .map(g => {
         const info = g.describe();
 
-        return info ? { ...info, file: g.file } : null;
+        return info ? { ...info, file: g.filenames().join(' + ') } : null;
       })
       .filter((info): info is { format: string; usage: string; file: string } => info !== null);
 
@@ -1323,12 +1333,13 @@ export class Html extends Generator<HtmlOpts> {
   combinator(tokens: Token[]): string {
     const groups = groupTokens(tokens);
     const types = [...groups.keys()];
+    const ids = sectionIds(types);
 
     const hasGettingStarted = this.siblings.some(g => g !== this && g.describe() !== null);
 
     const tocItems = [
       hasGettingStarted ? `<li><a href="#getting-started">Getting Started</a></li>` : '',
-      ...types.map(type => `<li><a href="#section-${slugify(type)}">${escapeHtml(type)}</a></li>`),
+      ...types.map(type => `<li><a href="#${ids.get(type)!}">${escapeHtml(type)}</a></li>`),
     ]
       .filter(Boolean)
       .join(EOL);
@@ -1343,7 +1354,9 @@ export class Html extends Generator<HtmlOpts> {
     ].join(EOL);
 
     const gettingStarted = this.renderGettingStarted();
-    const sections = types.map(type => this.renderSection(type, groups.get(type)!));
+    const sections = types.map(type =>
+      this.renderSection({ id: ids.get(type)!, tokens: groups.get(type)!, type }),
+    );
 
     return [toc, `<main class="content">`, gettingStarted, sections.join(EOL), `</main>`]
       .filter(Boolean)

@@ -9,11 +9,8 @@ const DIMENSION_RE = /^(-?\d+(?:\.\d+)?)(px|rem|em|pt)$/;
 
 const toPx = (value: unknown, basePx: number): number | null => {
   if (value instanceof Dimension) {
-    try {
-      return value.toPx(basePx).value;
-    } catch {
-      return null;
-    }
+    // A unit with no fixed size (e.g. `vw`) has no px value.
+    return value.isConvertibleTo('px') ? value.toPx(basePx).value : null;
   }
 
   if (typeof value === 'number') {

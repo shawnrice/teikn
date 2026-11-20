@@ -126,25 +126,24 @@ const parseFunction = ({ name, args }: { name: string; args: string }): ParsedCo
   return { space, data: data as unknown as SpaceData[Space], alpha };
 };
 
-export const parseColorString = (c: string): ParsedColor => {
+/** The color a CSS string holds, or `null` when it holds none. */
+export const tryParseColorString = (c: string): ParsedColor | null => {
   const trimmed = c.trim();
 
   // xkcd named colors (e.g. "xkcd:seafoam", "xkcd:electric purple")
   if (trimmed.toLowerCase().startsWith('xkcd:')) {
     const name = trimmed.slice(5).toLowerCase();
 
-    if (Object.hasOwn(xkcdColors, name)) {
-      return parseColorString(xkcdColors[name as keyof typeof xkcdColors]);
-    }
-
-    throw new Error(`Unknown xkcd color "${name}"`);
+    return Object.hasOwn(xkcdColors, name)
+      ? tryParseColorString(xkcdColors[name as keyof typeof xkcdColors])
+      : null;
   }
 
   // CSS named colors → resolve to their hex value and re-parse
   if (Object.hasOwn(namedColors, trimmed.toLowerCase())) {
     const resolved: string = namedColors[trimmed.toLowerCase() as keyof typeof namedColors];
 
-    return parseColorString(resolved);
+    return tryParseColorString(resolved);
   }
 
   // Hex
@@ -156,10 +155,21 @@ export const parseColorString = (c: string): ParsedColor => {
 
   // Functional notation: rgb(a), hsl(a), lab, lch, oklab, oklch, xyz
   const fn = trimmed.match(functionRegex);
-  const parsed = fn ? parseFunction({ name: fn[1]!, args: fn[2]! }) : null;
+
+  return fn ? parseFunction({ name: fn[1]!, args: fn[2]! }) : null;
+};
+
+export const parseColorString = (c: string): ParsedColor => {
+  const parsed = tryParseColorString(c);
 
   if (!parsed) {
-    throw new Error(`Cannot extract color from "${c}"`);
+    const name = c.trim().toLowerCase();
+
+    throw new Error(
+      name.startsWith('xkcd:')
+        ? `Unknown xkcd color "${name.slice(5)}"`
+        : `Cannot extract color from "${c}"`,
+    );
   }
 
   return parsed;

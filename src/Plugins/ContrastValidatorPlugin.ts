@@ -30,6 +30,17 @@ export class ContrastValidatorPlugin extends Plugin<ContrastValidatorPluginOptio
   tokenType: string = 'color';
   outputType: RegExp = /.*/;
 
+  constructor(options: ContrastValidatorPluginOptions) {
+    super(options);
+
+    if (!Array.isArray(options?.pairs)) {
+      throw new Error(
+        'ContrastValidatorPlugin: `pairs` is required, e.g. ' +
+          '{ pairs: [{ foreground: "text", background: "surface" }] }',
+      );
+    }
+  }
+
   override audit(tokens: Token[]): AuditIssue[] {
     const { pairs, minRatio } = this.options;
 
@@ -67,27 +78,10 @@ export class ContrastValidatorPlugin extends Plugin<ContrastValidatorPluginOptio
         return [ambiguous('Background', background, bgFound)];
       }
 
-      try {
-        const fgColor =
-          fgToken.value instanceof Color ? fgToken.value : new Color(fgToken.value as string);
-        const bgColor =
-          bgToken.value instanceof Color ? bgToken.value : new Color(bgToken.value as string);
-        const ratio = fgColor.contrastRatio(bgColor);
-        const threshold = minRatio ?? WCAG_THRESHOLDS[level];
-        const rounded = Math.round(ratio * 100) / 100;
+      const fgColor = Color.tryParse(fgToken.value);
+      const bgColor = Color.tryParse(bgToken.value);
 
-        if (ratio < threshold) {
-          return [
-            {
-              severity: 'warning' as const,
-              token: foreground,
-              message: `Contrast ratio ${rounded}:1 between "${foreground}" and "${background}" is below WCAG ${level} threshold of ${threshold}:1`,
-            },
-          ];
-        }
-
-        return [];
-      } catch {
+      if (!fgColor || !bgColor) {
         return [
           {
             severity: 'warning' as const,
@@ -96,6 +90,20 @@ export class ContrastValidatorPlugin extends Plugin<ContrastValidatorPluginOptio
           },
         ];
       }
+
+      const ratio = fgColor.contrastRatio(bgColor);
+      const threshold = minRatio ?? WCAG_THRESHOLDS[level];
+      const rounded = Math.round(ratio * 100) / 100;
+
+      return ratio < threshold
+        ? [
+            {
+              severity: 'warning' as const,
+              token: foreground,
+              message: `Contrast ratio ${rounded}:1 between "${foreground}" and "${background}" is below WCAG ${level} threshold of ${threshold}:1`,
+            },
+          ]
+        : [];
     });
   }
 }

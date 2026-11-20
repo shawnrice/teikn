@@ -75,7 +75,35 @@ const componentByKind: Record<PreviewKind, ComponentMapping> = {
 const classifyGroup = (members: Token[]): ComponentMapping =>
   componentByKind[resolvePreviewKind(members[0]!)];
 
-const toStoryName = (type: string): string => camelCase(type).replace(/^./, c => c.toUpperCase());
+// Names a stories file already binds: its imports and the `Story` type alias.
+const TAKEN_STORY_NAMES = new Set([
+  ...Object.values(componentByKind).map(({ component }) => component),
+  'TokenStory',
+  'TokenGrid',
+  'TokenList',
+  'ModeTable',
+  'Meta',
+  'StoryObj',
+  'Story',
+]);
+
+// camelCase keeps any Unicode letter or number, but not all of those may
+// appear in an identifier (`²`), and the result may be empty (emoji-only) or
+// start with a digit.
+const toIdentifier = (type: string): string => {
+  const base = camelCase(type).replace(/[^\p{ID_Continue}]/gu, '');
+
+  return /^\p{ID_Start}/u.test(base) ? base : `type${base}`;
+};
+
+const toStoryName = (type: string): string => {
+  const name = toIdentifier(type).replace(/^./, c => c.toUpperCase());
+
+  return TAKEN_STORY_NAMES.has(name) ? `${name}Tokens` : name;
+};
+
+const toKeysVarName = (type: string): string =>
+  `${toStoryName(type).replace(/^./, c => c.toLowerCase())}Keys`;
 
 // ─── Story render builder ───────────────────────────────────
 
@@ -199,6 +227,13 @@ export class Storybook extends Generator<StorybookOpts> {
     return /\.tsx?$/.test(this.options.ext);
   }
 
+  // oxlint-disable-next-line class-methods-use-this
+  protected override typeIdentifiers(
+    tokens: Token[],
+  ): { name: string; type: string; problem?: string | null }[] {
+    return [...groupTokens(tokens).keys()].map(type => ({ name: toStoryName(type), type }));
+  }
+
   combinator(tokens: Token[]): string {
     const { nameTransformer, storyTitle, darkMode } = this.options;
     const ts = this.isTypeScript();
@@ -239,7 +274,7 @@ export class Storybook extends Generator<StorybookOpts> {
 
     // Key arrays per type
     for (const [type, typeTokens] of groups) {
-      const varName = `${camelCase(type)}Keys`;
+      const varName = toKeysVarName(type);
       const keys = typeTokens.map(t => quoteString(nameTransformer!(t.name))).join(', ');
       lines.push(`const ${varName} = [${keys}]${ts ? ' as const' : ''};`);
     }
@@ -290,7 +325,7 @@ export class Storybook extends Generator<StorybookOpts> {
 
     for (const [type, typeTokens] of groups) {
       const storyName = toStoryName(type);
-      const keysVarName = `${camelCase(type)}Keys`;
+      const keysVarName = toKeysVarName(type);
       const mapping = classifyGroup(typeTokens);
       const typeModes =
         hasModes && typeTokens.some(t => t.modes && Object.keys(t.modes).length > 0);

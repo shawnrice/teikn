@@ -22,10 +22,31 @@ const noRef = () => null;
 describe('cssMapValue', () => {
   test('wraps a value with top-level commas so the SCSS map stays valid', () => {
     // A stringified typography / font stack — top-level commas must be parenthesized.
-    expect(cssMapValue('400 1rem/1.5 Inter, system-ui, sans-serif')).toBe(
-      '(400 1rem/1.5 Inter, system-ui, sans-serif)',
+    expect(cssMapValue('400 1rem 1.5 Inter, system-ui, sans-serif')).toBe(
+      '(400 1rem 1.5 Inter, system-ui, sans-serif)',
     );
     expect(cssMapValue('Arial, sans-serif')).toBe('(Arial, sans-serif)');
+  });
+
+  test('interpolates a value with a slash Sass would act on, commas included', () => {
+    expect(cssMapValue('400 1rem/1.5 Inter, system-ui, sans-serif')).toBe(
+      "#{'400 1rem/1.5 Inter, system-ui, sans-serif'}",
+    );
+    expect(cssMapValue('16/9')).toBe("#{'16/9'}");
+    expect(cssMapValue("1 / 2 'it''s'")).toBe("#{'1 / 2 \\'it\\'\\'s\\''}");
+  });
+
+  test('leaves a slash alone where Sass keeps it', () => {
+    for (const value of [
+      '"a/b"',
+      "'a/b'",
+      'url(a/b.png)',
+      'rgb(0 0 0 / 50%)',
+      'linear-gradient(90deg, oklch(60% 0.15 250 / 0.5) 0%, #fff 100%)',
+      '#{$a}/2',
+    ]) {
+      expect(cssMapValue(value)).toBe(value);
+    }
   });
 
   test('leaves commas inside function syntax alone', () => {

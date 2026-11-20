@@ -1,3 +1,4 @@
+import { createSeedResolver } from './resolve.js';
 import type { KeyAliasIndex } from './token-keys.js';
 import { ambiguousKeyMessage, buildKeyAliasIndex, resolveKey, tokenKey } from './token-keys.js';
 import type { CompositeValue, Token } from './Token.js';
@@ -32,16 +33,6 @@ const TYPOGRAPHY_FIELDS = new Set([
 const BORDER_FIELDS = new Set(['width', 'style', 'color']);
 const SHADOW_FIELDS = new Set(['color', 'offsetX', 'offsetY', 'blur', 'spread']);
 const TRANSITION_FIELDS = new Set(['duration', 'timingFunction']);
-
-const tryParseColor = (value: string): boolean => {
-  try {
-    new Color(value);
-
-    return true;
-  } catch {
-    return false;
-  }
-};
 
 const validateCompositeShape = (type: string, value: CompositeValue): string | null => {
   const keys = new Set(Object.keys(value));
@@ -114,7 +105,7 @@ const validateValue = (
     COLOR_TYPES.has(token.type) &&
     typeof value === 'string' &&
     !isRef(value) &&
-    !tryParseColor(value)
+    !Color.tryParse(value)
   ) {
     issue('warning', token.name, `${label}Color value "${value}" could not be parsed`);
   }
@@ -172,6 +163,35 @@ const validateValue = (
   };
 
   checkRefs('', value);
+};
+
+type CheckResolvesArgs = {
+  tokens: Token[];
+  modeNames: string[];
+  issue: (severity: ValidationSeverity, tokenName: string, message: string) => void;
+};
+
+// A reference can exist and still not fit where it is used (a wrapper's color
+// field pointing at a dimension). Only resolving shows that, and only once
+// every reference is known to resolve.
+const checkResolves = ({ tokens, modeNames, issue }: CheckResolvesArgs): void => {
+  const resolve = createSeedResolver(tokens);
+
+  for (const token of tokens) {
+    for (const mode of [undefined, ...modeNames]) {
+      const own =
+        mode !== undefined && token.modes && Object.hasOwn(token.modes, mode)
+          ? token.modes[mode]
+          : undefined;
+
+      const { error } = resolve(own ?? token.value, tokenKey(token), mode);
+
+      if (error !== undefined) {
+        issue('error', token.name, `${mode === undefined ? '' : `[mode "${mode}"] `}${error}`);
+        break;
+      }
+    }
+  }
 };
 
 /**
@@ -371,6 +391,10 @@ export const validate = (tokens: Token[]): ValidationResult => {
         break;
       }
     }
+  }
+
+  if (issues.every(i => i.severity !== 'error')) {
+    checkResolves({ tokens, modeNames, issue });
   }
 
   return { valid: issues.filter(i => i.severity === 'error').length === 0, issues };

@@ -367,6 +367,37 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
 
       seen.set(emitted, source);
     });
+
+    const types = new Map<string, string>();
+
+    for (const { name, type, problem } of this.typeIdentifiers(transformed)) {
+      const prior = types.get(name);
+      const reason =
+        problem ??
+        (prior === undefined ? null : `token type ${JSON.stringify(prior)} already uses`);
+
+      if (reason) {
+        throw new Error(
+          `${this.constructor.name}: token type ${JSON.stringify(type)} produces the name ` +
+            `\`${name}\`, which ${reason}. Rename the type.`,
+        );
+      }
+
+      types.set(name, type);
+    }
+  }
+
+  /**
+   * The identifier this generator emits for each token type (a group accessor,
+   * a story export), with the `problem` that makes one unusable (`is a reserved
+   * word`). Checked before any output; no two types may share an identifier.
+   */
+  protected typeIdentifiers(
+    tokens: Token[],
+  ): { name: string; type: string; problem?: string | null }[] {
+    return this.options.groups
+      ? this.tokenGroups(tokens).map(({ groupName, type }) => ({ name: groupName, type }))
+      : [];
   }
 
   prepareTokens(tokens: Token[], plugins: Plugin[]): Token[] {
@@ -377,7 +408,7 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
 
   protected tokenGroups(
     tokens: Token[],
-  ): { groupName: string; entries: { shortName: string; token: Token }[] }[] {
+  ): { groupName: string; type: string; entries: { shortName: string; token: Token }[] }[] {
     const map = new Map<string, { shortName: string; token: Token }[]>();
 
     for (const token of tokens) {
@@ -388,7 +419,11 @@ export abstract class Generator<Opts extends GeneratorOptions = GeneratorOptions
       ]);
     }
 
-    return [...map.entries()].map(([type, entries]) => ({ groupName: camelCase(type), entries }));
+    return [...map.entries()].map(([type, entries]) => ({
+      groupName: camelCase(type),
+      type,
+      entries,
+    }));
   }
 
   tokenUsage(_: Token): string | null {

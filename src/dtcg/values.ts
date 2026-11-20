@@ -10,6 +10,7 @@ import { GradientList, LinearGradient, RadialGradient } from '../TokenTypes/Grad
 import { Transition, TransitionList } from '../TokenTypes/Transition.js';
 import type { TransitionInput } from '../TokenTypes/Transition.js';
 import { Typography } from '../TokenTypes/Typography.js';
+import { isFirstClassValue } from '../type-classifiers.js';
 import type {
   DtcgColorValue,
   DtcgCubicBezierValue,
@@ -120,15 +121,18 @@ const teiknToDtcgMap: Record<string, string> = {
   'font-style': 'fontStyle',
 };
 
-export const dtcgTypeToTeikn = (type: string): string => dtcgToTeiknMap[type] ?? type;
+// Own-property lookups: a `$type` of `constructor` is just an unknown name.
+export const dtcgTypeToTeikn = (type: string): string =>
+  Object.hasOwn(dtcgToTeiknMap, type) ? dtcgToTeiknMap[type]! : type;
 
-export const teiknTypeToDtcg = (type: string): string => teiknToDtcgMap[type] ?? type;
+export const teiknTypeToDtcg = (type: string): string =>
+  Object.hasOwn(teiknToDtcgMap, type) ? teiknToDtcgMap[type]! : type;
 
 const dtcgTypeNames: ReadonlySet<string> = new Set(Object.values(DtcgTypes));
 
 // The DTCG type a teikn type *name* implies, or undefined when it has none.
-const namedDtcgType = (type: string): string | undefined => {
-  const mapped = Object.hasOwn(teiknToDtcgMap, type) ? teiknToDtcgMap[type]! : type;
+export const namedDtcgType = (type: string): string | undefined => {
+  const mapped = teiknTypeToDtcg(type);
 
   return dtcgTypeNames.has(mapped) ? mapped : undefined;
 };
@@ -168,7 +172,10 @@ const stringParsers: Record<string, (str: string) => unknown> = {
 };
 
 const parseCssString = (str: string, dtcgType: string | undefined): unknown => {
-  const parser = dtcgType === undefined ? undefined : stringParsers[dtcgType];
+  const parser =
+    dtcgType !== undefined && Object.hasOwn(stringParsers, dtcgType)
+      ? stringParsers[dtcgType]
+      : undefined;
 
   if (!parser || str.trim() === '') {
     return null;
@@ -419,12 +426,20 @@ const fontFamilyToTeikn = (value: string | string[]): string =>
 
 // ─── Composite field converter ───────────────────────────────
 
-const convertCompositeField = (val: unknown): unknown => {
-  if (isAlias(val)) {
+// The DTCG shapes that mean one thing whatever the `$type` says: `{value,
+// unit}` and `{colorSpace, components}`, at any depth, and four numbers in a
+// field. This is what recovers the values of a token serialized with no
+// `$type`. Strings are never touched.
+const shapeToTeikn = (val: unknown): unknown => {
+  if (Array.isArray(val)) {
+    return val.map(shapeToTeikn);
+  }
+
+  if (!isPlainObject(val)) {
     return val;
   }
 
-  if (isDtcgDimension(val)) {
+  if (isDtcgDimension(val) && Object.keys(val).length === 2) {
     return isDurationUnit(String(val.unit)) ? durationToTeikn(val) : dimensionToTeikn(val);
   }
 
@@ -432,8 +447,16 @@ const convertCompositeField = (val: unknown): unknown => {
     return colorToTeikn(val);
   }
 
-  return isDtcgCubicBezier(val) ? cubicBezierToTeikn(val) : val;
+  return Object.fromEntries(
+    Object.entries(val).map(([key, field]) => [
+      key,
+      isDtcgCubicBezier(field) ? cubicBezierToTeikn(field) : shapeToTeikn(field),
+    ]),
+  );
 };
+
+const convertCompositeField = (val: unknown): unknown =>
+  isDtcgCubicBezier(val) ? cubicBezierToTeikn(val) : shapeToTeikn(val);
 
 // Only ever runs on an object: a string here (older-draft or hand-written
 // input) is parsed when a constructor accepts it and otherwise left untouched.
@@ -477,11 +500,7 @@ const transitionsToTeikn = (value: unknown): unknown => {
   );
 };
 
-export const dtcgValueToTeikn = (value: DtcgValue, type: string): any => {
-  if (isAlias(value)) {
-    return value;
-  }
-
+const typedValueToTeikn = (value: DtcgValue, type: string): any => {
   switch (type) {
     case DtcgTypes.color:
       return colorToTeikn(value);
@@ -818,6 +837,24 @@ const convertInstance = (value: unknown, refMap?: DtcgRefMap): DtcgConverted | n
 
 const untyped = (value: unknown): DtcgConverted => ({ value: value as DtcgValue });
 
+// First-class values nested in arrays and objects (a list of dimensions, a
+// border's `style.dashArray`), which have no DTCG type of their own.
+const convertNested = (value: unknown): unknown => {
+  if (Array.isArray(value)) {
+    return value.map(convertNested);
+  }
+
+  const instance = convertInstance(value);
+
+  if (instance !== null) {
+    return instance.value;
+  }
+
+  return isPlainObject(value)
+    ? Object.fromEntries(Object.entries(value).map(([key, val]) => [key, convertNested(val)]))
+    : value;
+};
+
 // A string or number authored under a DTCG type. When the value cannot be
 // expressed as that type (`currentColor`, `calc(…)`), it is emitted as-is with
 // no `$type` rather than as an invalid structured token.
@@ -913,7 +950,7 @@ const convertComposite = (
     }
 
     if (typeof val !== 'string' && typeof val !== 'number') {
-      return [key, val];
+      return [key, convertNested(val)];
     }
 
     const fieldType = fieldTypes && Object.hasOwn(fieldTypes, key) ? fieldTypes[key] : undefined;
@@ -934,7 +971,8 @@ const convertComposite = (
       return [key, val];
     }
 
-    return [key, parseDimension(val) ?? parseDuration(val) ?? val];
+    // Under a type teikn does not own, a string is left as the string it is.
+    return [key, dtcgType === undefined ? val : (parseDimension(val) ?? parseDuration(val) ?? val)];
   });
 
   const result = Object.fromEntries(fields) as DtcgValue;
@@ -964,8 +1002,15 @@ export const teiknToDtcg = (value: unknown, type: string, refMap?: DtcgRefMap): 
 
   // A raw DTCG value kept by the parser (an unrepresentable color space, a
   // shadow or gradient holding aliases) goes back out untouched.
-  if (isDtcgColor(value) || Array.isArray(value)) {
+  if (isDtcgColor(value)) {
     return dtcgType ? { value: value as DtcgValue, type: dtcgType } : untyped(value);
+  }
+
+  // A list of first-class values is not a value of the token's type.
+  if (Array.isArray(value)) {
+    return dtcgType && !value.some(isFirstClassValue)
+      ? { value: convertNested(value) as DtcgValue, type: dtcgType }
+      : untyped(convertNested(value));
   }
 
   return isPlainObject(value) ? convertComposite(value, dtcgType) : untyped(value);
@@ -973,3 +1018,50 @@ export const teiknToDtcg = (value: unknown, type: string, refMap?: DtcgRefMap): 
 
 export const teiknValueToDtcg = (value: any, type: string, refMap?: DtcgRefMap): DtcgValue =>
   teiknToDtcg(value, type, refMap).value;
+
+// ─── Dtcg → teikn, whole value ──────────────────────────────
+
+const sameDtcg = (a: unknown, b: unknown): boolean => {
+  if (Array.isArray(a) && Array.isArray(b)) {
+    return a.length === b.length && a.every((item, i) => sameDtcg(item, b[i]));
+  }
+
+  if (!isPlainObject(a) || !isPlainObject(b)) {
+    return a === b;
+  }
+
+  const keys = Object.keys(a);
+
+  return (
+    keys.length === Object.keys(b).length &&
+    keys.every(key => Object.hasOwn(b, key) && sameDtcg(a[key], b[key]))
+  );
+};
+
+// The classes of the DTCG composites that have one.
+const wrappers: Record<string, (fields: any) => unknown> = {
+  [DtcgTypes.border]: fields => new Border(fields),
+  [DtcgTypes.typography]: fields => new Typography(fields),
+  [DtcgTypes.transition]: fields => new Transition(fields),
+};
+
+// A composite becomes its class only when that loses nothing: the instance has
+// to serialize back to the very value it was read from.
+const wrapComposite = (fields: unknown, type: string, value: DtcgValue): unknown => {
+  const wrap = isPlainObject(fields) && Object.hasOwn(wrappers, type) ? wrappers[type] : undefined;
+  const wrapped = wrap ? tryMake(() => wrap(fields)) : null;
+
+  return wrapped !== null && sameDtcg(convertInstance(wrapped)?.value, value) ? wrapped : fields;
+};
+
+export const dtcgValueToTeikn = (value: DtcgValue, type: string): any => {
+  if (isAlias(value)) {
+    return value;
+  }
+
+  const converted = typedValueToTeikn(value, type);
+
+  // Whatever the type had no use for (a mode of another type, a value with no
+  // type at all) is still read by shape.
+  return converted === value ? shapeToTeikn(value) : wrapComposite(converted, type, value);
+};

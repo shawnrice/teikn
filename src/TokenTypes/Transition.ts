@@ -21,10 +21,21 @@ const isTimeValue = (s: string): boolean => timeRe.test(s);
 const invalid = (css: string, reason: string): Error =>
   new Error(`Invalid transition: "${css}" — ${reason}`);
 
-const parse = (
-  css: string,
-): { duration: string; timingFunction: CubicBezier; delay: string; property: string } => {
+type Shorthand = {
+  duration: Duration;
+  timingFunction: CubicBezier;
+  delay: Duration;
+  property: string;
+};
+
+// The fields of a CSS shorthand, or the reason it is not one.
+const parseShorthand = (css: string): Shorthand | string => {
   const parts = splitTopLevelWhitespace(css.trim());
+
+  if (parts.length === 0) {
+    return 'expected a duration, timing function or property';
+  }
+
   const times: string[] = [];
   let timing: string | null = null;
   let property: string | null = null;
@@ -37,33 +48,39 @@ const parse = (
       part.toLowerCase().startsWith('cubic-bezier(')
     ) {
       if (timing !== null) {
-        throw invalid(css, `more than one timing function ("${timing}", "${part}")`);
+        return `more than one timing function ("${timing}", "${part}")`;
       }
 
       timing = part;
     } else if (unsupportedTimingRe.test(part)) {
-      throw invalid(
-        css,
+      return (
         `unsupported timing function "${part}" (only cubic-bezier() and the ` +
-          `ease/linear keywords can be represented)`,
+        `ease/linear keywords can be represented)`
       );
     } else if (property !== null || !propertyRe.test(part)) {
-      throw invalid(css, `unexpected "${part}"`);
+      return `unexpected "${part}"`;
     } else {
       property = part;
     }
   }
 
   if (times.length > 2) {
-    throw invalid(css, `expected at most 2 times, got ${times.length}`);
+    return `expected at most 2 times, got ${times.length}`;
   }
 
-  return {
-    duration: times[0] ?? '0s',
-    timingFunction: new CubicBezier(timing ?? 'ease'),
-    delay: times[1] ?? '0s',
-    property: property ?? 'all',
-  };
+  const duration = Duration.tryParse(times[0] ?? '0s');
+  const delay = Duration.tryParse(times[1] ?? '0s');
+  const timingFunction = CubicBezier.tryParse(timing ?? 'ease');
+
+  if (!duration || !delay) {
+    return 'a time is not a finite number';
+  }
+
+  if (!timingFunction) {
+    return `invalid timing function "${timing}"`;
+  }
+
+  return { duration, timingFunction, delay, property: property ?? 'all' };
 };
 
 // Field coercion. A `{tokenName}` reference string passes through untouched —
@@ -83,6 +100,27 @@ const toTiming = (value: CubicBezier | string): CubicBezier | string => {
   }
 
   return new CubicBezier(value);
+};
+
+// The property must be one the shorthand parser would read back as a property
+// (a single identifier that is not a time or timing function), or a `{ref}`.
+const toProperty = (value: string | undefined): string => {
+  const property = value ?? 'all';
+  const name = String(property);
+  assertNotPaddedRef(property, 'Transition property');
+
+  if (
+    isRefString(property) ||
+    (propertyRe.test(name) &&
+      !timingKeywords.has(name.toLowerCase()) &&
+      !unsupportedTimingRe.test(name))
+  ) {
+    return property;
+  }
+
+  throw new Error(
+    `Invalid transition property ${JSON.stringify(property)} — expected a single CSS property name`,
+  );
 };
 
 // Transforms (scale/shift/reverse) are only defined on resolved fields; a
@@ -135,12 +173,22 @@ export class Transition implements RefFields {
       return;
     }
 
-    if (typeof first === 'string' && timingFunction === undefined) {
+    if (
+      typeof first === 'string' &&
+      timingFunction === undefined &&
+      delay === undefined &&
+      property === undefined
+    ) {
       assertNotRef(first, 'Transition');
-      const parsed = parse(first);
-      this.#duration = new Duration(parsed.duration);
+      const parsed = parseShorthand(first);
+
+      if (typeof parsed === 'string') {
+        throw invalid(first, parsed);
+      }
+
+      this.#duration = parsed.duration;
       this.#timingFunction = parsed.timingFunction;
-      this.#delay = new Duration(parsed.delay);
+      this.#delay = parsed.delay;
       this.#property = parsed.property;
 
       return;
@@ -152,8 +200,7 @@ export class Transition implements RefFields {
       this.#duration = toDuration(opts.duration);
       this.#timingFunction = toTiming(opts.timingFunction);
       this.#delay = opts.delay !== undefined ? toDuration(opts.delay) : new Duration(0, 's');
-      this.#property = opts.property ?? 'all';
-      assertNotPaddedRef(this.#property, 'Transition property');
+      this.#property = toProperty(opts.property);
 
       return;
     }
@@ -161,8 +208,7 @@ export class Transition implements RefFields {
     this.#duration = toDuration(first);
     this.#timingFunction = toTiming(timingFunction ?? 'ease');
     this.#delay = delay !== undefined ? toDuration(delay) : new Duration(0, 's');
-    this.#property = property ?? 'all';
-    assertNotPaddedRef(this.#property, 'Transition property');
+    this.#property = toProperty(property);
   }
 
   get duration(): Duration | string {
@@ -298,6 +344,17 @@ export class Transition implements RefFields {
     return new Transition(value as Transition | string);
   }
 
+  /** The transition `value` holds — an instance or a CSS shorthand — or `null`. Never throws. */
+  static tryParse(value: unknown): Transition | null {
+    if (value instanceof Transition) {
+      return value;
+    }
+
+    const parsed = typeof value === 'string' ? parseShorthand(value) : null;
+
+    return parsed && typeof parsed !== 'string' ? new Transition(parsed) : null;
+  }
+
   static readonly fade: Transition = new Transition('0.2s', 'ease');
   static readonly slide: Transition = new Transition('0.3s', CubicBezier.standard);
   static readonly quick: Transition = new Transition('0.1s', 'ease');
@@ -365,6 +422,17 @@ export class TransitionList implements RefFields {
 
   toString(): string {
     return this.#layers.map(t => t.toString()).join(', ');
+  }
+
+  /** The list `value` holds — an instance or comma-separated shorthands — or `null`. Never throws. */
+  static tryParse(value: unknown): TransitionList | null {
+    if (value instanceof TransitionList) {
+      return value;
+    }
+
+    const layers = typeof value === 'string' ? splitTopLevel(value).map(Transition.tryParse) : null;
+
+    return layers?.every(layer => layer !== null) ? new TransitionList(layers) : null;
   }
 
   static from(value: TransitionList | string | Transition[]): TransitionList {

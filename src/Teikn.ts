@@ -338,19 +338,20 @@ export class Teikn {
    * points at; an unresolvable reference throws.
    */
   audit(tokens: Token[]): AuditIssue[] {
-    const issues: AuditIssue[] = [];
-    const resolved = resolveReferences(tokens);
+    return this.#audit(this.#prepare({ tokens, check: false }));
+  }
 
-    for (const plugin of this.plugins) {
-      if (plugin.audit) {
-        issues.push(...plugin.audit(resolved));
-      }
-    }
-
-    return issues;
+  #audit(resolved: Token[]): AuditIssue[] {
+    return this.plugins.flatMap(plugin => plugin.audit?.(resolved) ?? []);
   }
 
   generateToStrings(tokens: Token[]): Map<string, string> {
+    return this.#generate(this.#prepare({ tokens, check: true }));
+  }
+
+  // The token set generators and audit plugins both work from: themed, expanded
+  // and reference-resolved, so audits cover generated tokens and theme modes.
+  #prepare({ tokens, check }: { tokens: Token[]; check: boolean }): Token[] {
     // Apply themes before expand so a theme override on a seed token is visible
     // to expand plugins as a mode — letting a ramp recompute per theme instead
     // of freezing at the default value. `theme()` already authors override keys
@@ -361,7 +362,7 @@ export class Teikn {
     // Validate after expand so plugin-added tokens (and themed modes) are also
     // covered. If expand plugins are disabled or add no tokens, `expanded`
     // equals the input and behavior is unchanged.
-    if (this.options.validate !== false) {
+    if (check && this.options.validate !== false) {
       const result = validate(expanded);
       const errors = result.issues.filter(i => i.severity === 'error');
 
@@ -372,7 +373,10 @@ export class Teikn {
       }
     }
 
-    const resolved = resolveReferences(expanded);
+    return resolveReferences(expanded);
+  }
+
+  #generate(resolved: Token[]): Map<string, string> {
     const named = prefixTokenNames(resolved);
 
     this.generators.forEach(g => {
@@ -413,10 +417,11 @@ export class Teikn {
   }
 
   async transform(tokens: Token[]): Promise<TransformResult> {
-    // generateToStrings() handles validation, so we don't duplicate it here
-    // Generate first so invalid tokens fail validation before audit resolves them.
-    const generated = this.generateToStrings(tokens);
-    const auditIssues = this.audit(tokens);
+    // #prepare() handles validation, so we don't duplicate it here
+    // Prepare once so audit sees the same themed, expanded tokens generation does.
+    const resolved = this.#prepare({ tokens, check: true });
+    const generated = this.#generate(resolved);
+    const auditIssues = this.#audit(resolved);
     const files: TransformResult['files'] = [];
     const errors: TransformResult['errors'] = [];
 

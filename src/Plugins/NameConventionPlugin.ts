@@ -36,6 +36,19 @@ export class NameConventionPlugin extends Plugin<NameConventionPluginOptions> {
 
   override readonly runAfter: string[] = ['PrefixTypePlugin', 'StripTypePrefixPlugin'];
 
+  constructor(options: NameConventionPluginOptions) {
+    super(options);
+
+    const convention = options?.convention;
+
+    if (typeof convention !== 'string' || !Object.hasOwn(converters, convention)) {
+      throw new Error(
+        `NameConventionPlugin: \`convention\` must be one of ${Object.keys(converters).join(', ')}, ` +
+          `got ${JSON.stringify(convention)}`,
+      );
+    }
+  }
+
   override transform(token: Token): Token {
     const { convention } = this.options;
     const convert = converters[convention];

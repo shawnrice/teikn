@@ -13,7 +13,8 @@ const RESERVED = new Set(
 // Names the emitted module already exports.
 const OWN_EXPORTS = new Set(['tokens', 'modes']);
 
-const unusableReason = (name: string): string | null => {
+/** Why `name` cannot be an `export const` binding of the emitted module, or `null`. */
+export const unusableExportName = (name: string): string | null => {
   if (!isValidIdentifier(name)) {
     return 'is not a valid JavaScript identifier';
   }
@@ -27,29 +28,6 @@ const unusableReason = (name: string): string | null => {
   }
 
   return null;
-};
-
-/**
- * Group accessors are emitted as `export const <groupName>`, so the name must
- * be a usable binding. Throws rather than silently renaming.
- */
-export const assertGroupExportName = ({
-  generator,
-  groupName,
-  type,
-}: {
-  generator: string;
-  groupName: string;
-  type: string;
-}): void => {
-  const reason = unusableReason(groupName);
-
-  if (reason) {
-    throw new Error(
-      `${generator}: cannot emit a group accessor for token type ${JSON.stringify(type)} — ` +
-        `the export name \`${groupName}\` ${reason}. Rename the type or disable \`groups\`.`,
-    );
-  }
 };
 
 /**

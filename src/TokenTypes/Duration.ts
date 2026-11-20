@@ -24,15 +24,11 @@ export const convertDuration = (value: number, from: DurationUnit, to: DurationU
 
 const PARSE_RE = new RegExp(`^(${CSS_NUMBER})(ms|s)$`, 'i');
 
-const parseCss = (css: string): { value: number; unit: DurationUnit } => {
+const tryParseCss = (css: string): { value: number; unit: DurationUnit } | null => {
   const m = css.trim().match(PARSE_RE);
   const value = m ? Number(m[1]) : NaN;
 
-  if (!m || !Number.isFinite(value)) {
-    throw new Error(`Invalid duration: "${css}"`);
-  }
-
-  return { value, unit: m[2]!.toLowerCase() as DurationUnit };
+  return m && Number.isFinite(value) ? { value, unit: m[2]!.toLowerCase() as DurationUnit } : null;
 };
 
 const assertValid = (value: number, unit: string): void => {
@@ -67,7 +63,12 @@ export class Duration {
 
     if (typeof first === 'string') {
       assertNotRef(first, 'Duration');
-      const parsed = parseCss(first);
+      const parsed = tryParseCss(first);
+
+      if (!parsed) {
+        throw new Error(`Invalid duration: "${first}"`);
+      }
+
       this.#value = parsed.value;
       this.#unit = parsed.unit;
 
@@ -89,6 +90,17 @@ export class Duration {
     assertValid(first, unit);
     this.#value = first;
     this.#unit = unit;
+  }
+
+  /** The duration `value` holds — an instance or a CSS time — or `null`. Never throws. */
+  static tryParse(value: unknown): Duration | null {
+    if (value instanceof Duration) {
+      return value;
+    }
+
+    const parsed = typeof value === 'string' ? tryParseCss(value) : null;
+
+    return parsed && new Duration(parsed.value, parsed.unit);
   }
 
   get value(): number {

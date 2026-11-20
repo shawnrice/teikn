@@ -1,5 +1,5 @@
 import { Dimension } from './Dimension.js';
-import { CSS_NUMBER, assertNotPaddedRef } from './parse-utils.js';
+import { CSS_NUMBER, assertNotPaddedRef, formatNumber } from './parse-utils.js';
 import type { RefFields } from './ref-guard.js';
 import { assertNotRef, isRefString } from './ref-guard.js';
 
@@ -8,15 +8,31 @@ import { assertNotRef, isRefString } from './ref-guard.js';
 // resolved later by `resolve.ts` (which rebuilds the wrapper via the RefFields
 // protocol), then the resolved concrete value flows back through these helpers.
 
-// A font stack is one-or-more family names. We normalize an array to the
-// comma-joined CSS form up front so every getter/serializer sees a single
-// string — callers may still author it as `["Inter", "sans-serif"]`. A plain
-// string (including a `{ref}`) passes through.
-const toFamily = (value: string | readonly string[]): string => {
-  assertNotPaddedRef(value, 'Typography fontFamily');
+// A font stack is one-or-more family names. An array is kept as an array so
+// each element stays individually resolvable (`["{font.body}", "sans-serif"]`)
+// and is joined to the comma-separated CSS form on read, so every
+// getter/serializer sees a single string. A plain string (including a `{ref}`)
+// passes through. A resolved element may itself be a stack, hence the flatten.
+const toFamily = (value: string | readonly string[]): string | readonly string[] => {
+  const names: unknown[] = [value].flat(2);
 
-  return Array.isArray(value) ? value.join(', ') : (value as string);
+  if (names.length === 0 || !names.every(name => typeof name === 'string' && name.trim() !== '')) {
+    throw new Error(
+      `Typography fontFamily must be a font name or a non-empty list of them, ` +
+        `got ${JSON.stringify(value)}`,
+    );
+  }
+
+  names.forEach(name => assertNotPaddedRef(name, 'Typography fontFamily'));
+
+  return Array.isArray(value) ? (names as string[]) : (value as string);
 };
+
+// A unitless field is a number, or a `{ref}` string emitted verbatim.
+const fmt = (n: number | string): string => (typeof n === 'number' ? formatNumber(n) : n);
+
+const joinFamily = (value: string | readonly string[]): string =>
+  typeof value === 'string' ? value : value.join(', ');
 
 // fontSize / letterSpacing are lengths. We accept a `Dimension` or a CSS
 // string and coerce to `Dimension`, mirroring how `Transition` coerces its
@@ -114,7 +130,7 @@ export type TypographyInput = {
 export class Typography implements RefFields {
   /** @internal brand — do not use directly; see `isFirstClassValue()` */
   readonly __teikn_fcv__: true = true;
-  readonly #fontFamily: string;
+  readonly #fontFamily: string | readonly string[];
   readonly #fontSize: Dimension | string;
   readonly #fontWeight: number | string | null;
   readonly #lineHeight: number | string | null;
@@ -152,7 +168,7 @@ export class Typography implements RefFields {
   }
 
   get fontFamily(): string {
-    return this.#fontFamily;
+    return joinFamily(this.#fontFamily);
   }
   get fontSize(): Dimension | string {
     return this.#fontSize;
@@ -200,7 +216,7 @@ export class Typography implements RefFields {
   /** @internal */
   __teikn_fields__(): Record<string, unknown> {
     const fields: Record<string, unknown> = {
-      fontFamily: this.#fontFamily,
+      fontFamily: typeof this.#fontFamily === 'string' ? this.#fontFamily : [...this.#fontFamily],
       fontSize: this.#fontSize,
     };
 
@@ -237,9 +253,9 @@ export class Typography implements RefFields {
    */
   toString(): string {
     const size = String(this.#fontSize);
-    const sizeLine = this.#lineHeight !== null ? `${size}/${this.#lineHeight}` : size;
+    const sizeLine = this.#lineHeight !== null ? `${size}/${fmt(this.#lineHeight)}` : size;
 
-    return [this.#fontWeight !== null ? String(this.#fontWeight) : null, sizeLine, this.#fontFamily]
+    return [this.#fontWeight !== null ? fmt(this.#fontWeight) : null, sizeLine, this.fontFamily]
       .filter((part): part is string => part !== null)
       .join(' ');
   }

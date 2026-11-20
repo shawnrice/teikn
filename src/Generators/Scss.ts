@@ -7,13 +7,14 @@ import type { GeneratorInfo, GeneratorOptions } from './Generator.js';
 import { Generator } from './Generator.js';
 import type { PrefixOptions } from './prefix-utils.js';
 import { composeSymbol } from './prefix-utils.js';
-import { cssMapValue } from './value-serializers.js';
+import {
+  cssMapValue,
+  sassLines,
+  sassQuote as quote,
+  unusableSassFunction,
+} from './value-serializers.js';
 
 const defaultOptions = { ext: 'scss', nameTransformer: kebabCase };
-
-// Quoted so Sass reads a key as a string, never as a color (`red`) or number (`100`).
-const quote = (str: string): string =>
-  `'${str.replace(/[\\']/g, '\\$&').replace(/#\{/g, '#\\{').replace(/\r?\n/g, '\\a ')}'`;
 
 // An empty string serializes to nothing, which is not a valid map value.
 const mapValue = (value: unknown): string => cssMapValue(value) || '""';
@@ -62,7 +63,7 @@ export class Scss extends Generator<ScssOpts> {
   generateToken(token: Token): string {
     const { usage, value } = token;
     const key = quote(this.#emit(token.name));
-    const docs = usage ? usage.split(/\r?\n/).map(line => `  /// ${line}`) : [];
+    const docs = usage ? sassLines(usage).map(line => `  /// ${line}`) : [];
 
     return [...docs, `  ${key}: ${mapValue(value)},`].join(EOL);
   }
@@ -110,6 +111,22 @@ export class Scss extends Generator<ScssOpts> {
       `  @return map.get($token-values, $name);`,
       `}`,
     ].join(EOL);
+  }
+
+  protected override typeIdentifiers(
+    tokens: Token[],
+  ): { name: string; type: string; problem?: string | null }[] {
+    // `$token-values` and `get-token` are the footer's own; ScssVars has neither.
+    const taken = this.footer() ? ['token', 'get-token'] : [];
+
+    return super.typeIdentifiers(tokens).map(({ name: groupName, type }) => {
+      const name = kebabCase(groupName);
+      const problem = taken.includes(name)
+        ? "collides with the module's own members"
+        : unusableSassFunction(name);
+
+      return { name, type, problem };
+    });
   }
 
   protected generateGroupBlocks(tokens: Token[]): string | null {

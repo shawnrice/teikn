@@ -142,14 +142,11 @@ export const convertDimension = (
   }
 
   // Absolute ↔ absolute (through px)
-  const fromFactor = absoluteConversions[from as AbsoluteUnit];
-  const toFactor = absoluteConversions[to as AbsoluteUnit];
-
-  if (fromFactor === undefined || toFactor === undefined) {
+  if (!isAbsoluteUnit(from) || !isAbsoluteUnit(to)) {
     throw new Error(`Cannot convert ${from} to ${to}`);
   }
 
-  return (value * fromFactor) / toFactor;
+  return (value * absoluteConversions[from]) / absoluteConversions[to];
 };
 
 // ─── Parsing ────────────────────────────────────────────────
@@ -161,18 +158,14 @@ const canonicalUnits: ReadonlyMap<string, DimensionUnit> = new Map(
 
 const PARSE_RE = new RegExp(`^(${CSS_NUMBER})([a-z%]*)$`, 'i');
 
-const parseCss = (css: string): { value: number; unit: DimensionUnit } => {
+const tryParseCss = (css: string): { value: number; unit: DimensionUnit } | null => {
   const m = css.trim().match(PARSE_RE);
   const value = m ? Number(m[1]) : NaN;
   // A unitless zero is a valid CSS length; it is stored as `0px`.
   const unit =
     m?.[2] === '' && value === 0 ? 'px' : canonicalUnits.get(m?.[2]?.toLowerCase() ?? '');
 
-  if (!unit || !Number.isFinite(value)) {
-    throw new Error(`Invalid dimension: "${css}"`);
-  }
-
-  return { value, unit };
+  return unit && Number.isFinite(value) ? { value, unit } : null;
 };
 
 const assertValid = (value: number, unit: string): void => {
@@ -207,7 +200,12 @@ export class Dimension {
 
     if (typeof first === 'string') {
       assertNotRef(first, 'Dimension');
-      const parsed = parseCss(first);
+      const parsed = tryParseCss(first);
+
+      if (!parsed) {
+        throw new Error(`Invalid dimension: "${first}"`);
+      }
+
       this.#value = parsed.value;
       this.#unit = parsed.unit;
 
@@ -229,6 +227,17 @@ export class Dimension {
     assertValid(first, unit);
     this.#value = first;
     this.#unit = unit;
+  }
+
+  /** The dimension `value` holds — an instance or a CSS length — or `null`. Never throws. */
+  static tryParse(value: unknown): Dimension | null {
+    if (value instanceof Dimension) {
+      return value;
+    }
+
+    const parsed = typeof value === 'string' ? tryParseCss(value) : null;
+
+    return parsed && new Dimension(parsed.value, parsed.unit);
   }
 
   get value(): number {

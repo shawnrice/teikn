@@ -11,7 +11,7 @@ import { OklabOperations } from './operations/OklabOperations.js';
 import { OklchOperations } from './operations/OklchOperations.js';
 import { RGBOperations } from './operations/RGBOperations.js';
 import { XYZOperations } from './operations/XYZOperations.js';
-import { parseColorString } from './parseColorString.js';
+import { parseColorString, tryParseColorString } from './parseColorString.js';
 import type {
   ColorBlindnessType,
   ColorFormat,
@@ -76,7 +76,23 @@ const normalize = (space: Space, data: SpaceData[Space]): SpaceData[Space] => {
     case 'oklch':
       return [percentRange(a), Math.max(0, b), normalizeDegrees(c)];
     default:
-      return data;
+      return [a, b, c];
+  }
+};
+
+// Far beyond any real color, and small enough that the cubes in the Lab / Oklab
+// conversions and the seventh powers in deltaE stay finite. Anything larger
+// would overflow to Infinity and then NaN, so it is rejected when a color is built.
+const MAX_COMPONENT = 1e9;
+
+const isRepresentable = (data: SpaceData[Space]): boolean =>
+  data.every(v => Math.abs(v) <= MAX_COMPONENT);
+
+const assertRepresentable = (space: Space, data: SpaceData[Space]): void => {
+  if (!isRepresentable(data)) {
+    throw new Error(
+      `Color: ${space} components must be within ±${MAX_COMPONENT}, got (${data.join(', ')})`,
+    );
   }
 };
 
@@ -112,6 +128,10 @@ const fmtOkTriplet = (
     : `${name}(${core})`;
 };
 
+// A hue just under 360 rounds up to 360, which parses back as 0 — wrap it here
+// so a serialized color re-serializes to the same string.
+const wrapHue = (precision: number, hue: number): number => round(precision, hue) % 360;
+
 const fmt = {
   rgb: (values: RGB | RGBA): string => {
     const [r, g, b] = values;
@@ -123,25 +143,29 @@ const fmt = {
   },
   hsl: (values: HSL | HSLA): string => {
     const [h, s, l] = values;
-    const core = `${round(PRECISION_HSL, h) % 360}, ${toPercent(s, PRECISION_HSL)}, ${toPercent(l, PRECISION_HSL)}`;
+    const core = `${wrapHue(PRECISION_HSL, h)}, ${toPercent(s, PRECISION_HSL)}, ${toPercent(l, PRECISION_HSL)}`;
 
     return values.length === 4
       ? `hsla(${core}, ${round(PRECISION_ALPHA, values[3])})`
       : `hsl(${core})`;
   },
+  // A lightness converted from another space can land outside the range the
+  // parser clamps to; clamp it on the way out so the string reads back unchanged.
   lab: (values: LAB | LABA): string => {
-    const [L, a, b] = values;
+    const [lightness, a, b] = values;
+    const L = clamp(0, 100, lightness);
 
     return values.length === 4
       ? fmtTriplet('lab', PRECISION_LAB, L, a, b, values[3])
       : fmtTriplet('lab', PRECISION_LAB, L, a, b);
   },
   lch: (values: LCH | LCHA): string => {
-    const [L, c, h] = values;
+    const [lightness, c, h] = values;
+    const L = clamp(0, 100, lightness);
 
     return values.length === 4
-      ? fmtTriplet('lch', PRECISION_LAB, L, c, h, values[3])
-      : fmtTriplet('lch', PRECISION_LAB, L, c, h);
+      ? fmtTriplet('lch', PRECISION_LAB, L, c, wrapHue(PRECISION_LAB, h), values[3])
+      : fmtTriplet('lch', PRECISION_LAB, L, c, wrapHue(PRECISION_LAB, h));
   },
   xyz: (values: XYZ | XYZA): string => {
     const [x, y, z] = values;
@@ -151,18 +175,20 @@ const fmt = {
       : fmtTriplet('xyz', PRECISION_XYZ, x, y, z);
   },
   oklab: (values: Oklab | OklabA): string => {
-    const [L, a, b] = values;
+    const [lightness, a, b] = values;
+    const L = percentRange(lightness);
 
     return values.length === 4
       ? fmtOkTriplet('oklab', L, a, b, PRECISION_OKLAB, values[3])
       : fmtOkTriplet('oklab', L, a, b, PRECISION_OKLAB);
   },
   oklch: (values: Oklch | OklchA): string => {
-    const [L, c, h] = values;
+    const [lightness, c, h] = values;
+    const L = percentRange(lightness);
 
     return values.length === 4
-      ? fmtOkTriplet('oklch', L, c, h, PRECISION_OK_HUE, values[3])
-      : fmtOkTriplet('oklch', L, c, h, PRECISION_OK_HUE);
+      ? fmtOkTriplet('oklch', L, c, wrapHue(PRECISION_OK_HUE, h), PRECISION_OK_HUE, values[3])
+      : fmtOkTriplet('oklch', L, c, wrapHue(PRECISION_OK_HUE, h), PRECISION_OK_HUE);
   },
 };
 
@@ -178,6 +204,13 @@ const NATIVE_FORMAT: Record<Space, ColorFormat> = {
   oklab: 'oklab',
   oklch: 'oklch',
 };
+
+const FORMATS =
+  'rgb rgba hex hex3 hsl hsla xyz xyza lab laba lch lcha oklab oklaba oklch oklcha named xkcd native'.split(
+    ' ',
+  );
+
+const quoteList = (items: readonly string[]): string => items.map(x => `'${x}'`).join(', ');
 
 // sRGB linearization / delinearization helpers
 const linearize = (c: number): number => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
@@ -239,8 +272,9 @@ export class Color {
     // Internal branded construction
     if (r === INTERNAL) {
       this.#nativeSpace = g as Space;
-      this.#nativeData = b as SpaceData[Space];
+      this.#nativeData = Object.freeze(b as SpaceData[Space]);
       this.#alpha = a as number;
+      assertRepresentable(this.#nativeSpace, this.#nativeData);
       this.#cache = { [this.#nativeSpace]: this.#nativeData };
 
       return;
@@ -261,8 +295,9 @@ export class Color {
       assertNotRef(r, 'Color');
       const parsed = parseColorString(r);
       this.#nativeSpace = parsed.space;
-      this.#nativeData = parsed.data;
+      this.#nativeData = Object.freeze(parsed.data);
       this.#alpha = parsed.alpha;
+      assertRepresentable(this.#nativeSpace, this.#nativeData);
       this.#cache = { [this.#nativeSpace]: this.#nativeData };
 
       return;
@@ -284,7 +319,11 @@ export class Color {
       }
 
       this.#nativeSpace = 'rgb';
-      this.#nativeData = [byteRange(r), byteRange(g as number), byteRange(b as number)] as RGB;
+      this.#nativeData = Object.freeze([
+        byteRange(r),
+        byteRange(g as number),
+        byteRange(b as number),
+      ] as RGB);
       this.#alpha = typeof a === 'number' ? percentRange(a) : 1;
       this.#cache = { rgb: this.#nativeData as RGB };
 
@@ -308,6 +347,7 @@ export class Color {
     }
 
     const intermediates = convertWithIntermediates(this.#nativeSpace, space, this.#nativeData);
+    Object.values(intermediates).forEach(Object.freeze);
     Object.assign(this.#cache, intermediates);
 
     return this.#cache[space] as SpaceData[S];
@@ -375,6 +415,27 @@ export class Color {
 
   static from(color: Color | string): Color {
     return new Color(color);
+  }
+
+  /**
+   * The color `value` holds, or `null` when it holds none: a CSS-wide keyword,
+   * `currentColor`, `var(--x)`, a `{ref}`, a non-string. Never throws.
+   */
+  static tryParse(value: unknown): Color | null {
+    if (value instanceof Color) {
+      return value;
+    }
+
+    const parsed = typeof value === 'string' ? tryParseColorString(value) : null;
+
+    return parsed && isRepresentable(parsed.data)
+      ? new Color(INTERNAL, parsed.space, parsed.data, parsed.alpha)
+      : null;
+  }
+
+  /** Whether `value` is a format {@link Color.toString} accepts. */
+  static isFormat(value: unknown): value is ColorFormat {
+    return FORMATS.includes(value as string);
   }
 
   static #fromSpace<S extends Space>(
@@ -741,10 +802,19 @@ export class Color {
       tritanomaly: 'tritanopia',
     };
 
-    const isAnomaly = type in anomalyTypes;
+    const isAnomaly = Object.hasOwn(anomalyTypes, type);
     const baseType = isAnomaly
       ? anomalyTypes[type]!
       : (type as 'protanopia' | 'deuteranopia' | 'tritanopia');
+
+    if (!Object.hasOwn(matrices, baseType)) {
+      const valid = [...Object.keys(matrices), ...Object.keys(anomalyTypes)];
+
+      throw new Error(
+        `Color: Unknown color blindness type '${type}'. Valid types: ${quoteList(valid)}`,
+      );
+    }
+
     const [row0, row1, row2] = matrices[baseType] as unknown as [
       readonly number[],
       readonly number[],
@@ -955,16 +1025,20 @@ export class Color {
 
   /** Convert to a string in the specified format */
   toString(type?: ColorFormat): string {
+    // Alpha as it will be printed: one that rounds to 1 serializes as opaque,
+    // so the string picks the same variant when it is parsed and printed again.
+    const alpha = round(PRECISION_ALPHA, this.#alpha);
+
     switch (type) {
       case 'named': {
         const hex = this.toString('hex');
 
-        if (this.#alpha === 0 && hex === '#000000') {
+        if (alpha === 0 && hex === '#000000') {
           return 'transparent';
         }
 
         // A non-opaque color has no CSS name
-        if (this.#alpha !== 1) {
+        if (alpha !== 1) {
           return this.toString('rgba');
         }
 
@@ -1007,15 +1081,19 @@ export class Color {
         return fmt.xyz(this.asXYZ());
       case 'xyza':
         return fmt.xyz(this.asXYZA());
-      case 'native':
-      default: {
+      case undefined:
+      case 'native': {
         // Serialize in whatever space the color was authored in, so oklch stays
         // oklch, hex/rgb stays rgb, etc. Reading the native space is a cache hit
         // (no conversion), so this is lossless apart from decimal rounding.
         const base = NATIVE_FORMAT[this.#nativeSpace];
 
-        return this.toString(this.#alpha === 1 ? base : (`${base}a` as ColorFormat));
+        return this.toString(alpha === 1 ? base : (`${base}a` as ColorFormat));
       }
+      default:
+        throw new Error(
+          `Color: Unknown color format '${String(type)}'. Valid formats: ${quoteList(FORMATS)}`,
+        );
     }
   }
 }

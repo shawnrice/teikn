@@ -44,6 +44,20 @@ describe('cli: help', () => {
   });
 });
 
+describe('cli: help only advertises commands that exist', () => {
+  test('every advertised command is recognised', () => {
+    const advertised = [...run('help').stdout.matchAll(/^\* ([a-z]+) /gm)]
+      .map(m => m[1]!)
+      .filter(name => name !== 'bun');
+
+    expect(advertised).toEqual(['help', 'list', 'validate']);
+
+    for (const name of advertised) {
+      expect(run(name).stderr).not.toContain('File not found');
+    }
+  });
+});
+
 describe('cli: version', () => {
   test('prints version string', () => {
     const { stdout, code } = run('version');
@@ -71,9 +85,9 @@ describe('cli: list', () => {
     expect(stdout).toContain('NameConventionPlugin');
   });
 
-  test('list without argument prints error', () => {
-    const { stderr, code: _code } = run('list');
-    // Exits with 0 but prints usage to stderr
+  test('list without argument is a usage error', () => {
+    const { stderr, code } = run('list');
+    expect(code).toBe(2);
     expect(stderr).toContain('generators | plugins');
   });
 });
@@ -91,6 +105,12 @@ describe('cli: validate', () => {
     const { stderr, code } = run('validate', 'nonexistent.ts');
     expect(code).toBe(2);
     expect(stderr).toContain('validate');
+  });
+
+  test('validate without a path is a usage error', () => {
+    const { stderr, code } = run('validate');
+    expect(code).toBe(2);
+    expect(stderr).toContain('validate path/to/tokens');
   });
 });
 

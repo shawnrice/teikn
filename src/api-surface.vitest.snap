@@ -165,9 +165,20 @@ export declare abstract class Generator<Opts extends GeneratorOptions = Generato
      * before building their refMap so the map captures post-plugin names.
      */
     protected applyPluginPipeline(tokens: Token[], plugins: Plugin[]): Token[];
+    /**
+     * The identifier this generator emits for each token type (a group accessor,
+     * a story export), with the \`problem\` that makes one unusable (\`is a reserved
+     * word\`). Checked before any output; no two types may share an identifier.
+     */
+    protected typeIdentifiers(tokens: Token[]): {
+        name: string;
+        type: string;
+        problem?: string | null;
+    }[];
     prepareTokens(tokens: Token[], plugins: Plugin[]): Token[];
     protected tokenGroups(tokens: Token[]): {
         groupName: string;
+        type: string;
         entries: {
             shortName: string;
             token: Token;
@@ -275,6 +286,11 @@ export declare class JavaScript extends Generator<JavaScriptOpts> {
     tokenUsage(token: Token): string | null;
     header(): string;
     generateToken(token: Token): string;
+    protected typeIdentifiers(tokens: Token[]): {
+        name: string;
+        type: string;
+        problem?: string | null;
+    }[];
     combinator(tokens: Token[]): string;
 }
 
@@ -311,6 +327,11 @@ export declare class Scss extends Generator<ScssOpts> {
     combinator(tokens: Token[]): string;
     header(): string | null;
     footer(): string | null;
+    protected typeIdentifiers(tokens: Token[]): {
+        name: string;
+        type: string;
+        problem?: string | null;
+    }[];
     protected generateGroupBlocks(tokens: Token[]): string | null;
     generate(tokens: Token[], plugins?: Plugin[]): string;
 }
@@ -357,6 +378,11 @@ export declare class Storybook extends Generator<StorybookOpts> {
     generateToken(_: Token): string;
     private detectImportSource;
     private isTypeScript;
+    protected typeIdentifiers(tokens: Token[]): {
+        name: string;
+        type: string;
+        problem?: string | null;
+    }[];
     combinator(tokens: Token[]): string;
 }
 
@@ -393,6 +419,7 @@ export declare class TypeScript extends Generator<TypeScriptOpts> {
     #private;
     constructor(options?: Partial<TypeScriptOpts>);
     describe(): GeneratorInfo;
+    tokenUsage(token: Token): string | null;
     generateToken(): string;
     combinator(): string;
     filenames(): string[];
@@ -435,6 +462,11 @@ export declare class TypeScriptDeclarations extends Generator<TypeScriptDeclarat
     tokenUsage(token: Token): string | null;
     header(): string;
     generateToken(token: Token): string;
+    protected typeIdentifiers(tokens: Token[]): {
+        name: string;
+        type: string;
+        problem?: string | null;
+    }[];
     combinator(tokens: Token[]): string;
     footer(): string;
 }
@@ -561,6 +593,7 @@ export type ContrastValidatorPluginOptions = {
 export declare class ContrastValidatorPlugin extends Plugin<ContrastValidatorPluginOptions> {
     tokenType: string;
     outputType: RegExp;
+    constructor(options: ContrastValidatorPluginOptions);
     audit(tokens: Token[]): AuditIssue[];
 }
 
@@ -574,6 +607,7 @@ export type DeprecationPluginOptions = {
 export declare class DeprecationPlugin extends Plugin<DeprecationPluginOptions> {
     tokenType: RegExp;
     outputType: RegExp;
+    constructor(options: DeprecationPluginOptions);
     transform(token: Token): Token;
     audit(tokens: Token[]): AuditIssue[];
 }
@@ -603,6 +637,7 @@ export declare class NameConventionPlugin extends Plugin<NameConventionPluginOpt
     tokenType: RegExp;
     outputType: RegExp;
     readonly runAfter: string[];
+    constructor(options: NameConventionPluginOptions);
     transform(token: Token): Token;
 }
 export {};
@@ -917,6 +952,7 @@ export type TransformResult = {
     }[];
 };
 export declare class Teikn {
+    #private;
     generators: Generator[];
     plugins: Plugin[];
     themes: ThemeLayer[];
@@ -1228,6 +1264,13 @@ export declare class Color {
      */
     get space(): Space;
     static from(color: Color | string): Color;
+    /**
+     * The color \`value\` holds, or \`null\` when it holds none: a CSS-wide keyword,
+     * \`currentColor\`, \`var(--x)\`, a \`{ref}\`, a non-string. Never throws.
+     */
+    static tryParse(value: unknown): Color | null;
+    /** Whether \`value\` is a format {@link Color.toString} accepts. */
+    static isFormat(value: unknown): value is ColorFormat;
     static fromRGB(r: number, g: number, b: number, a?: number): Color;
     static fromRGB(rgb: RGB, a?: number): Color;
     static fromHSL(h: number, s: number, l: number, a?: number): Color;
@@ -1754,6 +1797,8 @@ export declare class CubicBezier {
         x2: number;
         y2: number;
     } | CubicBezier | string);
+    /** The easing \`value\` holds — an instance, a preset name or \`cubic-bezier()\` — or \`null\`. Never throws. */
+    static tryParse(value: unknown): CubicBezier | null;
     static from(value: CubicBezier | {
         x1: number;
         y1: number;
@@ -1819,6 +1864,8 @@ export declare class Dimension {
     readonly __teikn_fcv__: true;
     constructor(value: number, unit: DimensionUnit);
     constructor(input: DimensionInput | Dimension | string);
+    /** The dimension \`value\` holds — an instance or a CSS length — or \`null\`. Never throws. */
+    static tryParse(value: unknown): Dimension | null;
     get value(): number;
     get unit(): DimensionUnit;
     get isAbsolute(): boolean;
@@ -1862,6 +1909,8 @@ export declare class Duration {
     readonly __teikn_fcv__: true;
     constructor(value: number, unit: DurationUnit);
     constructor(input: DurationInput | Duration | string);
+    /** The duration \`value\` holds — an instance or a CSS time — or \`null\`. Never throws. */
+    static tryParse(value: unknown): Duration | null;
     get value(): number;
     get unit(): DurationUnit;
     to(targetUnit: DurationUnit): Duration;
@@ -2024,6 +2073,8 @@ export declare class Transition implements RefFields {
     toJSON(): string;
     toString(): string;
     static from(value: Transition | TransitionInput | string): Transition;
+    /** The transition \`value\` holds — an instance or a CSS shorthand — or \`null\`. Never throws. */
+    static tryParse(value: unknown): Transition | null;
     static readonly fade: Transition;
     static readonly slide: Transition;
     static readonly quick: Transition;
@@ -2043,6 +2094,8 @@ export declare class TransitionList implements RefFields {
     __teikn_fromFields__(fields: Record<string, unknown>): TransitionList;
     toJSON(): string;
     toString(): string;
+    /** The list \`value\` holds — an instance or comma-separated shorthands — or \`null\`. Never throws. */
+    static tryParse(value: unknown): TransitionList | null;
     static from(value: TransitionList | string | Transition[]): TransitionList;
 }
 
@@ -2397,7 +2450,10 @@ export * from './serialize.js';
 import type { Token } from '../Token.js';
 import type { DtcgDocument } from './types.js';
 export type ParseOptions = {
-    /** Separator for flattening group paths into token names. Default: '.' */
+    /**
+     * Separator joining the path segments below the top-level group into the
+     * token name (the top-level group becomes the token's \`group\`). Default: '-'
+     */
     separator?: string;
     /** When true, map Dtcg type names to teikn equivalents. Default: true */
     mapTypes?: boolean;
@@ -2500,19 +2556,27 @@ export type DtcgTypeName = (typeof DtcgTypes)[keyof typeof DtcgTypes];
 
 // src/resolve.d.ts
 import type { Token } from './Token.js';
+/** What a seed resolved to, or why it did not (a circular or dangling reference). */
+export type SeedResolution = {
+    value: unknown;
+    error?: undefined;
+} | {
+    value?: undefined;
+    error: string;
+};
 /**
  * Build a single-value resolver bound to a token set: \`(value, tokenName, mode?)
- * => resolved\`. Follows \`{ref}\` references through the set and throws on a
- * circular or dangling reference, seeding the cycle guard with \`tokenName\`.
- * With \`mode\`, each referenced token contributes its value for that mode when
- * it has one.
+ * => { value } | { error }\`. Follows \`{ref}\` references through the set and
+ * reports a circular or dangling reference as \`error\` rather than throwing,
+ * seeding the cycle guard with \`tokenName\`. With \`mode\`, each referenced token
+ * contributes its value for that mode when it has one.
  *
  * Used by expand plugins to resolve a seed value (e.g. a palette base color)
  * to a concrete value before the full {@link resolveReferences} pass runs over
  * the whole set. The token-keys index is an internal detail kept off the
  * signature.
  */
-export declare const createSeedResolver: (tokens: Token[]) => ((value: unknown, tokenName: string, mode?: string) => unknown);
+export declare const createSeedResolver: (tokens: Token[]) => ((value: unknown, tokenName: string, mode?: string) => SeedResolution);
 /**
  * Resolve all \`{tokenName}\` references in a token set.
  * References are looked up by token name (case-sensitive).

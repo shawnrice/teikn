@@ -18,18 +18,44 @@ import { validate } from './validate.js';
 const SUPPORTED_EXTENSIONS = new Set(['.ts', '.js', '.mjs', '.cjs', '.json']);
 const CONFIG_FILES = ['teikn.config.ts', 'teikn.config.js', '.teiknrc.js'];
 
+const VALUE_FLAGS = new Set(['--outdir', '--generators', '--plugins', '--config']);
+const BOOLEAN_FLAGS = new Set(['--watch', '-w', '--dry-run', '--help', '-h']);
+
 const processArgv = () => {
   const caller = [process.argv[0], process.argv[1]];
-  const rawArgs = process.argv.slice(2);
+  // Fold `--flag value` into `--flag=value` so both spellings parse the same.
+  const rawArgs = process.argv.slice(2).reduce<string[]>((acc, arg) => {
+    const prev = acc.at(-1) ?? '';
+
+    return VALUE_FLAGS.has(prev.toLowerCase()) && !arg.startsWith('-')
+      ? [...acc.slice(0, -1), `${prev}=${arg}`]
+      : [...acc, arg];
+  }, []);
   const positional = rawArgs.filter(a => !a.startsWith('-'));
   const flags = rawArgs.filter(a => a.startsWith('-'));
   const command = positional[0] ?? '';
   const args = [...positional.slice(1), ...flags];
 
-  return { caller, command, args };
+  return { caller, command, args, flags };
 };
 
-const { caller, command, args } = processArgv();
+const { caller, command, args, flags } = processArgv();
+
+for (const flag of flags) {
+  const [name = ''] = flag.split('=');
+  const takesValue = VALUE_FLAGS.has(name.toLowerCase());
+
+  if (takesValue && !flag.includes('=')) {
+    console.error(`${name} needs a value: ${name}=<value>`);
+    process.exit(2);
+  }
+
+  if (!takesValue && !BOOLEAN_FLAGS.has(flag)) {
+    console.error(`Unknown flag: ${name}`);
+    console.error('Valid flags: --outDir, --generators, --plugins, --config, --watch, --dry-run');
+    process.exit(2);
+  }
+}
 
 const hasFlag = (name: string, short?: string) =>
   args.some(a => a === `--${name}` || (short ? a === `-${short}` : false));
@@ -50,7 +76,6 @@ const help = () => {
   console.log('*', 'help', 'prints this message');
   console.log('*', 'list', 'generators|plugins', 'lists generators or plugins available');
   console.log('*', 'validate', 'path/to/tokens.{ts,js}', 'validate tokens for errors');
-  console.log('*', 'usage', 'suggested usage');
   console.log(
     '*',
     caller.join(' '),
@@ -90,7 +115,7 @@ const list = (type = '') => {
       break;
     default:
       console.error('Usage:', processArgv().caller.join(' '), 'list', 'generators | plugins');
-      break;
+      process.exit(2);
   }
 };
 
@@ -99,7 +124,7 @@ const getPathTo = (str: string) => path.resolve(process.cwd(), str);
 const validateTokens = async () => {
   const tokenPath = getPathTo(args[0] ?? '');
 
-  if (!tokenPath || !fs.existsSync(tokenPath)) {
+  if (!args[0] || !fs.existsSync(tokenPath)) {
     console.error('Usage:', caller.join(' '), 'validate path/to/tokens.{ts,js}');
     process.exit(2);
   }
@@ -208,9 +233,6 @@ const extractTokens = (mod: any) => {
 
 const extractThemes = (mod: any) => mod.themes ?? mod.default?.themes ?? [];
 
-const loadTokensFromPath = async (tokenPath: string) =>
-  extractTokens(await loadModuleFromPath(tokenPath));
-
 const formatSize = (bytes: number) =>
   bytes < 1024 ? `${bytes} B` : `${(bytes / 1024).toFixed(1)} KB`;
 
@@ -240,7 +262,7 @@ const pickByFlag = <T>(flag: string, registry: Record<string, T>, fallback: T[])
     .filter(Boolean);
 
   if (requested.length === 0) {
-    return fallback;
+    return args.some(a => a.toLowerCase().startsWith(`--${flag}=`)) ? [] : fallback;
   }
 
   const byName = new Map(
@@ -264,6 +286,27 @@ const getPlugins = () =>
     Teikn.plugins.ColorTransformPlugin,
     Teikn.plugins.ScssQuoteValuePlugin,
   ]);
+
+// These need options, which a name on the command line cannot carry.
+const NEEDS_OPTIONS = new Set<unknown>([
+  Teikn.plugins.ContrastValidatorPlugin,
+  Teikn.plugins.DeprecationPlugin,
+  Teikn.plugins.NameConventionPlugin,
+]);
+
+const createPlugin = (P: unknown): Plugin => {
+  const PluginClass = P as new (opts: Record<string, unknown>) => Plugin;
+
+  if (NEEDS_OPTIONS.has(P)) {
+    console.error(
+      `${PluginClass.name} needs options, so it cannot be used by name. ` +
+        `Configure it in a config file (teikn.config.ts): plugins: [new ${PluginClass.name}({ ... })]`,
+    );
+    process.exit(1);
+  }
+
+  return new PluginClass({});
+};
 
 const dryRun = (writer: Teikn, tokens: any) => {
   const files = writer.generateToStrings(tokens);
@@ -342,7 +385,7 @@ const generateTokens = async () => {
     const plugins = getPlugins();
 
     const writer = new Teikn({
-      plugins: plugins.map(P => new (P as new (opts: Record<string, unknown>) => Plugin)({})),
+      plugins: plugins.map(createPlugin),
       generators: generators.map(Generator => new Generator()),
       themes,
       outDir,
@@ -350,7 +393,7 @@ const generateTokens = async () => {
 
     banner();
     console.log('Using generators:', generators.map(f => f.name).join(', '));
-    console.log('Using plugins:', plugins.map(f => f.name).join(', '));
+    console.log('Using plugins:', plugins.map(f => f.name).join(', ') || '(none)');
 
     if (hasFlag('dry-run')) {
       dryRun(writer, tokens);
@@ -404,7 +447,7 @@ const resolveFromConfig = (configGenerators: unknown[], configPlugins: unknown[]
             process.exit(1);
           }
 
-          return new (entry![1] as new (opts: Record<string, unknown>) => Plugin)({});
+          return createPlugin(entry![1]);
         }
 
         return p as InstanceType<typeof Teikn.Plugin>;
@@ -432,8 +475,9 @@ const runFromConfig = async (configPath: string) => {
       config.plugins ?? [],
     );
 
-    const tokens = await loadTokensFromPath(inputPath);
-    const themes = config.themes ?? [];
+    const mod = await loadModuleFromPath(inputPath);
+    const tokens = extractTokens(mod);
+    const themes = config.themes ?? extractThemes(mod);
     const writer = new Teikn({ plugins, generators, themes, outDir });
 
     banner();
@@ -474,15 +518,15 @@ const main = async () => {
     commands[command as keyof typeof commands](...args);
   } else if (command && fs.existsSync(command) && isSupportedFile(command)) {
     await generateTokens();
+  } else if (command) {
+    console.error(`File not found or unsupported extension: ${command}`);
+    console.error('Supported extensions: .ts, .js, .mjs, .cjs, .json');
+    process.exit(1);
   } else {
     const configPath = resolveConfigPath();
 
     if (configPath) {
       await runFromConfig(configPath);
-    } else if (command) {
-      console.error(`File not found or unsupported extension: ${command}`);
-      console.error('Supported extensions: .ts, .js, .mjs, .cjs, .json');
-      process.exit(1);
     } else {
       usage();
     }

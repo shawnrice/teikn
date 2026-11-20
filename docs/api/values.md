@@ -15,8 +15,8 @@ T.from(any of the above)     // static factory
 
 ## Color
 
-Supports RGB, HSL, LAB, LCH, and XYZ color spaces with lazy conversion and caching. Parse any CSS
-color format; manipulate in any space.
+Supports RGB, HSL, LAB, LCH, Oklab, Oklch, and XYZ color spaces with lazy conversion and caching.
+Parse any CSS color format; manipulate in any space.
 
 ```typescript
 import { Color } from 'teikn';
@@ -25,23 +25,32 @@ import { Color } from 'teikn';
 new Color('steelblue');
 new Color('#ff6b35');
 new Color('rgb(70, 130, 180)');
-new Color('hsl(207, 44%, 49%)');
-new Color('lab(52, -8.4, -32.8)');
+new Color('hsl(207, 44%, 49%)').hex; // '#4682b4'
+new Color('lab(52, -8.4, -32.8)').hex; // '#4682b4'
 new Color(70, 130, 180); // r, g, b
 new Color(70, 130, 180, 0.5); // r, g, b, a
 
 // Color-space factories
-Color.fromHSL(210, 100, 40);
-Color.fromLAB(44, -5, -45);
-Color.fromLCH(44, 45, 265);
+Color.fromHSL(210, 1, 0.4).hex; // '#0066cc'
+Color.fromLAB(44, -5, -45).hex; // '#106db3'
+Color.fromLCH(44, 45, 265).hex; // '#1b6db3'
+```
+
+In the numeric API, HSL saturation and lightness are fractions from 0 to 1, not percentages; hue is
+in degrees. This applies to `Color.fromHSL`, `setSaturation`, `setLightness`, `c.saturation`,
+`c.lightness` and `c.asHSL()`. Only the CSS string form takes percentages. Out-of-range values
+clamp, so passing percentages gives white:
+
+```typescript
+Color.fromHSL(210, 100, 40).hex; // '#ffffff' (saturation and lightness clamp to 1)
 ```
 
 Hex strings support 3, 4, 6, and 8-character formats (CSS4 hex-with-alpha):
 
 ```typescript
-new Color('#F00'); // #FF0000
-new Color('#F00A'); // #FF0000 with alpha ~0.67
-new Color('#FF0000AA'); // #FF0000 with alpha ~0.67
+new Color('#F00').hex; // '#ff0000'
+new Color('#F00A').alpha; // 0.667
+new Color('#FF0000AA').alpha; // 0.667
 ```
 
 ### Manipulation
@@ -93,16 +102,16 @@ c.red; // 70
 c.green; // 130
 c.blue; // 180
 c.alpha; // 1
-c.hue; // 207
-c.saturation; // 44
-c.lightness; // 49
+c.hue; // 207.273 (degrees)
+c.saturation; // 0.44 (0-1)
+c.lightness; // 0.49 (0-1)
 
-// Raw values per space
+// Raw values per space (shown rounded to 3 decimals; the tuples are read-only)
 c.asRGB(); // [70, 130, 180]
-c.asHSL(); // [207, 44, 49]
-c.asLAB(); // [52.0, -8.4, -32.8]
-c.asLCH(); // [52.0, 33.9, 255.7]
-c.asXYZ(); // [0.189, 0.200, 0.448]
+c.asHSL(); // [207.273, 0.44, 0.49]
+c.asLAB(); // [51.987, -8.362, -32.833]
+c.asLCH(); // [51.987, 33.881, 255.712]
+c.asXYZ(); // [0.187, 0.206, 0.462]
 ```
 
 ### Output
@@ -111,13 +120,15 @@ c.asXYZ(); // [0.189, 0.200, 0.448]
 c.toString('hex'); // '#4682b4'
 c.toString('rgb'); // 'rgb(70, 130, 180)'
 c.toString('rgba'); // 'rgba(70, 130, 180, 1)'
-c.toString('hsl'); // 'hsl(207, 44%, 49%)'
+c.toString('hsl'); // 'hsl(207.27, 44%, 49.02%)'
 c.toString('lab'); // 'lab(51.99, -8.36, -32.83)'
 c.toString('lch'); // 'lch(51.99, 33.88, 255.71)'
 c.toString('oklch'); // 'oklch(0.588 0.09934 245.739)'
-c.toString('named'); // CSS named color if one matches
-c.toString('xkcd'); // nearest XKCD color name
+c.toString('named'); // 'steelblue' (the CSS named color if one matches, else rgb)
+c.toString('xkcd'); // 'cool blue' (nearest XKCD color name)
 ```
+
+An unknown format throws.
 
 With no format, `toString()` serializes in the color's _authored_ space — lossless, no gamut clip,
 no 8-bit round trip. An oklch color stays oklch (only rounding decimals); a hex color parses to rgb:
@@ -125,7 +136,7 @@ no 8-bit round trip. An oklch color stays oklch (only rounding decimals); a hex 
 ```typescript
 new Color('oklch(0.7 0.15 200)').toString(); // 'oklch(0.7 0.15 200)'
 new Color('#4682b4').toString(); // 'rgb(70, 130, 180)'  (hex parses to rgb)
-c.toString('native'); // same as toString() — names the default explicitly
+c.toString('native'); // 'rgb(70, 130, 180)' (same as toString(); names the default explicitly)
 ```
 
 This is what `BoxShadow` (and other) serializers use, so an oklch shadow color emits oklch. To pin a

@@ -6,7 +6,7 @@ import type { ColorFormat } from '../TokenTypes/Color/types.js';
 import { Plugin } from './Plugin.js';
 
 /** Resolve a seed value (default or mode) to a concrete color, following references. */
-type SeedResolver = (value: unknown, tokenName: string, mode?: string) => unknown;
+type SeedResolver = ReturnType<typeof createSeedResolver>;
 
 /**
  * Output color space for the generated ramp. `'auto'` (the default) keeps each
@@ -96,19 +96,6 @@ const resolveFormat = (base: Color, space: PaletteSpace | undefined): ColorForma
   return space;
 };
 
-// A value that does not resolve before expansion is not a seed (typically an
-// alias of another ramp's generated step); the full validate/resolve pass
-// reports it if the reference is actually broken.
-const resolvesBeforeExpand = (resolve: () => unknown): boolean => {
-  try {
-    resolve();
-
-    return true;
-  } catch {
-    return false;
-  }
-};
-
 const generatePaletteTokens = (
   token: Token,
   steps: number[],
@@ -119,12 +106,17 @@ const generatePaletteTokens = (
 ): Token[] => {
   const seedName = tokenKey(token);
 
-  if (!resolvesBeforeExpand(() => resolveSeed(token.value, seedName))) {
+  // A value that does not resolve before expansion is not a seed (typically an
+  // alias of another ramp's generated step); the full validate/resolve pass
+  // reports it if the reference is actually broken. Neither is `currentColor`,
+  // `var(--x)` and the like, which have no lightness to ramp.
+  const { value: baseValue } = resolveSeed(token.value, seedName);
+  const baseColor = Color.tryParse(baseValue);
+
+  if (!baseColor) {
     return [];
   }
 
-  const baseValue = resolveSeed(token.value, seedName);
-  const baseColor = new Color(baseValue as string | Color);
   const format = resolveFormat(baseColor, space);
   const minStep = Math.min(...steps);
   const maxStep = Math.max(...steps);
@@ -149,8 +141,11 @@ const generatePaletteTokens = (
 
     if (lightnessSpace) {
       const { basePct, at } = lightnessOps(lightnessSpace, seed);
+      // A seed already past the endpoint stays put (as the RGB path does)
+      // rather than ramping back toward it.
+      const end = toLight ? Math.max(endPct, basePct) : Math.min(endPct, basePct);
 
-      return at(interpolate(basePct, endPct, t));
+      return at(interpolate(basePct, end, t));
     }
 
     // RGB tint (mix toward white) / shade (mix toward black).
@@ -173,19 +168,14 @@ const generatePaletteTokens = (
   const modeColors = modeNames.flatMap(mode => {
     const own = token.modes && Object.hasOwn(token.modes, mode) ? token.modes[mode] : undefined;
 
-    try {
-      const resolved = resolveSeed(own ?? token.value, seedName, mode);
+    // Not resolvable before expansion (e.g. a mode pointing at another ramp's
+    // generated step): the steps fall back to their default value in this
+    // mode. The seed keeps its mode, so the full validate/resolve pass still
+    // reports a genuinely dangling or circular reference.
+    const { value: resolved } = resolveSeed(own ?? token.value, seedName, mode);
+    const color = own === undefined && resolved === baseValue ? null : Color.tryParse(resolved);
 
-      return own === undefined && resolved === baseValue
-        ? []
-        : [[mode, new Color(resolved as string | Color)] as const];
-    } catch {
-      // Not resolvable before expansion (e.g. a mode pointing at another ramp's
-      // generated step): the steps fall back to their default value in this
-      // mode. The seed keeps its mode, so the full validate/resolve pass still
-      // reports a genuinely dangling or circular reference.
-      return [];
-    }
+    return color ? [[mode, color] as const] : [];
   });
 
   // Strip the seed's own modes from the spread; each step gets its own rampified
@@ -224,6 +214,12 @@ export class PalettePlugin extends Plugin<PalettePluginOptions> {
           `PalettePlugin: ${end} must be a lightness percentage from 0 to 100, got ${value}`,
         );
       }
+    }
+
+    const { space } = options;
+
+    if (space !== undefined && space !== 'auto' && !Color.isFormat(space)) {
+      throw new Error(`PalettePlugin: unknown space "${String(space)}"`);
     }
   }
 

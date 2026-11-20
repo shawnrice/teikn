@@ -6,7 +6,7 @@ import { isFirstClassValue } from '../type-classifiers.js';
 import type { GeneratorInfo, GeneratorOptions } from './Generator.js';
 import { Generator } from './Generator.js';
 import type { JavaScriptModule } from './JavaScript.js';
-import { assertGroupExportName, jsDocLines } from './js-emit.js';
+import { jsDocLines, unusableExportName } from './js-emit.js';
 import { quoteKey, quoteString } from './value-serializers.js';
 
 /**
@@ -131,6 +131,22 @@ export class TypeScriptDeclarations extends Generator<TypeScriptDeclarationsOpts
       .join(EOL);
   }
 
+  // `TokenNames` is keyed by type whether or not `groups` is on.
+  protected override typeIdentifiers(
+    tokens: Token[],
+  ): { name: string; type: string; problem?: string | null }[] {
+    const accessor = this.options.groups ? unusableExportName : () => null;
+
+    return this.tokenGroups(tokens).map(({ groupName: name, type }) => ({
+      name,
+      type,
+      problem:
+        name === 'all'
+          ? 'is the `TokenNames.All` key, reserved for the union of every group'
+          : accessor(name),
+    }));
+  }
+
   combinator(tokens: Token[]): string {
     const values = tokens.map(t => this.generateToken(t));
     const parts = ['export declare const tokens: {', values.join(EOL), '};'];
@@ -159,11 +175,6 @@ export class TypeScriptDeclarations extends Generator<TypeScriptDeclarationsOpts
 
     if (this.options.groups) {
       const groupDecls = groups.map(({ groupName, entries }) => {
-        assertGroupExportName({
-          generator: 'TypeScriptDeclarations',
-          groupName,
-          type: entries[0]!.token.type,
-        });
         const union = entries.map(({ shortName }) => quoteString(shortName)).join(' | ');
         // The accessor does a runtime lookup, so the return can't be narrowed
         // to a specific value per name — widen to the primitive type(s)

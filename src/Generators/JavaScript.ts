@@ -4,7 +4,7 @@ import { camelCase, deriveShortName } from '../string-utils.js';
 import type { Token } from '../Token.js';
 import type { GeneratorInfo, GeneratorOptions } from './Generator.js';
 import { Generator } from './Generator.js';
-import { assertGroupExportName, jsDocLines, objectKey, propertyAccess } from './js-emit.js';
+import { jsDocLines, objectKey, propertyAccess, unusableExportName } from './js-emit.js';
 import { maybeQuote } from './value-serializers.js';
 
 export type JavaScriptModule = 'esm' | 'cjs';
@@ -99,6 +99,14 @@ export class JavaScript extends Generator<JavaScriptOpts> {
       .join(EOL);
   }
 
+  protected override typeIdentifiers(
+    tokens: Token[],
+  ): { name: string; type: string; problem?: string | null }[] {
+    return super
+      .typeIdentifiers(tokens)
+      .map(({ name, type }) => ({ name, type, problem: unusableExportName(name) }));
+  }
+
   combinator(tokens: Token[]): string {
     const { nameTransformer, groups, module: moduleKind } = this.options;
     const isCjs = moduleKind === 'cjs';
@@ -111,7 +119,6 @@ export class JavaScript extends Generator<JavaScriptOpts> {
 
     if (groups) {
       const groupBlocks = this.tokenGroups(tokens).map(({ groupName, entries }) => {
-        assertGroupExportName({ generator: 'JavaScript', groupName, type: entries[0]!.token.type });
         exportNames.push(groupName);
         const mapEntries = entries
           .map(
